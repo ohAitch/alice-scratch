@@ -1,8 +1,8 @@
 // Create the canvas
 var canvas = document.createElement("canvas")
 var ctx = canvas.getContext("2d")
-canvas.width = 512
-canvas.height = 480
+canvas.width = 1000
+canvas.height = 700
 document.body.appendChild(canvas)
 
 var image = function(src){
@@ -13,72 +13,74 @@ var image = function(src){
 	r.draw = function(ctx,x,y){if (r.ready) ctx.drawImage(r,x,y);}
 	return r}
 
-var bgImage = image("images/background.png")
-var heroImage = image("images/hero.png")
-var monsterImage = image("images/monster.png")
+var entity = function(pos,img){
+	this.pos = pos
+	this.image = image(img)
+	this.draw = function(ctx){this.image.draw(ctx,this.pos[0],this.pos[1])}
+	entities.push(this)
+	}
 
-// Game objects
-var hero = {speed: 256} // movement in pixels per second
-var monster = {}
-var monstersCaught = 0
+var entities = []
+var draw_entities = function(ctx){entities = entities.filter(function(v){if (v.pos) v.draw(ctx); return !!v.pos})}
+var agents = []
+var update_agents = function(delta){agents.slice(0).map(function(v){v.update(delta)}); agents = agents.filter(function(v){return !!v.pos})}
+
+var bg = new entity([0,0],"images/background.png")
+
+var hero = new entity([canvas.width / 2, canvas.height / 2],"images/hero.png")
+hero.speed = 1
+hero.hp = 100
+hero.hurt = function(i){hero.hp -= i; if (hero.hp < 0) hero = null}
+hero.update = function(delta){
+	var vel = [(keysDown[37]?-1:0)+(keysDown[39]?1:0), (keysDown[38]?-1:0)+(keysDown[40]?1:0)]
+	hero.pos[0] += vel[0] * hero.speed * delta
+	hero.pos[1] += vel[1] * hero.speed * delta
+	}
+agents.push(hero)
+
+var monster = function(){
+	var r = new entity([
+		Math.random() * (canvas.width  - 64),
+		Math.random() * (canvas.height - 64)
+		],"images/monster.png")
+	r.vel = [0,0]
+	r.update = function(delta){
+		r.vel[0] += (Math.random()-0.5) * 0.001 * delta
+		r.vel[1] += (Math.random()-0.5) * 0.001 * delta
+		r.pos[0] += r.vel[0] * delta
+		r.pos[1] += r.vel[1] * delta
+		if (r.pos[0] - 64 <= hero.pos[0] && hero.pos[0] <= r.pos[0] + 64 &&
+			r.pos[1] - 64 <= hero.pos[1] && hero.pos[1] <= r.pos[1] + 64) {
+				r.pos = null; agents.push(monster()); if (Math.random() < 0.1) agents.push(monster())
+				hero.hurt(1)
+			}
+		}
+	return r}
 
 // Handle keyboard controls
 var keysDown = {}
-
 addEventListener("keydown", function(e){keysDown[e.keyCode] = true}, false)
 addEventListener("keyup"  , function(e){delete keysDown[e.keyCode]}, false)
 
-// Reset the game when the player catches a monster
-var reset = function(){
-	hero.x = canvas.width / 2
-	hero.y = canvas.height / 2
-
-	// Throw the monster somewhere on the screen randomly
-	monster.x = 32 + (Math.random() * (canvas.width - 64))
-	monster.y = 32 + (Math.random() * (canvas.height - 64))
-	}
-
-// Update game objects
-var update = function(modifier){
-	if (38 in keysDown) hero.y -= hero.speed * modifier // Player holding up
-	if (40 in keysDown) hero.y += hero.speed * modifier // Player holding down
-	if (37 in keysDown) hero.x -= hero.speed * modifier // Player holding left
-	if (39 in keysDown) hero.x += hero.speed * modifier // Player holding right
-
-	// Are they touching?
-	if (hero.x    <= monster.x + 32 &&
-		monster.x <= hero.x    + 32 &&
-		hero.y    <= monster.y + 32 &&
-		monster.y <= hero.y    + 32)
-		{++monstersCaught; reset()}
-	}
-
 // Draw everything
 var render = function(){
-	bgImage.draw(ctx,0,0)
-	heroImage.draw(ctx,hero.x,hero.y)
-	monsterImage.draw(ctx,monster.x,monster.y)
+	draw_entities(ctx)
 
 	// Score
 	ctx.fillStyle = "rgb(250, 250, 250)"
 	ctx.font = "24px Helvetica"
 	ctx.textAlign = "left"
 	ctx.textBaseline = "top"
-	ctx.fillText("Goblins caught: " + monstersCaught, 32, 32)
-	}
-
-// The main game loop
-var main = function(){
-	var now = Date.now()
-	var delta = now - then
-
-	update(delta / 1000)
-	render()
-
-	then = now
+	ctx.fillText("entities: "+entities.length, 32, 32)
+	ctx.fillText("hp: "+hero.hp, 32, 64)
 	}
 
 // Let's play this game!
-reset()
+for (var i = 0; i < 100; i++) agents.push(monster())
 var then = Date.now()
-setInterval(main, 1) // Execute as fast as possible
+setInterval(function(){
+	var now = Date.now()
+	update_agents(now - then)
+	render()
+	then = now
+	}, 1) // Execute as fast as possible
