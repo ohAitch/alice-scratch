@@ -1,26 +1,23 @@
+function overload(){var fns = dict_by(m('length'),arguments); return function(){return fns[arguments.length].apply(this,arguments)}}
 function bind(root,member) {return root[member].bind(root)}
 function argslice(args,i){return Array.prototype.slice.apply(args).slice(i)}
 function m(m){var args = argslice(arguments,1);
 	return args.length == 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
 	:      args.length == 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
 	:                        function(v){return v[m].apply(v,args)}}
-function extend(sup,sub){
-	sub.prototype.__proto__ = sup.prototype
-	//sub.prototype.super_ = function(){this.prototype.__proto__.constructor.apply(this,argslice(arguments,1))}
-	//sub.prototype['$'+sup.name] = function(){sup.prototype.constructor.apply(this,arguments)}
-	return sub}
-function clas(sup,ctor,body){extend(sup,ctor); putE(ctor.prototype,body); return ctor}
-function super_(self){self.__proto__.__proto__.constructor.apply(self,argslice(arguments,1))}
-//function super_(self){var f = self.__proto__.constructor; print(f,typeof(f),argslice(arguments,1));} //f.apply(self,argslice(arguments,1))}
-//function fconsE(self,slot,f){var t = self[slot]; self[slot] = function(){if (t) t.apply(this,arguments); f.apply(this,arguments)}; return self}
+var clas = overload(
+	function(ctor,body){putE(ctor.prototype,body); return ctor},
+	function(super_,ctor,body){
+		ctor.prototype.__proto__ = super_.prototype
+		ctor.super_ = super_
+		ctor.prototype.super_ = function(){arguments.callee.caller.super_.apply(this,arguments)}
+		return clas(ctor,body)})
 function fcat(){var fns = arguments; return function(){for (var i=0;i<fns.length;i++) fns[i].apply(this,arguments)}}
 Function.prototype.cmp = function(f){var t = this; return function(){return t.call(this,f.apply(this,arguments))}}
 function not(v){return !v}
 function is(a,b){return a === b}
-// CURRENT: !!
 var def = function(f){this[f.name] = f}.bind(this)
 function dict_by(f,sq){var r = {}; for(var i=0;i<sq.length;i++) r[f(sq[i])] = sq[i]; return r}
-function overload(){var fns = dict_by(m('length'),arguments); return function(){fns[arguments.length].apply(this,arguments)}}
 
 var print = bind(console,'log')
 var rand = Math.random
@@ -80,13 +77,12 @@ function enhance_ctx(c){return putE(c,{
 
 function rand_pos(){return canvas.size().mul([rand(),rand()])}
 
-function pos(pos){this.pos = pos}
-pos.prototype.x = function(){return this.pos[0]}
-pos.prototype.y = function(){return this.pos[1]}
-def(extend(pos,function agent(posp,hp,update,die){
-	//super_(this,pos)
-	pos.call(this,posp)
-	// CURRENT: when you're in `new station` and then call this, your super_ impl does not actually work at all
+def(clas(function pos(pos){this.pos = pos},{
+		x:function(){return this.pos[0]},
+		y:function(){return this.pos[1]},
+	}))
+def(clas(pos,function agent(pos,hp,update,die){
+	this.super_(pos)
 	this.hp = hp
 	this.die = die
 	this.update = function(delta){
@@ -100,11 +96,12 @@ def(extend(pos,function agent(posp,hp,update,die){
 			this.vel = this.vel.add(this.pos.mod(64).add(-32).sign().mul(0.005))
 			this.pos = this.pos.add(this.vel.mul(delta))
 			}}
-	this.hurt = function(i){this.hp -= i; if (this.hp <= 0) {this.dead = true; this.die()}}
 	this.vel = [0,0]
 
 	sprites.push(this)
 	agents.push(this)
+	},{
+		hurt:function(i){this.hp -= i; if (this.hp <= 0) {this.dead = true; this.die()}},
 	}))
 
 function imagef(v){ // (v[,X,Y])
@@ -139,18 +136,16 @@ sprites.push({draw:function(c){
 
 function make_food  (pos){return putE(new agent(pos,1,function(delta){},function(){make_food   (rand_pos())}),{draw:pos_trans(imagef('food'   ,64,64))})}
 function make_weapon(pos){return putE(new agent(pos,1,function(delta){},function(){make_weapon (rand_pos())}),{draw:pos_trans(imagef('weapon' ,64,64))})}
-def(extend(agent,function station(pos){
-	super_(this,pos,1,function(delta){},function(){new station(rand_pos())})
-	//print(this.__proto__.__proto__,agent.prototype
-	//agent.call(this,pos,1,function(delta){},function(){new station(rand_pos())})
-
-	this.draw=pos_trans(fcat(
-		function(c){
-			c.beginPath()
-			c.arc(32,32,200,0,TAU)
-			c.fill('rgba(255,170,0,.2)')
-			c.stroke('rgba(0,0,0,.5)',1)},
-		imagef('station',64,64)))
+def(clas(agent,function station(pos){
+	this.super_(pos,1,function(delta){},function(){new station(rand_pos())})
+	},{
+		draw:pos_trans(fcat(
+			function(c){
+				c.beginPath()
+				c.arc(32,32,200,0,TAU)
+				c.fill('rgba(255,170,0,.2)')
+				c.stroke('rgba(0,0,0,.5)',1)},
+			imagef('station',64,64))),
 	}))
 function make_monster(pos){return putE(new agent(pos,5,
 	function(delta){
