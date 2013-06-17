@@ -2,7 +2,7 @@
 function overload(){var fns = dict_by(m('length'),arguments); return function(){return fns[arguments.length].apply(this,arguments)}}
 function bind(root,member){return root[member].bind(root)}
 function argslice(args,i){return Array.prototype.slice.apply(args).slice(i)}
-function m(m){var args = argslice(arguments,1);
+function m(m){var args = argslice(arguments,1); // m('member') is like .member
 	return args.length == 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
 	:      args.length == 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
 	:                        function(v){return v[m].apply(v,args)}}
@@ -32,22 +32,15 @@ function sign(v){return v? (v < 0? -1 : 1) : 0}
 // mathy utils
 function polar(r,t){return [r*Math.cos(t), r*Math.sin(t)]}
 var TAU = Math.PI*2
+function coercing_arith_v(f){return function(v){
+	if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(f(this[i],v[i])); return r}
+	else return this.map(function(w){return f(w,v)})}}
 putE(Array.prototype,{
-	add:function(v){
-		if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(this[i]+v[i]); return r}
-		else return this.map(function(w){return w+v})},
-	sub:function(v){
-		if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(this[i]-v[i]); return r}
-		else return this.map(function(w){return w-v})},
-	mul:function(v){
-		if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(this[i]*v[i]); return r}
-		else return this.map(function(w){return w*v})},
-	div:function(v){
-		if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(this[i]/v[i]); return r}
-		else return this.map(function(w){return w/v})},
-	mod:function(v){
-		if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(this[i]%v[i]); return r}
-		else return this.map(function(w){return w%v})},
+	add:coercing_arith_v(function(a,b){return a+b}),
+	sub:coercing_arith_v(function(a,b){return a-b}),
+	mul:coercing_arith_v(function(a,b){return a*b}),
+	div:coercing_arith_v(function(a,b){return a/b}),
+	mod:coercing_arith_v(function(a,b){return a%b}),
 	abs:function(){return Math.sqrt(sum(this.mul(this)))},
 	sum:function(){
 		if (this.length == 0) return 0
@@ -188,11 +181,11 @@ for (var i=0;i<10;i++) new station(rand_pos())
 for (var i=0;i<4;i++) new monster(rand_pos())
 var hero_ = new hero(canvas.size().div(2))
 
-{	var then = Date.now()
+{	var prev = Date.now()
 	var ctx = enhance_ctx(canvas.getContext('2d'))
 	setInterval(function(){
 		var now = Date.now()
-		update_agents((now - then)/1000)
+		update_agents((now - prev)/1000)
 		draw_sprites(ctx)
-		then = now
+		prev = now
 		},10)}
