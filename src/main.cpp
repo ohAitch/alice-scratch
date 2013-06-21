@@ -16,11 +16,8 @@
 #include <vector>
 
 using namespace std;
-using namespace llvm;
 
-//===----------------------------------------------------------------------===//
-// Lexer
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Lexer //===--------------------------------------------===//
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
@@ -79,48 +76,48 @@ static int gettok() {
 	// Otherwise, just return the character as its ascii value.
 	int r = last_ch; last_ch = getchar(); return r;}
 
-//===----------------------------------------------------------------------===//
-// Abstract Syntax Tree (aka Parse Tree)
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Abstract Syntax Tree (aka Parse Tree) //===--------------------------------------------===//
+
+// CURRENT: ? SexpAST ?
 
 class ExprAST {public:
 	virtual ~ExprAST() {}
-	virtual Value* emit() = 0;
+	virtual llvm::Value* emit() = 0;
 	};
 class NumberExprAST : public ExprAST {double val; public:
 	NumberExprAST(double val) : val(val) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class VariableExprAST : public ExprAST {string name; public:
 	VariableExprAST(const string &name) : name(name) {}
 	const string &getName() const {return name;}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class UnaryExprAST : public ExprAST {char opcode; ExprAST* operand; public:
 	UnaryExprAST(char opcode, ExprAST* operand) : opcode(opcode), operand(operand) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class BinaryExprAST : public ExprAST {char op; ExprAST* lhs, *rhs; public:
 	BinaryExprAST(char op, ExprAST* lhs, ExprAST* rhs) : op(op), lhs(lhs), rhs(rhs) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class CallExprAST : public ExprAST {string callee; vector<ExprAST*> args; public:
 	CallExprAST(const string &callee, vector<ExprAST*> &args) : callee(callee), args(args) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class IfExprAST : public ExprAST {ExprAST* cond, *then, *else_; public:
 	IfExprAST(ExprAST* cond, ExprAST* then, ExprAST* else_) : cond(cond), then(then), else_(else_) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class ForExprAST : public ExprAST {string var_name; ExprAST* start, *end, *step, *body; public:
 	ForExprAST(const string &var_name, ExprAST* start, ExprAST* end, ExprAST* step, ExprAST* body) : var_name(var_name), start(start), end(end), step(step), body(body) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
 class VarExprAST : public ExprAST {vector<pair<string, ExprAST*> > var_names; ExprAST* body; public:
 	VarExprAST(const vector<pair<string, ExprAST*> > &var_names, ExprAST* body) : var_names(var_names), body(body) {}
-	virtual Value* emit();
+	virtual llvm::Value* emit();
 	};
-/// PrototypeAST - This class represents the "prototype" for a function, which captures its argument names as well as if it is an operator.
+// this class represents the "prototype" for a function, which captures its argument names as well as if it is an operator.
 class PrototypeAST {string name; vector<string> args; bool is_op; unsigned precedence; public:
 	// ^ Precedence if a binary op.
 	PrototypeAST(const string &name, const vector<string> &args, bool is_op = false, unsigned precedence = 0) : name(name), args(args), is_op(is_op), precedence(precedence) {}
@@ -130,17 +127,15 @@ class PrototypeAST {string name; vector<string> args; bool is_op; unsigned prece
 	
 	char getOperatorName() const {assert(isUnaryOp() || isBinaryOp()); return name[name.size()-1];}
 	unsigned getBinaryPrecedence() const {return precedence;}
-	Function* emit();
-	void CreateArgumentAllocas(Function* F);
+	llvm::Function* emit();
+	void CreateArgumentAllocas(llvm::Function* F);
 	};
 class FunctionAST {PrototypeAST* proto; ExprAST* body; public:
 	FunctionAST(PrototypeAST* proto, ExprAST* body) : proto(proto), body(body) {}
-	Function* emit();
+	llvm::Function* emit();
 	};
 
-//===----------------------------------------------------------------------===//
-// Parser
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Parser //===--------------------------------------------===//
 
 /// cur_tok/getNextToken - Provide a simple token buffer.  cur_tok is the current token the parser is looking at.  getNextToken reads another token from the lexer and updates cur_tok with its results.
 static int cur_tok;
@@ -376,38 +371,36 @@ static FunctionAST* ParseTopLevelExpr() { /// toplevelexpr ::= expression
 	else return NULL;}
 static PrototypeAST* ParseExtern() {getNextToken(); return ParsePrototype();} /// external ::= 'extern' prototype
 
-//===----------------------------------------------------------------------===//
-// Code Generation
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Code Generation //===--------------------------------------------===//
 
-static Module* TheModule;
-static IRBuilder<> Builder(getGlobalContext());
-static map<string, AllocaInst*> NamedValues;
-static FunctionPassManager* TheFPM;
+static llvm::Module* module;
+static llvm::IRBuilder<> Builder(llvm::getGlobalContext());
+static map<string, llvm::AllocaInst*> NamedValues;
+static llvm::FunctionPassManager* fpm;
 
-Value* ErrorV(const char* Str) {Error(Str); return NULL;}
+llvm::Value* ErrorV(const char* Str) {Error(Str); return NULL;}
 
 /// CreateEntryBlockAlloca - Create an alloca instruction in the entry block of the function.  This is used for mutable variables etc.
-static AllocaInst* CreateEntryBlockAlloca(Function* TheFunction, const string &var_name) {
-	IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
-	return TmpB.CreateAlloca(Type::getDoubleTy(getGlobalContext()), 0, var_name.c_str());}
+static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* TheFunction, const string &var_name) {
+	llvm::IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
+	return TmpB.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()), 0, var_name.c_str());}
 
-Value* NumberExprAST::emit() {return ConstantFP::get(getGlobalContext(), APFloat(val));}
-Value* VariableExprAST::emit() {
+llvm::Value* NumberExprAST::emit() {return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(val));}
+llvm::Value* VariableExprAST::emit() {
 	// Look this variable up in the function.
-	Value* V = NamedValues[name];
+	llvm::Value* V = NamedValues[name];
 	if (!V) return ErrorV("Unknown variable name");
 	// Load the value.
 	return Builder.CreateLoad(V, name.c_str());}
-Value* UnaryExprAST::emit() {
-	Value* OperandV = operand->emit();
+llvm::Value* UnaryExprAST::emit() {
+	llvm::Value* OperandV = operand->emit();
 	if (!OperandV) return NULL;
 	
-	Function* F = TheModule->getFunction(string("unary")+opcode);
+	llvm::Function* F = module->getFunction(string("unary")+opcode);
 	if (!F) return ErrorV("Unknown unary operator");
 	
 	return Builder.CreateCall(F, OperandV, "unop");}
-Value* BinaryExprAST::emit() {
+llvm::Value* BinaryExprAST::emit() {
 	// Special case '=' because we don't want to emit the LHS as an expression.
 	if (op == '=') {
 		// Assignment requires the LHS to be an identifier.
@@ -415,19 +408,19 @@ Value* BinaryExprAST::emit() {
 		if (!LHSE) return ErrorV("destination of '=' must be a variable");
 
 		// emit the RHS.
-		Value* v = rhs->emit();
+		llvm::Value* v = rhs->emit();
 		if (!v) return NULL;
 
 		// Look up the name.
-		Value* Variable = NamedValues[LHSE->getName()];
+		llvm::Value* Variable = NamedValues[LHSE->getName()];
 		if (!Variable) return ErrorV("Unknown variable name");
 
 		Builder.CreateStore(v, Variable);
 		return v;
 	}
 	
-	Value* L = lhs->emit();
-	Value* R = rhs->emit();
+	llvm::Value* L = lhs->emit();
+	llvm::Value* R = rhs->emit();
 	if (!L || !R) return NULL;
 	
 	switch (op) {
@@ -437,50 +430,50 @@ Value* BinaryExprAST::emit() {
 		case '<':
 			L = Builder.CreateFCmpULT(L, R, "cmptmp");
 			// Convert bool 0/1 to double 0.0 or 1.0
-			return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()), "booltmp");
+			return Builder.CreateUIToFP(L, llvm::Type::getDoubleTy(llvm::getGlobalContext()), "booltmp");
 		default: break;
 	}
 	
 	// If it wasn't a builtin binary operator, it must be a user defined one. Emit a call to it.
-	Function* F = TheModule->getFunction(string("binary")+op);
+	llvm::Function* F = module->getFunction(string("binary")+op);
 	assert(F && "binary operator not found!");
 	
-	Value* Ops[] = {L, R};
+	llvm::Value* Ops[] = {L, R};
 	return Builder.CreateCall(F, Ops, "binop");}
-Value* CallExprAST::emit() {
+llvm::Value* CallExprAST::emit() {
 	// Look up the name in the global module table.
-	Function* CalleeF = TheModule->getFunction(callee);
+	llvm::Function* CalleeF = module->getFunction(callee);
 	if (!CalleeF) return ErrorV("Unknown function referenced");
 	
 	// If argument mismatch error.
 	if (CalleeF->arg_size() != args.size()) return ErrorV("Incorrect # arguments passed");
 
-	vector<Value*> ArgsV;
+	vector<llvm::Value*> ArgsV;
 	for (unsigned i = 0, e = args.size(); i != e; ++i) {
 		ArgsV.push_back(args[i]->emit());
 		if (!ArgsV.back()) return NULL;
 	}
 	
 	return Builder.CreateCall(CalleeF, ArgsV, "calltmp");}
-Value* IfExprAST::emit() {
-	Value* CondV = cond->emit(); if (!CondV) return NULL;
+llvm::Value* IfExprAST::emit() {
+	llvm::Value* CondV = cond->emit(); if (!CondV) return NULL;
 	
 	// Convert condition to a bool by comparing equal to 0.0.
-	CondV = Builder.CreateFCmpONE(CondV, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "ifcond");
+	CondV = Builder.CreateFCmpONE(CondV, llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)), "ifcond");
 	
-	Function* TheFunction = Builder.GetInsertBlock()->getParent();
+	llvm::Function* TheFunction = Builder.GetInsertBlock()->getParent();
 	
 	// Create blocks for the then and else cases.  Insert the 'then' block at the end of the function.
-	BasicBlock* ThenBB = BasicBlock::Create(getGlobalContext(), "then", TheFunction);
-	BasicBlock* ElseBB = BasicBlock::Create(getGlobalContext(), "else");
-	BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+	llvm::BasicBlock* ThenBB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "then", TheFunction);
+	llvm::BasicBlock* ElseBB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "else");
+	llvm::BasicBlock* MergeBB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "ifcont");
 	
 	Builder.CreateCondBr(CondV, ThenBB, ElseBB);
 	
 	// Emit then value.
 	Builder.SetInsertPoint(ThenBB);
 	
-	Value* ThenV = then->emit();
+	llvm::Value* ThenV = then->emit();
 	if (!ThenV) return NULL;
 	
 	Builder.CreateBr(MergeBB);
@@ -491,7 +484,7 @@ Value* IfExprAST::emit() {
 	TheFunction->getBasicBlockList().push_back(ElseBB);
 	Builder.SetInsertPoint(ElseBB);
 	
-	Value* ElseV = else_->emit();
+	llvm::Value* ElseV = else_->emit();
 	if (!ElseV) return NULL;
 	
 	Builder.CreateBr(MergeBB);
@@ -501,11 +494,11 @@ Value* IfExprAST::emit() {
 	// Emit merge block.
 	TheFunction->getBasicBlockList().push_back(MergeBB);
 	Builder.SetInsertPoint(MergeBB);
-	PHINode* r = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2, "iftmp");
+	llvm::PHINode* r = Builder.CreatePHI(llvm::Type::getDoubleTy(llvm::getGlobalContext()), 2, "iftmp");
 	r->addIncoming(ThenV, ThenBB);
 	r->addIncoming(ElseV, ElseBB);
 	return r;}
-Value* ForExprAST::emit() {
+llvm::Value* ForExprAST::emit() {
 	// Output this as:
 	//   var = alloca double
 	//   ...
@@ -526,20 +519,20 @@ Value* ForExprAST::emit() {
 	//   br endcond, loop, endloop
 	// outloop:
 	
-	Function* TheFunction = Builder.GetInsertBlock()->getParent();
+	llvm::Function* TheFunction = Builder.GetInsertBlock()->getParent();
 
 	// Create an alloca for the variable in the entry block.
-	AllocaInst* Alloca = CreateEntryBlockAlloca(TheFunction, var_name);
+	llvm::AllocaInst* Alloca = CreateEntryBlockAlloca(TheFunction, var_name);
 	
 	// Emit the start code first, without 'variable' in scope.
-	Value* StartVal = start->emit();
+	llvm::Value* StartVal = start->emit();
 	if (!StartVal) return NULL;
 	
 	// Store the value into the alloca.
 	Builder.CreateStore(StartVal, Alloca);
 	
 	// Make the new basic block for the loop header, inserting after current block.
-	BasicBlock* LoopBB = BasicBlock::Create(getGlobalContext(), "loop", TheFunction);
+	llvm::BasicBlock* LoopBB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "loop", TheFunction);
 	
 	// Insert an explicit fall through from the current block to the LoopBB.
 	Builder.CreateBr(LoopBB);
@@ -548,30 +541,30 @@ Value* ForExprAST::emit() {
 	Builder.SetInsertPoint(LoopBB);
 	
 	// Within the loop, the variable is defined equal to the PHI node. If it shadows an existing variable, we have to restore it, so save it now.
-	AllocaInst* OldVal = NamedValues[var_name];
+	llvm::AllocaInst* OldVal = NamedValues[var_name];
 	NamedValues[var_name] = Alloca;
 	
 	// Emit the body of the loop.  This, like any other expr, can change the current BB.  Note that we ignore the value computed by the body, but don't allow an error.
 	if (!body->emit()) return NULL;
 	
 	// Emit the step value.
-	Value* StepVal;
+	llvm::Value* StepVal;
 	if (step) {StepVal = step->emit(); if (!StepVal) return NULL;}
-	else {StepVal = ConstantFP::get(getGlobalContext(), APFloat(1.0));} // If not specified, use 1.0.
+	else {StepVal = llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(1.0));} // If not specified, use 1.0.
 	
 	// Compute the end condition.
-	Value* EndCond = end->emit(); if (!EndCond) return NULL;
+	llvm::Value* EndCond = end->emit(); if (!EndCond) return NULL;
 	
 	// Reload, increment, and restore the alloca.  This handles the case where the body of the loop mutates the variable.
-	Value* CurVar = Builder.CreateLoad(Alloca, var_name.c_str());
-	Value* NextVar = Builder.CreateFAdd(CurVar, StepVal, "nextvar");
+	llvm::Value* CurVar = Builder.CreateLoad(Alloca, var_name.c_str());
+	llvm::Value* NextVar = Builder.CreateFAdd(CurVar, StepVal, "nextvar");
 	Builder.CreateStore(NextVar, Alloca);
 	
 	// Convert condition to a bool by comparing equal to 0.0.
-	EndCond = Builder.CreateFCmpONE(EndCond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
+	EndCond = Builder.CreateFCmpONE(EndCond, llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)), "loopcond");
 	
 	// Create the "after loop" block and insert it.
-	BasicBlock* AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
+	llvm::BasicBlock* AfterBB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "afterloop", TheFunction);
 	
 	// Insert the conditional branch into the end of LoopEndBB.
 	Builder.CreateCondBr(EndCond, LoopBB, AfterBB);
@@ -584,11 +577,11 @@ Value* ForExprAST::emit() {
 	else NamedValues.erase(var_name);
 
 	// for expr always returns 0.0.
-	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));}
-Value* VarExprAST::emit() {
-	vector<AllocaInst *> OldBindings;
+	return llvm::Constant::getNullValue(llvm::Type::getDoubleTy(llvm::getGlobalContext()));}
+llvm::Value* VarExprAST::emit() {
+	vector<llvm::AllocaInst *> OldBindings;
 	
-	Function* TheFunction = Builder.GetInsertBlock()->getParent();
+	llvm::Function* TheFunction = Builder.GetInsertBlock()->getParent();
 
 	// Register all variables and emit their initializer.
 	for (unsigned i = 0, e = var_names.size(); i != e; ++i) {
@@ -598,11 +591,11 @@ Value* VarExprAST::emit() {
 		// Emit the initializer before adding the variable to scope, this prevents the initializer from referencing the variable itself, and permits stuff like this:
 		//  var a = 1 in
 		//    var a = a in ...   # refers to outer 'a'.
-		Value* InitVal;
+		llvm::Value* InitVal;
 		if (Init) {InitVal = Init->emit(); if (!InitVal) return NULL;}
-		else InitVal = ConstantFP::get(getGlobalContext(), APFloat(0.0)); // If not specified, use 0.0.
+		else InitVal = llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(0.0)); // If not specified, use 0.0.
 		
-		AllocaInst* Alloca = CreateEntryBlockAlloca(TheFunction, var_name);
+		llvm::AllocaInst* Alloca = CreateEntryBlockAlloca(TheFunction, var_name);
 		Builder.CreateStore(InitVal, Alloca);
 
 		// Remember the old variable binding so that we can restore the binding when we unrecurse.
@@ -613,7 +606,7 @@ Value* VarExprAST::emit() {
 	}
 	
 	// emit the body, now that all vars are in scope.
-	Value* r = body->emit();
+	llvm::Value* r = body->emit();
 	if (!r) return NULL;
 	
 	// Pop all our variables from scope.
@@ -622,18 +615,18 @@ Value* VarExprAST::emit() {
 
 	// Return the body computation.
 	return r;}
-Function* PrototypeAST::emit() {
+llvm::Function* PrototypeAST::emit() {
 	// Make the function type:  double(double,double) etc.
-	vector<Type*> Doubles(args.size(), Type::getDoubleTy(getGlobalContext()));
-	FunctionType* FT = FunctionType::get(Type::getDoubleTy(getGlobalContext()), Doubles, false);
+	vector<llvm::Type*> Doubles(args.size(), llvm::Type::getDoubleTy(llvm::getGlobalContext()));
+	llvm::FunctionType* FT = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), Doubles, false);
 	
-	Function* r = Function::Create(FT, Function::ExternalLinkage, name, TheModule);
+	llvm::Function* r = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, name, module);
 	
 	// If F conflicted, there was already something named 'Name'.  If it has a body, don't allow redefinition or reextern.
 	if (r->getName() != name) {
 		// Delete the one we just made and get the existing one.
 		r->eraseFromParent();
-		r = TheModule->getFunction(name);
+		r = module->getFunction(name);
 		
 		// If F already has a body, reject this.
 		if (!r->empty()) {ErrorF("redefinition of function"); return NULL;}
@@ -644,17 +637,17 @@ Function* PrototypeAST::emit() {
 	
 	// Set names for all arguments.
 	unsigned Idx = 0;
-	for (Function::arg_iterator AI = r->arg_begin(); Idx != args.size(); ++AI, ++Idx)
+	for (llvm::Function::arg_iterator AI = r->arg_begin(); Idx != args.size(); ++AI, ++Idx)
 		AI->setName(args[Idx]);
 		
 	return r;}
 
 /// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
-void PrototypeAST::CreateArgumentAllocas(Function* F) {
-	Function::arg_iterator AI = F->arg_begin();
+void PrototypeAST::CreateArgumentAllocas(llvm::Function* F) {
+	llvm::Function::arg_iterator AI = F->arg_begin();
 	for (unsigned Idx = 0, e = args.size(); Idx != e; ++Idx, ++AI) {
 		// Create an alloca for this variable.
-		AllocaInst* Alloca = CreateEntryBlockAlloca(F, args[Idx]);
+		llvm::AllocaInst* Alloca = CreateEntryBlockAlloca(F, args[Idx]);
 
 		// Store the initial value into the alloca.
 		Builder.CreateStore(AI, Alloca);
@@ -664,10 +657,10 @@ void PrototypeAST::CreateArgumentAllocas(Function* F) {
 	}
 	}
 
-Function* FunctionAST::emit() {
+llvm::Function* FunctionAST::emit() {
 	NamedValues.clear();
 	
-	Function* r = proto->emit();
+	llvm::Function* r = proto->emit();
 	if (!r) return NULL;
 	
 	// If this is an operator, install it.
@@ -675,19 +668,19 @@ Function* FunctionAST::emit() {
 		binop_precedence[proto->getOperatorName()] = proto->getBinaryPrecedence();
 	
 	// Create a new basic block to start insertion into.
-	BasicBlock* BB = BasicBlock::Create(getGlobalContext(), "entry", r);
+	llvm::BasicBlock* BB = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", r);
 	Builder.SetInsertPoint(BB);
 	
 	// Add all arguments to the symbol table and create their allocas.
 	proto->CreateArgumentAllocas(r);
 
-	if (Value* RetVal = body->emit()) {
+	if (llvm::Value* RetVal = body->emit()) {
 		// Finish off the function.
 		Builder.CreateRet(RetVal);
 		// Validate the generated code, checking for consistency.
 		verifyFunction(*r);
 		// Optimize the function.
-		TheFPM->run(*r);
+		fpm->run(*r);
 		return r;}
 	
 	// Error reading body, remove function.
@@ -696,26 +689,24 @@ Function* FunctionAST::emit() {
 	if (proto->isBinaryOp()) binop_precedence.erase(proto->getOperatorName());
 	return NULL;}
 
-//===----------------------------------------------------------------------===//
-// Top-Level parsing and JIT Driver
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Top-Level parsing and JIT Driver //===--------------------------------------------===//
 
-static ExecutionEngine* TheExecutionEngine;
+static llvm::ExecutionEngine* TheExecutionEngine;
 
 static void HandleDefinition() {
 	if (FunctionAST* F = ParseDefinition()) {
-		if (Function* LF = F->emit()) {fprintf(stderr, "Read function definition:"); LF->dump();}
+		if (llvm::Function* LF = F->emit()) {fprintf(stderr, "Read function definition:"); LF->dump();}
 	} else getNextToken(); // Skip token for error recovery.
 	}
 static void HandleExtern() {
 	if (PrototypeAST* P = ParseExtern()) {
-		if (Function* F = P->emit()) {fprintf(stderr, "Read extern: "); F->dump();}
+		if (llvm::Function* F = P->emit()) {fprintf(stderr, "Read extern: "); F->dump();}
 	} else getNextToken(); // Skip token for error recovery.
 	}
 static void HandleTopLevelExpression() {
 	// Evaluate a top-level expression into an anonymous function.
 	if (FunctionAST* F = ParseTopLevelExpr()) {
-		if (Function* LF = F->emit()) {
+		if (llvm::Function* LF = F->emit()) {
 			// JIT the function, returning a function pointer.
 			void* FPtr = TheExecutionEngine->getPointerToFunction(LF);
 			
@@ -740,13 +731,11 @@ static void MainLoop() {
 	}
 	}
 
-//===----------------------------------------------------------------------===//
-// Main driver code.
-//===----------------------------------------------------------------------===//
+//===--------------------------------------------===// Main driver code. //===--------------------------------------------===//
 
 int main() {
-	InitializeNativeTarget();
-	LLVMContext &Context = getGlobalContext();
+	llvm::InitializeNativeTarget();
+	llvm::LLVMContext &Context = llvm::getGlobalContext();
 
 	// Install standard binary operators.
 	// 1 is lowest precedence.
@@ -761,41 +750,41 @@ int main() {
 	getNextToken();
 
 	// Make the module, which holds all the code.
-	TheModule = new Module("hey you", Context);
+	module = new llvm::Module("hey you", Context);
 
 	// Create the JIT.  This takes ownership of the module.
 	string ErrStr;
-	TheExecutionEngine = EngineBuilder(TheModule).setErrorStr(&ErrStr).create();
+	TheExecutionEngine = llvm::EngineBuilder(module).setErrorStr(&ErrStr).create();
 	if (!TheExecutionEngine) {fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str()); exit(1);}
 
-	FunctionPassManager OurFPM(TheModule);
+	llvm::FunctionPassManager OurFPM(module);
 
 	// Set up the optimizer pipeline.  Start with registering info about how the target lays out data structures.
-	OurFPM.add(new DataLayout(*TheExecutionEngine->getDataLayout()));
+	OurFPM.add(new llvm::DataLayout(*TheExecutionEngine->getDataLayout()));
 	// Provide basic AliasAnalysis support for GVN.
-	OurFPM.add(createBasicAliasAnalysisPass());
+	OurFPM.add(llvm::createBasicAliasAnalysisPass());
 	// Promote allocas to registers.
-	OurFPM.add(createPromoteMemoryToRegisterPass());
+	OurFPM.add(llvm::createPromoteMemoryToRegisterPass());
 	// Do simple "peephole" optimizations and bit-twiddling optzns.
-	OurFPM.add(createInstructionCombiningPass());
+	OurFPM.add(llvm::createInstructionCombiningPass());
 	// Reassociate expressions.
-	OurFPM.add(createReassociatePass());
+	OurFPM.add(llvm::createReassociatePass());
 	// Eliminate Common SubExpressions.
-	OurFPM.add(createGVNPass());
+	OurFPM.add(llvm::createGVNPass());
 	// Simplify the control flow graph (deleting unreachable blocks, etc).
-	OurFPM.add(createCFGSimplificationPass());
+	OurFPM.add(llvm::createCFGSimplificationPass());
 
 	OurFPM.doInitialization();
 
 	// Set the global so the code gen can use this.
-	TheFPM = &OurFPM;
+	fpm = &OurFPM;
 
 	// Run the main "interpreter loop" now.
 	MainLoop();
 
-	TheFPM = NULL;
+	fpm = NULL;
 
 	// Print out all of the generated code.
-	TheModule->dump();
+	module->dump();
 
 	return 0;}
