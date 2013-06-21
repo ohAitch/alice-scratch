@@ -14,8 +14,18 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 using namespace std;
+
+//===--------------------------------------------===// utils //===--------------------------------------------===//
+
+exception err(const string& v) {return runtime_error(v);}
+
+//===--------------------------------------------===// llvm utils //===--------------------------------------------===//
+
+llvm::ExecutionEngine* llvm_build_engine(llvm::Module* module) {
+	string t; llvm::ExecutionEngine* r = llvm::EngineBuilder(module).setErrorStr(&t).create(); if (!r) throw err(t); return r;}
 
 //===--------------------------------------------===// Lexer //===--------------------------------------------===//
 
@@ -29,11 +39,11 @@ enum Token {
 	tok_binary = -11, tok_unary = -12, // operators
 	tok_var = -13 // var definition
 	};
-static string IdentifierStr;  // Filled in if tok_identifier
-static double NumVal;         // Filled in if tok_number
+string IdentifierStr;  // Filled in if tok_identifier
+double NumVal;         // Filled in if tok_number
 
 /// gettok - Return the next token from standard input.
-static int gettok() {
+int gettok() {
 	static int last_ch = ' ';
 
 	// Skip any whitespace.
@@ -138,23 +148,23 @@ class FunctionAST {PrototypeAST* proto; ExprAST* body; public:
 //===--------------------------------------------===// Parser //===--------------------------------------------===//
 
 /// cur_tok/getNextToken - Provide a simple token buffer.  cur_tok is the current token the parser is looking at.  getNextToken reads another token from the lexer and updates cur_tok with its results.
-static int cur_tok;
-static int getNextToken() {return (cur_tok = gettok());}
+int cur_tok;
+int getNextToken() {return (cur_tok = gettok());}
 
 /// binop_precedence - This holds the precedence for each binary operator that is defined.
-static map<char, int> binop_precedence;
+map<char, int> binop_precedence;
 
 /// get_tok_precedence - Get the precedence of the pending binary operator token.
-static int get_tok_precedence() {if (!isascii(cur_tok)) return -1; int r = binop_precedence[cur_tok]; return r <= 0? -1 : r;}
+int get_tok_precedence() {if (!isascii(cur_tok)) return -1; int r = binop_precedence[cur_tok]; return r <= 0? -1 : r;}
 
 /// Error* - These are little helper functions for error handling.
-ExprAST* Error(const char* v) {fprintf(stderr, "Error: %s\n", v); return NULL;}
+ExprAST* Error(const char* v) {printf("Error: %s\n", v); return NULL;}
 PrototypeAST* ErrorP(const char* v) {Error(v); return NULL;}
 FunctionAST* ErrorF(const char* v) {Error(v); return NULL;}
 
-static ExprAST* ParseExpression();
+ExprAST* ParseExpression();
 
-static ExprAST* ParseIdentifierExpr() { /// identifierexpr ::= identifier ( '(' expression* ')' )?
+ExprAST* ParseIdentifierExpr() { /// identifierexpr ::= identifier ( '(' expression* ')' )?
 	string tok = IdentifierStr;
 	
 	getNextToken();  // eat identifier.
@@ -180,15 +190,15 @@ static ExprAST* ParseIdentifierExpr() { /// identifierexpr ::= identifier ( '(' 
 	getNextToken();
 	
 	return new CallExprAST(tok, args);}
-static ExprAST* ParseNumberExpr() {ExprAST* r = new NumberExprAST(NumVal); getNextToken(); return r;} /// numberexpr ::= number
-static ExprAST* ParseParenExpr() { /// parenexpr ::= '(' expression ')'
+ExprAST* ParseNumberExpr() {ExprAST* r = new NumberExprAST(NumVal); getNextToken(); return r;} /// numberexpr ::= number
+ExprAST* ParseParenExpr() { /// parenexpr ::= '(' expression ')'
 	getNextToken();  // eat (.
 	ExprAST* r = ParseExpression();
 	if (!r) return NULL;
 	if (cur_tok != ')') return Error("expected ')'");
 	getNextToken();  // eat ).
 	return r;}
-static ExprAST* ParseIfExpr() { /// ifexpr ::= 'if' expression 'then' expression 'else' expression
+ExprAST* ParseIfExpr() { /// ifexpr ::= 'if' expression 'then' expression 'else' expression
 	getNextToken();  // eat the if.
 	ExprAST* cond = ParseExpression(); if (!cond) return NULL;
 	if (cur_tok != tok_then) return Error("expected then");
@@ -198,7 +208,7 @@ static ExprAST* ParseIfExpr() { /// ifexpr ::= 'if' expression 'then' expression
 	getNextToken();
 	ExprAST* else_ = ParseExpression(); if (!else_) return NULL;
 	return new IfExprAST(cond, then, else_);}
-static ExprAST* ParseForExpr() { /// forexpr ::= 'for' identifier '=' expr ',' expr (',' expr)? 'in' expression
+ExprAST* ParseForExpr() { /// forexpr ::= 'for' identifier '=' expr ',' expr (',' expr)? 'in' expression
 	getNextToken();  // eat the for.
 
 	if (cur_tok != tok_identifier) return Error("expected identifier after for");
@@ -225,7 +235,7 @@ static ExprAST* ParseForExpr() { /// forexpr ::= 'for' identifier '=' expr ',' e
 	ExprAST* body = ParseExpression(); if (!body) return NULL;
 
 	return new ForExprAST(tok, start, end, step, body);}
-static ExprAST* ParseVarExpr() { /// varexpr ::= 'var' identifier ('=' expression)? (',' identifier ('=' expression)?)* 'in' expression
+ExprAST* ParseVarExpr() { /// varexpr ::= 'var' identifier ('=' expression)? (',' identifier ('=' expression)?)* 'in' expression
 	getNextToken();  // eat the var.
 
 	vector<pair<string, ExprAST*> > var_names;
@@ -258,7 +268,7 @@ static ExprAST* ParseVarExpr() { /// varexpr ::= 'var' identifier ('=' expressio
 	if (!Body) return NULL;
 	
 	return new VarExprAST(var_names, Body);}
-static ExprAST* ParsePrimary() { /// primary ::= identifierexpr | numberexpr | parenexpr | ifexpr | forexpr | varexpr
+ExprAST* ParsePrimary() { /// primary ::= identifierexpr | numberexpr | parenexpr | ifexpr | forexpr | varexpr
 	switch (cur_tok) {
 		default:             return Error("unknown token when expecting an expression");
 		case tok_identifier: return ParseIdentifierExpr();
@@ -268,7 +278,7 @@ static ExprAST* ParsePrimary() { /// primary ::= identifierexpr | numberexpr | p
 		case tok_for:        return ParseForExpr();
 		case tok_var:        return ParseVarExpr();
 		}}
-static ExprAST* ParseUnary() { /// unary ::= primary | ( '!' unary )
+ExprAST* ParseUnary() { /// unary ::= primary | ( '!' unary )
 	// If the current token is not an operator, it must be a primary expr.
 	if (!isascii(cur_tok) || cur_tok == '(' || cur_tok == ',')
 		return ParsePrimary();
@@ -279,7 +289,7 @@ static ExprAST* ParseUnary() { /// unary ::= primary | ( '!' unary )
 	if (ExprAST* Operand = ParseUnary())
 		return new UnaryExprAST(Opc, Operand);
 	return NULL;}
-static ExprAST* ParseBinOpRHS(int ExprPrec, ExprAST* LHS) { /// binoprhs ::= ('+' unary)*
+ExprAST* ParseBinOpRHS(int ExprPrec, ExprAST* LHS) { /// binoprhs ::= ('+' unary)*
 	// If this is a binop, find its precedence.
 	while (1) {
 		int TokPrec = get_tok_precedence();
@@ -304,8 +314,8 @@ static ExprAST* ParseBinOpRHS(int ExprPrec, ExprAST* LHS) { /// binoprhs ::= ('+
 		// Merge LHS/RHS.
 		LHS = new BinaryExprAST(BinOp, LHS, RHS);
 	}}
-static ExprAST* ParseExpression() {ExprAST* LHS = ParseUnary(); return LHS? ParseBinOpRHS(NULL, LHS) : NULL;} /// expression ::= unary binoprhs
-static PrototypeAST* ParsePrototype() { /// prototype ::= ( id '(' id* ')' ) | ( binary LETTER number? (id, id) ) | ( unary LETTER (id) )
+ExprAST* ParseExpression() {ExprAST* LHS = ParseUnary(); return LHS? ParseBinOpRHS(NULL, LHS) : NULL;} /// expression ::= unary binoprhs
+PrototypeAST* ParsePrototype() { /// prototype ::= ( id '(' id* ')' ) | ( binary LETTER number? (id, id) ) | ( unary LETTER (id) )
 	string FnName;
 	
 	unsigned Kind = 0; // 0 = identifier, 1 = unary, 2 = binary.
@@ -360,28 +370,28 @@ static PrototypeAST* ParsePrototype() { /// prototype ::= ( id '(' id* ')' ) | (
 	if (Kind && ArgNames.size() != Kind) return ErrorP("Invalid number of operands for operator");
 	
 	return new PrototypeAST(FnName, ArgNames, Kind != 0, BinaryPrecedence);}
-static FunctionAST* ParseDefinition() { /// definition ::= 'def' prototype expression
+FunctionAST* ParseDefinition() { /// definition ::= 'def' prototype expression
 	getNextToken();  // eat def.
 	PrototypeAST* Proto = ParsePrototype();
 	if (!Proto) return NULL;
 	if (ExprAST* E = ParseExpression()) return new FunctionAST(Proto, E);
 	return NULL;}
-static FunctionAST* ParseTopLevelExpr() { /// toplevelexpr ::= expression
+FunctionAST* ParseTopLevelExpr() { /// toplevelexpr ::= expression
 	if (ExprAST* E = ParseExpression()) {PrototypeAST* Proto = new PrototypeAST("", vector<string>()); return new FunctionAST(Proto, E);}
 	else return NULL;}
-static PrototypeAST* ParseExtern() {getNextToken(); return ParsePrototype();} /// external ::= 'extern' prototype
+PrototypeAST* ParseExtern() {getNextToken(); return ParsePrototype();} /// external ::= 'extern' prototype
 
 //===--------------------------------------------===// Code Generation //===--------------------------------------------===//
 
-static llvm::Module* module;
-static llvm::IRBuilder<> Builder(llvm::getGlobalContext());
-static map<string, llvm::AllocaInst*> NamedValues;
-static llvm::FunctionPassManager* fpm;
+llvm::Module* module;
+llvm::IRBuilder<> Builder(llvm::getGlobalContext());
+map<string, llvm::AllocaInst*> NamedValues;
+llvm::FunctionPassManager* fpm;
 
 llvm::Value* ErrorV(const char* Str) {Error(Str); return NULL;}
 
 /// CreateEntryBlockAlloca - Create an alloca instruction in the entry block of the function.  This is used for mutable variables etc.
-static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* TheFunction, const string &var_name) {
+llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* TheFunction, const string &var_name) {
 	llvm::IRBuilder<> TmpB(&TheFunction->getEntryBlock(), TheFunction->getEntryBlock().begin());
 	return TmpB.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()), 0, var_name.c_str());}
 
@@ -691,100 +701,72 @@ llvm::Function* FunctionAST::emit() {
 
 //===--------------------------------------------===// Top-Level parsing and JIT Driver //===--------------------------------------------===//
 
-static llvm::ExecutionEngine* TheExecutionEngine;
-
-static void HandleDefinition() {
-	if (FunctionAST* F = ParseDefinition()) {
-		if (llvm::Function* LF = F->emit()) {fprintf(stderr, "Read function definition:"); LF->dump();}
+void HandleDefinition() {
+	if (FunctionAST* v = ParseDefinition()) {
+		if (llvm::Function* vc = v->emit()) {printf("Read function definition:"); vc->dump();}
 	} else getNextToken(); // Skip token for error recovery.
 	}
-static void HandleExtern() {
+void HandleExtern() {
 	if (PrototypeAST* P = ParseExtern()) {
-		if (llvm::Function* F = P->emit()) {fprintf(stderr, "Read extern: "); F->dump();}
+		if (llvm::Function* F = P->emit()) {printf("Read extern: "); F->dump();}
 	} else getNextToken(); // Skip token for error recovery.
 	}
-static void HandleTopLevelExpression() {
+void HandleTopLevelExpression(llvm::ExecutionEngine* engine) {
 	// Evaluate a top-level expression into an anonymous function.
 	if (FunctionAST* F = ParseTopLevelExpr()) {
 		if (llvm::Function* LF = F->emit()) {
 			// JIT the function, returning a function pointer.
-			void* FPtr = TheExecutionEngine->getPointerToFunction(LF);
-			
+			void* f = engine->getPointerToFunction(LF);
 			// Cast it to the right type (takes no arguments, returns a double) so we can call it as a native function.
-			double (*FP)() = (double (*)())(intptr_t)FPtr;
-			fprintf(stderr, "Evaluated to %f\n", FP());
+			double (*fc)() = (double (*)())(intptr_t)f;
+			printf("Evaluated to %f\n", fc());
 		}
 	} else getNextToken(); // Skip token for error recovery.
 	}
 
 /// top ::= definition | external | expression | ';'
-static void MainLoop() {
-	while (1) {
-		fprintf(stderr, "ready> ");
+void MainLoop(llvm::ExecutionEngine* engine) {
+	cur_tok = ';';
+	for(;;){
+		printf("ready> ");
 		switch (cur_tok) {
 			case tok_eof:    return;
 			case ';':        getNextToken(); break;  // ignore top-level semicolons.
 			case tok_def:    HandleDefinition(); break;
 			case tok_extern: HandleExtern(); break;
-			default:         HandleTopLevelExpression(); break;
+			default:         HandleTopLevelExpression(engine); break;
 		}
 	}
 	}
 
-//===--------------------------------------------===// Main driver code. //===--------------------------------------------===//
+//===--------------------------------------------===// main //===--------------------------------------------===//
 
 int main() {
-	llvm::InitializeNativeTarget();
-	llvm::LLVMContext &Context = llvm::getGlobalContext();
-
-	// Install standard binary operators.
-	// 1 is lowest precedence.
+	// Install standard binary operators. (1 is lowest precedence.)
 	binop_precedence['='] = 2;
 	binop_precedence['<'] = 10;
 	binop_precedence['+'] = 20;
 	binop_precedence['-'] = 20;
 	binop_precedence['*'] = 40;  // highest.
 
-	// Prime the first token.
-	fprintf(stderr, "ready> ");
-	getNextToken();
-
+	llvm::InitializeNativeTarget();
 	// Make the module, which holds all the code.
-	module = new llvm::Module("hey you", Context);
+	module = new llvm::Module("module of primacy",llvm::getGlobalContext());
 
 	// Create the JIT.  This takes ownership of the module.
-	string ErrStr;
-	TheExecutionEngine = llvm::EngineBuilder(module).setErrorStr(&ErrStr).create();
-	if (!TheExecutionEngine) {fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str()); exit(1);}
+	llvm::ExecutionEngine* engine = llvm_build_engine(module);
 
-	llvm::FunctionPassManager OurFPM(module);
+	llvm::FunctionPassManager t(module);
+	t.add(new llvm::DataLayout(*engine->getDataLayout())); // Set up the optimizer pipeline.  Start with registering info about how the target lays out t.ructures.
+	t.add(llvm::createBasicAliasAnalysisPass()); // Provide basic AliasAnalysis support for GVN.
+	t.add(llvm::createPromoteMemoryToRegisterPass()); // Promote allocas to registers.
+	t.add(llvm::createInstructionCombiningPass()); // Do simple "peephole" optimizations and bit-twiddling optzns.
+	t.add(llvm::createReassociatePass()); // Reassociate expressions.
+	t.add(llvm::createGVNPass()); // Eliminate Common SubExpressions.
+	t.add(llvm::createCFGSimplificationPass()); // Simplify the control flow graph (deleting unreachable blocks, etc).
+	t.doInitialization();
+	fpm = &t;
 
-	// Set up the optimizer pipeline.  Start with registering info about how the target lays out data structures.
-	OurFPM.add(new llvm::DataLayout(*TheExecutionEngine->getDataLayout()));
-	// Provide basic AliasAnalysis support for GVN.
-	OurFPM.add(llvm::createBasicAliasAnalysisPass());
-	// Promote allocas to registers.
-	OurFPM.add(llvm::createPromoteMemoryToRegisterPass());
-	// Do simple "peephole" optimizations and bit-twiddling optzns.
-	OurFPM.add(llvm::createInstructionCombiningPass());
-	// Reassociate expressions.
-	OurFPM.add(llvm::createReassociatePass());
-	// Eliminate Common SubExpressions.
-	OurFPM.add(llvm::createGVNPass());
-	// Simplify the control flow graph (deleting unreachable blocks, etc).
-	OurFPM.add(llvm::createCFGSimplificationPass());
-
-	OurFPM.doInitialization();
-
-	// Set the global so the code gen can use this.
-	fpm = &OurFPM;
-
-	// Run the main "interpreter loop" now.
-	MainLoop();
-
-	fpm = NULL;
-
-	// Print out all of the generated code.
+	MainLoop(engine); // the main "interpreter loop"
 	module->dump();
-
 	return 0;}
