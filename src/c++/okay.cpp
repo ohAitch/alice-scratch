@@ -25,87 +25,93 @@ exception err(const string& v) {return runtime_error(v);}
 
 //===--------------------------------------------===// llvm utils //===--------------------------------------------===//
 
-llvm::ExecutionEngine* llvm_build_engine(llvm::Module* module) {
-	string t; llvm::ExecutionEngine* r = llvm::EngineBuilder(module).setErrorStr(&t).create(); if (!r) throw err(t); return r;}
-// create an alloca instruction in the entry block of the function . this is used for mutable variables etc.
-llvm::AllocaInst* create_entry_block_alloca(llvm::Function* f, const string &var_name) {
-	llvm::IRBuilder<> t(&f->getEntryBlock(), f->getEntryBlock().begin());
-	return t.CreateAlloca(llvm::Type::getDoubleTy(llvm::getGlobalContext()), 0, var_name.c_str());}
+llvm::LLVMContext& CTX = llvm::getGlobalContext();
 
+namespace llvm {
+
+// create an alloca instruction in the entry block of the function . this is used for mutable variables etc.
+llvm::AllocaInst* mk_entry_block_alloca(llvm::Function* f, const string &var_name) {
+	return llvm::IRBuilder<>(&f->getEntryBlock(), f->getEntryBlock().begin()).CreateAlloca(
+		llvm::Type::getDoubleTy(CTX), 0, var_name.c_str());}
+
+llvm::ExecutionEngine* mk_engine(llvm::Module* module) {
+	string t; llvm::ExecutionEngine* r = llvm::EngineBuilder(module).setErrorStr(&t).create(); if (!r) throw err(t); return r;}
+void mk_module(llvm::Module*& m, llvm::ExecutionEngine*& ee, llvm::FunctionPassManager*& fpm) {
+	llvm::InitializeNativeTarget();
+	m = new llvm::Module("module of primacy",CTX); // Make the module, which holds all the code.
+	ee = llvm::mk_engine(m); // Create the JIT.  This takes ownership of the module.d
+	fpm = new llvm::FunctionPassManager(m);
+	fpm->add(new llvm::DataLayout(*ee->getDataLayout())); // Set up the optimizer pipeline.  Start with registering info about how the target lays out t.ructures.
+	fpm->add(llvm::createBasicAliasAnalysisPass()); // Provide basic AliasAnalysis support for GVN.
+	fpm->add(llvm::createPromoteMemoryToRegisterPass()); // Promote allocas to registers.
+	fpm->add(llvm::createInstructionCombiningPass()); // Do simple "peephole" optimizations and bit-twiddling optzns.
+	fpm->add(llvm::createReassociatePass()); // Reassociate expressions.
+	fpm->add(llvm::createGVNPass()); // Eliminate Common SubExpressions.
+	fpm->add(llvm::createCFGSimplificationPass()); // Simplify the control flow graph (deleting unreachable blocks, etc).
+	fpm->doInitialization();
+	}
+
+}
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
 // http://llvm.org/docs/LangRef.html
 
-llvm::Module* module;
-llvm::IRBuilder<> Builder(llvm::getGlobalContext());
-llvm::FunctionPassManager* fpm;
-
 double printd(double v) {printf("%f\n", v); return v;}
 
+llvm::Module* module;
+llvm::ExecutionEngine* engine;
+llvm::FunctionPassManager* optimizer;
+
 int main() {
-	llvm::InitializeNativeTarget();
-	// Make the module, which holds all the code.
-	module = new llvm::Module("module of primacy",llvm::getGlobalContext());
-	// Create the JIT.  This takes ownership of the module.
-	llvm::ExecutionEngine* engine = llvm_build_engine(module);
-	// fpm !
-	llvm::FunctionPassManager t(module);
-	t.add(new llvm::DataLayout(*engine->getDataLayout())); // Set up the optimizer pipeline.  Start with registering info about how the target lays out t.ructures.
-	t.add(llvm::createBasicAliasAnalysisPass()); // Provide basic AliasAnalysis support for GVN.
-	t.add(llvm::createPromoteMemoryToRegisterPass()); // Promote allocas to registers.
-	t.add(llvm::createInstructionCombiningPass()); // Do simple "peephole" optimizations and bit-twiddling optzns.
-	t.add(llvm::createReassociatePass()); // Reassociate expressions.
-	t.add(llvm::createGVNPass()); // Eliminate Common SubExpressions.
-	t.add(llvm::createCFGSimplificationPass()); // Simplify the control flow graph (deleting unreachable blocks, etc).
-	t.doInitialization();
-	fpm = &t;
+	llvm::mk_module(module,engine,optimizer);
 
 	{ // q = fn(a,b) a+b
+		if (llvm::Function* f = module->getFunction("q")) f->eraseFromParent();
+
 		vector<string> args; args.push_back("a"); args.push_back("b");
 		// Make the function type:  double(double,double) etc.
-		vector<llvm::Type*> doubles(args.size(), llvm::Type::getDoubleTy(llvm::getGlobalContext()));
-		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false);
+		vector<llvm::Type*> doubles(args.size(), llvm::Type::getDoubleTy(CTX));
+		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(CTX), doubles, false);
 		llvm::Function* f = llvm::Function::Create(ftype, llvm::Function::ExternalLinkage, "q", module);
 		// Set names for all arguments.
 		{unsigned i = 0;
 		for (llvm::Function::arg_iterator v = f->arg_begin(); i != args.size(); ++v, ++i)
 			v->setName(args[i]);}
 		// Create a new basic block to start insertion into.
-		llvm::BasicBlock* block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", f);
-		Builder.SetInsertPoint(block);
+		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
+		llvm::IRBuilder<> builder(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
 		//void PrototypeAST::CreateArgumentAllocas(llvm::Function* F) {
 			llvm::Function::arg_iterator iter = f->arg_begin();
-			llvm::AllocaInst* alloca_a = create_entry_block_alloca(f, args[0]);
-			llvm::AllocaInst* alloca_b = create_entry_block_alloca(f, args[1]);
-			Builder.CreateStore(iter, alloca_a); ++iter;
-			Builder.CreateStore(iter, alloca_b);
+			llvm::AllocaInst* alloca_a = llvm::mk_entry_block_alloca(f, args[0]);
+			llvm::AllocaInst* alloca_b = llvm::mk_entry_block_alloca(f, args[1]);
+			builder.CreateStore(iter, alloca_a); ++iter;
+			builder.CreateStore(iter, alloca_b);
 			//llvm::Function::arg_iterator iter = f->arg_begin();
 			//for (unsigned i = 0, e = args.size(); i != e; ++i, ++iter) {
 			//	// Create an alloca for this variable.
-			//	llvm::AllocaInst* alloca = create_entry_block_alloca(f, args[i]);
+			//	llvm::AllocaInst* alloca = llvm::mk_entry_block_alloca(f, args[i]);
 			//	// Store the initial value into the alloca.
-			//	Builder.CreateStore(iter, alloca);
+			//	builder.CreateStore(iter, alloca);
 			//	// Add arguments to variable symbol table.
 			//	//NamedValues[args[i]] = alloca;
 			//}
 		//llvm::Value* ret_val = body->emit();
 		llvm::Value* ret_val; {
-			llvm::Value* l = Builder.CreateLoad(alloca_a, "a");
-			llvm::Value* r = Builder.CreateLoad(alloca_b, "b");
-			ret_val = Builder.CreateFAdd(l, r, "addtmp");}
+			llvm::Value* l = builder.CreateLoad(alloca_a, "a");
+			llvm::Value* r = builder.CreateLoad(alloca_b, "b");
+			ret_val = builder.CreateFAdd(l, r, "addtmp");}
 		// Finish off the function.
-		Builder.CreateRet(ret_val);
+		builder.CreateRet(ret_val);
 		// Validate the generated code, checking for consistency.
 		llvm::verifyFunction(*f);
 		// Optimize the function.
-		fpm->run(*f);
+		optimizer->run(*f);
 	}
 	{ // print = builtin("printd")
-		vector<llvm::Type*> doubles(1,llvm::Type::getDoubleTy(llvm::getGlobalContext()));
-		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false);
+		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(CTX), vector<llvm::Type*>(1,llvm::Type::getDoubleTy(CTX)), false);
 		llvm::Function *f = llvm::Function::Create(ftype, llvm::Function::ExternalLinkage, "print", module);
 		engine->updateGlobalMapping(f,(void*)printd);
 	}
@@ -113,13 +119,13 @@ int main() {
 		vector<string> args;
 		// Make the function type:  double(double,double) etc.
 		vector<llvm::Type*> doubles;
-		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm::getGlobalContext()), doubles, false);
+		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(CTX), doubles, false);
 		llvm::Function* f = llvm::Function::Create(ftype, llvm::Function::ExternalLinkage, "", module);
 		// Set names for all arguments.
 		// noop!
 		// Create a new basic block to start insertion into.
-		llvm::BasicBlock* block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", f);
-		Builder.SetInsertPoint(block);
+		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
+		llvm::IRBuilder<> builder(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
@@ -127,9 +133,9 @@ int main() {
 		//	llvm::Function::arg_iterator iter = f->arg_begin();
 		//	for (unsigned i = 0, e = args.size(); i != e; ++i, ++iter) {
 		//		// Create an alloca for this variable.
-		//		llvm::AllocaInst* alloca = create_entry_block_alloca(f, args[i]);
+		//		llvm::AllocaInst* alloca = llvm::mk_entry_block_alloca(f, args[i]);
 		//		// Store the initial value into the alloca.
-		//		Builder.CreateStore(iter, alloca);
+		//		builder.CreateStore(iter, alloca);
 		//		// Add arguments to variable symbol table.
 		//		//NamedValues[args[i]] = alloca;
 		//	}
@@ -137,22 +143,125 @@ int main() {
 		llvm::Value* qval; {
 			llvm::Function* f = module->getFunction("q");
 			vector<llvm::Value*> args;
-			args.push_back(llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(1.0)));
-			args.push_back(llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(2.4)));
-			qval = Builder.CreateCall(f,args,"calltmp");}
+			args.push_back(llvm::ConstantFP::get(CTX, llvm::APFloat(1.0)));
+			args.push_back(llvm::ConstantFP::get(CTX, llvm::APFloat(2.4)));
+			qval = builder.CreateCall(f,args,"calltmp");}
 		llvm::Value* printval; {
 			llvm::Function* f = module->getFunction("print");
 			vector<llvm::Value*> args; args.push_back(qval);
-			printval = Builder.CreateCall(f,args,"calltmp");}
+			printval = builder.CreateCall(f,args,"calltmp");}
 		//llvm::Value* ret_val = body->emit();
-		//llvm::Value* ret_val = llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(1.0));
+		//llvm::Value* ret_val = llvm::ConstantFP::get(CTX, llvm::APFloat(1.0));
 		llvm::Value* ret_val = printval;
 		// Finish off the function.
-		Builder.CreateRet(ret_val);
+		builder.CreateRet(ret_val);
 		// Validate the generated code, checking for consistency.
 		llvm::verifyFunction(*f);
 		// Optimize the function.
-		fpm->run(*f);
+		optimizer->run(*f);
+
+		// JIT the function, returning a function pointer.
+		void* fcv = engine->getPointerToFunction(f);
+		// Cast it to the right type (takes no arguments, returns a double) so we can call it as a native function.
+		double (*fc)() = (double (*)())(intptr_t)fcv;
+		printf("Evaluated to %f\n", fc());
+	}
+	{ // q = fn(a,b,c) a*b-c
+		if (llvm::Function* f = module->getFunction("q")) f->eraseFromParent();
+
+		vector<string> args; args.push_back("a"); args.push_back("b"); args.push_back("c");
+		// Make the function type:  double(double,double) etc.
+		vector<llvm::Type*> doubles(args.size(), llvm::Type::getDoubleTy(CTX));
+		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(CTX), doubles, false);
+		llvm::Function* f = llvm::Function::Create(ftype, llvm::Function::ExternalLinkage, "q", module);
+		// Set names for all arguments.
+		{unsigned i = 0;
+		for (llvm::Function::arg_iterator v = f->arg_begin(); i != args.size(); ++v, ++i)
+			v->setName(args[i]);}
+		// Create a new basic block to start insertion into.
+		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
+		llvm::IRBuilder<> builder(block);
+		// Add all arguments to the symbol table and create their allocas.
+		//proto->CreateArgumentAllocas(f);
+		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
+		//void PrototypeAST::CreateArgumentAllocas(llvm::Function* F) {
+			llvm::Function::arg_iterator iter = f->arg_begin();
+			llvm::AllocaInst* alloca_a = llvm::mk_entry_block_alloca(f, args[0]);
+			llvm::AllocaInst* alloca_b = llvm::mk_entry_block_alloca(f, args[1]);
+			llvm::AllocaInst* alloca_c = llvm::mk_entry_block_alloca(f, args[2]);
+			builder.CreateStore(iter, alloca_a); ++iter;
+			builder.CreateStore(iter, alloca_b); ++iter;
+			builder.CreateStore(iter, alloca_c);
+			//llvm::Function::arg_iterator iter = f->arg_begin();
+			//for (unsigned i = 0, e = args.size(); i != e; ++i, ++iter) {
+			//	// Create an alloca for this variable.
+			//	llvm::AllocaInst* alloca = llvm::mk_entry_block_alloca(f, args[i]);
+			//	// Store the initial value into the alloca.
+			//	builder.CreateStore(iter, alloca);
+			//	// Add arguments to variable symbol table.
+			//	//NamedValues[args[i]] = alloca;
+			//}
+		//llvm::Value* ret_val = body->emit();
+		llvm::Value* ret_val; {
+			llvm::Value* l = builder.CreateLoad(alloca_a, "a");
+			llvm::Value* r = builder.CreateLoad(alloca_b, "b");
+			ret_val = builder.CreateFMul(l, r, "multmp");}
+			{
+			llvm::Value* l = ret_val;
+			llvm::Value* r = builder.CreateLoad(alloca_c, "c");
+			ret_val = builder.CreateFSub(l, r, "subtmp");}
+		// Finish off the function.
+		builder.CreateRet(ret_val);
+		// Validate the generated code, checking for consistency.
+		llvm::verifyFunction(*f);
+		// Optimize the function.
+		optimizer->run(*f);
+	}
+	{ // print(q(1.1,2.4,9))
+		vector<string> args;
+		// Make the function type:  double(double,double) etc.
+		vector<llvm::Type*> doubles;
+		llvm::FunctionType* ftype = llvm::FunctionType::get(llvm::Type::getDoubleTy(CTX), doubles, false);
+		llvm::Function* f = llvm::Function::Create(ftype, llvm::Function::ExternalLinkage, "", module);
+		// Set names for all arguments.
+		// noop!
+		// Create a new basic block to start insertion into.
+		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
+		llvm::IRBuilder<> builder(block);
+		// Add all arguments to the symbol table and create their allocas.
+		//proto->CreateArgumentAllocas(f);
+		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
+		//void PrototypeAST::CreateArgumentAllocas(llvm::Function* F) {
+		//	llvm::Function::arg_iterator iter = f->arg_begin();
+		//	for (unsigned i = 0, e = args.size(); i != e; ++i, ++iter) {
+		//		// Create an alloca for this variable.
+		//		llvm::AllocaInst* alloca = llvm::mk_entry_block_alloca(f, args[i]);
+		//		// Store the initial value into the alloca.
+		//		builder.CreateStore(iter, alloca);
+		//		// Add arguments to variable symbol table.
+		//		//NamedValues[args[i]] = alloca;
+		//	}
+		// ??
+		llvm::Value* qval; {
+			llvm::Function* f = module->getFunction("q");
+			vector<llvm::Value*> args;
+			args.push_back(llvm::ConstantFP::get(CTX, llvm::APFloat(1.1)));
+			args.push_back(llvm::ConstantFP::get(CTX, llvm::APFloat(2.4)));
+			args.push_back(llvm::ConstantFP::get(CTX, llvm::APFloat(9.0)));
+			qval = builder.CreateCall(f,args,"calltmp");}
+		llvm::Value* printval; {
+			llvm::Function* f = module->getFunction("print");
+			vector<llvm::Value*> args; args.push_back(qval);
+			printval = builder.CreateCall(f,args,"calltmp");}
+		//llvm::Value* ret_val = body->emit();
+		//llvm::Value* ret_val = llvm::ConstantFP::get(CTX, llvm::APFloat(1.0));
+		llvm::Value* ret_val = printval;
+		// Finish off the function.
+		builder.CreateRet(ret_val);
+		// Validate the generated code, checking for consistency.
+		llvm::verifyFunction(*f);
+		// Optimize the function.
+		optimizer->run(*f);
 
 		// JIT the function, returning a function pointer.
 		void* fcv = engine->getPointerToFunction(f);
