@@ -23,7 +23,7 @@ namespace std {
 }
 
 //===--------------------------------------------===// problem 14 //===--------------------------------------------===//
-#ifdef NOT_DEF
+/*
 
 namespace collatz {
 	i64 next(i64 v) {return v % 2 == 0? v/2 : 3*v+1;}
@@ -71,30 +71,32 @@ namespace cubic_permutations {
 	i64 solve() {return solve(5,12);}
 }
 
-#endif
 //===--------------------------------------------===// problem 78 //===--------------------------------------------===//
 
-#include "bigint.h"
 namespace coin_partitions {
-	#define MEMO_SIZE 3000
-	int factor;
-	int memo[MEMO_SIZE][MEMO_SIZE];
-	int p(int n, int lim) {
-		#define R int r=1; for (int i=1;i<lim;i++) r += p(n-i,min(n-i,i));
-		if (n < MEMO_SIZE) {if (memo[n][lim] != 0) return memo[n][lim]; R; return (memo[n][lim] = r % factor);}
-		else {R; return r % factor;}}
-	int p(int n) {return p(n,n);}
-	int solve(int factor_) {
-		factor = factor_;
-		for (int n=1;;n++) {int t = p(n); pr(n S t); if (t % factor == 0) return n;}
-	}
-	i64 solve() {return solve(1000000);}
+	i64 solve(int factor, int buf_size) {
+		int memo[buf_size];
+		int init_buf[buf_size];
+
+		for (int i=0;i<buf_size;i++) init_buf[i] = 1;
+		for (int lim=2;lim<buf_size;lim++) {
+			for (int n=lim;n<buf_size;n++)
+				{init_buf[n] += init_buf[n-lim]; init_buf[n] %= factor;}
+			memo[lim] = init_buf[lim];
+			if (lim % (buf_size/20) == 0) pr("|" S lim S memo[lim]);
+			if (memo[lim] == 0) return lim;
+		}
+
+		return -1;}
+	i64 solve() {return solve(1000000,100000);}
 }
+
+*/
+//===--------------------------------------------===// problem  //===--------------------------------------------===//
 
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
 int main() {
 	pr("start");
-	pr(coin_partitions::solve(10000));
-
+	pr(exponential_cmp::solve());
 	return 0;}
