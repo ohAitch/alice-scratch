@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <bitset>
 
 using namespace std;
 
@@ -29,6 +30,11 @@ namespace std {
 //===--------------------------------------------===// common //===--------------------------------------------===//
 
 #define SQ(v) ((v)*(v))
+#define to(n,b) for (i64 n=0;n<(b);n++)
+#define to_(n,b) i64 lim_##n = b; for (i64 n=0;n<lim_##n;n++)
+#define tof(n,a,b) for (i64 n=a;n<(b);n++)
+#define tof_(n,a,b) i64 lim_##n = b; for (i64 n=a;n<lim_##n;n++)
+
 int gcd(int a, int b) {
 	while (b != 0) {int t = a % b; a = b; b = t;}
 	return a;}
@@ -122,14 +128,24 @@ int ipow(int a,int b) {return (int)ipow((i64)a,(i64)b);}
 //#include "bigint.h"
 //InfInt ipow(InfInt a, InfInt b) {InfInt r=1; for (InfInt _=0;_<b;_++) r*=a; return r;}
 void ceilE(int &l, int base) {l = (l-1)/base*base+base;}
-void set_bit  (i64 &l, int i) {l |=   1LL << i ;}
-void clear_bit(i64 &l, int i) {l &= ~(1LL << i);}
+template<int l> string bin(int i) {bitset<l> t(i); return t.to_string();}
+template<typename T> T    bit      (T &l, int i) {return (l >> i) & T(1);}
+template<typename T> void set_bit  (T &l, int i) {l |=   T(1) << i ;}
+template<typename T> void clear_bit(T &l, int i) {l &= ~(T(1) << i);}
 
-vector<int> primes;
 vector<i64> is_primes;
-void sieve();
-bool is_prime(int n) {if (n/64 < is_primes.size()) return (is_primes[n/64] >> (n%64)) & 1; else {sieve(); return is_prime(n);}}
-int prime(int n) {if (n < primes.size()) return primes[n-1]; else {sieve(); return prime(n);}}
+vector<int> primes;
+vector<int> primes_inv;
+void sieve(); int prime(int n);
+bool is_prime(int n) {if (!(n/64 < is_primes.size())) sieve(); return (is_primes[n/64] >> (n%64)) & 1;}
+int prime_inv(int n) {
+	while (!(n < primes_inv.size())) {tof_(i,primes_inv.size(),primes_inv.size()*2) {primes_inv.push_back(primes_inv.at(i-1)+(is_prime(i)?1:0));}}
+	return primes_inv[n];}
+bool is_prime_mod(i64 n) {if(n<4) return n>=2; tof_(i,1,prime_inv((int)sqrt(n))) if (n%prime(i)==0) return false; return true;}
+bool is_prime_slow(i64 n) {
+	if(n<4) return n>=2; if (n%2==0||n%3==0) return false;
+	i64 lim = (i64)sqrt(n); for (i64 i=5;i<=lim;i+=6) if (n%i==0 || n%(i+2)==0) return false; return true;}
+int prime(int n) {if (!(n < primes.size())) sieve(); return primes[n-1];}
 void sieve(int lim) {
 	ceilE(lim,64);
 	int prev_lim = is_primes.size()*64;
@@ -212,6 +228,21 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		return maxv;}
 	i64 solve() {return solve(1000000);}
 	*/}
+/*===---  44 ---===*/ namespace third_diagonal {
+	int P(int n) {return n*(3*n-1)/2;}
+	bool is_p(int n) {int t = 1 + 24*n; return sqv(t) && (int)(sqrt(t)+0.5) % 6 == 5;}
+	i64 solve() {
+		for (int l=1;;l++) {
+			for (int z=1;z<=l;z++) {int L=l-z+1;
+				for (int i=1;i<=L;i++) {
+					int d=z,j=i,k=L-i+1;
+					if (P(k)-P(j)==P(d) && is_p(P(k)+P(j)))
+						pr("yay" S d S j S k S D(P(d)));
+				}
+			}
+		}
+		return 0;}
+	}
 /*===---  62 ---===*/ namespace cubic_permutations {/*
 	bool cmp_0_last(int a,int b) {return a == 0? false : b == 0? true : a<b;}
 	i64 cube(i64 v) {return v*v*v;}
@@ -421,6 +452,40 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		}
 		return r;}
 	*/}
+/*===--- 196 ---===*/ namespace incest {/*
+	i64 tri(i64 v) {return v*(v+1)/2;}
+	i64 s(i64 row) {
+		i64 start=tri(row-1)+1;
+		i64 st[5]; i64 end[5];
+		for (i64 r=-2;r<=2;r++) {st[r+2] = tri(row+r-1)+1; end[r+2] = tri(row+r);}
+		
+		i64 result=0;
+		for (i64 col=0;col<row-1;col++) {
+			#define WIN {result+=i; goto end;}
+			i64 i = col+start;
+			if (col%1000==0) pr("~" S row S col S i S result);
+			if (is_prime_mod(i)) {
+				bool near[5][5];
+				#define near_ near[r+2][c+2]
+				#define nearE near_ = (0 <= c+col && c+col < end[r+2]-st[r+2])? is_prime_mod(st[r+2]+c+col) : 0
+				int cnt=0;
+				for (i64 r=-1;r<=1;r++)
+					for (i64 c=-1;c<=1;c++)
+						if (!(r==0&&c==0))
+							{nearE; if (near_) {cnt++; if (cnt == 2) WIN}}
+				if (cnt == 1)
+					for (i64 r1=-1;r1<=1;r1++)
+						for (i64 c1=-1;c1<=1;c1++)
+							if (near[r1+2][c1+2])
+								for (i64 r2=-1;r2<=1;r2++)
+									for (i64 c2=-1;c2<=1;c2++)
+										if (!(r2==0&&c2==0) && (abs(r1+r2)==2 || abs(c1+c2)==2))
+											{i64 r=r1+r2,c=c1+c2; nearE; if (near_) WIN}
+			}
+		end:;}
+		return result;}
+	i64 solve(int v) {return v == 0? s(5678027) + s(7208785) : s(v);}
+	*/}
 /*===--- 214 ---===*/ namespace fifty_shades_of_totient {/*
 	// misses 357800039 ??
 	bool yes(int n) {for (int i=0;i<25-1;i++) {n = euler_totient(n); if (n == 0) return false;} return n == 1;}
@@ -447,20 +512,47 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 	}
 	int solve() {return solve(15499.0/94744.0);} // 0.16358819555855779785527315713924
 	*/}
+/*===--- 324 ---===*/ namespace evil_dildo {
+	#define b bin<9>
+	int q = 100000007;
+	int tr[512][512]; // transition table {(state,state): ways}
+	void build_tr_y(int state, int st[2]) {
+		bool done=true;
+		to(i,64) to(y,64) {
+			to(j,6) if (bit(y,j) && !bit(i,j)) goto next;
+			int st2[2]; to(z,2) to(x,3) if (bit(i,x+z*3)) {set_bit(st2[z],x+bit(y,x+z*3)*3); set_bit(st2[z],x+bit(y,x+z*3)*3+3);}
+			to(z,2) to(i,9) if (bit(st[z],i) && bit(st2[z],i)) goto next;
+			tr[state][st[1]|st2[1]]++;
+			next:;}
+	}
+	void build_tr_x(int state, int st[2]) {
+		bool done=true;
+		to(i,64) to(x,64) {
+			to(j,6) if (bit(x,j) && !bit(i,j)) goto next;
+			int st2[2]; to(z,2) to(y,3) if (bit(i,y+z*3)) {set_bit(st2[z],bit(x,y+z*3)+y*3); set_bit(st2[z],bit(x,y+z*3)+y*3+1);}
+			to(z,2) to(i,9) if (bit(st[z],i) && bit(st2[z],i)) goto next;
+			{int t[]={st[0]|st2[0],st[1]|st2[1]}; build_tr_y(state, t);}
+			next:;}
+	}
+	void build_tr_z(int st) {to(up,512) {to(z,9) if (bit(st,z) && bit(up,z)) goto next; {int t[]={st|up,up}; build_tr_x(st, t);} next:;}}
+	i64 solve(int e) {
+		to(state,512) {
+			build_tr_z(state);
+			//int t[]={state,0}; brute_build_tr(state,t);
+			to(i,512) pr("-" S b(state) S b(i) S tr[state][i]);
+		}
+		return 0;}
+	}
 /*===-----------===*/ namespace scratch_space {
-	i64 solve() {
-		int c=1,p=0;
-		for (int l=2;;l++) {
-			int w = l*2-1;
-			for (int i=0;i<4;i++) {int v = w*w - (3-i)*(w-1); if (is_prime(v)) p++; else c++;}
-			if (9*p < 1*c) return w;
-			pr("-" S l S 9*p S 1*c);
-		}}
+	i64 solve(int v) {
+
+		return 0;}
 	}
 
 //===--------------------------------------------===// main //===--------------------------------------------===//
 
-int main() {
+int main(int argc, char* argv[]) {
+	primes_inv.push_back(0);
 	pr("start");
-	pr(scratch_space::solve());
+	pr(evil_dildo::solve(argc<2?0:atoi(argv[1])));
 	return 0;}
