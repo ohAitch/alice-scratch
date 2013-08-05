@@ -1,4 +1,5 @@
 def sort(v): v.sort(); return v
+def cat(v): return [v for v in v for v in v]
 
 def naive(groups):
 	r = False
@@ -18,13 +19,16 @@ def solve(grid):
 			if 0 in v:
 				v.clear()
 				v |= set([1,2,3,4,5,6,7,8,9])
+
 	while naive(horiz) or naive(vert) or naive(sq): pass
 
 	r = horiz[0][:3]
-	if len([0 for v in r if len(v) != 1]) != 0: return sq
+	for v in r:
+		if len(v) != 1: return sq
 	r = [v.pop() for v in r]
 	return r[0]*100 + r[1]*10 + r[2]
 
-def e(v): return [len(v) for v in v for v in v if len(v) != 1]
+def solve_all(): return [solve(v[1:]) for v in zip(*(iter([line[:-1] for line in open('sudoku.txt')]),) * 10)]
 
-print sort(e([solve(v[1:]) for v in zip(*(iter([line[:-1] for line in open('sudoku.txt')]),) * 10)][1]))
+#print([v for v in cat(solve_all()[1]) if len(v) != 1])
+print(solve_all()[1])

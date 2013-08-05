@@ -1,1 +1,1 @@
-clang++ -g src/main.cpp -o main.exe
+clang++ src/main.cpp -O1 -o main.exe

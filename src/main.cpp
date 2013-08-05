@@ -14,6 +14,11 @@ using namespace std;
 
 //===--------------------------------------------===// utils //===--------------------------------------------===//
 
+#define macro_dispatch(fn,...) macro_dispatch_(fn,macro_dispatch_cnt(__VA_ARGS__,10,9,8,7,6,5,4,3,2,1))(__VA_ARGS__)
+#define macro_dispatch_cnt(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,n,...) n
+#define macro_dispatch_(fn,n) macro_dispatch__(fn,n)
+#define macro_dispatch__(fn,n) fn ## n
+
 exception err(const string& v) {return runtime_error(v);}
 #define pr(v) cout << v << "\n"
 #define pr_(v) cout << v
@@ -27,17 +32,23 @@ namespace std {
 	template <typename T> void reverse(vector<T> &v) {reverse(v.begin(),v.end());}
 }
 
+#define to(...) macro_dispatch(to,__VA_ARGS__)
+#define to1(n      ) for (i64 n= 0 ;     ;++n   )
+#define to2(n,  l  ) for (i64 n= 0 ;n<(l);++n   )
+#define to3(n,f,l  ) for (i64 n=(f);n<(l);++n   )
+#define to4(n,f,l,u) for (i64 n=(f);n<(l);n+=(u))
+#define to_(...) macro_dispatch(to_,__VA_ARGS__)
+#define to_2(n,  l  ) i64 to__l_##n=(l);                    for (i64 n= 0 ;n<to__l_##n;++n         )
+#define to_3(n,f,l  ) i64 to__l_##n=(l);                    for (i64 n=(f);n<to__l_##n;++n         )
+#define to_4(n,f,l,u) i64 to__l_##n=(l); i64 to__u_##n=(u); for (i64 n=(f);n<to__l_##n;n+=to__u_##n)
+
 //===--------------------------------------------===// common //===--------------------------------------------===//
 
-#define SQ(v) ((v)*(v))
-#define to(n,b) for (i64 n=0;n<(b);n++)
-#define to_(n,b) i64 lim_##n = b; for (i64 n=0;n<lim_##n;n++)
-#define tof(n,a,b) for (i64 n=a;n<(b);n++)
-#define tof_(n,a,b) i64 lim_##n = b; for (i64 n=a;n<lim_##n;n++)
+#include "bigint.h"
+InfInt ipow(InfInt a, int b) {InfInt r=1; to(_,b) r*=a; return r;}
 
-int gcd(int a, int b) {
-	while (b != 0) {int t = a % b; a = b; b = t;}
-	return a;}
+#define SQ(v) ((v)*(v))
+int gcd(int a, int b) {while (b != 0) {int t = a % b; a = b; b = t;} return a;}
 bool coprime(int a, int b) {
 	for(;;){
 		if (!(a %= b)) return b == 1;
@@ -122,13 +133,11 @@ bool fast_square_verify(i64 x) {
 
 	return false;}
 #define sqv fast_square_verify
-i64 ipow(i64 a,i64 b) {i64 r=1; for (i64 _=0;_<b;_++) r*=a; return r;}
+i64 ipow(i64 a,i64 b) {i64 r=1; to(_,b) r*=a; return r;}
 //i64 ipow(i64 a,i64 b) {return (i64)(pow(a,b)+0.5);}
 int ipow(int a,int b) {return (int)ipow((i64)a,(i64)b);}
-//#include "bigint.h"
-//InfInt ipow(InfInt a, InfInt b) {InfInt r=1; for (InfInt _=0;_<b;_++) r*=a; return r;}
 void ceilE(int &l, int base) {l = (l-1)/base*base+base;}
-template<int l> string bin(int i) {bitset<l> t(i); return t.to_string();}
+template<int l> string bin(int v) {bitset<l> t(v); string r = t.to_string(); to(i,l) if (r[i] == '0') r[i] = '.'; return r;}
 template<typename T> T    bit      (T &l, int i) {return (l >> i) & T(1);}
 template<typename T> void set_bit  (T &l, int i) {l |=   T(1) << i ;}
 template<typename T> void clear_bit(T &l, int i) {l &= ~(T(1) << i);}
@@ -139,9 +148,9 @@ vector<int> primes_inv;
 void sieve(); int prime(int n);
 bool is_prime(int n) {if (!(n/64 < is_primes.size())) sieve(); return (is_primes[n/64] >> (n%64)) & 1;}
 int prime_inv(int n) {
-	while (!(n < primes_inv.size())) {tof_(i,primes_inv.size(),primes_inv.size()*2) {primes_inv.push_back(primes_inv.at(i-1)+(is_prime(i)?1:0));}}
+	while (!(n < primes_inv.size())) {to_(i,primes_inv.size(),primes_inv.size()*2) {primes_inv.push_back(primes_inv.at(i-1)+(is_prime(i)?1:0));}}
 	return primes_inv[n];}
-bool is_prime_mod(i64 n) {if(n<4) return n>=2; tof_(i,1,prime_inv((int)sqrt(n))) if (n%prime(i)==0) return false; return true;}
+bool is_prime_mod(i64 n) {if(n<4) return n>=2; to_(i,1,prime_inv((int)sqrt(n))) if (n%prime(i)==0) return false; return true;}
 bool is_prime_slow(i64 n) {
 	if(n<4) return n>=2; if (n%2==0||n%3==0) return false;
 	i64 lim = (i64)sqrt(n); for (i64 i=5;i<=lim;i+=6) if (n%i==0 || n%(i+2)==0) return false; return true;}
@@ -154,9 +163,9 @@ void sieve(int lim) {
 	clear_bit(is_primes[0],1);
 	for (int i=1;i<=(int)sqrt(lim);i++)
 		if (is_prime(i))
-			for (int j=i*i;j<lim;j+=i)
+			to(j,i*i,lim,i)
 				clear_bit(is_primes[j/64],j%64);
-	for (int i=prev_lim+1;i<lim;i++)
+	to(i,prev_lim+1,lim)
 		if (is_prime(i))
 			primes.push_back(i);
 	}
@@ -165,7 +174,7 @@ vector<i64> prime_factors(i64 n) { // list of prime factors
 	vector<i64> r;
 	for (int i=1;;i++) {
 		i64 p = prime(i);
-		for (;;) {
+		for(;;){
 			if (n < p*p) {if (n != 1) r.push_back(n); return r;}
 			else if (n%p == 0) {r.push_back(p); n/=p;}
 			else break;}
@@ -175,7 +184,7 @@ vector<int> prime_factors_group(i64 n) { // {(index by prime's index in primes[i
 	for (int i=1;;i++) {
 		r.push_back(0);
 		i64 p = prime(i);
-		for (;;) {
+		for(;;){
 			if (n == 1) return r;
 			//if (n < p*p) {if (n != 1) {while (r.size() < n) r.push_back(0); r.push_back(1);} return r;}
 			else if (n%p == 0) {r[r.size()-1]++; n/=p;}
@@ -183,12 +192,12 @@ vector<int> prime_factors_group(i64 n) { // {(index by prime's index in primes[i
 	}}
 int count_factors(i64 n) {
 	vector<i64> npf = prime_factors(n);
-	int ncf=1,t=0; for (int i=1;i<npf.size();i++) {t++; if (npf[i-1] != npf[i]) {ncf *= t+1; t = 0;}} ncf *= t+1+1;
+	int ncf=1,t=0; to_(i,1,npf.size()) {t++; if (npf[i-1] != npf[i]) {ncf *= t+1; t = 0;}} ncf *= t+1+1;
 	return ncf;}
 int euler_totient(int n) {
 	//eulerTotient = product . map (\(a,b) -> a^(b-1) * (a-1)) . map (\xs -> (head xs, len xs)) . group . primeFactors
 	//vector<int> f = prime_factors_group(n);
-	//int r=1; for (int i=0;i<f.size();i++) r *= prime(i)
+	//int r=1; to_(i,f.size()) r *= prime(i)
 	if (n<2) return 0;
 	else if (is_prime(n)) return n-1;
 	else if (n%2==0) {int m=n/2; return euler_totient(m) * (m%2==0? 2 : 1);}
@@ -228,7 +237,7 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		return maxv;}
 	i64 solve() {return solve(1000000);}
 	*/}
-/*===---  44 ---===*/ namespace third_diagonal {
+/*===---  44 ---===*/ namespace third_diagonal {/*
 	int P(int n) {return n*(3*n-1)/2;}
 	bool is_p(int n) {int t = 1 + 24*n; return sqv(t) && (int)(sqrt(t)+0.5) % 6 == 5;}
 	i64 solve() {
@@ -242,7 +251,7 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 			}
 		}
 		return 0;}
-	}
+	*/}
 /*===---  62 ---===*/ namespace cubic_permutations {/*
 	bool cmp_0_last(int a,int b) {return a == 0? false : b == 0? true : a<b;}
 	i64 cube(i64 v) {return v*v*v;}
@@ -512,37 +521,44 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 	}
 	int solve() {return solve(15499.0/94744.0);} // 0.16358819555855779785527315713924
 	*/}
-/*===--- 324 ---===*/ namespace evil_dildo {
-	#define b bin<9>
-	int q = 100000007;
-	int tr[512][512]; // transition table {(state,state): ways}
-	void build_tr_y(int state, int st[2]) {
-		bool done=true;
-		to(i,64) to(y,64) {
-			to(j,6) if (bit(y,j) && !bit(i,j)) goto next;
-			int st2[2]; to(z,2) to(x,3) if (bit(i,x+z*3)) {set_bit(st2[z],x+bit(y,x+z*3)*3); set_bit(st2[z],x+bit(y,x+z*3)*3+3);}
-			to(z,2) to(i,9) if (bit(st[z],i) && bit(st2[z],i)) goto next;
-			tr[state][st[1]|st2[1]]++;
-			next:;}
-	}
-	void build_tr_x(int state, int st[2]) {
-		bool done=true;
-		to(i,64) to(x,64) {
-			to(j,6) if (bit(x,j) && !bit(i,j)) goto next;
-			int st2[2]; to(z,2) to(y,3) if (bit(i,y+z*3)) {set_bit(st2[z],bit(x,y+z*3)+y*3); set_bit(st2[z],bit(x,y+z*3)+y*3+1);}
-			to(z,2) to(i,9) if (bit(st[z],i) && bit(st2[z],i)) goto next;
-			{int t[]={st[0]|st2[0],st[1]|st2[1]}; build_tr_y(state, t);}
-			next:;}
-	}
-	void build_tr_z(int st) {to(up,512) {to(z,9) if (bit(st,z) && bit(up,z)) goto next; {int t[]={st|up,up}; build_tr_x(st, t);} next:;}}
-	i64 solve(int e) {
-		to(state,512) {
-			build_tr_z(state);
-			//int t[]={state,0}; brute_build_tr(state,t);
-			to(i,512) pr("-" S b(state) S b(i) S tr[state][i]);
+/*===--- 324 ---===*/ namespace evil_dildo {/*
+	int tr[512][512]={}; // transition table {#{state,state}: ways}
+	int tr_n[512][512]; // tr taken to the nth power
+	// special, mods out by 100000007 and prints shit
+	void matrix_multiplyE(int (*l)[512][512], int (*v)[512][512]) {
+		static int r[512][512]={};
+		to(i,512) to(j,512) {i64 t=0; to(k,512) t += (i64)(*l)[i][k] * (*v)[k][j]; r[i][j] = (int)(t % 100000007);}
+		to(i,512) to(j,512) (*l)[i][j] = r[i][j];
 		}
-		return 0;}
-	}
+	void matrix_exponential(int (*v)[512][512], InfInt pow, int (*r)[512][512]) {
+		to(i,512) to(j,512) (*r)[i][j] = 0; to(i,512) (*r)[i][i] = 1;
+		static int t[512][512]; to(i,512) to(j,512) t[i][j] = (*v)[i][j];
+		int i=0,ps=0,ps0=pow.size()/4;
+		for(;;){
+			if (pow.size() != ps) {i=1; ps=pow.size();}
+			pr("^" S ps0-pow.size()/4+1 << "/" << ps0 S i++ <<"/30");
+			if (pow%2!=0) matrix_multiplyE(r,&t);
+			pow/=2;
+			if (pow == 0) break;
+			matrix_multiplyE(&t,&t);
+		}
+		}
+	void build_tr_y(int state, int up, int st1) {
+		to(i,8) to(y,8) if (!(~i & y)) {
+			int st2=0; to(x,3) if (bit(i,x)) {int t=x+bit(y,x)*3; set_bit(st2,t); set_bit(st2,t+3);}
+			if (!((st1 & st2) || ((st1|st2) != 0x1ff))) tr[state][up]++;
+			}
+		}
+	void build_tr_x(int state, int up, int st1) {
+		to(i,8) to(x,8) if (!(~i & x)) {
+			int st2=0; to(y,3) if (bit(i,y)) {int t=bit(x,y)+y*3; set_bit(st2,t); set_bit(st2,t+1);}
+			if (!(st1 & st2)) build_tr_y(state,up,st1|st2);
+			}
+		}
+	void build_tr_z(int st) {to(up,512) if (!(st & up)) build_tr_x(st,up,st|up);}
+	int f(InfInt n) {matrix_exponential(&tr,n,&tr_n); return tr_n[0][0];}
+	i64 solve(int e) {to(state,512) build_tr_z(state); return f(ipow(InfInt(10),e));}
+	*/}
 /*===-----------===*/ namespace scratch_space {
 	i64 solve(int v) {
 
@@ -551,8 +567,12 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 
 //===--------------------------------------------===// main //===--------------------------------------------===//
 
+void main2(int v) {
+	pr(evil_dildo::solve(v));
+}
+
 int main(int argc, char* argv[]) {
 	primes_inv.push_back(0);
 	pr("start");
-	pr(evil_dildo::solve(argc<2?0:atoi(argv[1])));
+	main2(argc<2?0:atoi(argv[1]));
 	return 0;}
