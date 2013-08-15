@@ -14,10 +14,30 @@ using namespace std;
 
 //===--------------------------------------------===// utils //===--------------------------------------------===//
 
-#define macro_dispatch(fn,...) macro_dispatch_(fn,macro_dispatch_cnt(__VA_ARGS__,10,9,8,7,6,5,4,3,2,1))(__VA_ARGS__)
-#define macro_dispatch_cnt(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,n,...) n
-#define macro_dispatch_(fn,n) macro_dispatch__(fn,n)
-#define macro_dispatch__(fn,n) fn ## n
+#define PASTE2(a,b) a ## b
+#define PASTE5(a,b,c,d,e) a ## b ## c ## d ## e
+#define PASTE2_2(a,b) PASTE2(a,b)
+#define PASTE_2(...) PASTE2_2(PASTE,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
+#define ARG_16(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,n,...) n
+#define HAS_NO_COMMA(...) ARG_16(__VA_ARGS__,     0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,1)
+#define HAS_COMMA(...)    ARG_16(__VA_ARGS__,     1, 1, 1, 1, 1,1,1,1,1,1,1,1,1,1,0)
+#define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+#define IS_NOT_EMPTY(...) IS_NOT_EMPTY_(HAS_COMMA(__VA_ARGS__), HAS_COMMA(TRIGGER __VA_ARGS__), HAS_COMMA(__VA_ARGS__()), HAS_COMMA(TRIGGER __VA_ARGS__ ()))
+#define IS_NOT_EMPTY_(a,b,c,d) HAS_NO_COMMA(PASTE5(IS_NOT_EMPTY__,a,b,c,d))
+#define IS_NOT_EMPTY__0001 ,
+#define TRIGGER(...) ,
+
+#define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
+#define MACRO_DISPATCH_OPT3(fn,a,b,c) PASTE_2(fn,_,IS_NOT_EMPTY(a),IS_NOT_EMPTY(b),IS_NOT_EMPTY(c))(a,b,c)
+
+#define to(...) MACRO_DISPATCH(to,##__VA_ARGS__)
+#define to3(...) MACRO_DISPATCH_OPT3(to3,__VA_ARGS__)
+#define to0(           ) for (                                     ;           ;            )
+#define to1(    n      ) for (i64 n= 0                             ;           ;++n         )
+#define to2(    n,  l  ) for (i64 n= 0 ,to__l_##n=(l)              ;n<to__l_##n;++n         )
+#define to3_111(n,f,l  ) for (i64 n=(f),to__l_##n=(l)              ;n<to__l_##n;++n         )
+#define to3_110(n,f,l  ) for (i64 n=(f)                            ;           ;++n         )
+#define to4(    n,f,l,u) for (i64 n=(f),to__l_##n=(l),to__u_##n=(u);n<to__l_##n;n+=to__u_##n)
 
 exception err(const string& v) {return runtime_error(v);}
 #define pr(v) cout << v << "\n"
@@ -26,21 +46,10 @@ exception err(const string& v) {return runtime_error(v);}
 #define B <<"\t"<<
 #define D(v) #v <<":"<< v
 typedef long long i64;
-
 namespace std {
-	template <typename T> void sort(vector<T> &v) {sort(v.begin(),v.end());}
-	template <typename T> void reverse(vector<T> &v) {reverse(v.begin(),v.end());}
+template <typename T> void sort(vector<T> &v) {sort(v.begin(),v.end());}
+template <typename T> void reverse(vector<T> &v) {reverse(v.begin(),v.end());}
 }
-
-#define to(...) macro_dispatch(to,__VA_ARGS__)
-#define to1(n      ) for (i64 n= 0 ;     ;++n   )
-#define to2(n,  l  ) for (i64 n= 0 ;n<(l);++n   )
-#define to3(n,f,l  ) for (i64 n=(f);n<(l);++n   )
-#define to4(n,f,l,u) for (i64 n=(f);n<(l);n+=(u))
-#define to_(...) macro_dispatch(to_,__VA_ARGS__)
-#define to_2(n,  l  ) i64 to__l_##n=(l);                    for (i64 n= 0 ;n<to__l_##n;++n         )
-#define to_3(n,f,l  ) i64 to__l_##n=(l);                    for (i64 n=(f);n<to__l_##n;++n         )
-#define to_4(n,f,l,u) i64 to__l_##n=(l); i64 to__u_##n=(u); for (i64 n=(f);n<to__l_##n;n+=to__u_##n)
 
 //===--------------------------------------------===// common //===--------------------------------------------===//
 
@@ -50,7 +59,7 @@ InfInt ipow(InfInt a, int b) {InfInt r=1; to(_,b) r*=a; return r;}
 #define SQ(v) ((v)*(v))
 int gcd(int a, int b) {while (b != 0) {int t = a % b; a = b; b = t;} return a;}
 bool coprime(int a, int b) {
-	for(;;){
+	to(){
 		if (!(a %= b)) return b == 1;
 		if (!(b %= a)) return a == 1;
 		}}
@@ -146,11 +155,11 @@ vector<i64> is_primes;
 vector<int> primes;
 vector<int> primes_inv;
 void sieve(); int prime(int n);
-bool is_prime(int n) {if (!(n/64 < is_primes.size())) sieve(); return (is_primes[n/64] >> (n%64)) & 1;}
+bool is_prime(int n) {while (!(n/64 < is_primes.size())) sieve(); return (is_primes[n/64] >> (n%64)) & 1;}
 int prime_inv(int n) {
-	while (!(n < primes_inv.size())) {to_(i,primes_inv.size(),primes_inv.size()*2) {primes_inv.push_back(primes_inv.at(i-1)+(is_prime(i)?1:0));}}
+	while (!(n < primes_inv.size())) {to(i,primes_inv.size(),primes_inv.size()*2) {primes_inv.push_back(primes_inv.at(i-1)+(is_prime(i)?1:0));}}
 	return primes_inv[n];}
-bool is_prime_mod(i64 n) {if(n<4) return n>=2; to_(i,1,prime_inv((int)sqrt(n))) if (n%prime(i)==0) return false; return true;}
+bool is_prime_mod(i64 n) {if (n<1000000000) return is_prime(n); to(i,1,prime_inv((int)sqrt(n))) if (n%prime(i)==0) return false; return true;}
 bool is_prime_slow(i64 n) {
 	if(n<4) return n>=2; if (n%2==0||n%3==0) return false;
 	i64 lim = (i64)sqrt(n); for (i64 i=5;i<=lim;i+=6) if (n%i==0 || n%(i+2)==0) return false; return true;}
@@ -172,43 +181,49 @@ void sieve(int lim) {
 void sieve() {sieve(max((int)is_primes.size()*2,16)*64);}
 vector<i64> prime_factors(i64 n) { // list of prime factors
 	vector<i64> r;
-	for (int i=1;;i++) {
+	to(i,1,) {
 		i64 p = prime(i);
-		for(;;){
+		to(){
 			if (n < p*p) {if (n != 1) r.push_back(n); return r;}
 			else if (n%p == 0) {r.push_back(p); n/=p;}
 			else break;}
 	}}
 vector<int> prime_factors_group(i64 n) { // {(index by prime's index in primes[i]): count}
 	vector<int> r;
-	for (int i=1;;i++) {
+	to(i,1,) {
 		r.push_back(0);
 		i64 p = prime(i);
-		for(;;){
+		to(){
 			if (n == 1) return r;
 			//if (n < p*p) {if (n != 1) {while (r.size() < n) r.push_back(0); r.push_back(1);} return r;}
 			else if (n%p == 0) {r[r.size()-1]++; n/=p;}
 			else break;}
 	}}
+vector<int> factors(int n) {vector<int> r; to(i,1,n+1) if (n%i==0) r.push_back(i); return r;}
 int count_factors(i64 n) {
 	vector<i64> npf = prime_factors(n);
-	int ncf=1,t=0; to_(i,1,npf.size()) {t++; if (npf[i-1] != npf[i]) {ncf *= t+1; t = 0;}} ncf *= t+1+1;
-	return ncf;}
+	int r=1,t=0; to(i,1,npf.size()) {t++; if (npf[i-1] != npf[i]) {r *= t+1; t = 0;}} r *= t+1+1;
+	return r;}
+i64 sum_factors(int n) {
+	//sumDivisors = product . map (\(a,b) -> sum $ map ((^) a) [0..b]) . map (\xs -> (head xs, len xs)) . group . primeFactors
+	if (n <= 1) return 0;
+	i64 r=0,sq=(int)sqrt(n); if (sq*sq==n) r-=sq;
+	to(y,1,(int)sqrt(n)+1) if (n%y==0) {r += y; r += n/y;}
+	return r;}
 int euler_totient(int n) {
 	//eulerTotient = product . map (\(a,b) -> a^(b-1) * (a-1)) . map (\xs -> (head xs, len xs)) . group . primeFactors
 	//vector<int> f = prime_factors_group(n);
-	//int r=1; to_(i,f.size()) r *= prime(i)
+	//int r=1; to(i,f.size()) r *= prime(i)
 	if (n<2) return 0;
 	else if (is_prime(n)) return n-1;
 	else if (n%2==0) {int m=n/2; return euler_totient(m) * (m%2==0? 2 : 1);}
-	else for (int i=1;;i++) {int p = prime(i); if (!(p<=n)) pr("OH DEAR");
+	else to(i,1,) {int p = prime(i); if (!(p<=n)) pr("OH DEAR");
 		if (n%p==0) {
 			int d = gcd(p,n/p);
 			int r = euler_totient(p)*euler_totient(n/p);
 			return d==1? r : r*d/euler_totient(d);
 		}
 	}}
-//sumDivisors = product . map (\(a,b) -> sum $ map ((^) a) [0..b]) . map (\xs -> (head xs, len xs)) . group . primeFactors
 
 //int fast_pow(int v, int e, int m) { // return v**e % m;
 	//int r = 1;
@@ -340,6 +355,21 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		return r;}
 	i64 solve() {return solve(1000000000);}
 	*/}
+/*===---  95 ---===*/ namespace friendly_bdsm {/*
+	int memo_nxt[1000000];
+	int memo_cl[1000000]={};
+	int cl(int n) {
+		if (memo_cl[n]) return memo_cl[n];
+		#define NXT(v) v = memo_nxt[v]; if (v > 1000000) goto no;
+		int a=n,b=n; to(){NXT(a); NXT(b); NXT(b); if (a == n) goto yes; if (a == b) goto no;}
+		yes: {int r=0; do {NXT(b); r++;} while (b != n); return (memo_cl[n] = r);}
+		no: return (memo_cl[n] = -1);}
+	int solve() {
+		to(i,1000000) memo_nxt[i] = (int)min(sum_factors(i)-i,1000001LL);
+		pr("built memo_nxt");
+		int k=0,v=0; to(i,1000000) {if (cl(i) > k) {k = cl(i); v = i;} if (cl(i) != -1) pr("fna" S i S cl(i) S k S v);}
+		return v;}
+	*/}
 /*===--- 100 ---===*/ namespace consecutive_factorization {/*
 	bool mul_eq(i64 a0, i64 a1, i64 b0, i64 b1) { // return a0*a1 == b0*b1;
 		#define M32 0xffffffff
@@ -423,6 +453,32 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		for (int i=1;;i++) {int p = prime(i); if (p >= 1000000) break; if (fucks(p)) {r++; pr("!" S r S i S p);}}
 		return r;}
 	*/}
+/*===--- 132 ---===*/ namespace p132 {/*
+	bool R(int k,int mod) {
+		vector<int> cycle; int r=1;
+		to(i){cycle.push_back(r); r *= 10; r++; r %= mod; if (cycle[0] == r) return cycle[(k-1)%(i+1)] == 0;}
+		return r==0;}
+	i64 solve(int v) {
+		int cnt=0,r=0;
+		to(i,1,1000000000) if (R(1000000000,prime(i))) {pr("WIN" S cnt+1 S i S prime(i)); r += prime(i); cnt++; if (cnt == 40) break;}
+		return r;}
+	*/}
+/*=-- 135 & 136 --=*/ namespace psh {/*
+	int solve(int c_lim, int lim) {
+		int r=0;
+		to(n,1,lim) {
+			int cnt=0;
+			if (sqv(n) && n%4==0) cnt--;
+			to(y,1,(int)sqrt(n)+1) if (n%y==0) {
+				{int t = y*3 - n/y; if (t>0 && t%4==0) {cnt++; if (cnt > c_lim) break;}}
+				{int t = n/y*3 - y; if (t>0 && t%4==0) {cnt++; if (cnt > c_lim) break;}}
+			}
+			if (cnt == c_lim) {r++; if (r%1000==0) pr("yay" S n S r);}
+		}
+		return r;}
+	int solve135(int _) {return solve(10,1000000);}
+	int solve136(int _) {return solve(1,50000000);}
+	*/}
 /*===--- 142 ---===*/ namespace square_orgy {/*
 	int solve() {
 		for (int x=3;;x++)
@@ -459,6 +515,17 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 			if (1 <= n && n <= 10) r++;
 			if (i%10000==0) pr(i S r);
 		}
+		return r;}
+	*/}
+/*===--- 193 ---===*/ namespace libertarian_geometry {/* unfinished
+	i64 count_sf(i64 a, i64 b) {
+		i64 r=0;
+		to(i,a,b) to(p,1,) {i64 t = prime(p)*prime(p); if (i%t==0) break; if (t > i) {r++; break;}}
+		return r;}
+	i64 solve() {
+		i64 r=0;
+		to(i) to(p,1,) {i64 t = prime(p)*prime(p); if (i%t==0) break; if (t > i) {r++; if ((int)(1.644934066848226436472415166646*r+0.5) == i) pr("hey!" S i S r); break;}}
+		//to(i,1073741824) {i64 t=count_sf(1048576*i,1048576*(i+1)); r+=t; pr(i B t B t-637458 B r);}
 		return r;}
 	*/}
 /*===--- 196 ---===*/ namespace incest {/*
@@ -534,7 +601,7 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 		to(i,512) to(j,512) (*r)[i][j] = 0; to(i,512) (*r)[i][i] = 1;
 		static int t[512][512]; to(i,512) to(j,512) t[i][j] = (*v)[i][j];
 		int i=0,ps=0,ps0=pow.size()/4;
-		for(;;){
+		to(){
 			if (pow.size() != ps) {i=1; ps=pow.size();}
 			pr("^" S ps0-pow.size()/4+1 << "/" << ps0 S i++ <<"/30");
 			if (pow%2!=0) matrix_multiplyE(r,&t);
@@ -561,16 +628,13 @@ i64 mod_pow_sq_m1(i64 a, i64 n, i64 m) {return ((n%2==0? (-a*n + 1) : (a*n - 1))
 	*/}
 /*===-----------===*/ namespace scratch_space {
 	i64 solve(int v) {
-
-		return 0;}
+		int r=0;
+		return r;}
 	}
 
 //===--------------------------------------------===// main //===--------------------------------------------===//
 
-void main2(int v) {
-	pr(evil_dildo::solve(v));
-}
-
+void main2(int v) {pr(libertarian_geometry::solve());}
 int main(int argc, char* argv[]) {
 	primes_inv.push_back(0);
 	pr("start");
