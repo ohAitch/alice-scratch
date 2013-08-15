@@ -26,6 +26,7 @@ exception err(const string& v) {return runtime_error(v);}
 //===--------------------------------------------===// llvm utils //===--------------------------------------------===//
 
 llvm::LLVMContext& CTX = llvm::getGlobalContext();
+llvm::IRBuilder<> builder(CTX);
 
 namespace llvm {
 
@@ -79,7 +80,7 @@ int main() {
 			v->setName(args[i]);}
 		// Create a new basic block to start insertion into.
 		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
-		llvm::IRBuilder<> builder(block);
+		builder.SetInsertPoint(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
@@ -125,7 +126,7 @@ int main() {
 		// noop!
 		// Create a new basic block to start insertion into.
 		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
-		llvm::IRBuilder<> builder(block);
+		builder.SetInsertPoint(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
@@ -163,7 +164,7 @@ int main() {
 		// JIT the function, returning a function pointer.
 		void* fcv = engine->getPointerToFunction(f);
 		// Cast it to the right type (takes no arguments, returns a double) so we can call it as a native function.
-		double (*fc)() = (double (*)())(intptr_t)fcv;
+		double(*fc)() = (double(*)())(intptr_t)fcv;
 		printf("Evaluated to %f\n", fc());
 	}
 	{ // q = fn(a,b,c) a*b-c
@@ -180,7 +181,7 @@ int main() {
 			v->setName(args[i]);}
 		// Create a new basic block to start insertion into.
 		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
-		llvm::IRBuilder<> builder(block);
+		builder.SetInsertPoint(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
@@ -227,7 +228,7 @@ int main() {
 		// noop!
 		// Create a new basic block to start insertion into.
 		llvm::BasicBlock* block = llvm::BasicBlock::Create(CTX, "entry", f);
-		llvm::IRBuilder<> builder(block);
+		builder.SetInsertPoint(block);
 		// Add all arguments to the symbol table and create their allocas.
 		//proto->CreateArgumentAllocas(f);
 		/// CreateArgumentAllocas - Create an alloca for each argument and register the argument in the symbol table so that references to it will succeed.
@@ -266,7 +267,7 @@ int main() {
 		// JIT the function, returning a function pointer.
 		void* fcv = engine->getPointerToFunction(f);
 		// Cast it to the right type (takes no arguments, returns a double) so we can call it as a native function.
-		double (*fc)() = (double (*)())(intptr_t)fcv;
+		double(*fc)() = (double(*)())(intptr_t)fcv;
 		printf("Evaluated to %f\n", fc());
 	}
 
