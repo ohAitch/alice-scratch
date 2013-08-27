@@ -22,6 +22,12 @@
 (def floor #(int (Math/floor %)))
 (def ceil #(int (Math/ceil %)))
 (def round #(Math/round %))
+(def bit& bit-and)
+(def bit| bit-or)
+;(def bit^ bit-xor)
+(def+ (bit! bit¬) bit-not) ; bit~
+(def bit>> bit-shift-right)
+(def bit<< bit-shift-left)
 ; unicode todo
 ; make ≈ regexy (and maybe ≉)
 
@@ -51,12 +57,11 @@
 (defn println'[& …] (apply println …) (last …))
 (defn conj-if[c v] (if v (conj c v) c))
 ;(defmacro ?[name & …] `(d t# ← ~name (if t# (t# ~@…))))
-(defmacro .?[name & …] `(d t# ← ~name (if t# (. t# ~@…))))
+(defmacro .?[name & …] `(let [t# ~name] (if t# (. t# ~@…))))
 ;(defmacro do-ns[name & …] `(let [t# *ns*] (ns ~name) ~@… (in-ns (ns-name t#))))
 (defn sym-ns[sym] (d t ← (. sym getNamespace) (if t (symbol t))))
 (defn sym-name[sym] (if (. sym getNamespace) (symbol (name sym)) sym))
-(defn sym-split[sym] [(sym-ns sym) (sym-name sym)])
-(defmacro def'[sym v] `(intern ~(sym-ns sym) ~(sym-name sym) ~v))
+;(defmacro def'[sym v] `(intern ~(sym-ns sym) ~(sym-name sym) ~v))
 
 ; slots?
 (defn overload[fns] (λ ([] ((fns 0))) ([a] ((fns 1) a)) ([a b] ((fns 2) a b)) ([a b c] ((fns 3) a b c)) ([a b c & …] (apply (fns (+ (count …) 3)) a b c …))))
@@ -103,8 +108,7 @@
 (defn intchars[] (lr-macros (i\\) (λ[rdr cu16] (int ((static (clojure.lang.LispReader$CharacterReader.)) rdr cu16)))))
 (intchars)
 (lr-#macros \\ (clojure.lang.LispReader$CharacterReader.))
-(lr-macros \→ (λ[rdr cu16] (d sym ← (clojure.lang.LispReader/read rdr true nil true)
-	[sns sname] ← (sym-split sym) (if (nil? sns) (eval `(declare ~sym)) (if (¬ (ns-resolve sns sname)) (intern sns sname))) sym)))
+(lr-macros \→ (λ[rdr cu16] (d sym ← (clojure.lang.LispReader/read rdr true nil true) (if (¬ (resolve sym)) (eval `(def ~sym nil))) sym)))
 (lr-#macros \> (lr-macros \→))
 (lr-macros \‹ (delimited-reader (λ[[lh op rh]] `(~op ~lh ~rh)) \›))
 (lr-#macros \( (clojure.lang.$$FnReader.))
@@ -146,4 +150,39 @@
 	)) \›))
 ; restore the reader to original charchar state
 (defn charchars[] (lr-macros \\ (clojure.lang.LispReader$CharacterReader.)))
+
+; math
+(defmacro _def-arrayfn-helper[as lim get-a get-b]
+  `(let [lim# ~lim]
+     (loop [r# (transient [])
+            ~'i 0]
+       (if ‹~'i =n lim#›
+         (persistent! r#)
+         (recur
+           (conj! r# (~as ~get-a ~get-b))
+           ‹~'i + 1›)))))
+(defmacro def-arrayfn[as f]
+  `(defn ~as
+     ([a# b#]
+       (if ‹a# and b#›
+         (if (vector? a#)
+           (if (vector? b#)
+             (if ‹(count a#) ≠n (count b#)›
+               (throw (ex "error: calling arrayfn with" a# b# "which are vecs of different lengths"))
+               (_def-arrayfn-helper ~as (count a#) (a# ~'i) (b# ~'i)))
+             (_def-arrayfn-helper ~as (count a#) (a# ~'i) b#))
+           (if (vector? b#)
+             (_def-arrayfn-helper ~as (count b#) a# (b# ~'i))
+             (~f a# b#))
+           )))
+     ([a# b# & rest#] (apply ~as (~as a# b#) rest#))
+     ))
+(def-arrayfn ++ +)
+(def-arrayfn -+ -)
+(def-arrayfn *+ *)
+(def-arrayfn D+ /)
+(def-arrayfn min+ min)
+(def-arrayfn max+ max)
+(defn avg+[& …] ‹(apply ++ …) D+ (count …)›)
+
 (charchars)
