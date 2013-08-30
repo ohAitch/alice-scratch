@@ -28,6 +28,7 @@
 (def+ (bit! bit¬) bit-not) ; bit~
 (def bit>> bit-shift-right)
 (def bit<< bit-shift-left)
+(def ^:dynamic ** #(Math/pow % %2))
 ; unicode todo
 ; make ≈ regexy (and maybe ≉)
 
