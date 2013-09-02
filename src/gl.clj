@@ -1,7 +1,9 @@
 (ns gl)
 (require '[clojure.string :as str])
 (use 'batteries)
+
 (use '[clojure.walk :only (postwalk)])
+(require 'run)
 
 (System/setProperty "org.lwjgl.input.Mouse.allowNegativeMouseCoords" "true")
 
@@ -21,21 +23,18 @@
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; gl macro ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
+; would really prefer to just hack the clojure symbol resolution process
+
 ; private
 (def gl-containers (concat
 	(map #(eval (symbol (str "org.lwjgl.opengl."%))) '[GL20 GL15 GL14 GL13 GL12 GL11 GL30 GL31 GL32 GL33 GL40 GL41 GL42 GL43 APPLEFloatPixels ARBDrawBuffers ARBFramebufferObject ARBHalfFloatPixel ARBTextureFloat ARBTextureRectangle ATITextureFloat EXTFramebufferObject EXTGeometryShader4 EXTTextureRectangle EXTTransformFeedback NVFloatBuffer])
 	(map #(eval (symbol (str "org.lwjgl.util.glu."%))) '[GLU Project Registry MipMap])
 	))
-(def gl-enum (into {} (map #‹[(. % getName) (. % get nil)          ]› (mapcat #(. % getFields ) gl-containers)))) ; name=name implies value=value
-(def gl-fn   (into {} (map #‹[(. % getName) (. % getDeclaringClass)]› (mapcat #(. % getMethods) gl-containers)))) ; name=name implies value=value
+(def gl-sym (into {} (map #(d s ← (. % getName) [s (symbol (. (. % getDeclaringClass) getName) s)]) (concat (mapcat #(concat (. % getFields) (. % getMethods)) gl-containers))))) ; name=name implies value=value
+(defn gl-resolve[v] (if ‹(symbol? v) and (¬ (. v getNamespace))› (d s ← (name v) ‹(gl-sym s) or (gl-sym (str "GL_"s)) or v›) v))
 
-; api
-(defn GLf[%] ‹(gl-enum %) or (gl-enum (str "GL_"%)) or %›)
-(defmacro GL[%] (GLf %))
-(defmacro gl[name & …] (d
-	name ← (str "gl"name)
-	c ← ‹(gl-fn name) or (throw (ex "did not find gl function" name))›
-	`(. ~c ~(symbol name) ~@(postwalk #(if (symbol? %) (GLf %) %) …))))
+; public
+(defmacro gl[& …] `(d ~@(postwalk gl-resolve …)))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; buffers ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
@@ -59,29 +58,22 @@
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; window private ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
-;- (def-atom rqueue empty-queue)
-;- (defn queue-gl [f] (swap! rqueue conj f))
-
-(defn base-init[]
-	(gl,Enable BLEND)
-	(gl,BlendFunc SRC_ALPHA ONE_MINUS_SRC_ALPHA) ; "standard transparency blending function"
-	(gl,Enable ALPHA_TEST)
-	(gl,AlphaFunc GREATER 0)
-	(gl,Fogi FOG_MODE EXP2)
-	(gl,DepthFunc LEQUAL)
-	)
-(defn pre-draw[]
+(defn base-init[] (gl
+	(glEnable BLEND)
+	(glBlendFunc SRC_ALPHA ONE_MINUS_SRC_ALPHA) ; "standard transparency blending function"
+	(glEnable ALPHA_TEST)
+	(glAlphaFunc GREATER 0)
+	(glFogi FOG_MODE EXP2)
+	(glDepthFunc LEQUAL)
+	))
+(defn pre-draw[] (gl
 	(if (get-set! →window-size-dirty false) (d
-		(gl,Viewport 0 0 (@→window-size 0) (@window-size 1))
+		(glViewport 0 0 (→X) (→Y))
 		(@→projection-current)
 		))
 	
-	;- (gl,Clear ‹COLOR_BUFFER_BIT bit| DEPTH_BUFFER_BIT›)
-	
-	;- (while (peek @rqueue)
-	;- 	((peek @rqueue))
-	;- 	(swap! rqueue pop))
-	)
+	(glClear ‹COLOR_BUFFER_BIT bit| DEPTH_BUFFER_BIT›)
+	))
 (defn post-draw[]
 	(org.lwjgl.opengl.Display/update false)
 	(org.lwjgl.opengl.Display/processMessages) ; separated from call to org.lwjgl.opengl.Display/update because the idea was to allow for faster keyboard polling than main rendering fps
@@ -90,72 +82,63 @@
 	;- ukuku.gfx.KeyIn.flushEventQueue()
 	)
 
-(def window-size (atom [800 600]))
-(def window-title "gl app")
-(def window-init #())
-(def window-draw #())
-(def window-size-dirty (atom false))
-
-(defn projection[f] (λ me[]
+(defn _projection[f] (λ me[] (gl
 	(reset! →projection-current me)
-	(gl,MatrixMode PROJECTION)
-	(gl,LoadIdentity)
+	(glMatrixMode PROJECTION)
+	(glLoadIdentity)
 	(f)
-	(gl,MatrixMode MODELVIEW)
-	))
+	(glMatrixMode MODELVIEW)
+	)))
+
+(def window-size (atom [0 0]))
+(def window-size-dirty (atom false))
+(defn X[] (@window-size 0))
+(defn Y[] (@window-size 1))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; window api ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
-(def projection-3d (projection (λ[] (gl,Enable  DEPTH_TEST) (gl,uPerspective 85 (double ‹(@window-size 0) / (@window-size 1)›) 0.1 4000))))
-(def projection-2d (projection (λ[] (gl,Disable DEPTH_TEST) (gl,Ortho 0 (@window-size 0) (@window-size 1) 0 -1 1))))
+(def projection-3d (_projection (λ[] (gl (if ‹‹(X) ≠ 0› and ‹(Y) ≠ 0›› (glEnable  DEPTH_TEST) (gluPerspective 85 (double ‹(X) / (Y)›) 0.1 4000))))))
+(def projection-2d (_projection (λ[] (gl (if ‹‹(X) ≠ 0› and ‹(Y) ≠ 0›› (glDisable DEPTH_TEST) (glOrtho 0 (X) (Y) 0 -1 1))))))
 (def projection-current (atom projection-2d))
 
-(defn window[& {:keys [init draw size title]}] (d
-	(.? →window-jframe dispose)
-	(.? →window-thread join) ;! ?
+(defn title[v] (. →window-jframe setTitle (str v)))
 
-	(if size (def window-size (atom size)))
-	(if title (def window-title title))
-	(if init (def window-init init))
-	(if draw (def window-draw draw))
-
-	quit-gl ← (atom false)
-	jcanvas ← (d
-		t ← (proxy [java.awt.Canvas] []
-			(addNotify[] (proxy-super addNotify) (. window-thread start))
-			(removeNotify[] (reset! quit-gl true) (. window-thread join) (proxy-super removeNotify)))
-		(. t setIgnoreRepaint true) ; is cargoculty (tho it shouldn't hurt)
-		t)
-	(def window-thread (d
+(defn window[& {:keys [init draw size title]}] (d init ← ‹init or #()› draw ← ‹draw or #()› size ← ‹size or [800 600]› title ← ‹title or "gl app"›
+	(if →gl-thread (d
+		(reset! →gl-quit true)
+		(. window-jframe dispose)
+		(. gl-thread join)
+		))
+	
+	(def window-size (atom size))
+	(def gl-quit (atom false))
+	gl-canvas ← (java.awt.Canvas.)
+	(def gl-thread (d
 		t ← (Thread.
-			#(if (¬ @quit-gl) (d
-				(org.lwjgl.opengl.Display/setParent jcanvas)
+			#(if (¬ @gl-quit) (d
+				(org.lwjgl.opengl.Display/setParent gl-canvas)
 				(org.lwjgl.opengl.Display/create)
-				(base-init)
-				(window-init)
+				(base-init) (init)
 				;! implement fps limit and counter and stuff with better stuff later ; e.g. the while loop right there would probably be better less imperative
-				(while (not @quit-gl)
-					(pre-draw)
-					(window-draw)
-					(post-draw))
+				(while (not @gl-quit)
+					(pre-draw) (draw) (post-draw))
 				(org.lwjgl.opengl.Display/destroy)
 				)))
 		(. t setName "opengl")
 		(. t setDaemon true)
 		t))
 	(def window-jframe (d
-		t ← (java.awt.Frame. window-title)
-		(. t addWindowListener
-			(proxy [java.awt.event.WindowAdapter] []
-				(windowClosing[event] (reset! quit-gl true) (. window-thread join) (. t dispose))))
-		(. t add jcanvas)
+		t ← (proxy [javax.swing.JFrame] [title] (dispose[] (reset! gl-quit true) (. gl-thread join) (proxy-super dispose)))
+		(. t setDefaultCloseOperation javax.swing.JFrame/DISPOSE_ON_CLOSE)
+		(. t add gl-canvas)
+		; can't size a jframe correctly until the OS has given us insets for it but do want to size before showing: so we do it twice
+		(inner-size! t @window-size) (center-window-on-screen! t)
 		(. t setVisible true)
-		; now that the OS has made the window and given us insets for the window, we can size it accurately:
-		(inner-size! t @window-size)
-		(center-window-on-screen! t)
-		; now that the window has been sized:
+		(inner-size! t @window-size) (center-window-on-screen! t)
+		; now that we're done initializing the jframe's size
 		(. t addComponentListener
 			(proxy [java.awt.event.ComponentAdapter] []
 				(componentResized[event] (reset! window-size (inner-size t)) (reset! window-size-dirty true))))
 		t))
+	(. gl-thread start)
 	nil))
