@@ -1,0 +1,1 @@
+java -cp "$CLOJURE;src;java/_.jar" clojure.main -e "(use 'batteries) (use 'life) (main)" -r
