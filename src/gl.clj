@@ -61,15 +61,12 @@
 (defn base-init[] (gl
 	(glEnable BLEND)
 	(glBlendFunc SRC_ALPHA ONE_MINUS_SRC_ALPHA) ; "standard transparency blending function"
-	(glEnable ALPHA_TEST)
-	(glAlphaFunc GREATER 0)
-	(glFogi FOG_MODE EXP2)
 	(glDepthFunc LEQUAL)
 	))
 (defn pre-draw[] (gl
 	(if (get-set! →window-size-dirty false) (d
 		(glViewport 0 0 (→X) (→Y))
-		(@→projection-current)
+		;(@→projection-current)
 		))
 	
 	(glClear ‹COLOR_BUFFER_BIT bit| DEPTH_BUFFER_BIT›)
@@ -82,24 +79,12 @@
 	;- ukuku.gfx.KeyIn.flushEventQueue()
 	)
 
-(defn _projection[f] (λ me[] (gl
-	(reset! →projection-current me)
-	(glMatrixMode PROJECTION)
-	(glLoadIdentity)
-	(f)
-	(glMatrixMode MODELVIEW)
-	)))
-
 (def window-size (atom [0 0]))
 (def window-size-dirty (atom false))
 (defn X[] (@window-size 0))
 (defn Y[] (@window-size 1))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; window api ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
-
-(def projection-3d (_projection (λ[] (gl (if ‹‹(X) ≠ 0› and ‹(Y) ≠ 0›› (glEnable  DEPTH_TEST) (gluPerspective 85 (double ‹(X) / (Y)›) 0.1 4000))))))
-(def projection-2d (_projection (λ[] (gl (if ‹‹(X) ≠ 0› and ‹(Y) ≠ 0›› (glDisable DEPTH_TEST) (glOrtho 0 (X) (Y) 0 -1 1))))))
-(def projection-current (atom projection-2d))
 
 (defn title[v] (. →window-jframe setTitle (str v)))
 
@@ -115,15 +100,19 @@
 	gl-canvas ← (java.awt.Canvas.)
 	(def gl-thread (d
 		t ← (Thread.
-			#(if (¬ @gl-quit) (d
-				(org.lwjgl.opengl.Display/setParent gl-canvas)
-				(org.lwjgl.opengl.Display/create)
-				(base-init) (init)
-				;! implement fps limit and counter and stuff with better stuff later ; e.g. the while loop right there would probably be better less imperative
-				(while (not @gl-quit)
-					(pre-draw) (draw) (post-draw))
-				(org.lwjgl.opengl.Display/destroy)
-				)))
+			#(if (¬ @gl-quit)
+				(try
+					(org.lwjgl.opengl.Display/setParent gl-canvas)
+					(org.lwjgl.opengl.Display/create (org.lwjgl.opengl.PixelFormat.) (. (. (org.lwjgl.opengl.ContextAttribs. 4 2) withForwardCompatible true) withProfileCore true))
+					(base-init) (init)
+					;! implement fps limit and counter and stuff with better stuff later ; e.g. the while loop right there would probably be better less imperative
+					(while (not @gl-quit)
+						(pre-draw) (draw) (post-draw))
+				(finally
+					(org.lwjgl.opengl.Display/destroy)
+					(run/in 0 #(. window-jframe dispose))
+					))
+				))
 		(. t setName "opengl")
 		(. t setDaemon true)
 		t))

@@ -68,7 +68,7 @@
 	id))
 
 (def vertex-glsl (str/join "\n" [
-	"#version 410"
+	"#version 410 core"
 	"in vec4 in_Position;"
 	"in vec4 in_Color;"
 	"in vec2 in_TextureCoord;"
@@ -81,7 +81,7 @@
 	"}"
 	]))
 (def fragment-glsl (str/join "\n" [
-	"#version 410"
+	"#version 410 core"
 	"uniform sampler2D texture_diffuse;"
 	"in vec4 pass_Color;"
 	"in vec2 pass_TextureCoord;"
@@ -136,7 +136,7 @@
 	(glUseProgram pId)
 
 	(glActiveTexture TEXTURE0)
-	(glBindTexture TEXTURE_2D (texIds (int ‹@sin-factor + 0.5›)))
+	(glBindTexture TEXTURE_2D (texIds (int ‹@sin-factor + 0.2›)))
 
 	(glBindVertexArray vaoId)
 	(glEnableVertexAttribArray 0)
