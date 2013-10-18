@@ -1,10 +1,3 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns run (:refer-clojure :exclude [repeat]))
 (require '[clojure.string :as str])
 (use '[batteries :exclude [in]])
@@ -13,14 +6,17 @@
 
 (def timer-name (atom 0))
 (def timer-pool (java.util.concurrent.Executors/newScheduledThreadPool 10
-	(proxy [java.util.concurrent.ThreadFactory] [] (newThread[f] (d r ← (Thread. f (str "pool timer - "(swap! timer-name inc))) (. r setDaemon true) r)))))
-(defn ex-wrap[f] (misc.$/_c_ex_wrap_ f (λ[ex] (d
-	here ← (atom nil)
-	(. ex setStackTrace (into-array (take-while #(d r ← (. (. % getClassName) endsWith "_c_ex_wrap_") (if r (reset! here %)) r) (vec (. ex getStackTrace)))))
-	(print (str "Exception in thread \""(. (Thread/currentThread) getName)"\" "))
-	(. ex printStackTrace)
-	(println (str "\t at <pool> ("here")"))
-	))))
+	(proxy [java.util.concurrent.ThreadFactory] [] (newThread[f] (d r ← (Thread. f (str "run pool "(swap! timer-name inc))) (. r setDaemon true) r)))))
+(defn ex-wrap[f] (misc.$/_c_ex_wrap_ f (λ[ex]
+	(try
+		(. ex setStackTrace (into-array (take-while #(¬ (. (. % getClassName) endsWith "_c_ex_wrap_")) (vec (. ex getStackTrace)))))
+		(binding [*out* *err*]
+			(print (str "Exception in thread \""(. (Thread/currentThread) getName)"\" ")) (. *err* flush)
+			(. ex printStackTrace)
+			(println "\tat <pool>")
+			)
+		(catch Exception e (. ex printStackTrace)))
+	)))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; api ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 

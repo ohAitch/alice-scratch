@@ -1,10 +1,3 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ns batteries)
 (require '[clojure.string :as str])
 
@@ -42,6 +35,8 @@
 ; hacky renamings
 (def i int)
 (defn smi[v] (set (map int v)))
+;(def or' #(or % %2))
+;(def and' #(and % %2))
 
 ; hacky utils to work around clojure lameness
 (defmacro d[& body] `(do ~@((λ _d'[body] ;! should be inside defn of d
@@ -82,7 +77,7 @@
 (defn dict-by'[f & …] (zipmap (map f …) …))
 (defn many-to-one[& …] (apply merge (map (λ [[ks v]] (zipmap ks (repeat v))) (partition 2 …))))
 (defn transpose[coll-of-colls] (apply mapv vector coll-of-colls))
-(defn windows[n sq] (lazy-seq (if (empty? (drop n sq)) '() (cons (take n sq) (windows n (rest sq))))))
+(defn windows[n sq] (lazy-seq (if (empty? (drop (- n 1) sq)) '() (cons (take n sq) (windows n (rest sq))))))
 
 ; reflection utils (all unpolished)
 (defn jclass[v] (if (isa v Class) v (. v getClass)))
@@ -135,6 +130,8 @@
 (defn slice-fn[sq start end step] (d
 	start ← (if ‹start = 0› nil start)
 	step ← (if ‹step = 1› nil step)
+	start ← (if ‹start and ‹start < 0›› ‹start + (count sq)› start)
+	end   ← (if ‹end   and ‹end   < 0›› ‹end   + (count sq)› end  )
 	(if ‹(vector? sq) and (not step)›
 		(if end
 			(subvec sq start end)
