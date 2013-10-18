@@ -29,12 +29,13 @@
 (def clear-line-head "[1K")
 (def clear-line-tail "[0K")
 
-; doesn't work on windows/jansi but won't hurt
+; not implemented on windows/jansi and is a noop
 (def hide-cursor "[?25l")
 (def show-cursor "[?25h")
 
 ; colors
 (def default-color "[0m")
+(def basic "[0m")
 (defn fg[v] (d [bright v] ← (→_ansi-color-16 v) (str "["(if bright "1" "22")"m[3"v"m")))
 (defn bg[v] (str"[4"(→_ansi-color-8 v)"m"))
 
@@ -45,23 +46,23 @@
 
 ; tables
 (def _ansi-color-table-8 (many-to-one
-  ["0" "black"           ] 0
-  ["1" "red"             ] 1
-  ["2" "green"           ] 2
-  ["3" "yellow" "brown"  ] 3
-  ["4" "blue"            ] 4
-  ["5" "magenta" "purple"] 5
-  ["6" "cyan"            ] 6
-  ["7" "grey" "white"    ] 7))
+	["0" "black"           ] 0
+	["1" "red"             ] 1
+	["2" "green"           ] 2
+	["3" "yellow" "brown"  ] 3
+	["4" "blue"            ] 4
+	["5" "magenta" "purple"] 5
+	["6" "cyan"            ] 6
+	["7" "grey" "white"    ] 7))
 (def _ansi-color-table-16 (merge
-  ; take _ansi-color-table-8 entries and make `"light red" 9, "bright red" 9, "red+" 9` from `"red" 1`
-  (apply hash-map (apply concat (mapcat (fn [[k v]] (let [v [true v]] [[(str "light "k) v] [(str "bright "k) v] [(str k"+") v]])) _ansi-color-table-8)))
-  (many-to-one
-    ["8" "darkgrey" "dark grey" "dark_grey" "dark-grey"] [true 0]
-    ["9"                                               ] [true 1]
-    ["10"                                              ] [true 2]
-    ["11"                                              ] [true 3]
-    ["12"                                              ] [true 4]
-    ["13"                                              ] [true 5]
-    ["14"                                              ] [true 6]
-    ["15" "white"                                      ] [true 7])))
+	; from, say, "red" (in _ansi-color-table-8), generate "light red" "bright red" "red+"
+	(apply hash-map (apply concat (mapcat (fn [[k v]] (let [v [true v]] [[(str "light "k) v] [(str "bright "k) v] [(str k"+") v]])) _ansi-color-table-8)))
+	(many-to-one
+		["8" "darkgrey" "dark grey" "dark_grey" "dark-grey"] [true 0]
+		["9"                                               ] [true 1]
+		["10" "a"                                          ] [true 2]
+		["11" "b"                                          ] [true 3]
+		["12" "c"                                          ] [true 4]
+		["13" "d"                                          ] [true 5]
+		["14" "e"                                          ] [true 6]
+		["15" "f" "white"                                  ] [true 7])))
