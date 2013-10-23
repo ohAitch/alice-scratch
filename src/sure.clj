@@ -8,7 +8,7 @@
 ; skipped: mipmaps
 ; bug: window blinks in at upper-left sometimes
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; misc ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; misc general ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 ;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
 
 (d nsn ← (. *ns* getName) (defn r[] (eval `(d (use '~nsn :reload-all) ~'(main)))))
@@ -21,7 +21,9 @@
 
 (defn interpose-out[sep coll] (concat [sep] (interpose sep coll) [sep]))
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; <edge> ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
+(defn init-loops[] (if →loops (mapv run/cancel @loops)) (def loops (atom [])))
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; misc specific ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
 (defn namegen[]
 	(apply str (map #(rand-nth (case % \a "abcdefghijklmnopqrstuvwxyz" \c "bcdfghjklmnpqrstvwxz" \v "aeiouy" \0 "0123456789" " "))
@@ -36,29 +38,45 @@
 			" cv0 "
 			"a  00"
 			]))))
-(defn bobgen[p] {:name (str (esc/fg (rand-nth "12359abc")) (namegen) esc/basic) :spirit (atom 10) :pos (atom p)})
 (defn in-bounds[[x y]] (and ‹0 ≤ x› ‹x < 13› ‹0 ≤ y› ‹y < 9›))
 
-(defn init-loops[] (if →loops (mapv run/cancel @loops)) (def loops (atom [])))
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; main ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
+
+(defn bobgen[p] {
+	:name (str (esc/fg (rand-nth "12359abc")) (namegen) esc/basic)
+	:spirit (atom 10)
+	:pos (atom p)
+	:soul (λ[grid-up grid-down self]
+		(if (¬ @(self :body)) (d
+			near ← (filter #(in-bounds ‹@(self :pos) ++ %›) [[1 0] [-1 0] [0 1] [0 -1]])
+			near-bobs ← (filter #‹@(grid-up ‹@(self :pos) ++ %›)› near)
+			near-space ← (filter #(¬ @(grid-up ‹@(self :pos) ++ %›)) near)
+			(cond
+				(seq near-bobs) [:attack (rand-nth near-bobs)]
+				‹(seq near-space) and ‹(rand) < 0.1›› [:move (rand-nth near-space)]
+				:else [:mine]
+				))))
+	:body (atom nil)
+	})
 
 (defn main[] (d
 	(init-loops)
 
 	(def grid-up (atom {}))
 	(def grid-down (atom {}))
-	(def cell-str [
-		#(str (esc/fg :green) (if @(@grid-up %) (@(@grid-up %) :name) "     ") esc/basic)
-		#(if @(@grid-up %) (format (str"q"(esc/fg :cyan+)"%4d"esc/basic) ⌈@(@(@grid-up %) :spirit)⌉) "     ")
-		#(if @(@grid-up %) (apply format "%2d %2d" @(@(@grid-up %) :pos)) "     ")
-		#(d % "     ")
-		#(format (str"*"(esc/fg :cyan)"%3d"esc/basic"*") @(@grid-down %))
-		])
 	(dotimes [y 9] (dotimes [x 13] (swap! grid-up   assoc [x y] (atom nil))))
 	(dotimes [y 9] (dotimes [x 13] (swap! grid-down assoc [x y] (atom 50))))
 
-	(def gtime (atom 0))
-	(def events (atom (priority-map)))
+	(def souls (atom []))
 
+	; display
+	(def cell-str [
+		#(str (esc/fg :green) (if @(@grid-up %) (@(@grid-up %) :name) "     ") esc/basic)
+		#(if @(@grid-up %) (format (str"q"(esc/fg :cyan+)"%4d"esc/basic) ⌈@(@(@grid-up %) :spirit)⌉) "     ")
+		#(d % "     ")
+		#(d % "     ")
+		#(format (str"*"(esc/fg :cyan)"%3d"esc/basic"*") @(@grid-down %))
+		])
 	(swap! loops conj (run/repeat 0.1 (λ[]
 		; format and print
 		(print (esc/go-to 0 0))
@@ -72,44 +90,72 @@
 				))
 			)))
 		)))
-	(swap! loops conj (run/repeat 3 (λ[] (print esc/clear))))
+	(swap! loops conj (run/repeat 5 (λ[] (print esc/clear))))
+
+	; random bob gen
 	(swap! loops conj (run/repeat 0.5 (λ[] (d
 		pos ← [⌊(rand 13)⌋ ⌊(rand 9)⌋]
-		(swap! (@grid-up pos) #(or % (d t ← (bobgen pos) (swap! events assoc t 0) t)))
+		(swap! (@grid-up pos) #(or % (d t ← (bobgen pos) (swap! souls conj t) t)))
 		))))
+	
+	; bobs are brains
+	; bobs can think and use their bodies at any time
+	; physics has rules
+	; but, bobs are physics
+	; we represented waiting as an action! this is wrong. very wrong.
+
+	; physics
 	(swap! loops conj (run/every 0.1 (λ[]
-		(swap! gtime + 1/10)
-		; buggy as fuck . the whole iteration is dumb
-		(while ‹(seq @events) and ‹((peek @events) 1) ≤ @gtime›› (d
-			bob ← ((peek @events) 0) (swap! events pop)
-			pos ← (bob :pos)
-			near-bobs ← (filter #‹@(@grid-up %)› (filter in-bounds (map #‹% ++ @pos› [[1 0] [-1 0] [0 1] [0 -1]])))
-			near-space ← (filter #(¬ @(@grid-up %)) (filter in-bounds (map #‹% ++ @pos› [[1 0] [-1 0] [0 1] [0 -1]])))
-			(if ‹‹@(bob :spirit) ≥ 1› and (seq near-bobs)› (d
-				(swap! (@(@grid-up @pos) :spirit) - 1)
-				(swap! (@(@grid-up (rand-nth near-bobs)) :spirit) - 2)
-				(swap! events assoc bob ‹@gtime + 1/10›)
-			) (if ‹@(bob :spirit) ≥ 0.1› (d
-				(if ‹(rand) < 0.9›
-					(if ‹@(@grid-down @pos) > 0› (d
-						(swap! (@(@grid-up @pos) :spirit) - 0.1)
-						(swap! (@grid-down @pos) - 1)
-						(swap! (@(@grid-up @pos) :spirit) + 1)
-						))
-					(if (seq near-space) (d
-						(swap! (@(@grid-up @pos) :spirit) - 0.1)
-						nxt ← (rand-nth near-space)
-						(reset! (@grid-up nxt) bob)
-						(reset! (@grid-up @pos) nil)
-						(reset! pos nxt)
-						))
-					)
-				(swap! events assoc bob ‹@gtime + 1/10›)
-			) (if ‹@(bob :spirit) ≥ 0› (d
-				(swap! events assoc bob ‹@gtime + 1/10›)
-			) (d
-				(reset! (@grid-up @pos) nil)
-			))))
+		; run souls
+		(doseq [soul @souls] (d
+			action ← ((soul :soul) @grid-up @grid-down soul)
+			(if action (reset! (soul :body) action))
 			))
+		; run rest of physics
+		; death
+		(swap! souls #(remove (λ[soul] (d
+			(if ‹@(soul :spirit) < 0› (throw (derp "negative spirit!" soul)))
+			r ← ‹@(soul :spirit) = 0›
+			(if r (reset! (@grid-up @(soul :pos)) nil))
+			r)) %))
+		; soul actions
+		(doseq [soul @souls] (d
+			body ← (soul :body)
+			pos ← (soul :pos)
+			(cond
+				; clear to wait?
+				(¬ @body) nil
+				‹(@body 0) = :attack› (d
+					atk ← ‹@pos ++ (@body 1)›
+					(if ‹‹@(soul :spirit) ≥ 1› and @(@grid-up atk)› (d
+						(swap! (soul :spirit) - 1)
+						(swap! (@(@grid-up atk) :spirit) #(max ‹% - %2› 0) 2)
+						(reset! body [:wait (atom 1/10)])
+					) (d
+						(reset! body nil)
+					)))
+				‹(@body 0) = :move› (d
+					move ← ‹@pos ++ (@body 1)›
+					(if ‹‹@(soul :spirit) ≥ 0.1› and (¬ @(@grid-up move))› (d
+						(swap! (soul :spirit) - 0.1)
+						(reset! (@grid-up move) soul)
+						(reset! (@grid-up @pos) nil)
+						(reset! pos move)
+						))
+					(reset! body nil)
+					)
+				‹(@body 0) = :mine› (d
+					(if ‹‹@(soul :spirit) ≥ 0.1› and ‹@(@grid-down @pos) ≥ 1›› (d
+						(swap! (soul :spirit) - 0.1)
+						(swap! (@grid-down @pos) - 1)
+						(swap! (soul :spirit) + 1)
+						))
+					(reset! body nil)
+					)
+				‹(@body 0) = :wait›
+					(if ‹(swap! (@body 1) - 1/10) ≤ 0›
+						(reset! body nil))
+				:else (throw (derp "unknown action" soul))
+				)))
 		)))
 	nil))

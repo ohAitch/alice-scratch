@@ -1,3 +1,5 @@
+;! todo: edit ex and derp to get rid of extra frames ?
+
 (ns batteries)
 (require '[clojure.string :as str])
 
@@ -50,8 +52,8 @@
 (defn static-form[form] (d sym ← (gensym) (eval `(def ~sym ~form)) sym)) ; ISSUE: no-eval
 (defmacro static[exp] (static-form exp))
 (defmacro doto?[v & …] `(if (nil? ~v) nil (doto ~v ~@…)))
-(defmacro break[] `(throw ~(static-form `(jutil.$$Break.)))) ; wtf, why do we need static-form
-(defmacro label[& body] `(try (d ~@body) (catch jutil.$$Break e#)))
+(defmacro break[] `(throw ~(static-form `(misc.$$Break.)))) ; wtf, why do we need static-form
+(defmacro label[& body] `(try (d ~@body) (catch misc.$$Break e#)))
 (defn get-set![atom v] (clojure.lang.$/atom_get_set atom v))
 
 ; other hacky utils
