@@ -1,5 +1,9 @@
 (ns life)
+
 (require '[clojure.string :as str])
+(use 'clojure.java.io)
+(use '[clojure.walk :only (postwalk)])
+
 (use 'batteries)
 (require 'run)
 
@@ -25,25 +29,35 @@
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; generic utils ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
-(use 'clojure.java.io)
+(defn ensure-folder-exists[f] (-> f (.getParent) (file) (.mkdir)) f)
 (defn read-image[path] (javax.imageio.ImageIO/read (file path)))
-(defn write-image[bi path] (javax.imageio.ImageIO/write bi (subs (str path) (- (. (str path) length) 3)) (file path)))
-(defn datestr[] (. (java.text.SimpleDateFormat. "yyyy-MM-dd HH.mm.ss") format (java.util.Date.)))
+(defn write-image[bi path] (javax.imageio.ImageIO/write bi (subs (str path) (- (. (str path) length) 3)) (ensure-folder-exists (file path))))
+(defn datestr[format] (. (java.text.SimpleDateFormat. format) format (java.util.Date.)))
 (defn AWT_TK[] (java.awt.Toolkit/getDefaultToolkit))
 (defn SCREEN_SIZE[] (d t ← (. (AWT_TK) getScreenSize) [(. t getWidth) (. t getHeight)]))
 (def _robot (java.awt.Robot.))
 (defn print-screen[] (d [x y] ← (SCREEN_SIZE) (. _robot createScreenCapture (java.awt.Rectangle. 0 0 x y))))
+
+(defmacro while-let[cnd & …] (d
+	(if (¬ ‹(seq cnd) and ‹(first cnd) = '←››) (throw (derp "while-let unfinished")))
+	[n v] ← (rest cnd)
+	`(loop ~[n v] (if ‹~n ≢ nil› (d ~@… (recur ~v)))) ))
+(defn print-input-stream[v] (d br ← (java.io.BufferedReader. (java.io.InputStreamReader. v)) (run/in 0 #(while-let ‹v ← (. br readLine)› (println v))) ))
+
+(defn exec-blocking[cmd dir] (d
+	t ← (-> (ProcessBuilder. (. cmd split " "))
+		(.directory (file dir))
+		(.start))
+	(print-input-stream (. t getInputStream))
+	(print-input-stream (. t getErrorStream))
+	(. t waitFor)
+	))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; specific utils ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
 (defn bi=[a b] (d
 	[a b] ← (map #(. (. (. % getRaster) getDataBuffer) getData) [a b])
 	(java.util.Arrays/equals a b)))
-(defn bi-merge=r[a b] (image.transform/px_array_merge_Er (bi-pixels a) (bi-pixels b)) b)
-(defn bi-mask[v mask] (d r ← (bi (bi-x v) (bi-y v)) (image.transform/px_array_mask (bi-pixels v) mask (bi-pixels r)) r))
-(defn bi-mask=[v mask] (image.transform/px_array_mask_E (bi-pixels v) mask) v)
-(defn bi-diff-mask[a b] (image.transform/px_array_diff_mask (bi-pixels a) (bi-pixels b)))
-(defn mask-add-borders[mask] (d [X Y] ← (SCREEN_SIZE) (image.transform/mask_add_borders mask X Y)))
 
 (defn read-image-int[path] (bi-ensure-int-array (read-image path)))
 
@@ -55,28 +69,46 @@
 
 (def screens-dir (str (System/getenv "SKRYL")"/history/screens/"))
 
-(defn capture[] (write-image (print-screen) (str screens-dir (datestr)".png")))
+(defn capture[] (write-image (print-screen) (str screens-dir (datestr "yyyy-MM-dd/HH.mm.ss.'png'"))))
+(defn main[] (init-loops) (swap! loops conj (run/repeat 10 #(capture))) nil)
 
-(defn realign[ai bf] (d
-	bi ← (read-image-int bf)
-	del ← #(d (. (file bf) delete) ai)
-	(if ‹ai bi= bi›
-		(del)
-		(d	mask ← (bi-diff-mask ai bi)
-			sum ← (image.transform/bool_array_sum mask)
-			(cond
-				‹sum < (px2 100000)› (del)
-				‹sum < (px2 500000)› (d (write-image (bi-mask bi (mask-add-borders mask)) bf) bi)
-				:else bi
-				)))))
-;(defn realign-f[af bf] (realign (read-image-int af) bf))
-(defn realign-all[] (d
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; compression ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
+
+(defn filter-duplicates[dir] (d
 	i ← (atom 0)
 	ai ← (atom nil)
-	(doseq [bf (vec (. (file (str screens-dir"../screens0")) listFiles))]
-		(println "realigning" (swap! i inc))
-		(if ‹@ai is nil› (reset! ai (read-image-int bf)) (reset! ai (realign @ai bf))))
+	(doseq [bf (sort (. (file dir) list))] (d
+		(println "filtering" (swap! i inc))
+		bf ← (file dir bf)
+		bi ← (read-image-int bf)
+		(if ‹‹@ai ≢ nil› and ‹‹@ai bi= bi› or ‹(image.transform/px_array_diff_count (bi-pixels @ai) (bi-pixels bi)) < (px2 100000)›››
+			(. bf delete)
+			(reset! ai bi)
+			)))
 	))
-(defn realign-last[] );(apply realign-f (slice (sort (map #(. % getAbsolutePath) (. (file screens-dir) listFiles))) -2 / /)))
 
-(defn main[] (init-loops) (swap! loops conj (run/repeat 10 #(d (capture) (realign-last)))) nil)
+(defn compress[dir] (d
+	timestamps ← (str/join "\n" (map #(subs % 0 8) (sort (. (file dir) list))))
+	i ← (atom -1)
+	(doseq [f (sort (. (file dir) list))]
+		(. (file dir f) renameTo (file dir (format "%08d.png" (swap! i inc)))))
+	(exec-blocking "ffmpeg -r 10 -i %08d.png -vcodec ffv1 -pix_fmt yuv420p images.avi" dir)
+	(doseq [f (. (file dir) list)] (if (. f endsWith ".png") (. (file dir f) delete)))
+	(spit (file dir "timestamps.txt") timestamps)
+	))
+
+(defn decompress[dir] (d
+	timestamps ← (slurp (file dir "timestamps.txt"))
+	(exec-blocking "ffmpeg -i images.avi -an %08d.png" dir)
+	(. (file dir "images.avi") delete)
+	(. (file dir "timestamps.txt") delete)
+	(mapv (λ[f n] (. (file dir f) renameTo (file dir n)))
+		(sort (. (file dir) list))
+		(map #(str %".png") (. timestamps split "\n")))
+	))
+
+(defn nightly[dir] (d
+	dir ← (file screens-dir dir)
+	(filter-duplicates dir)
+	(compress dir)
+	))
