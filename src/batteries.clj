@@ -2,6 +2,7 @@
 
 (ns batteries)
 (require '[clojure.string :as str])
+(use '[clojure.walk :only (prewalk postwalk)])
 
 (defn flip[f] #(f %2 %))
 (defmacro def+[names v] `(let [~'def+-t ~v] ~@(map #(do `(def ~% ~'def+-t)) names)))
@@ -191,5 +192,16 @@
 (def-arrayfn min+ min)
 (def-arrayfn max+ max)
 (defn avg+[& …] ‹(apply ++ …) D+ (count …)›)
+
+; unpolished utils, deux
+(defmacro while-letd[cnd & …] (d
+	(if (¬ ‹(seq? cnd) and ‹(first cnd) = '←››) (throw (derp "while-letd unfinished")))
+	[n v] ← (rest cnd)
+	`(loop ~[n v] (if ‹~n ≢ nil› (d ~@… (recur ~v)))) ))
+(defmacro if-letd[cnd & …] (d
+	bind ← (atom nil)
+	cnd ← (prewalk #(d (if ‹(seq? %) and ‹(first %) = '←›› (d [_ n v] ← % (reset! bind [n v]) n) %)) cnd)
+	(if (¬ @bind) (throw (derp "if-letd unfinished")))
+	`(let ~(d @bind) (if ~cnd ~@…)) ))
 
 (charchars)

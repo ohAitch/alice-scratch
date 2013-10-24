@@ -2,7 +2,9 @@
 (require '[clojure.string :as str])
 (use '[batteries :exclude [in]])
 
-; todo: break.
+; todo:
+; break.
+; !! variable loop time
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; private ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
