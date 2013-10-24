@@ -8,8 +8,8 @@
 (require 'run)
 
 ; todo:
-; detect translation, recoloration, other simple transformations
-; http://en.wikipedia.org/wiki/FFV1 ?
+; write timestamp to files?
+; record idle, filter by idle (instead of current hack, maybe?)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 ;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
@@ -38,11 +38,7 @@
 (def _robot (java.awt.Robot.))
 (defn print-screen[] (d [x y] ← (SCREEN_SIZE) (. _robot createScreenCapture (java.awt.Rectangle. 0 0 x y))))
 
-(defmacro while-let[cnd & …] (d
-	(if (¬ ‹(seq cnd) and ‹(first cnd) = '←››) (throw (derp "while-let unfinished")))
-	[n v] ← (rest cnd)
-	`(loop ~[n v] (if ‹~n ≢ nil› (d ~@… (recur ~v)))) ))
-(defn print-input-stream[v] (d br ← (java.io.BufferedReader. (java.io.InputStreamReader. v)) (run/in 0 #(while-let ‹v ← (. br readLine)› (println v))) ))
+(defn print-input-stream[v] (d br ← (java.io.BufferedReader. (java.io.InputStreamReader. v)) (run/in 0 #(while-letd ‹v ← (. br readLine)› (println v))) ))
 
 (defn exec-blocking[cmd dir] (d
 	t ← (-> (ProcessBuilder. (. cmd split " "))
@@ -107,8 +103,13 @@
 		(map #(str %".png") (. timestamps split "\n")))
 	))
 
-(defn nightly[dir] (d
+(defn filter-and-compress-screens[dir] (d
 	dir ← (file screens-dir dir)
 	(filter-duplicates dir)
 	(compress dir)
 	))
+
+(defn nightly[]
+	(if-let [v (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))]
+		(filter-and-compress-screens v)
+		(println "no uncompressed directories found before the last directory!")))
