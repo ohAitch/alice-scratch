@@ -1,3 +1,7 @@
+; usage:
+; call (main) once
+; call (nightly) daily
+
 (ns life)
 
 (require '[clojure.string :as str])
@@ -8,8 +12,9 @@
 (require 'run)
 
 ; todo:
-; write timestamp to files?
+; write timestamp to files? graphically?
 ; record idle, filter by idle (instead of current hack, maybe?)
+; call (nightly) automatically
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 ;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
