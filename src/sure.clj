@@ -50,7 +50,7 @@
 
 (defn bobgen[p] (d
 	sb ← (atom ((rand-nth bob-soul-bits))) {
-	:name (str (esc/fg (rand-nth "12359abc")) (namegen) esc/basic)
+	:name (esc/fg (rand-nth "12359abc") (namegen))
 	:spirit (atom 10)
 	:pos (atom p)
 	:soul (λ[grid-up grid-down self]
@@ -93,12 +93,12 @@
 		#(if-letd ‹v ← @(@grid-up %)› (v :name) "     ")
 		#(d t ← @(@grid-up %) (if t
 			(d t ← @(t :spirit) (if ‹t < 10›
-				(format (str"q"(esc/fg :cyan)"%4.2f"esc/basic) (float t))
-				(format (str"q"(esc/fg :cyan+)"%4d"esc/basic) ⌊t⌋)
+				(format (str"q"(esc/fg :cyan "%4.2f")) (float t))
+				(format (str"q"(esc/fg :cyan+ "%4d")) ⌊t⌋)
 				)) "     "))
 		#(if-let [v @(@grid-up %)] ((v :soulstr)) "     ")
-		#(if-let [v @(@grid-up %)] (d a ← ⌊@(v :age)⌋ (str (esc/fg (cond ‹a < 10› :black ‹a < 30› :black+ ‹a < 100› :grey :else :white))(format "a%4d" a)esc/basic)) "     ")
-		#(format (str"*"(esc/fg :cyan)"%3d"esc/basic"*") ⌊@(@grid-down %)⌋)
+		#(if-let [v @(@grid-up %)] (d a ← ⌊@(v :age)⌋ (esc/color (cond ‹a < 10› :black ‹a < 30› :black+ ‹a < 100› :grey ‹a < 200› :white :else :black) (cond ‹a < 200› :black :else :grey) (format "a%4d" a))) "     ")
+		#(format (str"*"(esc/fg :cyan "%3d")"*") ⌊@(@grid-down %)⌋)
 		])
 	(swap! loops conj (run/repeat 0.1 (λ[]
 		; format and print
@@ -118,7 +118,7 @@
 
 	; physics
 	(run/in 0 (λ me[]
-		(dotimes [y 9] (dotimes [x 13] (swap! (@grid-down [x y]) + 0.05)))
+		(dotimes [y 9] (dotimes [x 13] (swap! (@grid-down [x y]) + 0.04)))
 		(doseq [soul @souls] (swap! (soul :age) + 0.1))
 		; random bob gen
 		(if ‹(rand) < 0.2› (d
