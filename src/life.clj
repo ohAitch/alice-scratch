@@ -17,6 +17,7 @@
 ; call (nightly) automatically
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
+
 ;;;;;  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ;;;;;
 (d nsn ← (. *ns* getName) (defn r[] (eval `(d (use '~nsn :reload-all) ~'(main)))))
 (defn init-loops[] (if →loops (mapv run/cancel @loops)) (def loops (atom [])))
@@ -31,6 +32,7 @@
       (. me getRGB 0 0 (bi-x me) (bi-y me) (bi-pixels r) 0 (bi-x me))
       r)))
 ;;;;; un-dup
+(defn bi-size[me] [(bi-x me) (bi-y me)])
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; generic utils ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
@@ -57,6 +59,7 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; specific utils ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
 (defn bi=[a b] (d
+	; breaks if a and b have different data buffer formats
 	[a b] ← (map #(. (. (. % getRaster) getDataBuffer) getData) [a b])
 	(java.util.Arrays/equals a b)))
 
@@ -82,7 +85,7 @@
 		(println "filtering" (swap! i inc))
 		bf ← (file dir bf)
 		bi ← (read-image-int bf)
-		(if ‹‹@ai ≢ nil› and ‹‹@ai bi= bi› or ‹(image.transform/px_array_diff_count (bi-pixels @ai) (bi-pixels bi)) < (px2 100000)›››
+		(if ‹‹@ai ≢ nil› and ‹‹(bi-size @ai) ≠ (bi-size bi)› or ‹@ai bi= bi› or ‹(image.transform/px_array_diff_count (bi-pixels @ai) (bi-pixels bi)) < (px2 100000)›››
 			(. bf delete)
 			(reset! ai bi)
 			)))
@@ -97,7 +100,6 @@
 	(doseq [f (. (file dir) list)] (if (. f endsWith ".png") (. (file dir f) delete)))
 	(spit (file dir "timestamps.txt") timestamps)
 	))
-
 (defn decompress[dir] (d
 	timestamps ← (slurp (file dir "timestamps.txt"))
 	(exec-blocking "ffmpeg -i images.avi -an %08d.png" dir)
@@ -108,13 +110,10 @@
 		(map #(str %".png") (. timestamps split "\n")))
 	))
 
-(defn filter-and-compress-screens[dir] (d
-	dir ← (file screens-dir dir)
-	(filter-duplicates dir)
-	(compress dir)
-	))
-
-(defn nightly[]
-	(if-let [v (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))]
-		(filter-and-compress-screens v)
-		(println "no uncompressed directories found before the last directory!")))
+(defn nightly
+	([]
+		(if-let [v (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))]
+			(nightly (file screens-dir v))
+			(println "no uncompressed directories found before the last directory!")))
+	([dir] (filter-duplicates dir) (compress dir))
+	)
