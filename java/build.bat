@@ -1,7 +1,7 @@
 mkdir bin
 
 cd src
-javac -d ../bin -cp %CLOJURE%;../bin/* image/*.java
+javac -d ../bin -cp %CLOJURE%;../bin/*;../../dep/* image/*.java idle/*.java
 cd ..
 
 cd bin

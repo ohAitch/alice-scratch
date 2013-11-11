@@ -13,8 +13,8 @@
 
 ; todo:
 ; write timestamp to files? graphically?
-; record idle, filter by idle (instead of current hack, maybe?)
 ; call (nightly) automatically
+; filter by idle as well as or instead of the current hack
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
@@ -73,7 +73,7 @@
 
 (def screens-dir (str (System/getenv "SKRYL")"/history/screens/"))
 
-(defn capture[] (write-image (print-screen) (str screens-dir (datestr "yyyy-MM-dd/HH.mm.ss.'png'"))))
+(defn capture[] (write-image (print-screen) (str screens-dir (format (datestr "yyyy-MM-dd/HH.mm.ss' %d.png'") (long (idle.$/idle-time))))))
 (defn main[] (init-loops) (swap! loops conj (run/repeat 10 #(capture))) nil)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; compression ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
