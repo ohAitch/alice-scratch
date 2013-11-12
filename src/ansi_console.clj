@@ -34,13 +34,16 @@
 (def show-cursor "[?25h")
 
 ; colors
-(defn fg[color v] (d [bright color] ← (→_ansi-color-16 color) (str "["(if bright "1" "22")"m[3"color"m"v →default-style)))
-(defn bg[color v] (str"[4"(→_ansi-color-8 color)"m"v default-style))
-(defn color[fgc bgc v] (bg bgc (fg fgc v)))
-
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; default style ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
-
 (def default-style "[0m")
+(defn fg
+	([color] (d [bright color] ← (→_ansi-color-16 color) (str "["(if bright "1" "22")"m[3"color"m")))
+	([color v] (str (fg color) v default-style)))
+(defn bg
+	([color] (str"[4"(→_ansi-color-8 color)"m"))
+	([color v] (str (bg color) v default-style)))
+(defn color
+	([fgc bgc] (bg bgc (fg fgc)))
+	([fgc bgc v] (str (color fgc bgc) v default-style)))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; ansi color name tables ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
