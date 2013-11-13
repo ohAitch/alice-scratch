@@ -1,7 +1,3 @@
-; usage:
-; call (main) once
-; call (nightly) daily
-
 (ns life)
 
 (require '[clojure.string :as str])
@@ -13,7 +9,6 @@
 
 ; todo:
 ; write timestamp to files? graphically?
-; call (nightly) automatically
 ; fix 2013-11-02
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
@@ -76,7 +71,10 @@
 (def screens-dir (str (System/getenv "SKRYL")"/history/screens/"))
 
 (defn capture[] (write-image (print-screen) (str screens-dir (format (datestr "yyyy-MM-dd/HH.mm.ss' %d.png'") (long (idle.$/idle-time))))))
-(defn main[] (init-loops) (swap! loops conj (run/repeat CAPTURE_PERIOD #(capture))) nil)
+(defn main[] (init-loops)
+	(swap! loops conj (run/repeat CAPTURE_PERIOD #(capture)))
+	(swap! loops conj (run/in 60 #(run/repeat ‹3600 * 4› #(→nightly))))
+	nil)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; compression ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
