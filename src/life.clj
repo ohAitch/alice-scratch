@@ -14,7 +14,7 @@
 ; todo:
 ; write timestamp to files? graphically?
 ; call (nightly) automatically
-; filter by idle as well as or instead of the current hack
+; fix 2013-11-02
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
@@ -71,28 +71,39 @@
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; main ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
+(def CAPTURE_PERIOD 10) ; seconds
+
 (def screens-dir (str (System/getenv "SKRYL")"/history/screens/"))
 
 (defn capture[] (write-image (print-screen) (str screens-dir (format (datestr "yyyy-MM-dd/HH.mm.ss' %d.png'") (long (idle.$/idle-time))))))
-(defn main[] (init-loops) (swap! loops conj (run/repeat 10 #(capture))) nil)
+(defn main[] (init-loops) (swap! loops conj (run/repeat CAPTURE_PERIOD #(capture))) nil)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; compression ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
+(defn filter-idle[dir] (d
+	i ← (atom 0)
+	(doseq [f (sort (. (file dir) list))] (d
+		(println "filtering idle" (swap! i inc) f)
+		idle ← (re-find #"^[\d.]+ (\d+)\.png$" f)
+		(if ‹idle and ‹(Integer/parseInt (second idle)) ≥ CAPTURE_PERIOD››
+			(. (file dir f) delete))
+		))
+	))
 (defn filter-duplicates[dir] (d
 	i ← (atom 0)
 	ai ← (atom nil)
 	(doseq [bf (sort (. (file dir) list))] (d
-		(println "filtering" (swap! i inc))
+		(println "filtering duplicate" (swap! i inc) bf)
 		bf ← (file dir bf)
 		bi ← (read-image-int bf)
-		(if ‹‹@ai ≢ nil› and ‹‹(bi-size @ai) ≠ (bi-size bi)› or ‹@ai bi= bi› or ‹(image.transform/px_array_diff_count (bi-pixels @ai) (bi-pixels bi)) < (px2 100000)›››
+		(if ‹‹@ai ≢ nil› and ‹‹(bi-size @ai) ≠ (bi-size bi)› or ‹@ai bi= bi› or ‹(image.transform/px_array_diff_count (bi-pixels @ai) (bi-pixels bi)) < (px2 50000)›››
 			(. bf delete)
 			(reset! ai bi)
 			)))
 	))
 
 (defn compress[dir] (d
-	timestamps ← (str/join "\n" (map #(subs % 0 8) (sort (. (file dir) list))))
+	timestamps ← (str/join "\n" (map #(. % replace ".png" "") (sort (. (file dir) list))))
 	i ← (atom -1)
 	(doseq [f (sort (. (file dir) list))]
 		(. (file dir f) renameTo (file dir (format "%08d.png" (swap! i inc)))))
@@ -114,6 +125,6 @@
 	([]
 		(if-let [v (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))]
 			(nightly (file screens-dir v))
-			(println "no uncompressed directories found before the last directory!")))
-	([dir] (filter-duplicates dir) (compress dir))
+			(println "no uncompressed directories found before the last directory" (datestr "@ yyyy-MM-dd HH:mm:ss"))))
+	([dir] (filter-idle dir) (filter-duplicates dir) (compress dir))
 	)
