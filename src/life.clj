@@ -51,6 +51,8 @@
 	(. t waitFor)
 	))
 
+(defn ?[f v] (if ‹v ≢ nil› (f v) nil))
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; specific utils ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
 (defn bi=[a b] (d
@@ -73,7 +75,7 @@
 (defn capture[] (write-image (print-screen) (str screens-dir (format (datestr "yyyy-MM-dd/HH.mm.ss' %d.png'") (long (idle.$/idle-time))))))
 (defn main[] (init-loops)
 	(swap! loops conj (run/repeat CAPTURE_PERIOD #(capture)))
-	(swap! loops conj (run/in 60 #(run/repeat ‹3600 * 4› #(→nightly))))
+	(run/in 60 #(swap! loops conj (run/repeat ‹60 * 10› #(? #(→nightly %) (→uncompressed-dir)))))
 	nil)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; compression ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
@@ -119,10 +121,9 @@
 		(map #(str %".png") (. timestamps split "\n")))
 	))
 
-(defn nightly
-	([]
-		(if-let [v (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))]
-			(nightly (file screens-dir v))
-			(println "no uncompressed directories found before the last directory" (datestr "@ yyyy-MM-dd HH:mm:ss"))))
-	([dir] (filter-idle dir) (filter-duplicates dir) (compress dir))
-	)
+(defn uncompressed-dir[] (? #(file screens-dir %) (last (remove #(. (file (file screens-dir %) "images.avi") exists) (drop 1 (reverse (sort (. (file screens-dir) list))))))))
+(defn nightly[dir]
+	(println "filtering and compressing" dir)
+	(filter-idle dir)
+	(filter-duplicates dir)
+	(compress dir))
