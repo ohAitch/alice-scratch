@@ -34,13 +34,16 @@
 (def show-cursor "[?25h")
 
 ; colors
-(defn fg[color v] (d [bright color] ← (→_ansi-color-16 color) (str "["(if bright "1" "22")"m[3"color"m"v →default-style)))
-(defn bg[color v] (str"[4"(→_ansi-color-8 color)"m"v default-style))
-(defn color[fgc bgc v] (bg bgc (fg fgc v)))
-
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; default style ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
-
 (def default-style "[0m")
+(defn fg
+	([color] (d [bright color] ← (→_ansi-color-16 color) (str "["(if bright "1" "22")"m[3"color"m")))
+	([color v] (str (fg color) v default-style)))
+(defn bg
+	([color] (str"[4"(→_ansi-color-8 color)"m"))
+	([color v] (str (bg color) v default-style)))
+(defn color
+	([fgc bgc] (bg bgc (fg fgc)))
+	([fgc bgc v] (str (color fgc bgc) v default-style)))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~; ansi color name tables ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 
@@ -49,23 +52,23 @@
 
 ; tables
 (def _ansi-color-table-8 (many-to-one
-  ["0" "black"           ] 0
-  ["1" "red"             ] 1
-  ["2" "green"           ] 2
-  ["3" "yellow" "brown"  ] 3
-  ["4" "blue"            ] 4
-  ["5" "magenta" "purple"] 5
-  ["6" "cyan"            ] 6
-  ["7" "grey" "white"    ] 7))
+	["0" "black"           ] 0
+	["1" "red"             ] 1
+	["2" "green"           ] 2
+	["3" "yellow" "brown"  ] 3
+	["4" "blue"            ] 4
+	["5" "magenta" "purple"] 5
+	["6" "cyan"            ] 6
+	["7" "grey" "white"    ] 7))
 (def _ansi-color-table-16 (merge
-  ; from, say, "red" (in _ansi-color-table-8), generate "light red" "bright red" "red+"
-  (apply hash-map (apply concat (mapcat (fn [[k v]] (let [v [true v]] [[(str "light "k) v] [(str "bright "k) v] [(str k"+") v]])) _ansi-color-table-8)))
-  (many-to-one
-    ["8" "darkgrey" "dark grey" "dark_grey" "dark-grey"] [true 0]
-    ["9"                                               ] [true 1]
-    ["10" "a"                                          ] [true 2]
-    ["11" "b"                                          ] [true 3]
-    ["12" "c"                                          ] [true 4]
-    ["13" "d"                                          ] [true 5]
-    ["14" "e"                                          ] [true 6]
-    ["15" "f" "white"                                  ] [true 7])))
+	; from, say, "red" (in _ansi-color-table-8), generate "light red" "bright red" "red+"
+	(apply hash-map (apply concat (mapcat (fn [[k v]] (let [v [true v]] [[(str "light "k) v] [(str "bright "k) v] [(str k"+") v]])) _ansi-color-table-8)))
+	(many-to-one
+		["8" "darkgrey" "dark grey" "dark_grey" "dark-grey"] [true 0]
+		["9"                                               ] [true 1]
+		["10" "a"                                          ] [true 2]
+		["11" "b"                                          ] [true 3]
+		["12" "c"                                          ] [true 4]
+		["13" "d"                                          ] [true 5]
+		["14" "e"                                          ] [true 6]
+		["15" "f" "white"                                  ] [true 7])))
