@@ -3,7 +3,7 @@
 function overload(){var fns = dict_by(m('length'),arguments); return function(){return fns[arguments.length].apply(this,arguments)}}
 function bind(root,member){return root[member].bind(root)}
 function argslice(args,i){return Array.prototype.slice.apply(args).slice(i)}
-function m(m){var args = argslice(arguments,1); // m('member') is like .member
+function m(m){var args = argslice(arguments,1); // m('member',args) → function(v){return v.member(args)}
 	return args.length == 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
 	:      args.length == 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
 	:                        function(v){return v[m].apply(v,args)}}
@@ -13,9 +13,11 @@ function is(a,b){return a === b}
 var def = function(f){this[f.name] = f}.bind(this)
 function dict_by(f,sq){var r = {}; for(var i=0;i<sq.length;i++) r[f(sq[i])] = sq[i]; return r}
 
-function isa(clas){return function(v){return v instanceof clas}}
+function isa(clas){return function(v){return v instanceof clas}} // should probably just use cmp
 
-function sub(v,i){return v[i<0? i+v.length : i]}
+var sub = overload(
+	function(v,i){return v[i<0? i+v.length : i]},
+	function(i){return function(v){return sub(v,i)}})
 
 //===--------------------------------------------===// misc utils //===--------------------------------------------===//
 
@@ -30,6 +32,8 @@ function rand_nth(vs){return vs.length == 0? undefined : vs[Math.floor(rand()*vs
 
 //===--------------------------------------------===// misc mathy utils //===--------------------------------------------===//
 
+var min = Math.min
+var max = Math.max
 Math.TAU = Math.PI*2
 function polar(r,t){return [r*Math.cos(t), r*Math.sin(t)]}
 
@@ -42,6 +46,8 @@ putE(Array.prototype,{
 	mul:coercing_arith_v(function(a,b){return a*b}),
 	div:coercing_arith_v(function(a,b){return a/b}),
 	mod:coercing_arith_v(function(a,b){return a%b}),
+	min:coercing_arith_v(function(a,b){return min(a,b)}),
+	max:coercing_arith_v(function(a,b){return max(a,b)}),
 	abs:function(){return Math.sqrt(sum(this.mul(this)))},
 	sum:function(){
 		if (this.length == 0) return 0
@@ -53,22 +59,19 @@ putE(Array.prototype,{
 	norm:function(){var t = this.abs(); return t == 0? this : this.div(t)},
 	})
 
-var min = Math.min
-var max = Math.max
-
 //===--------------------------------------------===// main //===--------------------------------------------===//
 
 function vec2to1(v){return v[0]*1000000+v[1]}
 function vec1to2(v){var t = v%1000000; return [Math.round(v/1000000), t>500000? t-1000000 : t<-500000? t+1000000 : t]}
 
+// draw
 var draw = SVG('canvas')
 
-var width = 8
-var spacing = 20
+var width = 4
+var spacing = 10
 var offset = [300,150]
 
 function my_scale(v){return v.mul(spacing).add(offset)}
-
 function draw_cute_shape(points){
 	points = points.map(my_scale)
 	if (points.length == 1) {
@@ -80,36 +83,50 @@ function draw_cute_shape(points){
 	}
 	return draw.polyline(points).fill('none').stroke({width: width})}
 
+function adj(v){return [[0,1],[1,0],[0,-1],[-1,0]].map(m('add',v))}
+
 var bound = [[0,0],[0,0]]
-var space = {}
+var _space = {}; var space = overload(
+	function(){var r=[]; for (v in _space) r.push(vec1to2(v)); return r},
+	function(i){return _space[vec2to1(i)]},
+	function(i,v){return _space[vec2to1(i)] = v},
+	function(v,i,a){return space(v)})
 var lines = []
-function add_line(v){lines.push(v); v.map(function(v){space[vec2to1(v)]=true
-	bound[0][0] = min(bound[0][0],v[0])
-	bound[0][1] = min(bound[0][1],v[1])
-	bound[1][0] = max(bound[1][0],v[0])
-	bound[1][1] = max(bound[1][1],v[1])
-	})}
+function add_point(v){space(v,true); bound[0] = bound[0].min(v); bound[1] = bound[1].max(v)}
+function append_point(l,v){l.push(v); add_point(v); return l}
+function add_line(v){lines.push(v); v.map(add_point)}
 
 add_line([[0,1],[0,0],[1,0]])
 add_line([[1,1],[2,1],[2,2],[2,3]])
 add_line([[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[-1,2],[0,2],[1,2],[1,3]])
 
-function rand_in_boundary(){
-	var x = Math.floor(rand()*((bound[1][0]+1+1) - (bound[0][0]-1)) + (bound[0][0]-1))
-	var y = Math.floor(rand()*((bound[1][1]+1+1) - (bound[0][1]-1)) + (bound[0][1]-1))
-	return !space[vec2to1([x,y])] && any([[0,1],[1,0],[0,-1],[-1,0]].map(m('add',[x,y])).map(function(v){return space[vec2to1(v)]}))? [x,y] : rand_in_boundary()}
-
-// currently is bugged in that lines tend to go back over themselves
-for (var i=0;i<10;i++) {
-	line = [rand_in_boundary()]
-	var l=Math.floor(rand()*5); for (var j=0;j<l;j++) {
-		var t = rand_nth([[0,1],[1,0],[0,-1],[-1,0]].map(m('add',sub(line,-1))).filter(function(v){return !space[vec2to1(v)]}))
-		if (t) line.push(t)
+var rand_i_i = overload(function(a,b){return Math.floor(rand()*(b+1 - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
+var rand_i   = overload(function(a,b){return Math.floor(rand()*(b   - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
+function rand_weighted(v){
+	var total = sum(v.map(sub(0)))
+	if (total == 0) return undefined
+	var i = rand_i(0,total)
+	for (var j=0;j<v.length;j++) {
+		i -= v[j][0]
+		if (i < 0) return v[j][1]
 	}
-	add_line(line)
+	throw "wut"}
+
+function rand_in_boundary(){
+	var xy = [
+		rand_i_i(bound[0][0]-1,bound[1][0]+1),
+		rand_i_i(bound[0][1]-1,bound[1][1]+1)]
+	return !space(xy) && any(adj(xy).map(space))? xy : rand_in_boundary()}
+
+for (var i=0;i<200;i++) {
+	line = append_point([],rand_in_boundary())
+	for (;;) {
+		var t = rand_weighted(adj(sub(line,-1)).filter(not.cmp(space)).map(function(v){
+			return [{0:0,1:1,2:10,3:50,4:500}[sum(adj(v).map(function(v){return v?1:0}.cmp(space)))], v]}))
+		if (t) append_point(line, t)
+		if (!t || rand() < 0.2) break}
+	lines.push(line)
 }
 
 lines.map(draw_cute_shape)
-for (v in space) {var v = my_scale(vec1to2(v)); draw.circle(width*0.5).center(v[0],v[1]).fill('#888')}
-
-// maybe just a simple randomized algorithm? "take point in border, go by these random rules"
+//space().map(function(v){var v = my_scale(v); draw.circle(width*0.5).center(v[0],v[1]).fill('#888')})
