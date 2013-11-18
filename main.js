@@ -28,7 +28,19 @@ function putE(a,b){for (v in b) a[v]=b[v]; return a} // would be 'put=' if it co
 function sign(v){return v? (v < 0? -1 : 1) : 0}
 
 function any(vs){for (var i=0;i<vs.length;i++) if (vs[i]) return true; return false}
+
 function rand_nth(vs){return vs.length == 0? undefined : vs[Math.floor(rand()*vs.length)]}
+var rand_i_i = overload(function(a,b){return Math.floor(rand()*(b+1 - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
+var rand_i   = overload(function(a,b){return Math.floor(rand()*(b   - a)) + a}, function(ab){return rand_i  (ab[0],ab[1])})
+function rand_weighted(v){
+	var total = sum(v.map(sub(0)))
+	if (total == 0) return undefined
+	var i = rand_i(0,total)
+	for (var j=0;j<v.length;j++) {
+		i -= v[j][0]
+		if (i < 0) return v[j][1]
+	}
+	throw "wut"}
 
 //===--------------------------------------------===// misc mathy utils //===--------------------------------------------===//
 
@@ -64,24 +76,12 @@ putE(Array.prototype,{
 function vec2to1(v){return v[0]*1000000+v[1]}
 function vec1to2(v){var t = v%1000000; return [Math.round(v/1000000), t>500000? t-1000000 : t<-500000? t+1000000 : t]}
 
-// draw
 var draw = SVG('canvas')
-
 var width = 4
 var spacing = 10
 var offset = [300,150]
 
 function my_scale(v){return v.mul(spacing).add(offset)}
-function draw_cute_shape(points){
-	points = points.map(my_scale)
-	if (points.length == 1) {
-		points = [points[0].sub([0,width/2]), points[0].add([0,width/2])]
-	} else {
-		// for [points, reverse(points)]: it[0] += sign(it[0] - it[1]) * width/2
-		points[0] = points[0].add(points[0].sub(points[1]).sign().mul(width/2))
-		points[points.length-1] = sub(points,-1).add(sub(points,-1).sub(sub(points,-2)).sign().mul(width/2))
-	}
-	return draw.polyline(points).fill('none').stroke({width: width})}
 
 function adj(v){return [[0,1],[1,0],[0,-1],[-1,0]].map(m('add',v))}
 
@@ -94,23 +94,11 @@ var _space = {}; var space = overload(
 var lines = []
 function add_point(v){space(v,true); bound[0] = bound[0].min(v); bound[1] = bound[1].max(v)}
 function append_point(l,v){l.push(v); add_point(v); return l}
-function add_line(v){lines.push(v); v.map(add_point)}
 
+function add_line(v){lines.push(v); v.map(add_point)}
 add_line([[0,1],[0,0],[1,0]])
 add_line([[1,1],[2,1],[2,2],[2,3]])
 add_line([[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],[-1,2],[0,2],[1,2],[1,3]])
-
-var rand_i_i = overload(function(a,b){return Math.floor(rand()*(b+1 - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
-var rand_i   = overload(function(a,b){return Math.floor(rand()*(b   - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
-function rand_weighted(v){
-	var total = sum(v.map(sub(0)))
-	if (total == 0) return undefined
-	var i = rand_i(0,total)
-	for (var j=0;j<v.length;j++) {
-		i -= v[j][0]
-		if (i < 0) return v[j][1]
-	}
-	throw "wut"}
 
 function rand_in_boundary(){
 	var xy = [
@@ -128,5 +116,14 @@ for (var i=0;i<200;i++) {
 	lines.push(line)
 }
 
-lines.map(draw_cute_shape)
-//space().map(function(v){var v = my_scale(v); draw.circle(width*0.5).center(v[0],v[1]).fill('#888')})
+lines.map(function(vs){
+	vs = vs.map(my_scale)
+	if (vs.length == 1) {
+		vs = [vs[0].sub([0,width/2]), vs[0].add([0,width/2])]
+	} else {
+		// for [vs, reverse(vs)]: it[0] += (it[0] - it[1]).norm() * width/2
+		vs[0] = vs[0].add(vs[0].sub(vs[1]).norm().mul(width/2))
+		vs[vs.length-1] = sub(vs,-1).add(sub(vs,-1).sub(sub(vs,-2)).norm().mul(width/2))
+	}
+	draw.polyline(vs).fill('none').stroke({width: width})
+	})
