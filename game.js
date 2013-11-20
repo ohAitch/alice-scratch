@@ -1,3 +1,8 @@
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+/////  THE FOLLOWING MATERIAL IS DUPLICATED ELSEWHERE  ///// cute-gen/main.js
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 // greenspun's-law style
 function overload(){var fns = dict_by(m('length'),arguments); return function(){return fns[arguments.length].apply(this,arguments)}}
 function bind(root,member){return root[member].bind(root)}
@@ -6,14 +11,6 @@ function m(m){var args = argslice(arguments,1); // m('member') is like .member
 	return args.length == 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
 	:      args.length == 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
 	:                        function(v){return v[m].apply(v,args)}}
-var clas = overload(
-	function(ctor,body){putE(ctor.prototype,body); return ctor},
-	function(super_,ctor,body){
-		ctor.prototype.__proto__ = super_.prototype
-		ctor.super_ = super_
-		ctor.prototype.super_ = function(){arguments.callee.caller.super_.apply(this,arguments)}
-		return clas(ctor,body)})
-function fcat(){var fns = arguments; return function(){for (var i=0;i<fns.length;i++) fns[i].apply(this,arguments)}}
 Function.prototype.cmp = function(f){var t = this; return function(){return t.call(this,f.apply(this,arguments))}}
 function not(v){return !v}
 function is(a,b){return a === b}
@@ -51,6 +48,20 @@ putE(Array.prototype,{
 	sign:function(){return this.map(sign)},
 	norm:function(){var t = this.abs(); return t == 0? this : this.div(t)},
 	})
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//////////////////  END DUPLICATE SECTION  /////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+var clas = overload(
+	function(ctor,body){putE(ctor.prototype,body); return ctor},
+	function(super_,ctor,body){
+		ctor.prototype.__proto__ = super_.prototype
+		ctor.super_ = super_
+		ctor.prototype.super_ = function(){arguments.callee.caller.super_.apply(this,arguments)}
+		return clas(ctor,body)})
+function fcat(){var fns = arguments; return function(){for (var i=0;i<fns.length;i++) fns[i].apply(this,arguments)}}
 
 var canvas = document.getElementById('canvas')
 canvas.size = function(){return [canvas.width,canvas.height]}
