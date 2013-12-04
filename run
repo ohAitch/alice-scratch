@@ -1,1 +1,2 @@
+#!/bin/bash
 java -cp "$CLOJURE;src;dep/clj;dep/jar/jansi-1.8.jar;java/_.jar" clojure.main -e "(use 'batteries) (use 'sure) (main)" -r
