@@ -4,8 +4,8 @@ function overload(){var fns = dict_by(m('length'),arguments); return function(){
 function bind(root,member){return root[member].bind(root)}
 function argslice(args,i){return Array.prototype.slice.apply(args).slice(i)}
 function m(m){var args = argslice(arguments,1); // m('member',args) → function(v){return v.member(args)}
-	return args.length == 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
-	:      args.length == 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
+	return args.length === 0? function(v){var r = v[m]; return r instanceof Function? r.call(v) : r}
+	:      args.length === 1? function(v){var r = v[m]; return r instanceof Function? r.call(v,args[0]) : (v[m]=args[0])}
 	:                        function(v){return v[m].apply(v,args)}}
 Function.prototype.cmp = function(f){var t = this; return function(){return t.call(this,f.apply(this,arguments))}}
 function not(v){return !v}
@@ -29,12 +29,12 @@ function sign(v){return v? (v < 0? -1 : 1) : 0}
 
 function any(vs){for (var i=0;i<vs.length;i++) if (vs[i]) return true; return false}
 
-function rand_nth(vs){return vs.length == 0? undefined : vs[Math.floor(rand()*vs.length)]}
+function rand_nth(vs){return vs.length === 0? undefined : vs[Math.floor(rand()*vs.length)]}
 var rand_i_i = overload(function(a,b){return Math.floor(rand()*(b+1 - a)) + a}, function(ab){return rand_i_i(ab[0],ab[1])})
 var rand_i   = overload(function(a,b){return Math.floor(rand()*(b   - a)) + a}, function(ab){return rand_i  (ab[0],ab[1])})
 function rand_weighted(v){
 	var total = sum(v.map(sub(0)))
-	if (total == 0) return undefined
+	if (total === 0) return undefined
 	var i = rand_i(0,total)
 	for (var j=0;j<v.length;j++) {
 		i -= v[j][0]
@@ -62,13 +62,13 @@ putE(Array.prototype,{
 	max:coercing_arith_v(function(a,b){return max(a,b)}),
 	abs:function(){return Math.sqrt(sum(this.mul(this)))},
 	sum:function(){
-		if (this.length == 0) return 0
+		if (this.length === 0) return 0
 		var r = this[0]
 		if (r instanceof Array) for (var i=1;i<this.length;i++) r = r.add(this[i])
 		else                    for (var i=1;i<this.length;i++) r += this[i]
 		return r},
 	sign:function(){return this.map(sign)},
-	norm:function(){var t = this.abs(); return t == 0? this : this.div(t)},
+	norm:function(){var t = this.abs(); return t === 0? this : this.div(t)},
 	})
 
 //===--------------------------------------------===// main //===--------------------------------------------===//
@@ -118,7 +118,7 @@ for (var i=0;i<200;i++) {
 
 lines.map(function(vs){
 	vs = vs.map(my_scale)
-	if (vs.length == 1) {
+	if (vs.length === 1) {
 		vs = [vs[0].sub([0,width/2]), vs[0].add([0,width/2])]
 	} else {
 		// for [vs, reverse(vs)]: it[0] += (it[0] - it[1]).norm() * width/2
