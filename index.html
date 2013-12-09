@@ -31,8 +31,7 @@
 			$(document).ready(function(){
 				$('#zalgy').zclip({
 					path:'dep/ZeroClipboard.swf',
-					beforeCopy:function(){print('!!')},
-					copy:function(){print('!'); return $('#zalgy').val();}
+					copy:function(){return $('#zalgy').val()}
 					})})
 		</script>
 		<script>document.title = zalgify(document.title)</script>
