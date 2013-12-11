@@ -105,7 +105,6 @@ function zalgify_textarea() {document.f.zalgy.value = zalgify(document.f.origina
 function zalgify(v) {
 	var first = high_letters
 	return v.split('').map(function(v){
-		print(v,first===high_letters)
 		var second = first === high_letters? low_letters : high_letters
 		var t = first[v]; if (t) {first = second; return t} else return second[v] || v
 		}).join('')}
