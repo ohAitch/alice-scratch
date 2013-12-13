@@ -98,7 +98,6 @@ var low_letters = {}
 // shiny on autocopy
 // github page
 // http://eeemo.net/ ?
-// rapidly refresh on chardown
 
 function zalgify_textarea() {document.f.zalgy.value = zalgify(document.f.original.value)}
 
