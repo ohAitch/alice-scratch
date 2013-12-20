@@ -95,3 +95,4 @@ function music(name){
 		'ai':'tettix - earth\'s assault on the central ai.mp3'
 		}
 	return new Audio('music/'+music_short[name])}
+
