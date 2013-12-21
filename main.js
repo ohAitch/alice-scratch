@@ -111,7 +111,7 @@ Bullet.prototype.pos = function(pos){this._pos = pos; this.dom.css({left:pos[0],
 Bullet.prototype.vel = function(vel){this._vel = vel; return this}
 Bullet.prototype.show = function(){$('#main').append(this.dom); return this}
 Bullet.prototype.hide = function(){this.dom.remove(); return this}
-d
+
 for (var i=0;i<10;i++)
 	new Bullet(24+24*rand()).pos([500*rand(),300*rand()]).vel([rand()-0.5,rand()-0.5]).show()
 
