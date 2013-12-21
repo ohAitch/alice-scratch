@@ -96,15 +96,27 @@ function music(name){
 		}
 	return new Audio('music/'+music_short[name])}
 
+var mobs = []
+
 function Bullet(size){
 	this.dom = $('<div/>',{id:'bullet'+(Bullet.id++), class:'bullet'})
 			.css({height:size, width:size, 'margin-top':-size/2, 'margin-left':-size/2})
 			.append($('<div/>',{class:'bullet_outer'}).css({'border-width':size/12}))
 			.append($('<div/>',{class:'bullet_inner'}))
-	this.move_to = function(x,y){this.dom.css({left:x, top:y}); return this}
-	this.show = function(){$('#main').append(this.dom); return this}
-	this.hide = function(){this.dom.remove(); return this}
+	this._pos = [0,0]
+	this._vel = [0,0]
+	mobs.push(this)
 } Bullet.id = 0
-
+Bullet.prototype.pos = function(pos){this._pos = pos; this.dom.css({left:pos[0], top:pos[1]}); return this}
+Bullet.prototype.vel = function(vel){this._vel = vel; return this}
+Bullet.prototype.show = function(){$('#main').append(this.dom); return this}
+Bullet.prototype.hide = function(){this.dom.remove(); return this}
+d
 for (var i=0;i<10;i++)
-	new Bullet(24+24*rand()).move_to(500*rand(),300*rand()).show()
+	new Bullet(24+24*rand()).pos([500*rand(),300*rand()]).vel([rand()-0.5,rand()-0.5]).show()
+
+setInterval(function(){
+	mobs.map(function(v){
+		v.pos(v._pos.add(v._vel))
+	})
+	},10)
