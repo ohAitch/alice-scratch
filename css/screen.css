@@ -21,9 +21,10 @@
 /* line 25, ../_sass/screen.scss */
 .bullet {
   position: absolute;
+  transition: left 100s linear, top 100s linear;
 }
 
-/* line 28, ../_sass/screen.scss */
+/* line 29, ../_sass/screen.scss */
 .bullet_outer {
   border: solid #f00;
   border-radius: 100%;
@@ -34,7 +35,7 @@
   top: 0%;
 }
 
-/* line 36, ../_sass/screen.scss */
+/* line 37, ../_sass/screen.scss */
 .bullet_inner {
   height: 100%;
   width: 100%;
@@ -46,22 +47,17 @@
   background-image: -moz-radial-gradient(center, ellipse cover, #e50000 20%, #990000 25%, #990000 35%, rgba(153, 0, 0, 0) 50%);
   background-image: -o-radial-gradient(center, ellipse cover, #e50000 20%, #990000 25%, #990000 35%, rgba(153, 0, 0, 0) 50%);
   background-image: radial-gradient(center, ellipse cover, #e50000 20%, #990000 25%, #990000 35%, rgba(153, 0, 0, 0) 50%);
-  -webkit-animation: bullet_inner_pulsate 0.5s ease-out infinite;
+  -webkit-animation: bullet_inner_pulsate 0.4s ease-out infinite;
 }
 
 @-webkit-keyframes bullet_inner_pulsate {
-  /* line 45, ../_sass/screen.scss */
-  0% {
-    -webkit-transform: scale(0.7, 0.7);
-  }
-
   /* line 46, ../_sass/screen.scss */
-  50% {
-    -webkit-transform: scale(1.1, 1.1);
+  from, to {
+    -webkit-transform: scale(0.7, 0.7);
   }
 
   /* line 47, ../_sass/screen.scss */
-  100% {
-    -webkit-transform: scale(0.7, 0.7);
+  50% {
+    -webkit-transform: scale(1.1, 1.1);
   }
 }

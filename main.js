@@ -51,7 +51,7 @@ function rand_weighted(v){
 
 var min = Math.min
 var max = Math.max
-Math.TAU = Math.PI*2
+var TAU = Math.PI*2
 function polar(r,t){return [r*Math.cos(t), r*Math.sin(t)]}
 
 function coercing_arith_v(f){return function(v){
@@ -99,24 +99,74 @@ function music(name){
 var mobs = []
 
 function Bullet(size){
-	this.dom = $('<div/>',{id:'bullet'+(Bullet.id++), class:'bullet'})
-			.css({height:size, width:size, 'margin-top':-size/2, 'margin-left':-size/2})
-			.append($('<div/>',{class:'bullet_outer'}).css({'border-width':size/12}))
-			.append($('<div/>',{class:'bullet_inner'}))
-	this._pos = [0,0]
-	this._vel = [0,0]
+	this.dom = $('<div/>',{class:'bullet'})
+		.css({left:0, top:0, height:size, width:size, 'margin-top':-size/2, 'margin-left':-size/2})
+		.append($('<div/>',{class:'bullet_outer'}).css({'border-width':size/12}))
+		.append($('<div/>',{class:'bullet_inner'}))
+	this.start = [0,0]
+	this.vel = [0,0]
 	mobs.push(this)
-} Bullet.id = 0
-Bullet.prototype.pos = function(pos){this._pos = pos; this.dom.css({left:pos[0], top:pos[1]}); return this}
-Bullet.prototype.vel = function(vel){this._vel = vel; return this}
+}
+Bullet.prototype.dead = false
 Bullet.prototype.show = function(){$('#main').append(this.dom); return this}
 Bullet.prototype.hide = function(){this.dom.remove(); return this}
-
-for (var i=0;i<10;i++)
-	new Bullet(24+24*rand()).pos([500*rand(),300*rand()]).vel([rand()-0.5,rand()-0.5]).show()
+Bullet.prototype.draw = function(){
+	if (this.still === undefined) {
+		this.still = true
+		var there = this.start
+		var x = there[0], y = there[1]
+		this.dom.css({left:x,top:y})
+		var self = this
+		setTimeout(function(){
+			var there = self.start.add(self.vel.mul(100))
+			var x = there[0], y = there[1]
+			self.dom.css({left:x,top:y})
+		},100)
+	}
+}
+Bullet.prototype.update = function(delta){
+	this.pos = this.pos || this.start
+	this.pos = this.pos.add(this.vel.mul(delta))
+	var w = $('#main').width()
+	var h = $('#main').height()
+	//print(this.pos, this.start, w, h)
+	if (!(0 <= this.pos[0] && this.pos[0] < w) ||
+		!(0 <= this.pos[1] && this.pos[1] < h))
+		{this.dead = true; this.hide()}
+	//print(this.pos)
+}
 
 setInterval(function(){
-	mobs.map(function(v){
-		v.pos(v._pos.add(v._vel))
-	})
-	},10)
+	putE(new Bullet(24+24*rand()),{start:[50,50], vel:polar(200,TAU*(0.075+0.1*rand()))}).show()
+	},50)
+
+// for (var i=0;i<100;i++)
+// 	putE(new Bullet(24+24*rand()),{pos:[1000*rand(),500*rand()], vel:[rand()-0.5,rand()-0.5].mul(500)}).show()
+
+;(function(){
+	var prev = window.performance.now()
+	setInterval(function logic(){
+		var now = window.performance.now(); var delta = (now - prev)/1000; prev = now
+		;(mobs=mobs.filter(not.cmp(m('dead')))).map(m('update',delta))
+		mobs=mobs.filter(not.cmp(m('dead')))
+		},10)
+	})()
+
+;(function(){
+	var frame_counts = [0]
+	setInterval(function update_fps(){
+		if (frame_counts.length < 5) {
+			frame_counts.push(0)
+		} else {
+			var t = frame_counts.sum()
+			frame_counts.splice(0,1)
+			frame_counts.push(0)
+			$('#fps')[0].firstChild.nodeValue = 'fps '+t
+		}
+		},200)
+	;(function draw(){
+		requestAnimationFrame(draw)
+		frame_counts[frame_counts.length-1]++
+		mobs.map(m('draw'))
+		})()
+	})()
