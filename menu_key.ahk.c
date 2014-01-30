@@ -1,6 +1,12 @@
 ###SingleInstance force
 SendMode Input
 
+#define PASTE2(a,b) a ## b
+#define PASTE2_2(a,b) PASTE2(a,b)
+#define ARG_16(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,n,...) n
+#define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+#define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
+
 ; autoclick
 #define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} #n return
 autoclick_n(^F1,10)
@@ -28,27 +34,29 @@ RCtrl & Capslock::Send ^+{Tab}
 #define U(c) U+UNICODE c
 #define C #,
 #define B SC029
-#define chord(x,y,c) ~x & y::Send `b{U(c)} ; x y :: c
-#define chord2(x,y,c) chord(x,y,c) #n chord(y,x,c)
-#define chord_2(x,y,c,d) ~x & y::Send `b{U(c)}{U(d)} ; x y :: c
-#define chord22(x,y,c,d) chord_2(x,y,c,d) #n chord_2(y,x,c,d)
-chord2(B,1,¬)
-chord2(.,`;,…)
-chord2(-,C,←)
-chord2(-,.,→)
+#define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
+#define chord_(x,y,c) ~x & y::Send `b{U(c)} ; x y :: c
+#define chord3(x,y,c) chord_(x,y,c)
+#define chord4(x,y,c,no) chord_(x,y,c) #n chord_(y,x,c)
+#define echord_2(x,y,c,d) ~x & y::Send `b{U(c)}{U(d)} ; x y :: c
+#define echord22(x,y,c,d) echord_2(x,y,c,d) #n echord_2(y,x,c,d)
+chord(B,1,¬,)
+chord(.,`;,…,)
+chord(-,C,←,)
+chord(-,.,→,)
 chord(-,Left,←)
 chord(-,Right,→)
 chord(-,Up,↑)
 chord(-,Down,↓)
-chord2(=,B,≈)
-chord2(=,/,≠)
-chord2(=,\,≢)
-chord2(=,C,≤)
-chord2(=,.,≥)
-chord2(=,e,∈)
-chord2(/,e,∉)
-chord2(C,9,⊆)
-chord2(.,0,⊇)
+chord(=,B,≈,)
+chord(=,/,≠,)
+chord(=,\,≢,)
+chord(=,C,≤,)
+chord(=,.,≥,)
+chord(=,e,∈,)
+chord(/,e,∉,)
+chord(C,9,⊆,)
+chord(.,0,⊇,)
 chord([,Up,⌈)
 chord([,Down,⌊)
 chord(],Up,⌉)
@@ -68,7 +76,7 @@ nonprintkey_chord(=,≡)
 nonprintkey_chord([,‹)
 nonprintkey_chord(],›)
 nonprintkey_chord_(Space,U+FEFF)
-; or maybe U+2060 would be better, but my phone does not render it right ...
+; or maybe U+2060 would be better, but my fb chat phone app does not render it right
 chord(0,6,⁰)
 chord(1,6,¹)
 chord(2,6,²)
@@ -93,7 +101,7 @@ chord(8,5,₈)
 chord(9,5,₉)
 chord(+,5,₊)
 chord(-,5,₋)
-chord22(1,-,₋,₁)
+echord22(1,-,₋,₁)
 chord(a,6,ᵃ)
 chord(b,6,ᵇ)
 chord(c,6,ᶜ)
