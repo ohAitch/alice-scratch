@@ -2,8 +2,8 @@
 
 function pause() { read -p 'Press [Enter] to continue . . .'; }
 
-t=$TEMP/alice.ahk
-u=$TEMP/alice.ahk.tmp
+t=$TEMP/menu_key.ahk
+u=$TEMP/menu_key.ahk.tmp
 
 cp menu_key.ahk.c $t
 sed -r -i -e 's/ ?#n ?/ NEWLINE /g' $t
@@ -15,4 +15,4 @@ sed -r -i -e 's/HASH/#/g' $t
 sed -r -i -e 's/COMMA/,/g' $t
 python 'unicode_filter.py' $t
 cd /c/
-hstart64 //NOCONSOLE "AutoHotkey ${WIN_TEMP:2}/alice.ahk"
+hstart64 //NOCONSOLE "AutoHotkey ${WIN_TEMP:2}/menu_key.ahk"

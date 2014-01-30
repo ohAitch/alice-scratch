@@ -29,121 +29,154 @@ AppsKey & RAlt::WinMinimize, A
 AppsKey & n::Send {AppsKey}w{Down}{Down}{Down}{Down}{Down}{Down}{Down}{Enter}`b
 LCtrl & Capslock::Send ^+{Tab}
 RCtrl & Capslock::Send ^+{Tab}
+~Capslock & LCtrl::Send {Capslock}^+{Tab}
+~Capslock & RCtrl::Send {Capslock}^+{Tab}
 
 ; insert unicode
 #define U(c) U+UNICODE c
 #define C #,
 #define B SC029
 #define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
-#define chord_(x,y,c) ~x & y::Send `b{U(c)} ; x y :: c
-#define chord3(x,y,c) chord_(x,y,c)
-#define chord4(x,y,c,no) chord_(x,y,c) #n chord_(y,x,c)
-#define echord_2(x,y,c,d) ~x & y::Send `b{U(c)}{U(d)} ; x y :: c
-#define echord22(x,y,c,d) echord_2(x,y,c,d) #n echord_2(y,x,c,d)
-chord(B,1,¬,)
-chord(.,`;,…,)
-chord(-,C,←,)
-chord(-,.,→,)
-chord(-,Left,←)
-chord(-,Right,→)
-chord(-,Up,↑)
-chord(-,Down,↓)
-chord(=,B,≈,)
-chord(=,/,≠,)
-chord(=,\,≢,)
-chord(=,C,≤,)
-chord(=,.,≥,)
-chord(=,e,∈,)
-chord(/,e,∉,)
-chord(C,9,⊆,)
-chord(.,0,⊇,)
-chord([,Up,⌈)
-chord([,Down,⌊)
-chord(],Up,⌉)
-chord(],Down,⌋)
-#define nonprintkey_chord(k,c) AppsKey & k::Send {U(c)} ; ≡ k :: c
-#define nonprintkey_chord_(k,c) AppsKey & k::Send {c} ; ≡ k :: c
-nonprintkey_chord(8,×)
-nonprintkey_chord(l,λ)
-nonprintkey_chord(p,π)
-nonprintkey_chord(s,σ)
-nonprintkey_chord(t,τ)
-nonprintkey_chord(e,∴)
-nonprintkey_chord(a,∧)
-nonprintkey_chord(o,∨)
-nonprintkey_chord(y,✓)
-nonprintkey_chord(=,≡)
-nonprintkey_chord([,‹)
-nonprintkey_chord(],›)
-nonprintkey_chord_(Space,U+FEFF)
-; or maybe U+2060 would be better, but my fb chat phone app does not render it right
-chord(0,6,⁰)
-chord(1,6,¹)
-chord(2,6,²)
-chord(3,6,³)
-chord(4,6,⁴)
-chord(5,6,⁵)
-chord(6,AppsKey,⁶)
-chord(7,6,⁷)
-chord(8,6,⁸)
-chord(9,6,⁹)
-chord(+,6,⁺)
-chord(-,6,⁻)
-chord(0,5,₀)
-chord(1,5,₁)
-chord(2,5,₂)
-chord(3,5,₃)
-chord(4,5,₄)
-chord(5,AppsKey,₅)
-chord(6,5,₆)
-chord(7,5,₇)
-chord(8,5,₈)
-chord(9,5,₉)
-chord(+,5,₊)
-chord(-,5,₋)
-echord22(1,-,₋,₁)
-chord(a,6,ᵃ)
-chord(b,6,ᵇ)
-chord(c,6,ᶜ)
-chord(d,6,ᵈ)
-chord(e,6,ᵉ)
-chord(f,6,ᶠ)
-chord(g,6,ᵍ)
-chord(h,6,ʰ)
-chord(i,6,ⁱ)
-chord(j,6,ʲ)
-chord(k,6,ᵏ)
-chord(l,6,ˡ)
-chord(m,6,ᵐ)
-chord(n,6,ⁿ)
-chord(o,6,ᵒ)
-chord(p,6,ᵖ)
-chord(r,6,ʳ)
-chord(s,6,ˢ)
-chord(t,6,ᵗ)
-chord(u,6,ᵘ)
-chord(v,6,ᵛ)
-chord(w,6,ʷ)
-chord(x,6,ˣ)
-chord(y,6,ʸ)
-chord(z,6,ᶻ)
-chord(a,5,ₐ)
-chord(e,5,ₑ)
-chord(h,5,ₕ)
-chord(i,5,ᵢ)
-chord(j,5,ⱼ)
-chord(k,5,ₖ)
-chord(l,5,ₗ)
-chord(m,5,ₘ)
-chord(n,5,ₙ)
-chord(o,5,ₒ)
-chord(p,5,ₚ)
-chord(r,5,ᵣ)
-chord(s,5,ₛ)
-chord(t,5,ₜ)
-chord(u,5,ᵤ)
-chord(v,5,ᵥ)
-chord(x,5,ₓ)
+#define chord_(k,l,c) ~k & l::Send `b{U(c)}
+#define chord3(k,l,c) chord_(k,l,c)
+#define chord4(k,l,c,_) chord_(k,l,c) #n chord_(l,k,c)
+#define chord_2(k,l,c1,c2,_) chord_2_(k,l,c1,c2) #n chord_2_(l,k,c1,c2)
+#define chord_2_(k,l,c,d) ~k & l::Send `b{U(c)}{U(d)}
+#define m_chord(k,c) AppsKey & k::Send {U(c)} // menu chord
+#define c_chord(k,c,_) ~Capslock & k::Send {Capslock}{U(c)} #n chord_(k,Capslock,c) // capslock chord
+#define m_chord_(k,c) AppsKey & k::Send {c}
+// misc
+chord(=,B,≈,)	// =` ≈ ↔
+m_chord(y,✓)	// ≡y ✓
+m_chord(8,∞)	// ≡8 ∞
+m_chord(NumpadMult,×) // ≡* ×
+chord(C,`;,∴)	// ,; ∴
+m_chord_(Space,U+FEFF) // or maybe U+2060 would be better, but my fb chat phone app does not render it right
+// misc that i have used in programming
+chord(.,`;,…,)	// .; … ↔
+chord(=,/,≠,)	// =/ ≠ ↔
+m_chord(=,≡)	// ≡= ≡
+chord(=,\,≢,)	// =\ ≢ ↔
+chord(=,C,≤,)	// =, ≤ ↔
+chord(=,.,≥,)	// =. ≥ ↔
+m_chord([,‹)	// ≡[ ‹
+m_chord(],›)	// ≡] ›
+// greek
+m_chord(a,α) // ≡a α
+m_chord(b,β) // ≡b β
+m_chord(d,Δ) // ≡d Δ
+m_chord(e,ε) // ≡e ε
+m_chord(l,λ) // ≡l λ
+m_chord(u,μ) // ≡u μ
+m_chord(p,π) // ≡p π
+m_chord(NumpadAdd,Σ) // ≡+ Σ
+m_chord(s,σ) // ≡s σ
+m_chord(t,τ) // ≡t τ
+m_chord(o,ω) // ≡o ω
+// blackboard bold
+c_chord(c,ℂ,)	// Ac ℂ
+c_chord(h,ℍ,)	// Ah ℍ
+c_chord(n,ℕ,)	// An ℕ
+c_chord(p,ℙ,)	// Ap ℙ
+c_chord(q,ℚ,)	// Aq ℚ
+c_chord(r,ℝ,)	// Ar ℝ
+c_chord(z,ℤ,)	// Az ℤ
+// arrows
+chord(-,C,←,)	// -, ← ↔
+chord(-,.,→,)	// -. → ↔
+chord(-,Left,←)	// -← ←
+chord(-,Right,→)// -→ →
+chord(-,Up,↑)	// -↑ ↑
+chord(-,Down,↓)	// -↓ ↓
+// logic symbols
+chord(B,1,¬,)	// `1 ¬ ↔
+chord(9,0,⊂)	// 90 ⊂
+chord(0,9,⊃)	// 09 ⊃
+chord(9,=,⊆,)	// 9= ⊆ ↔
+chord(0,=,⊇,)	// 0= ⊇ ↔
+chord(C,.,↔,)	// ,. ↔ ↔
+m_chord(6,⊕)	// ≡6 ⊕
+chord(1,e,∃,)	// 1e ∃ ↔
+chord(B,e,∄,)	// `e ∄ ↔
+chord(1,a,∀,)	// 1a ∀ ↔
+chord_2(B,a,¬,∀,) // `a ¬∀ ↔
+chord(1,n,∈,)	// 1n ∈ ↔
+chord(B,n,∉,)	// `n ∉ ↔
+chord(7,a,∧,)	// 7a ∧ ↔
+chord(\,o,∨,)	// \o ∨ ↔
+// ⌈⌊⌉⌋
+chord([,Up,⌈)   // [↑ ⌈
+chord([,Down,⌊) // [↓ ⌊
+chord(],Up,⌉)   // ]↑ ⌉
+chord(],Down,⌋) // ]↓ ⌋
+// superscripts and subscripts
+chord(0,6,⁰) // 06 ⁰
+chord(1,6,¹) // 16 ¹
+chord(2,6,²) // 26 ²
+chord(3,6,³) // 36 ³
+chord(4,6,⁴) // 46 ⁴
+chord(5,6,⁵) // 56 ⁵
+chord(6,AppsKey,⁶) // 6≡ ⁶
+chord(7,6,⁷) // 76 ⁷
+chord(8,6,⁸) // 86 ⁸
+chord(9,6,⁹) // 96 ⁹
+chord(+,6,⁺) // +6 ⁺
+chord(-,6,⁻) // -6 ⁻
+chord(0,5,₀) // 05 ₀
+chord(1,5,₁) // 15 ₁
+chord(2,5,₂) // 25 ₂
+chord(3,5,₃) // 35 ₃
+chord(4,5,₄) // 45 ₄
+chord(5,AppsKey,₅) // 5≡ ₅
+chord(6,5,₆) // 65 ₆
+chord(7,5,₇) // 75 ₇
+chord(8,5,₈) // 85 ₈
+chord(9,5,₉) // 95 ₉
+chord(+,5,₊) // +5 ₊
+chord(-,5,₋) // -5 ₋
+chord_2(1,-,₋,₁,) // 1- ₋₁ ↔
+chord(a,6,ᵃ) // a6 ᵃ
+chord(b,6,ᵇ) // b6 ᵇ
+chord(c,6,ᶜ) // c6 ᶜ
+chord(d,6,ᵈ) // d6 ᵈ
+chord(e,6,ᵉ) // e6 ᵉ
+chord(f,6,ᶠ) // f6 ᶠ
+chord(g,6,ᵍ) // g6 ᵍ
+chord(h,6,ʰ) // h6 ʰ
+chord(i,6,ⁱ) // i6 ⁱ
+chord(j,6,ʲ) // j6 ʲ
+chord(k,6,ᵏ) // k6 ᵏ
+chord(l,6,ˡ) // l6 ˡ
+chord(m,6,ᵐ) // m6 ᵐ
+chord(n,6,ⁿ) // n6 ⁿ
+chord(o,6,ᵒ) // o6 ᵒ
+chord(p,6,ᵖ) // p6 ᵖ
+chord(r,6,ʳ) // r6 ʳ
+chord(s,6,ˢ) // s6 ˢ
+chord(t,6,ᵗ) // t6 ᵗ
+chord(u,6,ᵘ) // u6 ᵘ
+chord(v,6,ᵛ) // v6 ᵛ
+chord(w,6,ʷ) // w6 ʷ
+chord(x,6,ˣ) // x6 ˣ
+chord(y,6,ʸ) // y6 ʸ
+chord(z,6,ᶻ) // z6 ᶻ
+chord(a,5,ₐ)	// a5 ₐ
+chord(e,5,ₑ)	// e5 ₑ
+chord(h,5,ₕ)		// h5 ₕ
+chord(i,5,ᵢ)	// i5 ᵢ
+chord(j,5,ⱼ) 	// j5 ⱼ
+chord(k,5,ₖ) 	// k5 ₖ
+chord(l,5,ₗ) 	// l5 ₗ
+chord(m,5,ₘ)		// m5 ₘ
+chord(n,5,ₙ)		// n5 ₙ
+chord(o,5,ₒ)	// o5 ₒ
+chord(p,5,ₚ)		// p5 ₚ
+chord(r,5,ᵣ)	// r5 ᵣ
+chord(s,5,ₛ) 	// s5 ₛ
+chord(t,5,ₜ) 	// t5 ₜ
+chord(u,5,ᵤ)	// u5 ᵤ
+chord(v,5,ᵥ)	// v5 ᵥ
+chord(x,5,ₓ)	// x5 ₓ
 
 ; run apps
 AppsKey & `;:: #n if WinExist("ahk_class ConsoleWindowClass") #n WinActivate #n return

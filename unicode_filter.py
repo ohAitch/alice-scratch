@@ -1,8 +1,7 @@
-# used by code/menu_key.sh
-
 import sys
 import codecs
 
+# left fill string to length with zeros
 def lfill(s,i):
 	while len(s) < i: s = '0'+s
 	return s
