@@ -7,7 +7,7 @@ SendMode Input
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
-; autoclick
+// autoclick
 #define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} #n return
 autoclick_n(^F1,10)
 autoclick_n(^F2,100)
@@ -15,7 +15,7 @@ autoclick_n(^F2,100)
 ^F4::setTimer, autoclick, Off
 autoclick: #n Click #n return
 
-; sound controls
+// sound controls
 AppsKey & Right::Send {Volume_Up}
 AppsKey & Left::Send {Volume_Down}
 AppsKey & Down::Send {Volume_Mute}
@@ -23,16 +23,16 @@ AppsKey & Up::Send {Media_Play_Pause}
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 
-; do things
+// do things
 AppsKey & RAlt::WinMinimize, A
 ~RAlt & AppsKey::WinMinimize, A
-AppsKey & n::Send {AppsKey}w{Down}{Down}{Down}{Down}{Down}{Down}{Down}{Enter}`b
+//AppsKey & n::Send {AppsKey}w{Down}{Down}{Down}{Down}{Down}{Down}{Down}{Enter}`b
 LCtrl & Capslock::Send ^+{Tab}
 RCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
 ~Capslock & RCtrl::Send {Capslock}^+{Tab}
 
-; insert unicode
+// insert unicode
 #define U(c) U+UNICODE c
 #define C #,
 #define B SC029
@@ -47,13 +47,15 @@ RCtrl & Capslock::Send ^+{Tab}
 #define m_chord_(k,c) AppsKey & k::Send {c}
 // misc
 chord(=,B,≈,)	// =` ≈ ↔
-m_chord(y,✓)	// ≡y ✓
+chord(C,;,∴)	// ,; ∴
 m_chord(8,∞)	// ≡8 ∞
-m_chord(NumpadMult,×) // ≡* ×
-chord(C,`;,∴)	// ,; ∴
-m_chord_(Space,U+FEFF) // or maybe U+2060 would be better, but my fb chat phone app does not render it right
+m_chord(v,✓)	// ≡v ✓
+m_chord(NumpadSub,−)	// ≡- −
+m_chord(NumpadMult,×)	// ≡* ×
+m_chord(NumpadDiv,÷)	// ≡/ ÷
+m_chord_(Space,U+FEFF)	// or maybe U+2060 would be better, but my fb chat phone app does not render it right
 // misc that i have used in programming
-chord(.,`;,…,)	// .; … ↔
+chord(.,;,…,)	// .; … ↔
 chord(=,/,≠,)	// =/ ≠ ↔
 m_chord(=,≡)	// ≡= ≡
 chord(=,\,≢,)	// =\ ≢ ↔
@@ -61,18 +63,32 @@ chord(=,C,≤,)	// =, ≤ ↔
 chord(=,.,≥,)	// =. ≥ ↔
 m_chord([,‹)	// ≡[ ‹
 m_chord(],›)	// ≡] ›
-// greek
-m_chord(a,α) // ≡a α
-m_chord(b,β) // ≡b β
-m_chord(d,Δ) // ≡d Δ
-m_chord(e,ε) // ≡e ε
-m_chord(l,λ) // ≡l λ
-m_chord(u,μ) // ≡u μ
-m_chord(p,π) // ≡p π
-m_chord(NumpadAdd,Σ) // ≡+ Σ
-m_chord(s,σ) // ≡s σ
-m_chord(t,τ) // ≡t τ
-m_chord(o,ω) // ≡o ω
+// greek . roughly ≡[a-z3] except cqvw
+#define greek(k,u,l) AppsKey & k::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
+greek(a,Α,α)
+greek(b,Β,β)
+greek(g,Γ,γ)
+greek(d,Δ,δ)
+greek(e,Ε,ε)
+greek(z,Ζ,ζ)
+greek(j,Η,η)
+greek(h,Θ,θ)
+greek(i,Ι,ι)
+greek(k,Κ,κ)
+greek(l,Λ,λ)
+greek(m,Μ,μ)
+greek(n,Ν,ν)
+greek(3,Ξ,ξ)
+//greek(,Ο,ο)
+greek(p,Π,π)
+greek(r,Ρ,ρ)
+greek(s,Σ,σ)
+greek(t,Τ,τ)
+greek(u,Υ,υ)
+greek(f,Φ,φ)
+greek(x,Χ,χ)
+greek(y,Ψ,ψ)
+greek(o,Ω,ω)
 // blackboard bold
 c_chord(c,ℂ,)	// Ac ℂ
 c_chord(h,ℍ,)	// Ah ℍ
@@ -177,11 +193,22 @@ chord(t,5,ₜ) 	// t5 ₜ
 chord(u,5,ᵤ)	// u5 ᵤ
 chord(v,5,ᵥ)	// v5 ᵥ
 chord(x,5,ₓ)	// x5 ₓ
+// make appskey-mode not break on undefined chars in [a-z0-9]
+#define no(k) AppsKey & k::return
+no(c)
+no(w)
+no(q)
+no(1)
+no(2)
+no(4)
+no(5)
+no(7)
+no(9)
+no(0)
 
-; run apps
-AppsKey & `;:: #n if WinExist("ahk_class ConsoleWindowClass") #n WinActivate #n return
-AppsKey & '::
-;'
+// run apps
+AppsKey & ;:: #n if WinExist("ahk_class ConsoleWindowClass") #n WinActivate #n return
+AppsKey & QUOTE::
 	if WinExist("ahk_class ConsoleWindowClass") {
 		WinActivate
 		Send {Up}{Enter}
@@ -203,22 +230,22 @@ AppsKey & \::
 	if WinExist("Chrome"){#n WinActivate #n Send ^t #n Send ^v{Enter} #n}
 	return
 
-;~LButton::
-;	MouseGetPos, mouse1x, mouse1y
-;	KeyWait, LButton
-;	MouseGetPos, mouse2x, mouse2y
-;	if abs(mouse1x-mouse2x) > 3 or abs(mouse1y-mouse2y) > 3
-;		gosub send_copy
-;	else {
-;		KeyWait, LButton, D T0.3
-;		if ErrorLevel = 0
-;			gosub send_copy
-;	}
-;	return
+//~LButton::
+//	MouseGetPos, mouse1x, mouse1y
+//	KeyWait, LButton
+//	MouseGetPos, mouse2x, mouse2y
+//	if abs(mouse1x-mouse2x) > 3 or abs(mouse1y-mouse2y) > 3
+//		gosub send_copy
+//	else {
+//		KeyWait, LButton, D T0.3
+//		if ErrorLevel = 0
+//			gosub send_copy
+//	}
+//	return
 
-;~MButton Up::
-;	if A_Cursor = IBeam #n gosub send_paste
-;	return
+//~MButton Up::
+//	if A_Cursor = IBeam #n gosub send_paste
+//	return
 
 send_copy:
 	if WinActive("ahk_class ConsoleWindowClass")
