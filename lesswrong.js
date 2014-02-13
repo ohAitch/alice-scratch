@@ -6,7 +6,6 @@
 	function mod(a,b){return ((a%b)+b) % b}
 
 	var ids = ['#'].concat($.map($('.new-comment'),function(v){return '#'+v.id}))
-	window.ids = ids
 	if (ids.length === 1) return
 
 	var button = $('<input id="next-unread" type="button" style="top:20px; left:20px; position:fixed; font-family:monospace; background-color:white; text-align:left">')
