@@ -1,4 +1,11 @@
-// may lack support for dynamically loaded new comments
+// ==UserScript==
+// @name       lesswrong unread controls
+// @namespace  alice0meta.lw_unread
+// @version    0.1
+// @match      http*://*.lesswrong.com/*
+// ==/UserScript==
+
+// may break on dynamically loaded new comments
 
 (function($){
 	function char(v){return typeof v === 'number'? v : v.charCodeAt(0)}
