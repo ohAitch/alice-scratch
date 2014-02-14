@@ -2,10 +2,10 @@
 
 function pause() { read -p 'Press [Enter] to continue . . .'; }
 
-t=$TEMP/menu_key.ahk
-u=$TEMP/menu_key.ahk.tmp
+t=$TEMP/global_keys.ahk
+u=$TEMP/global_keys.ahk.tmp
 
-cp menu_key.ahk.c $t
+cp global_keys.ahk.c $t
 sed -r -i -e 's/ ?#n ?/ NEWLINE /g' $t
 sed -r -i -e 's/###/HASH/g' $t
 sed -r -i -e 's/#,/COMMA/g' $t
@@ -17,4 +17,4 @@ sed -r -i -e 's/COMMA/,/g' $t
 sed -r -i -e "s/QUOTE/'/g" $t
 sed -r -i -e 's/;/`;/g' $t
 cd /c/
-hstart64 //NOCONSOLE "AutoHotkey ${WIN_TEMP:2}/menu_key.ahk"
+hstart64 //NOCONSOLE "AutoHotkey ${WIN_TEMP:2}/global_keys.ahk"
