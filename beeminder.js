@@ -14,8 +14,15 @@ function scroll_to(v) {
 }
 
 (function($){
+	// style
+	$('.delete_datapoint').css({padding:'0px 1em'})
+	
 	// if #goal-user exists, scroll to it
 	if ($('#goal-user')[0]) scroll_to('goal-user')
+
+	// get rid of the datapoint deletion dialog
+	$('.delete_datapoint').removeAttr('data-confirm')
+
 	// on this specific goal, display most recent datapoint
 	if (location.href === 'https://www.beeminder.com/alice0meta/goals/team') {
 		$('#datapoint-msg').remove()
