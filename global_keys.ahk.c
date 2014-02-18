@@ -11,8 +11,8 @@ SendMode Input
 #define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} #n return
 autoclick_n(^F1,10)
 autoclick_n(^F2,100)
-^F3::setTimer, autoclick, 1
-^F4::setTimer, autoclick, Off
+F3::setTimer, autoclick, 1
+F4::setTimer, autoclick, Off
 autoclick: #n Click #n return
 
 // sound controls
@@ -37,14 +37,16 @@ RCtrl & Capslock::Send ^+{Tab}
 #define C #,
 #define B SC029
 #define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
-#define chord_(k,l,c) ~k & l::Send `b{U(c)}
-#define chord3(k,l,c) chord_(k,l,c)
-#define chord4(k,l,c,_) chord_(k,l,c) #n chord_(l,k,c)
-#define chord_2(k,l,c1,c2,_) chord_2_(k,l,c1,c2) #n chord_2_(l,k,c1,c2)
-#define chord_2_(k,l,c,d) ~k & l::Send `b{U(c)}{U(d)}
-#define m_chord(k,c) AppsKey & k::Send {U(c)} // menu chord
-#define c_chord(k,c,_) ~Capslock & k::Send {Capslock}{U(c)} #n chord_(k,Capslock,c) // capslock chord
-#define m_chord_(k,c) AppsKey & k::Send {c}
+#define chord_(x,y,c) ~x & y::Send `b{U(c)}
+#define chord3(x,y,c) chord_(x,y,c)
+#define chord4(x,y,c,_) chord_(x,y,c) #n chord_(y,x,c)
+#define chord_2(x,y,c1,c2,_) chord_2_(x,y,c1,c2) #n chord_2_(y,x,c1,c2)
+#define chord_2_(x,y,c,d) ~x & y::Send `b{U(c)}{U(d)}
+#define m_chord(x,c) AppsKey & x::Send {U(c)} // menu chord
+#define c_chord(x,c,_) ~Capslock & x::Send {Capslock}{U(c)} #n chord_(x,Capslock,c) // capslock chord
+#define m_chord_(x,c) AppsKey & x::Send {c}
+#define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
+#define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
 // misc
 chord(=,B,≈,)	// =` ≈ ↔
 chord(C,;,∴)	// ,; ∴
@@ -64,31 +66,30 @@ chord(=,.,≥,)	// =. ≥ ↔
 m_chord([,‹)	// ≡[ ‹
 m_chord(],›)	// ≡] ›
 // greek . roughly ≡[a-z3] except cqvw
-#define greek(k,u,l) AppsKey & k::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
-greek(a,Α,α)
-greek(b,Β,β)
-greek(g,Γ,γ)
-greek(d,Δ,δ)
-greek(e,Ε,ε)
-greek(z,Ζ,ζ)
-greek(j,Η,η)
-greek(h,Θ,θ)
-greek(i,Ι,ι)
-greek(k,Κ,κ)
-greek(l,Λ,λ)
-greek(m,Μ,μ)
-greek(n,Ν,ν)
-greek(3,Ξ,ξ)
-//greek(,Ο,ο)
-greek(p,Π,π)
-greek(r,Ρ,ρ)
-greek(s,Σ,σ)
-greek(t,Τ,τ)
-greek(u,Υ,υ)
-greek(f,Φ,φ)
-greek(x,Χ,χ)
-greek(y,Ψ,ψ)
-greek(o,Ω,ω)
+m_chord_shift(a,α,Α)
+m_chord_shift(b,β,Β)
+m_chord_shift(g,γ,Γ)
+m_chord_shift(d,δ,Δ)
+m_chord_shift(e,ε,Ε)
+m_chord_shift(z,ζ,Ζ)
+m_chord_shift(j,η,Η)
+m_chord_shift(h,θ,Θ)
+m_chord_shift(i,ι,Ι)
+m_chord_shift(k,κ,Κ)
+m_chord_shift(l,λ,Λ)
+m_chord_shift(m,μ,Μ)
+m_chord_shift(n,ν,Ν)
+m_chord_shift(3,ξ,Ξ)
+//m_chord_shift(,Ο,ο)
+m_chord_shift(p,π,Π)
+m_chord_shift(r,ρ,Ρ)
+m_chord_shift(s,σ,Σ)
+m_chord_shift(t,τ,Τ)
+m_chord_shift(u,υ,Υ)
+m_chord_shift(f,φ,Φ)
+m_chord_shift(x,χ,Χ)
+m_chord_shift(y,ψ,Ψ)
+m_chord_shift(o,ω,Ω)
 // blackboard bold
 c_chord(c,ℂ,)	// Ac ℂ
 c_chord(h,ℍ,)	// Ah ℍ
@@ -151,31 +152,31 @@ chord(9,5,₉) // 95 ₉
 chord(+,5,₊) // +5 ₊
 chord(-,5,₋) // -5 ₋
 chord_2(1,-,₋,₁,) // 1- ₋₁ ↔
-chord(a,6,ᵃ) // a6 ᵃ
-chord(b,6,ᵇ) // b6 ᵇ
-chord(c,6,ᶜ) // c6 ᶜ
-chord(d,6,ᵈ) // d6 ᵈ
-chord(e,6,ᵉ) // e6 ᵉ
-chord(f,6,ᶠ) // f6 ᶠ
-chord(g,6,ᵍ) // g6 ᵍ
-chord(h,6,ʰ) // h6 ʰ
-chord(i,6,ⁱ) // i6 ⁱ
-chord(j,6,ʲ) // j6 ʲ
-chord(k,6,ᵏ) // k6 ᵏ
-chord(l,6,ˡ) // l6 ˡ
-chord(m,6,ᵐ) // m6 ᵐ
-chord(n,6,ⁿ) // n6 ⁿ
-chord(o,6,ᵒ) // o6 ᵒ
-chord(p,6,ᵖ) // p6 ᵖ
-chord(r,6,ʳ) // r6 ʳ
-chord(s,6,ˢ) // s6 ˢ
-chord(t,6,ᵗ) // t6 ᵗ
-chord(u,6,ᵘ) // u6 ᵘ
-chord(v,6,ᵛ) // v6 ᵛ
-chord(w,6,ʷ) // w6 ʷ
-chord(x,6,ˣ) // x6 ˣ
-chord(y,6,ʸ) // y6 ʸ
-chord(z,6,ᶻ) // z6 ᶻ
+chord_shift(a,6,ᵃ,ᴬ)	// a6 ᵃᴬ
+chord_shift(b,6,ᵇ,ᴮ)	// b6 ᵇᴮ
+chord(c,6,ᶜ)			// c6 ᶜ
+chord_shift(d,6,ᵈ,ᴰ)	// d6 ᵈᴰ
+chord_shift(e,6,ᵉ,ᴱ)	// e6 ᵉᴱ
+chord(f,6,ᶠ)			// f6 ᶠ
+chord_shift(g,6,ᵍ,ᴳ)	// g6 ᵍᴳ
+chord_shift(h,6,ʰ,ᴴ)	// h6 ʰᴴ
+chord_shift(i,6,ⁱ,ᴵ)	// i6 ⁱᴵ
+chord_shift(j,6,ʲ,ᴶ)	// j6 ʲᴶ
+chord_shift(k,6,ᵏ,ᴷ)	// k6 ᵏᴷ
+chord_shift(l,6,ˡ,ᴸ)	// l6 ˡᴸ
+chord_shift(m,6,ᵐ,ᴹ)	// m6 ᵐᴹ
+chord_shift(n,6,ⁿ,ᴺ)	// n6 ⁿᴺ
+chord_shift(o,6,ᵒ,ᴼ)	// o6 ᵒᴼ
+chord_shift(p,6,ᵖ,ᴾ)	// p6 ᵖᴾ
+chord_shift(r,6,ʳ,ᴿ)	// r6 ʳᴿ
+chord(s,6,ˢ)			// s6 ˢ
+chord_shift(t,6,ᵗ,ᵀ)	// t6 ᵗᵀ
+chord_shift(u,6,ᵘ,ᵁ)	// u6 ᵘᵁ
+chord_shift(v,6,ᵛ,ⱽ)		// v6 ᵛⱽ
+chord_shift(w,6,ʷ,ᵂ)	// w6 ʷᵂ
+chord(x,6,ˣ)			// x6 ˣ
+chord(y,6,ʸ)			// y6 ʸ
+chord(z,6,ᶻ)			// z6 ᶻ
 chord(a,5,ₐ)	// a5 ₐ
 chord(e,5,ₑ)	// e5 ₑ
 chord(h,5,ₕ)		// h5 ₕ
