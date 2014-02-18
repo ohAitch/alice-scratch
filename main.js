@@ -129,19 +129,14 @@ Bullet.prototype.update = function(delta){
 	this.pos = this.pos.add(this.vel.mul(delta))
 	var w = $('#main').width()
 	var h = $('#main').height()
-	//print(this.pos, this.start, w, h)
 	if (!(0 <= this.pos[0] && this.pos[0] < w) ||
 		!(0 <= this.pos[1] && this.pos[1] < h))
 		{this.dead = true; this.hide()}
-	//print(this.pos)
 }
 
 setInterval(function(){
 	putE(new Bullet(24+24*rand()),{start:[50,50], vel:polar(200,TAU*(0.075+0.1*rand()))}).show()
 	},50)
-
-// for (var i=0;i<100;i++)
-// 	putE(new Bullet(24+24*rand()),{pos:[1000*rand(),500*rand()], vel:[rand()-0.5,rand()-0.5].mul(500)}).show()
 
 ;(function(){
 	var prev = window.performance.now()
