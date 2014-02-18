@@ -1,6 +1,7 @@
 ###SingleInstance force
 SendMode Input
 
+// MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
 #define PASTE2_2(a,b) PASTE2(a,b)
 #define ARG_16(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,n,...) n
@@ -8,7 +9,7 @@ SendMode Input
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
 // autoclick
-#define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} #n return
+#define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} return
 autoclick_n(^F1,10)
 autoclick_n(^F2,100)
 F3::setTimer, autoclick, 1
@@ -23,7 +24,15 @@ AppsKey & Up::Send {Media_Play_Pause}
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 
-// do things
+// run apps
+AppsKey & ;::#n if WinExist("ahk_class ConsoleWindowClass") {#n WinActivate #n if !GetKeyState("shift") #n Send {Up}{Enter} #n} return
+AppsKey &  RCtrl::Send {Launch_Media}
+~RCtrl & AppsKey::Send {Launch_Media}
+AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") {#n WinActivate #n} else {#n Run calc #n} return
+AppsKey & /::           #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n} return
+AppsKey & \::#n Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n Send ^v{Enter} #n} return
+
+// misc
 AppsKey & RAlt::WinMinimize, A
 ~RAlt & AppsKey::WinMinimize, A
 //AppsKey & n::Send {AppsKey}w{Down}{Down}{Down}{Down}{Down}{Down}{Down}{Enter}`b
@@ -210,30 +219,6 @@ no(7)
 no(9)
 no(0)
 
-// run apps
-AppsKey & ;:: #n if WinExist("ahk_class ConsoleWindowClass") #n WinActivate #n return
-AppsKey & QUOTE::
-	if WinExist("ahk_class ConsoleWindowClass") {
-		WinActivate
-		Send {Up}{Enter}
-		}
-	return
-AppsKey &  RCtrl::Send {Launch_Media}
-~RCtrl & AppsKey::Send {Launch_Media}
-AppsKey & Enter::
-	if WinExist("Calculator"){#n WinActivate #n}
-	else {#n Run calc #n}
-	return
-AppsKey & /::
-	SetTitleMatchMode, 2
-	if WinExist("Chrome"){#n WinActivate #n Send ^t #n}
-	return
-AppsKey & \::
-	Send ^c
-	SetTitleMatchMode, 2
-	if WinExist("Chrome"){#n WinActivate #n Send ^t #n Send ^v{Enter} #n}
-	return
-
 //~LButton::
 //	MouseGetPos, mouse1x, mouse1y
 //	KeyWait, LButton
@@ -251,16 +236,16 @@ AppsKey & \::
 //	if A_Cursor = IBeam #n gosub send_paste
 //	return
 
-send_copy:
-	if WinActive("ahk_class ConsoleWindowClass")
-		Send {Enter}
-	else
-		Send ^c
-	return
+//send_copy:
+//	if WinActive("ahk_class ConsoleWindowClass")
+//		Send {Enter}
+//	else
+//		Send ^c
+//	return
 
-send_paste:
-	if WinActive("ahk_class ConsoleWindowClass")
-		Send {RButton}
-	else
-		Send ^v
-	return
+//send_paste:
+//	if WinActive("ahk_class ConsoleWindowClass")
+//		Send {RButton}
+//	else
+//		Send ^v
+//	return
