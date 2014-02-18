@@ -16,14 +16,6 @@ F3::setTimer, autoclick, 1
 F4::setTimer, autoclick, Off
 autoclick: #n Click #n return
 
-// sound controls
-AppsKey & Right::Send {Volume_Up}
-AppsKey & Left::Send {Volume_Down}
-AppsKey & Down::Send {Volume_Mute}
-AppsKey & Up::Send {Media_Play_Pause}
-AppsKey & ,::Send {Media_Prev}
-AppsKey & .::Send {Media_Next}
-
 // run apps
 AppsKey & ;::#n if WinExist("ahk_class ConsoleWindowClass") {#n WinActivate #n if !GetKeyState("shift") #n Send {Up}{Enter} #n} return
 AppsKey &  RCtrl::Send {Launch_Media}
@@ -31,6 +23,14 @@ AppsKey &  RCtrl::Send {Launch_Media}
 AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") {#n WinActivate #n} else {#n Run calc #n} return
 AppsKey & /::           #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n} return
 AppsKey & \::#n Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n Send ^v{Enter} #n} return
+
+// sound controls
+AppsKey & Right::Send {Volume_Up}
+AppsKey & Left::Send {Volume_Down}
+AppsKey & Down::Send {Volume_Mute}
+AppsKey & Up::Send {Media_Play_Pause}
+AppsKey & ,::Send {Media_Prev}
+AppsKey & .::Send {Media_Next}
 
 // misc
 AppsKey & RAlt::WinMinimize, A
@@ -58,16 +58,17 @@ RCtrl & Capslock::Send ^+{Tab}
 #define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
 #define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
 // todo: harden the syntax-in-comments
+// todo: consider making menukey sticky, like F8
 // misc
 chord(=,B,≈,)			// =` ≈ ↔
-chord(C,;,∴)			// ,; ∴
+chord(C,;,∴)			// ,; ∴ ↔
 m_chord(8,∞)			// ≡8 ∞
 m_chord(v,✓)			// ≡v ✓
 m_chord_shift(Q,‘,“)	// ≡' ‘“
 m_chord(NumpadSub,−)	// ≡- −
 m_chord(NumpadMult,×)	// ≡* ×
 m_chord(NumpadDiv,÷)	// ≡/ ÷
-m_chord_(Space,U+FEFF)	// or maybe U+2060 would be better, but my fb chat phone app does not render it right
+m_chord_(Space,U+FEFF)	// ≡  U+FEFF // or maybe U+2060 would be better, but my fb chat phone app does not render it right
 // misc that i have used in programming
 chord(.,;,…,)	// .; … ↔
 chord(=,/,≠,)	// =/ ≠ ↔
@@ -77,7 +78,7 @@ chord(=,C,≤,)	// =, ≤ ↔
 chord(=,.,≥,)	// =. ≥ ↔
 m_chord([,‹)	// ≡[ ‹
 m_chord(],›)	// ≡] ›
-// greek . roughly ≡[a-z3] except cqvw
+// greek except omicron . roughly ≡[a-z3] except cqvw
 m_chord_shift(a,α,Α)
 m_chord_shift(b,β,Β)
 m_chord_shift(g,γ,Γ)
@@ -92,7 +93,6 @@ m_chord_shift(l,λ,Λ)
 m_chord_shift(m,μ,Μ)
 m_chord_shift(n,ν,Ν)
 m_chord_shift(3,ξ,Ξ)
-//m_chord_shift(,Ο,ο)
 m_chord_shift(p,π,Π)
 m_chord_shift(r,ρ,Ρ)
 m_chord_shift(s,σ,Σ)
@@ -206,7 +206,69 @@ chord(t,5,ₜ) 	// t5 ₜ
 chord(u,5,ᵤ)	// u5 ᵤ
 chord(v,5,ᵥ)	// v5 ᵥ
 chord(x,5,ₓ)	// x5 ₓ
-// make appskey-mode not break on undefined chars in [a-z0-9]
+
+// homoiconic keyboard
+F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
+// side effects: capslock,numlock,scrolllock toggle . some modifiers are down briefly, notably alt, for which there is a weird workaround
+// did not have keyboard with ⌘Command ⌥Option ⎄Compose so did not implement these keys
+// had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
+	if Errorlevel=Max #n Send %k%
+	else if InStr(ErrorLevel,"EndKey:") {
+		k := SubStr(ErrorLevel,8)
+		if k=placeholder #n Send nothing
+#define chord_f8(c,name,before,after) else if k=name #n {#n before #n Send {U(c)} #n after #n}
+#define chord_f8_s(s,name,before,after) else if k=name #n {#n before #n Send s #n after #n}
+// modifiers
+chord_f8(^	,LControl,,)	//Ctrl
+chord_f8(^	,RControl,,)	//Ctrl
+chord_f8(⎇	,LAlt,msgbox,)	//Alt
+chord_f8(⎇	,RAlt,msgbox,)	//Alt
+chord_f8(⇧	,LShift,,)	//Shift
+chord_f8(⇧	,RShift,,)	//Shift
+chord_f8(⌘	,LWin,,)	//Win
+chord_f8(⌘	,RWin,,)	//Win
+// simple text
+chord_f8(␣	,Space,,)	//Space
+chord_f8(↹	,Tab,,)	//Tab
+chord_f8(⏎	,Enter,,)	//Enter
+chord_f8(⌦	,Delete,,)	//Delete
+chord_f8(⌫	,Backspace,,)	//Backspace
+// locks
+chord_f8(⇬	,CapsLock,,SetCapsLockState Off)	//CapsLock
+chord_f8(⇩	,NumLock,,SetNumLockState On)	//NumLock
+chord_f8(⇳	,ScrollLock,,SetScrollLockState Off)	//ScrollLock
+// navigation
+chord_f8(⇱	,Home,,)	//Home
+chord_f8(⇲	,End,,)	//End
+chord_f8(⇞	,PgUp,,)	//PgUp
+chord_f8(⇟	,PgDn,,)	//PgDn
+// special
+chord_f8(⌤	,Insert,,)	//Insert
+chord_f8(⎋	,Escape,,)	//Escape
+chord_f8(⎙	,PrintScreen,,)	//PrintScreen
+chord_f8(⎉	,Pause,,)	//Pause
+chord_f8(⎊	,CtrlBreak,,)	//Break
+// arrows
+chord_f8(↑	,Up,,)	//Up
+chord_f8(↓	,Down,,)	//Down
+chord_f8(←	,Left,,)	//Left
+chord_f8(→	,Right,,)	//Right
+// function keys
+chord_f8_s(F1	,F1,,) //F1
+chord_f8_s(F2	,F2,,) //F2
+chord_f8_s(F3	,F3,,) //F3
+chord_f8_s(F4	,F4,,) //F4
+chord_f8_s(F5	,F5,,) //F5
+chord_f8_s(F6	,F6,,) //F6
+chord_f8_s(F7	,F7,,) //F7
+chord_f8_s(F8	,F8,,) //F8
+chord_f8_s(F9	,F9,,) //F9
+chord_f8_s(F10	,F10,,) //F10
+chord_f8_s(F11	,F11,,) //F11
+chord_f8_s(F12	,F12,,) //F12
+		} return
+
+// make menukey-mode not break on undefined chars in [a-z0-9]
 #define no(k) AppsKey & k::return
 no(c)
 no(w)
