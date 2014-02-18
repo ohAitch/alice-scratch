@@ -36,6 +36,7 @@ RCtrl & Capslock::Send ^+{Tab}
 #define U(c) U+UNICODE c
 #define C #,
 #define B SC029
+#define Q QUOTE
 #define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
 #define chord_(x,y,c) ~x & y::Send `b{U(c)}
 #define chord3(x,y,c) chord_(x,y,c)
@@ -47,11 +48,13 @@ RCtrl & Capslock::Send ^+{Tab}
 #define m_chord_(x,c) AppsKey & x::Send {c}
 #define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
 #define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
+// todo: harden the syntax-in-comments
 // misc
-chord(=,B,≈,)	// =` ≈ ↔
-chord(C,;,∴)	// ,; ∴
-m_chord(8,∞)	// ≡8 ∞
-m_chord(v,✓)	// ≡v ✓
+chord(=,B,≈,)			// =` ≈ ↔
+chord(C,;,∴)			// ,; ∴
+m_chord(8,∞)			// ≡8 ∞
+m_chord(v,✓)			// ≡v ✓
+m_chord_shift(Q,‘,“)	// ≡' ‘“
 m_chord(NumpadSub,−)	// ≡- −
 m_chord(NumpadMult,×)	// ≡* ×
 m_chord(NumpadDiv,÷)	// ≡/ ÷
