@@ -1,6 +1,8 @@
 ###SingleInstance force
 SendMode Input
 
+// todo: consider making menukey sticky, like F8
+
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
 #define PASTE2_2(a,b) PASTE2(a,b)
@@ -57,17 +59,15 @@ RCtrl & Capslock::Send ^+{Tab}
 #define m_chord_(x,c) AppsKey & x::Send {c}
 #define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
 #define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
-// todo: harden the syntax-in-comments
-// todo: consider making menukey sticky, like F8
 // misc
 chord(=,B,≈,)			// =` ≈ ↔
 chord(C,;,∴)			// ,; ∴ ↔
 m_chord(8,∞)			// ≡8 ∞
 m_chord(v,✓)			// ≡v ✓
-m_chord_shift(Q,‘,“)	// ≡' ‘“
-m_chord(NumpadSub,−)	// ≡- −
-m_chord(NumpadMult,×)	// ≡* ×
-m_chord(NumpadDiv,÷)	// ≡/ ÷
+m_chord_shift(Q,‘,“)	// ≡' ‘ ⇧“
+m_chord(NumpadSub,−)	// ≡− −
+m_chord(NumpadMult,×)	// ≡× ×
+m_chord(NumpadDiv,÷)	// ≡÷ ÷
 m_chord_(Space,U+FEFF)	// ≡  U+FEFF // or maybe U+2060 would be better, but my fb chat phone app does not render it right
 // misc that i have used in programming
 chord(.,;,…,)	// .; … ↔
@@ -79,37 +79,37 @@ chord(=,.,≥,)	// =. ≥ ↔
 m_chord([,‹)	// ≡[ ‹
 m_chord(],›)	// ≡] ›
 // greek except omicron . roughly ≡[a-z3] except cqvw
-m_chord_shift(a,α,Α)
-m_chord_shift(b,β,Β)
-m_chord_shift(g,γ,Γ)
-m_chord_shift(d,δ,Δ)
-m_chord_shift(e,ε,Ε)
-m_chord_shift(z,ζ,Ζ)
-m_chord_shift(j,η,Η)
-m_chord_shift(h,θ,Θ)
-m_chord_shift(i,ι,Ι)
-m_chord_shift(k,κ,Κ)
-m_chord_shift(l,λ,Λ)
-m_chord_shift(m,μ,Μ)
-m_chord_shift(n,ν,Ν)
-m_chord_shift(3,ξ,Ξ)
-m_chord_shift(p,π,Π)
-m_chord_shift(r,ρ,Ρ)
-m_chord_shift(s,σ,Σ)
-m_chord_shift(t,τ,Τ)
-m_chord_shift(u,υ,Υ)
-m_chord_shift(f,φ,Φ)
-m_chord_shift(x,χ,Χ)
-m_chord_shift(y,ψ,Ψ)
-m_chord_shift(o,ω,Ω)
+m_chord_shift(a,α,Α) // ≡a α ⇧Α
+m_chord_shift(b,β,Β) // ≡b β ⇧Β
+m_chord_shift(g,γ,Γ) // ≡g γ ⇧Γ
+m_chord_shift(d,δ,Δ) // ≡d δ ⇧Δ
+m_chord_shift(e,ε,Ε) // ≡e ε ⇧Ε
+m_chord_shift(z,ζ,Ζ) // ≡z ζ ⇧Ζ
+m_chord_shift(j,η,Η) // ≡j η ⇧Η
+m_chord_shift(h,θ,Θ) // ≡h θ ⇧Θ
+m_chord_shift(i,ι,Ι) // ≡i ι ⇧Ι
+m_chord_shift(k,κ,Κ) // ≡k κ ⇧Κ
+m_chord_shift(l,λ,Λ) // ≡l λ ⇧Λ
+m_chord_shift(m,μ,Μ) // ≡m μ ⇧Μ
+m_chord_shift(n,ν,Ν) // ≡n ν ⇧Ν
+m_chord_shift(3,ξ,Ξ) // ≡3 ξ ⇧Ξ
+m_chord_shift(p,π,Π) // ≡p π ⇧Π
+m_chord_shift(r,ρ,Ρ) // ≡r ρ ⇧Ρ
+m_chord_shift(s,σ,Σ) // ≡s σ ⇧Σ
+m_chord_shift(t,τ,Τ) // ≡t τ ⇧Τ
+m_chord_shift(u,υ,Υ) // ≡u υ ⇧Υ
+m_chord_shift(f,φ,Φ) // ≡f φ ⇧Φ
+m_chord_shift(x,χ,Χ) // ≡x χ ⇧Χ
+m_chord_shift(y,ψ,Ψ) // ≡y ψ ⇧Ψ
+m_chord_shift(o,ω,Ω) // ≡o ω ⇧Ω
 // blackboard bold
-c_chord(c,ℂ,)	// Ac ℂ
-c_chord(h,ℍ,)	// Ah ℍ
-c_chord(n,ℕ,)	// An ℕ
-c_chord(p,ℙ,)	// Ap ℙ
-c_chord(q,ℚ,)	// Aq ℚ
-c_chord(r,ℝ,)	// Ar ℝ
-c_chord(z,ℤ,)	// Az ℤ
+c_chord(c,ℂ,)	// ⇬c ℂ ↔
+c_chord(h,ℍ,)	// ⇬h ℍ ↔
+c_chord(n,ℕ,)	// ⇬n ℕ ↔
+c_chord(p,ℙ,)	// ⇬p ℙ ↔
+c_chord(q,ℚ,)	// ⇬q ℚ ↔
+c_chord(r,ℝ,)	// ⇬r ℝ ↔
+c_chord(z,ℤ,)	// ⇬z ℤ ↔
 // arrows
 chord(-,C,←,)	// -, ← ↔
 chord(-,.,→,)	// -. → ↔
@@ -118,21 +118,21 @@ chord(-,Right,→)// -→ →
 chord(-,Up,↑)	// -↑ ↑
 chord(-,Down,↓)	// -↓ ↓
 // logic symbols
-chord(B,1,¬,)	// `1 ¬ ↔
-chord(9,0,⊂)	// 90 ⊂
-chord(0,9,⊃)	// 09 ⊃
-chord(9,=,⊆,)	// 9= ⊆ ↔
-chord(0,=,⊇,)	// 0= ⊇ ↔
-chord(C,.,↔,)	// ,. ↔ ↔
-m_chord(6,⊕)	// ≡6 ⊕
-chord(1,e,∃,)	// 1e ∃ ↔
-chord(B,e,∄,)	// `e ∄ ↔
-chord(1,a,∀,)	// 1a ∀ ↔
-chord_2(B,a,¬,∀,) // `a ¬∀ ↔
-chord(1,n,∈,)	// 1n ∈ ↔
-chord(B,n,∉,)	// `n ∉ ↔
-chord(7,a,∧,)	// 7a ∧ ↔
-chord(\,o,∨,)	// \o ∨ ↔
+chord(B,1,¬,)		// `1 ¬ ↔
+chord(9,0,⊂)		// 90 ⊂
+chord(0,9,⊃)		// 09 ⊃
+chord(9,=,⊆,)		// 9= ⊆ ↔
+chord(0,=,⊇,)		// 0= ⊇ ↔
+chord(C,.,↔,)		// ,. ↔ ↔
+m_chord(6,⊕)		// ≡6 ⊕
+chord(1,e,∃,)		// 1e ∃ ↔
+chord(B,e,∄,)		// `e ∄ ↔
+chord(1,a,∀,)		// 1a ∀ ↔
+chord_2(B,a,¬,∀,)	// `a ¬∀ ↔
+chord(1,n,∈,)		// 1n ∈ ↔
+chord(B,n,∉,)		// `n ∉ ↔
+chord(7,a,∧,)		// 7a ∧ ↔
+chord(\,o,∨,)		// \o ∨ ↔
 // ⌈⌊⌉⌋
 chord([,Up,⌈)   // [↑ ⌈
 chord([,Down,⌊) // [↓ ⌊
@@ -163,29 +163,29 @@ chord(8,5,₈) // 85 ₈
 chord(9,5,₉) // 95 ₉
 chord(+,5,₊) // +5 ₊
 chord(-,5,₋) // -5 ₋
-chord_2(1,-,₋,₁,) // 1- ₋₁ ↔
-chord_shift(a,6,ᵃ,ᴬ)	// a6 ᵃᴬ
-chord_shift(b,6,ᵇ,ᴮ)	// b6 ᵇᴮ
+chord_2(1,-,₋,₁,) // -1 ₋₁ ↔
+chord_shift(a,6,ᵃ,ᴬ)	// a6 ᵃ ⇧ᴬ
+chord_shift(b,6,ᵇ,ᴮ)	// b6 ᵇ ⇧ᴮ
 chord(c,6,ᶜ)			// c6 ᶜ
-chord_shift(d,6,ᵈ,ᴰ)	// d6 ᵈᴰ
-chord_shift(e,6,ᵉ,ᴱ)	// e6 ᵉᴱ
+chord_shift(d,6,ᵈ,ᴰ)	// d6 ᵈ ⇧ᴰ
+chord_shift(e,6,ᵉ,ᴱ)	// e6 ᵉ ⇧ᴱ
 chord(f,6,ᶠ)			// f6 ᶠ
-chord_shift(g,6,ᵍ,ᴳ)	// g6 ᵍᴳ
-chord_shift(h,6,ʰ,ᴴ)	// h6 ʰᴴ
-chord_shift(i,6,ⁱ,ᴵ)	// i6 ⁱᴵ
-chord_shift(j,6,ʲ,ᴶ)	// j6 ʲᴶ
-chord_shift(k,6,ᵏ,ᴷ)	// k6 ᵏᴷ
-chord_shift(l,6,ˡ,ᴸ)	// l6 ˡᴸ
-chord_shift(m,6,ᵐ,ᴹ)	// m6 ᵐᴹ
-chord_shift(n,6,ⁿ,ᴺ)	// n6 ⁿᴺ
-chord_shift(o,6,ᵒ,ᴼ)	// o6 ᵒᴼ
-chord_shift(p,6,ᵖ,ᴾ)	// p6 ᵖᴾ
-chord_shift(r,6,ʳ,ᴿ)	// r6 ʳᴿ
+chord_shift(g,6,ᵍ,ᴳ)	// g6 ᵍ ⇧ᴳ
+chord_shift(h,6,ʰ,ᴴ)	// h6 ʰ ⇧ᴴ
+chord_shift(i,6,ⁱ,ᴵ)	// i6 ⁱ ⇧ᴵ
+chord_shift(j,6,ʲ,ᴶ)	// j6 ʲ ⇧ᴶ
+chord_shift(k,6,ᵏ,ᴷ)	// k6 ᵏ ⇧ᴷ
+chord_shift(l,6,ˡ,ᴸ)	// l6 ˡ ⇧ᴸ
+chord_shift(m,6,ᵐ,ᴹ)	// m6 ᵐ ⇧ᴹ
+chord_shift(n,6,ⁿ,ᴺ)	// n6 ⁿ ⇧ᴺ
+chord_shift(o,6,ᵒ,ᴼ)	// o6 ᵒ ⇧ᴼ
+chord_shift(p,6,ᵖ,ᴾ)	// p6 ᵖ ⇧ᴾ
+chord_shift(r,6,ʳ,ᴿ)	// r6 ʳ ⇧ᴿ
 chord(s,6,ˢ)			// s6 ˢ
-chord_shift(t,6,ᵗ,ᵀ)	// t6 ᵗᵀ
-chord_shift(u,6,ᵘ,ᵁ)	// u6 ᵘᵁ
-chord_shift(v,6,ᵛ,ⱽ)		// v6 ᵛⱽ
-chord_shift(w,6,ʷ,ᵂ)	// w6 ʷᵂ
+chord_shift(t,6,ᵗ,ᵀ)	// t6 ᵗ ⇧ᵀ
+chord_shift(u,6,ᵘ,ᵁ)	// u6 ᵘ ⇧ᵁ
+chord_shift(v,6,ᵛ,ⱽ)		// v6 ᵛ ⇧ⱽ
+chord_shift(w,6,ʷ,ᵂ)	// w6 ʷ ⇧ᵂ
 chord(x,6,ˣ)			// x6 ˣ
 chord(y,6,ʸ)			// y6 ʸ
 chord(z,6,ᶻ)			// z6 ᶻ
@@ -209,8 +209,7 @@ chord(x,5,ₓ)	// x5 ₓ
 
 // homoiconic keyboard
 F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
-// side effects: capslock,numlock,scrolllock toggle . some modifiers are down briefly, notably alt, for which there is a weird workaround
-// did not have keyboard with ⌘Command ⌥Option ⎄Compose so did not implement these keys
+// did not have keyboard with ⌘Command ⌥Option ⎄Compose ⏏Eject or any other cool key, so did not implement these keys
 // had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
 	if Errorlevel=Max #n Send %k%
 	else if InStr(ErrorLevel,"EndKey:") {
@@ -219,53 +218,53 @@ F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWi
 #define chord_f8(c,name,before,after) else if k=name #n {#n before #n Send {U(c)} #n after #n}
 #define chord_f8_s(s,name,before,after) else if k=name #n {#n before #n Send s #n after #n}
 // modifiers
-chord_f8(^	,LControl,,)	//Ctrl
-chord_f8(^	,RControl,,)	//Ctrl
-chord_f8(⎇	,LAlt,msgbox,)	//Alt
-chord_f8(⎇	,RAlt,msgbox,)	//Alt
-chord_f8(⇧	,LShift,,)	//Shift
-chord_f8(⇧	,RShift,,)	//Shift
-chord_f8(⌘	,LWin,,)	//Win
-chord_f8(⌘	,RWin,,)	//Win
+chord_f8(^	,LControl,,)	// → F8^ ^	// Ctrl
+chord_f8(^	,RControl,,)	// → F8^ ^	// Ctrl
+chord_f8(⎇	,LAlt,msgbox,)	// → F8⎇ ⎇	// Alt
+chord_f8(⎇	,RAlt,msgbox,)	// → F8⎇ ⎇	// Alt
+chord_f8(⇧	,LShift,,)		// → F8⇧ ⇧	// Shift
+chord_f8(⇧	,RShift,,)		// → F8⇧ ⇧	// Shift
+chord_f8(⌘	,LWin,,)		// → F8⌘ ⌘	// Win
+chord_f8(⌘	,RWin,,)		// → F8⌘ ⌘	// Win
 // simple text
-chord_f8(␣	,Space,,)	//Space
-chord_f8(↹	,Tab,,)	//Tab
-chord_f8(⏎	,Enter,,)	//Enter
-chord_f8(⌦	,Delete,,)	//Delete
-chord_f8(⌫	,Backspace,,)	//Backspace
+chord_f8(␣	,Space,,)		// → F8␣ ␣		// Space
+chord_f8(↹	,Tab,,)			// → F8↹ ↹		// Tab
+chord_f8(⏎	,Enter,,)		// → F8⏎ ⏎		// Enter
+chord_f8(⌦	,Delete,,)		// → F8⌦ ⌦	// Delete
+chord_f8(⌫	,Backspace,,)	// → F8⌫ ⌫	// Backspace
 // locks
-chord_f8(⇬	,CapsLock,,SetCapsLockState Off)	//CapsLock
-chord_f8(⇩	,NumLock,,SetNumLockState On)	//NumLock
-chord_f8(⇳	,ScrollLock,,SetScrollLockState Off)	//ScrollLock
+chord_f8(⇬	,CapsLock,,SetCapsLockState Off)	// → F8⇬ ⇬	// CapsLock
+chord_f8(⇩	,NumLock,,SetNumLockState On)		// → F8⇩ ⇩	// NumLock
+chord_f8(⇳	,ScrollLock,,SetScrollLockState Off)// → F8⇳ ⇳	// ScrollLock
 // navigation
-chord_f8(⇱	,Home,,)	//Home
-chord_f8(⇲	,End,,)	//End
-chord_f8(⇞	,PgUp,,)	//PgUp
-chord_f8(⇟	,PgDn,,)	//PgDn
+chord_f8(⇱	,Home,,)	// → F8⇱ ⇱	// Home
+chord_f8(⇲	,End,,)		// → F8⇲ ⇲	// End
+chord_f8(⇞	,PgUp,,)	// → F8⇞ ⇞	// PgUp
+chord_f8(⇟	,PgDn,,)	// → F8⇟ ⇟	// PgDn
 // special
-chord_f8(⌤	,Insert,,)	//Insert
-chord_f8(⎋	,Escape,,)	//Escape
-chord_f8(⎙	,PrintScreen,,)	//PrintScreen
-chord_f8(⎉	,Pause,,)	//Pause
-chord_f8(⎊	,CtrlBreak,,)	//Break
+chord_f8(⌤	,Insert,,)		// → F8⌤ ⌤	// Insert
+chord_f8(⎋	,Escape,,)		// → F8⎋ ⎋	// Escape
+chord_f8(⎙	,PrintScreen,,)	// → F8⎙ ⎙	// PrintScreen
+chord_f8(⎉	,Pause,,)		// → F8⎉ ⎉	// Pause
+chord_f8(⎊	,CtrlBreak,,)	// → F8⎊ ⎊	// Break
 // arrows
-chord_f8(↑	,Up,,)	//Up
-chord_f8(↓	,Down,,)	//Down
-chord_f8(←	,Left,,)	//Left
-chord_f8(→	,Right,,)	//Right
+chord_f8(↑	,Up,,)		// → F8↑ ↑	// Up
+chord_f8(↓	,Down,,)	// → F8↓ ↓	// Down
+chord_f8(←	,Left,,)	// → F8← ←	// Left
+chord_f8(→	,Right,,)	// → F8→ →	// Right
 // function keys
-chord_f8_s(F1	,F1,,) //F1
-chord_f8_s(F2	,F2,,) //F2
-chord_f8_s(F3	,F3,,) //F3
-chord_f8_s(F4	,F4,,) //F4
-chord_f8_s(F5	,F5,,) //F5
-chord_f8_s(F6	,F6,,) //F6
-chord_f8_s(F7	,F7,,) //F7
-chord_f8_s(F8	,F8,,) //F8
-chord_f8_s(F9	,F9,,) //F9
-chord_f8_s(F10	,F10,,) //F10
-chord_f8_s(F11	,F11,,) //F11
-chord_f8_s(F12	,F12,,) //F12
+chord_f8_s(F1	,F1,,)	// → F8F1 F1	// F1
+chord_f8_s(F2	,F2,,)	// → F8F2 F2	// F2
+chord_f8_s(F3	,F3,,)	// → F8F3 F3	// F3
+chord_f8_s(F4	,F4,,)	// → F8F4 F4	// F4
+chord_f8_s(F5	,F5,,)	// → F8F5 F5	// F5
+chord_f8_s(F6	,F6,,)	// → F8F6 F6	// F6
+chord_f8_s(F7	,F7,,)	// → F8F7 F7	// F7
+chord_f8_s(F8	,F8,,)	// → F8F8 F8	// F8
+chord_f8_s(F9	,F9,,)	// → F8F9 F9	// F9
+chord_f8_s(F10	,F10,,)	// → F8F10 F10	// F10
+chord_f8_s(F11	,F11,,)	// → F8F11 F11	// F11
+chord_f8_s(F12	,F12,,)	// → F8F12 F12	// F12
 		} return
 
 // make menukey-mode not break on undefined chars in [a-z0-9]
