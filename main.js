@@ -47,6 +47,7 @@ function rand_weighted(v){
 var min = Math.min
 var max = Math.max
 Math.TAU = Math.PI*2
+var TAU = Math.PI*2
 function polar(r,t){return [r*Math.cos(t), r*Math.sin(t)]}
 
 function coercing_arith_v(f){return function(v){
