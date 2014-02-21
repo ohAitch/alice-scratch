@@ -4,6 +4,7 @@ SendMode Input
 // todo: consider making menukey sticky, like F8
 // ≁ ≔≕ ′″‴
 // perhaps i should make subscript use the [ key?
+// pick a better shortcut for closing windows. make it work with console windows.
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -51,7 +52,7 @@ RCtrl & Capslock::Send ^+{Tab}
 ~Capslock & RCtrl::Send {Capslock}^+{Tab}
 
 // insert unicode
-#define U(c) U+UNICODE c
+#define U(c) UNICODE c
 #define C #,
 #define B SC029
 #define Q QUOTE
@@ -59,8 +60,6 @@ RCtrl & Capslock::Send ^+{Tab}
 #define chord_(x,y,c) ~x & y::Send `b{U(c)}
 #define chord3(x,y,c) chord_(x,y,c)
 #define chord4(x,y,c,_) chord_(x,y,c) #n chord_(y,x,c)
-#define chord_2(x,y,c1,c2,_) chord_2_(x,y,c1,c2) #n chord_2_(y,x,c1,c2)
-#define chord_2_(x,y,c,d) ~x & y::Send `b{U(c)}{U(d)}
 #define m_chord(x,c) AppsKey & x::Send {U(c)} // menu chord
 #define c_chord(x,c,_) ~Capslock & x::Send {Capslock}{U(c)} #n chord_(x,Capslock,c) // capslock chord
 #define m_chord_(x,c) AppsKey & x::Send {c}
@@ -110,13 +109,13 @@ m_chord_shift(x,χ,Χ) // ≡x χ ⇧Χ
 m_chord_shift(y,ψ,Ψ) // ≡y ψ ⇧Ψ
 m_chord_shift(o,ω,Ω) // ≡o ω ⇧Ω
 // blackboard bold
-c_chord(c,ℂ,)	// ⇬c ℂ ↔
-c_chord(h,ℍ,)	// ⇬h ℍ ↔
-c_chord(n,ℕ,)	// ⇬n ℕ ↔
-c_chord(p,ℙ,)	// ⇬p ℙ ↔
-c_chord(q,ℚ,)	// ⇬q ℚ ↔
-c_chord(r,ℝ,)	// ⇬r ℝ ↔
-c_chord(z,ℤ,)	// ⇬z ℤ ↔
+c_chord(c,ℂ,)	// ⇪c ℂ ↔
+c_chord(h,ℍ,)	// ⇪h ℍ ↔
+c_chord(n,ℕ,)	// ⇪n ℕ ↔
+c_chord(p,ℙ,)	// ⇪p ℙ ↔
+c_chord(q,ℚ,)	// ⇪q ℚ ↔
+c_chord(r,ℝ,)	// ⇪r ℝ ↔
+c_chord(z,ℤ,)	// ⇪z ℤ ↔
 // arrows
 chord(-,C,←,)	// -, ← ↔
 chord(-,.,→,)	// -. → ↔
@@ -125,52 +124,52 @@ chord(-,Right,→)// -→ →
 chord(-,Up,↑)	// -↑ ↑
 chord(-,Down,↓)	// -↓ ↓
 // logic symbols
-chord(B,1,¬,)		// `1 ¬ ↔
-chord(9,0,⊂)		// 90 ⊂
-chord(0,9,⊃)		// 09 ⊃
-chord(9,=,⊆,)		// 9= ⊆ ↔
-chord(0,=,⊇,)		// 0= ⊇ ↔
-chord(C,.,↔,)		// ,. ↔ ↔
-m_chord(6,⊕)		// ≡6 ⊕
-chord(1,e,∃,)		// 1e ∃ ↔
-chord(B,e,∄,)		// `e ∄ ↔
-chord(1,a,∀,)		// 1a ∀ ↔
-chord_2(B,a,¬,∀,)	// `a ¬∀ ↔
-chord(1,n,∈,)		// 1n ∈ ↔
-chord(B,n,∉,)		// `n ∉ ↔
-chord(7,a,∧,)		// 7a ∧ ↔
-chord(\,o,∨,)		// \o ∨ ↔
+chord(B,1,¬,)	// `1 ¬ ↔
+chord(9,0,⊂)	// 90 ⊂
+chord(0,9,⊃)	// 09 ⊃
+chord(9,=,⊆,)	// 9= ⊆ ↔
+chord(0,=,⊇,)	// 0= ⊇ ↔
+chord(C,.,↔,)	// ,. ↔ ↔
+m_chord(6,⊕)	// ≡6 ⊕
+chord(1,e,∃,)	// 1e ∃ ↔
+chord(B,e,∄,)	// `e ∄ ↔
+chord(1,a,∀,)	// 1a ∀ ↔
+chord(B,a,¬∀,)	// `a ¬∀ ↔
+chord(1,n,∈,)	// 1n ∈ ↔
+chord(B,n,∉,)	// `n ∉ ↔
+chord(7,a,∧,)	// 7a ∧ ↔
+chord(\,o,∨,)	// \o ∨ ↔
 // ⌈⌊⌉⌋
 chord([,Up,⌈)   // [↑ ⌈
 chord([,Down,⌊) // [↓ ⌊
 chord(],Up,⌉)   // ]↑ ⌉
 chord(],Down,⌋) // ]↓ ⌋
 // superscripts and subscripts
-chord(0,6,⁰) // 06 ⁰
-chord(1,6,¹) // 16 ¹
-chord(2,6,²) // 26 ²
-chord(3,6,³) // 36 ³
-chord(4,6,⁴) // 46 ⁴
-chord(5,6,⁵) // 56 ⁵
-chord(6,AppsKey,⁶) // 6≡ ⁶
-chord(7,6,⁷) // 76 ⁷
-chord(8,6,⁸) // 86 ⁸
-chord(9,6,⁹) // 96 ⁹
-chord(+,6,⁺) // +6 ⁺
-chord(-,6,⁻) // -6 ⁻
-chord(0,5,₀) // 05 ₀
-chord(1,5,₁) // 15 ₁
-chord(2,5,₂) // 25 ₂
-chord(3,5,₃) // 35 ₃
-chord(4,5,₄) // 45 ₄
-chord(5,AppsKey,₅) // 5≡ ₅
-chord(6,5,₆) // 65 ₆
-chord(7,5,₇) // 75 ₇
-chord(8,5,₈) // 85 ₈
-chord(9,5,₉) // 95 ₉
-chord(+,5,₊) // +5 ₊
-chord(-,5,₋) // -5 ₋
-chord_2(1,-,₋,₁,) // -1 ₋₁ ↔
+chord(0,6,⁰)		// 06 ⁰
+chord(1,6,¹)		// 16 ¹
+chord(2,6,²)		// 26 ²
+chord(3,6,³)		// 36 ³
+chord(4,6,⁴)		// 46 ⁴
+chord(5,6,⁵)		// 56 ⁵
+chord(6,AppsKey,⁶)	// 6≡ ⁶
+chord(7,6,⁷)		// 76 ⁷
+chord(8,6,⁸)		// 86 ⁸
+chord(9,6,⁹)		// 96 ⁹
+chord(+,6,⁺)		// +6 ⁺
+chord(-,6,⁻)		// -6 ⁻
+chord(0,5,₀)		// 05 ₀
+chord(1,5,₁)		// 15 ₁
+chord(2,5,₂)		// 25 ₂
+chord(3,5,₃)		// 35 ₃
+chord(4,5,₄)		// 45 ₄
+chord(5,AppsKey,₅)	// 5≡ ₅
+chord(6,5,₆)		// 65 ₆
+chord(7,5,₇)		// 75 ₇
+chord(8,5,₈)		// 85 ₈
+chord(9,5,₉)		// 95 ₉
+chord(+,5,₊)		// +5 ₊
+chord(-,5,₋)		// -5 ₋
+chord(1,-,₋₁,) // -1 ₋₁ ↔
 chord_shift(a,6,ᵃ,ᴬ)	// a6 ᵃ ⇧ᴬ
 chord_shift(b,6,ᵇ,ᴮ)	// b6 ᵇ ⇧ᴮ
 chord(c,6,ᶜ)			// c6 ᶜ
@@ -241,7 +240,7 @@ chord_f8(⏎	,Enter,,)		// → F8⏎ ⏎		// Enter
 chord_f8(⌦	,Delete,,)		// → F8⌦ ⌦	// Delete
 chord_f8(⌫	,Backspace,,)	// → F8⌫ ⌫	// Backspace
 // locks
-chord_f8(⇬	,CapsLock,,SetCapsLockState Off)	// → F8⇬ ⇬	// CapsLock
+chord_f8(⇪	,CapsLock,,SetCapsLockState Off)	// → F8⇪ ⇪	// CapsLock
 chord_f8(⇩	,NumLock,,SetNumLockState On)		// → F8⇩ ⇩	// NumLock
 chord_f8(⇳	,ScrollLock,,SetScrollLockState Off)// → F8⇳ ⇳	// ScrollLock
 // navigation
