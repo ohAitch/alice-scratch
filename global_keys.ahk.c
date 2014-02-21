@@ -2,6 +2,8 @@
 SendMode Input
 
 // todo: consider making menukey sticky, like F8
+// ≁ ≔≕ ′″‴
+// perhaps i should make subscript use the [ key?
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -10,12 +12,17 @@ SendMode Input
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
+setTimer, kill_rename, -1
+return
+
+kill_rename: #n WinWaitActive, Rename ahk_class #32770 #n Send y #n setTimer, kill_rename, -1 #n return
+
 // autoclick
 #define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} return
 autoclick_n(^F1,10)
 autoclick_n(^F2,100)
-F3::setTimer, autoclick, 1
-F4::setTimer, autoclick, Off
+F3::#n if autoclick_on=y #n{#n autoclick_on=n #n setTimer, autoclick, Off #n}
+	else {#n autoclick_on=y #n setTimer, autoclick, 1 #n} return
 autoclick: #n Click #n return
 
 // run apps
@@ -37,7 +44,7 @@ AppsKey & .::Send {Media_Next}
 // misc
 AppsKey & RAlt::WinMinimize, A
 ~RAlt & AppsKey::WinMinimize, A
-//AppsKey & n::Send {AppsKey}w{Down}{Down}{Down}{Down}{Down}{Down}{Down}{Enter}`b
+AppsKey & n::Send {AppsKey}wt^a
 LCtrl & Capslock::Send ^+{Tab}
 RCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
@@ -60,7 +67,8 @@ RCtrl & Capslock::Send ^+{Tab}
 #define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
 #define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
 // misc
-chord(=,B,≈,)			// =` ≈ ↔
+chord(B,=,≈,)			// `= ≈ ↔
+chord(B,\,≉,)			// `\ ≉ ↔
 chord(C,;,∴)			// ,; ∴ ↔
 m_chord(8,∞)			// ≡8 ∞
 m_chord(v,✓)			// ≡v ✓
@@ -78,7 +86,7 @@ chord(=,C,≤,)	// =, ≤ ↔
 chord(=,.,≥,)	// =. ≥ ↔
 m_chord([,‹)	// ≡[ ‹
 m_chord(],›)	// ≡] ›
-// greek except omicron . roughly ≡[a-z3] except cqvw
+// greek except omicron and nu . roughly ≡[a-z3] except cqvwn
 m_chord_shift(a,α,Α) // ≡a α ⇧Α
 m_chord_shift(b,β,Β) // ≡b β ⇧Β
 m_chord_shift(g,γ,Γ) // ≡g γ ⇧Γ
@@ -91,7 +99,6 @@ m_chord_shift(i,ι,Ι) // ≡i ι ⇧Ι
 m_chord_shift(k,κ,Κ) // ≡k κ ⇧Κ
 m_chord_shift(l,λ,Λ) // ≡l λ ⇧Λ
 m_chord_shift(m,μ,Μ) // ≡m μ ⇧Μ
-m_chord_shift(n,ν,Ν) // ≡n ν ⇧Ν
 m_chord_shift(3,ξ,Ξ) // ≡3 ξ ⇧Ξ
 m_chord_shift(p,π,Π) // ≡p π ⇧Π
 m_chord_shift(r,ρ,Ρ) // ≡r ρ ⇧Ρ
@@ -211,6 +218,7 @@ chord(x,5,ₓ)	// x5 ₓ
 F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
 // did not have keyboard with ⌘Command ⌥Option ⎄Compose ⏏Eject or any other cool key, so did not implement these keys
 // had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
+// ⌘Win and ⎇Alt are known to do weird things
 	if Errorlevel=Max #n Send %k%
 	else if InStr(ErrorLevel,"EndKey:") {
 		k := SubStr(ErrorLevel,8)
