@@ -10,6 +10,8 @@ t="out/ahk.ahk"
 u="out/temp"
 
 cp global_keys.ahk.c "$t"
+sed -r -i -e 's/\{\s/{NEWLINE /g' "$t"
+sed -r -i -e 's/\s\}/ NEWLINE}/g' "$t"
 sed -r -i -e 's/ ?#n ?/ NEWLINE /g' "$t"
 sed -r -i -e 's/###/HASH/g' "$t"
 sed -r -i -e 's/#,/COMMA/g' "$t"

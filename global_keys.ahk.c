@@ -1,9 +1,9 @@
 ###SingleInstance force
+###NoEnv
 SendMode Input
 
 // todo: consider making menukey sticky, like F8
 // ≁ ≔≕ ′″‴
-// perhaps i should make subscript use the [ key?
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -23,31 +23,31 @@ return
 kill_rename: #n WinWaitActive, Rename ahk_class #32770 #n Send y #n setTimer, kill_rename, -1 #n return
 
 // autoclick
-#define autoclick_n(key,n) key::#n Loop, n {#n Click #n Sleep, 1 #n} return
+#define autoclick_n(key,n) key::#n Loop, n { Click #n Sleep, 1 } return
 autoclick_n(^F1,10)
 autoclick_n(^F2,100)
-F3::#n if autoclick_on=y #n{#n autoclick_on=n #n setTimer, autoclick, Off #n}
-	else {#n autoclick_on=y #n setTimer, autoclick, 1 #n} return
+F3::#n if autoclick_on=t #n{ autoclick_on=n #n setTimer, autoclick, Off }
+	else { autoclick_on=t #n setTimer, autoclick, 1 } return
 autoclick: #n Click #n return
 
 // run apps
 open_cmd_in_here()#n {
 	WinGetText, v, A
 	StringSplit, v, v, `n
-	Loop, %v0% {#n IfInString, v%A_Index%, Address #n {
-		v := v%A_Index% #n break #n} #n}
+	Loop, %v0% { IfInString, v%A_Index%, Address #n {
+		v := v%A_Index% #n break } }
 	v := RegExReplace(v, "^Address: ", "")
 	StringReplace, v, v, `r, , all
-	If( not InStr( FileExist(v), "D") ) {#n v := "C:\Users\zii\skryl\code" #n}
+	If( not InStr( FileExist(v), "D") ) { v := "C:\Users\zii\skryl\code" }
 	Run, cmd /K cd /D "%v%"
 }
-AppsKey & /::#n if WinExist(title_cmd) {#n WinActivate #n Send {Up}{Enter} #n} else {#n open_cmd_in_here() #n} return
-AppsKey & ;::    #n if WinExist(title_cmd)    && !GetKeyState("shift") {#n WinActivate #n} else {#n open_cmd_in_here() #n} return
-AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") {#n WinActivate #n} else {#n Run calc           #n} return
+AppsKey & /::#n if WinExist(title_cmd) { WinActivate #n Send {Up}{Enter} } else { open_cmd_in_here() } return
+AppsKey & ;::    #n if WinExist(title_cmd)    && !GetKeyState("shift") { WinActivate } else { open_cmd_in_here() } return
+AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") { WinActivate } else { Run calc           } return
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
-AppsKey & \::#n if GetKeyState("shift") {#n            SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t          #n}
-} else {#n                                  Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t^v{Enter} #n}
+AppsKey & \::#n if GetKeyState("shift") {            SetTitleMatchMode, 2 #n if WinExist("Chrome"){ WinActivate #n Send ^t          }
+} else {                                  Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){ WinActivate #n Send ^t^v{Enter} }
 } return
 
 // sound controls
@@ -163,73 +163,73 @@ chord([,Down,⌊) // [↓ ⌊
 chord(],Up,⌉)   // ]↑ ⌉
 chord(],Down,⌋) // ]↓ ⌋
 // superscripts and subscripts
-chord(0,6,⁰)		// 06 ⁰
-chord(1,6,¹)		// 16 ¹
-chord(2,6,²)		// 26 ²
-chord(3,6,³)		// 36 ³
-chord(4,6,⁴)		// 46 ⁴
-chord(5,6,⁵)		// 56 ⁵
-chord(6,AppsKey,⁶)	// 6≡ ⁶
-chord(7,6,⁷)		// 76 ⁷
-chord(8,6,⁸)		// 86 ⁸
-chord(9,6,⁹)		// 96 ⁹
-chord(+,6,⁺)		// +6 ⁺
-chord(-,6,⁻)		// -6 ⁻
-chord(0,5,₀)		// 05 ₀
-chord(1,5,₁)		// 15 ₁
-chord(2,5,₂)		// 25 ₂
-chord(3,5,₃)		// 35 ₃
-chord(4,5,₄)		// 45 ₄
-chord(5,AppsKey,₅)	// 5≡ ₅
-chord(6,5,₆)		// 65 ₆
-chord(7,5,₇)		// 75 ₇
-chord(8,5,₈)		// 85 ₈
-chord(9,5,₉)		// 95 ₉
-chord(+,5,₊)		// +5 ₊
-chord(-,5,₋)		// -5 ₋
+chord(],0,⁰) // ]0 ⁰
+chord(],1,¹) // ]1 ¹
+chord(],2,²) // ]2 ²
+chord(],3,³) // ]3 ³
+chord(],4,⁴) // ]4 ⁴
+chord(],5,⁵) // ]5 ⁵
+chord(],6,⁶) // ]6 ⁶
+chord(],7,⁷) // ]7 ⁷
+chord(],8,⁸) // ]8 ⁸
+chord(],9,⁹) // ]9 ⁹
+chord(],+,⁺) // ]+ ⁺
+chord(],-,⁻) // ]- ⁻
+chord([,0,₀) // [0 ₀
+chord([,1,₁) // [1 ₁
+chord([,2,₂) // [2 ₂
+chord([,3,₃) // [3 ₃
+chord([,4,₄) // [4 ₄
+chord([,5,₅) // [5 ₅
+chord([,6,₆) // [6 ₆
+chord([,7,₇) // [7 ₇
+chord([,8,₈) // [8 ₈
+chord([,9,₉) // [9 ₉
+chord([,+,₊) // [+ ₊
+chord([,-,₋) // [- ₋
 chord(1,-,₋₁,) // -1 ₋₁ ↔
-chord_shift(a,6,ᵃ,ᴬ)	// a6 ᵃ ⇧ᴬ
-chord_shift(b,6,ᵇ,ᴮ)	// b6 ᵇ ⇧ᴮ
-chord(c,6,ᶜ)			// c6 ᶜ
-chord_shift(d,6,ᵈ,ᴰ)	// d6 ᵈ ⇧ᴰ
-chord_shift(e,6,ᵉ,ᴱ)	// e6 ᵉ ⇧ᴱ
-chord(f,6,ᶠ)			// f6 ᶠ
-chord_shift(g,6,ᵍ,ᴳ)	// g6 ᵍ ⇧ᴳ
-chord_shift(h,6,ʰ,ᴴ)	// h6 ʰ ⇧ᴴ
-chord_shift(i,6,ⁱ,ᴵ)	// i6 ⁱ ⇧ᴵ
-chord_shift(j,6,ʲ,ᴶ)	// j6 ʲ ⇧ᴶ
-chord_shift(k,6,ᵏ,ᴷ)	// k6 ᵏ ⇧ᴷ
-chord_shift(l,6,ˡ,ᴸ)	// l6 ˡ ⇧ᴸ
-chord_shift(m,6,ᵐ,ᴹ)	// m6 ᵐ ⇧ᴹ
-chord_shift(n,6,ⁿ,ᴺ)	// n6 ⁿ ⇧ᴺ
-chord_shift(o,6,ᵒ,ᴼ)	// o6 ᵒ ⇧ᴼ
-chord_shift(p,6,ᵖ,ᴾ)	// p6 ᵖ ⇧ᴾ
-chord_shift(r,6,ʳ,ᴿ)	// r6 ʳ ⇧ᴿ
-chord(s,6,ˢ)			// s6 ˢ
-chord_shift(t,6,ᵗ,ᵀ)	// t6 ᵗ ⇧ᵀ
-chord_shift(u,6,ᵘ,ᵁ)	// u6 ᵘ ⇧ᵁ
-chord_shift(v,6,ᵛ,ⱽ)		// v6 ᵛ ⇧ⱽ
-chord_shift(w,6,ʷ,ᵂ)	// w6 ʷ ⇧ᵂ
-chord(x,6,ˣ)			// x6 ˣ
-chord(y,6,ʸ)			// y6 ʸ
-chord(z,6,ᶻ)			// z6 ᶻ
-chord(a,5,ₐ)	// a5 ₐ
-chord(e,5,ₑ)	// e5 ₑ
-chord(h,5,ₕ)		// h5 ₕ
-chord(i,5,ᵢ)	// i5 ᵢ
-chord(j,5,ⱼ) 	// j5 ⱼ
-chord(k,5,ₖ) 	// k5 ₖ
-chord(l,5,ₗ) 	// l5 ₗ
-chord(m,5,ₘ)		// m5 ₘ
-chord(n,5,ₙ)		// n5 ₙ
-chord(o,5,ₒ)	// o5 ₒ
-chord(p,5,ₚ)		// p5 ₚ
-chord(r,5,ᵣ)	// r5 ᵣ
-chord(s,5,ₛ) 	// s5 ₛ
-chord(t,5,ₜ) 	// t5 ₜ
-chord(u,5,ᵤ)	// u5 ᵤ
-chord(v,5,ᵥ)	// v5 ᵥ
-chord(x,5,ₓ)	// x5 ₓ
+chord_shift(],a,ᵃ,ᴬ)	// ]a ᵃ ⇧ᴬ
+chord_shift(],b,ᵇ,ᴮ)	// ]b ᵇ ⇧ᴮ
+chord(],c,ᶜ)],			// ]c ᶜ
+chord_shift(],d,ᵈ,ᴰ)	// ]d ᵈ ⇧ᴰ
+chord_shift(],e,ᵉ,ᴱ)	// ]e ᵉ ⇧ᴱ
+chord(],f,ᶠ)],			// ]f ᶠ
+chord_shift(],g,ᵍ,ᴳ)	// ]g ᵍ ⇧ᴳ
+chord_shift(],h,ʰ,ᴴ)	// ]h ʰ ⇧ᴴ
+chord_shift(],i,ⁱ,ᴵ)	// ]i ⁱ ⇧ᴵ
+chord_shift(],j,ʲ,ᴶ)	// ]j ʲ ⇧ᴶ
+chord_shift(],k,ᵏ,ᴷ)	// ]k ᵏ ⇧ᴷ
+chord_shift(],l,ˡ,ᴸ)	// ]l ˡ ⇧ᴸ
+chord_shift(],m,ᵐ,ᴹ)	// ]m ᵐ ⇧ᴹ
+chord_shift(],n,ⁿ,ᴺ)	// ]n ⁿ ⇧ᴺ
+chord_shift(],o,ᵒ,ᴼ)	// ]o ᵒ ⇧ᴼ
+chord_shift(],p,ᵖ,ᴾ)	// ]p ᵖ ⇧ᴾ
+chord_shift(],r,ʳ,ᴿ)	// ]r ʳ ⇧ᴿ
+chord(],s,ˢ)],			// ]s ˢ
+chord_shift(],t,ᵗ,ᵀ)	// ]t ᵗ ⇧ᵀ
+chord_shift(],u,ᵘ,ᵁ)	// ]u ᵘ ⇧ᵁ
+chord_shift(],v,ᵛ,ⱽ)		// ]v ᵛ ⇧ⱽ
+chord_shift(],w,ʷ,ᵂ)	// ]w ʷ ⇧ᵂ
+chord(],x,ˣ)			// ]x ˣ
+chord(],y,ʸ)			// ]y ʸ
+chord(],z,ᶻ)			// ]z ᶻ
+chord([,a,ₐ)	// [a ₐ
+chord([,e,ₑ)	// [e ₑ
+chord([,h,ₕ)		// [h ₕ
+chord([,i,ᵢ)	// [i ᵢ
+chord([,j,ⱼ) 	// [j ⱼ
+chord([,k,ₖ) 	// [k ₖ
+chord([,l,ₗ) 	// [l ₗ
+chord([,m,ₘ)		// [m ₘ
+chord([,n,ₙ)		// [n ₙ
+chord([,o,ₒ)	// [o ₒ
+chord([,p,ₚ)		// [p ₚ
+chord([,r,ᵣ)	// [r ᵣ
+chord([,s,ₛ) 	// [s ₛ
+chord([,t,ₜ) 	// [t ₜ
+chord([,u,ᵤ)	// [u ᵤ
+chord([,v,ᵥ)	// [v ᵥ
+chord([,x,ₓ)	// [x ₓ
 
 // homoiconic keyboard
 F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
@@ -240,8 +240,8 @@ F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWi
 	else if InStr(ErrorLevel,"EndKey:") {
 		k := SubStr(ErrorLevel,8)
 		if k=placeholder #n Send nothing
-#define chord_f8(c,name,before,after) else if k=name #n {#n before #n Send {U(c)} #n after #n}
-#define chord_f8_s(s,name,before,after) else if k=name #n {#n before #n Send s #n after #n}
+#define chord_f8(c,name,before,after) else if k=name #n { before #n Send {U(c)} #n after }
+//#define chord_f8_s(s,name,before,after) else if k=name #n { before #n Send s #n after }
 // modifiers
 chord_f8(^	,LControl,,)	// → F8^ ^	// Ctrl
 chord_f8(^	,RControl,,)	// → F8^ ^	// Ctrl
@@ -278,18 +278,18 @@ chord_f8(↓	,Down,,)	// → F8↓ ↓	// Down
 chord_f8(←	,Left,,)	// → F8← ←	// Left
 chord_f8(→	,Right,,)	// → F8→ →	// Right
 // function keys
-chord_f8_s(F1	,F1,,)	// → F8F1 F1	// F1
-chord_f8_s(F2	,F2,,)	// → F8F2 F2	// F2
-chord_f8_s(F3	,F3,,)	// → F8F3 F3	// F3
-chord_f8_s(F4	,F4,,)	// → F8F4 F4	// F4
-chord_f8_s(F5	,F5,,)	// → F8F5 F5	// F5
-chord_f8_s(F6	,F6,,)	// → F8F6 F6	// F6
-chord_f8_s(F7	,F7,,)	// → F8F7 F7	// F7
-chord_f8_s(F8	,F8,,)	// → F8F8 F8	// F8
-chord_f8_s(F9	,F9,,)	// → F8F9 F9	// F9
-chord_f8_s(F10	,F10,,)	// → F8F10 F10	// F10
-chord_f8_s(F11	,F11,,)	// → F8F11 F11	// F11
-chord_f8_s(F12	,F12,,)	// → F8F12 F12	// F12
+chord_f8(F1	,F1,,)	// → F8F1 F1	// F1
+chord_f8(F2	,F2,,)	// → F8F2 F2	// F2
+chord_f8(F3	,F3,,)	// → F8F3 F3	// F3
+chord_f8(F4	,F4,,)	// → F8F4 F4	// F4
+chord_f8(F5	,F5,,)	// → F8F5 F5	// F5
+chord_f8(F6	,F6,,)	// → F8F6 F6	// F6
+chord_f8(F7	,F7,,)	// → F8F7 F7	// F7
+chord_f8(F8	,F8,,)	// → F8F8 F8	// F8
+chord_f8(F9	,F9,,)	// → F8F9 F9	// F9
+chord_f8(F10,F10,,)	// → F8F10 F10	// F10
+chord_f8(F11,F11,,)	// → F8F11 F11	// F11
+chord_f8(F12,F12,,)	// → F8F12 F12	// F12
 		} return
 
 // make menukey-mode not break on undefined chars in [a-z0-9]
