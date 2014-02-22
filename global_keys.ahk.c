@@ -4,7 +4,6 @@ SendMode Input
 // todo: consider making menukey sticky, like F8
 // ≁ ≔≕ ′″‴
 // perhaps i should make subscript use the [ key?
-// pick a better shortcut for closing windows. make it work with console windows.
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -13,9 +12,14 @@ SendMode Input
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
+#define title_explorer "ahk_class CabinetWClass"
+#define title_cmd "ahk_class ConsoleWindowClass"
+
+// register callbacks
 setTimer, kill_rename, -1
 return
 
+// define callbacks
 kill_rename: #n WinWaitActive, Rename ahk_class #32770 #n Send y #n setTimer, kill_rename, -1 #n return
 
 // autoclick
@@ -27,12 +31,24 @@ F3::#n if autoclick_on=y #n{#n autoclick_on=n #n setTimer, autoclick, Off #n}
 autoclick: #n Click #n return
 
 // run apps
-AppsKey & ;::#n if WinExist("ahk_class ConsoleWindowClass") {#n WinActivate #n if !GetKeyState("shift") #n Send {Up}{Enter} #n} return
+open_cmd_in_here()#n {
+	WinGetText, v, A
+	StringSplit, v, v, `n
+	Loop, %v0% {#n IfInString, v%A_Index%, Address #n {
+		v := v%A_Index% #n break #n} #n}
+	v := RegExReplace(v, "^Address: ", "")
+	StringReplace, v, v, `r, , all
+	If( not InStr( FileExist(v), "D") ) {#n v := "C:\Users\zii\skryl\code" #n}
+	Run, cmd /K cd /D "%v%"
+}
+AppsKey & /::#n if WinExist(title_cmd) {#n WinActivate #n Send {Up}{Enter} #n} else {#n open_cmd_in_here() #n} return
+AppsKey & ;::    #n if WinExist(title_cmd)    && !GetKeyState("shift") {#n WinActivate #n} else {#n open_cmd_in_here() #n} return
+AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") {#n WinActivate #n} else {#n Run calc           #n} return
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
-AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") {#n WinActivate #n} else {#n Run calc #n} return
-AppsKey & /::           #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n} return
-AppsKey & \::#n Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t #n Send ^v{Enter} #n} return
+AppsKey & \::#n if GetKeyState("shift") {#n            SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t          #n}
+} else {#n                                  Send ^c #n SetTitleMatchMode, 2 #n if WinExist("Chrome"){#n WinActivate #n Send ^t^v{Enter} #n}
+} return
 
 // sound controls
 AppsKey & Right::Send {Volume_Up}
@@ -45,11 +61,13 @@ AppsKey & .::Send {Media_Next}
 // misc
 AppsKey & RAlt::WinMinimize, A
 ~RAlt & AppsKey::WinMinimize, A
-AppsKey & n::Send {AppsKey}wt^a
+###If WinActive(title_cmd) || WinActive("Calculator") || WinActive(title_explorer)
+^w::WinClose, A
+Esc::WinClose, A
+###If
+AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
-RCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
-~Capslock & RCtrl::Send {Capslock}^+{Tab}
 
 // insert unicode
 #define U(c) UNICODE c
