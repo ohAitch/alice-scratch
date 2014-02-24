@@ -9,7 +9,6 @@ SetTitleMatchMode 2
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
 // todo: make detect-current-folder work with desktop
-// todo: make capitalization consistent
 // unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
 
 // MACRO_DISPATCH (copied from hydrocarboner)
@@ -27,31 +26,31 @@ SetTitleMatchMode 2
 #define Q QUOTE
 
 // register callbacks
-OnExit, exit_cleanup
-setTimer, kill_rename, -1
+OnExit exit_cleanup
+SetTimer kill_rename, -1
 return
 
 // define callbacks
 exit_cleanup: #n l33t_show() #n ExitApp
-kill_rename: #n WinWaitActive, Rename ahk_class #32770 #n Send y #n setTimer, kill_rename, -1 #n return
+kill_rename: #n WinWaitActive Rename ahk_class #32770 #n Send y #n SetTimer kill_rename, -1 #n return
 
 // autoclick
-^F1::#n Loop, 10  { Click #n Sleep, 1 } return
-^F2::#n Loop, 100 { Click #n Sleep, 1 } return
-^F3::#n if autoclick_on=t #n{ autoclick_on=n #n setTimer, autoclick, Off }
-	else { autoclick_on=t #n setTimer, autoclick, 1 } return
-autoclick: #n Click #n return
+^F1::#n loop 10  { Click #n Sleep 1 } return
+^F2::#n loop 100 { Click #n Sleep 1 } return
+^F3::#n if (autoclick_on) { autoclick_on := false #n SetTimer Click, Off }
+	else { autoclick_on := true #n SetTimer Click, 1 } return
+Click: #n Click #n return
 
 // run apps
 open_cmd_in_here() {
 	WinGetText, v, A
 	StringSplit, v, v, `n
-	Loop, %v0% { IfInString, v%A_Index%, Address #n {
+	loop %v0% { IfInString v%A_Index%, Address #n {
 		v := v%A_Index% #n break } }
 	v := RegExReplace(v, "^Address: ", "")
-	StringReplace, v, v, `r, , all
-	If( not InStr( FileExist(v), "D") ) { v := "C:\Users\zii\skryl\code" }
-	Run, cmd /K cd /D "%v%"
+	StringReplace v, v, `r, , all
+	if (not InStr(FileExist(v), "D")) { v := "C:/Users/zii/skryl/code" }
+	Run cmd /K cd /D "%v%"
 	}
 AppsKey & /::#n if WinExist(title_cmd) { WinActivate #n Send {Up}{Enter} } else { open_cmd_in_here() } return
 AppsKey & ;::    #n if WinExist(title_cmd)    && !GetKeyState("shift") { WinActivate } else { open_cmd_in_here() } return
@@ -63,20 +62,20 @@ copypaste_to_chrome() { copy() #n chrome_newtab(paste() #n Send {Enter}) }
 AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { copypaste_to_chrome() } return
 
 // sound controls
-AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up} } return
-AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down} } return
-AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Send {Volume_Mute} } return
+AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}        } return
+AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down}      } return
+AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Send {Volume_Mute}      } return
 AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { Send {Media_Play_Pause} } return
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 
 // manipulate windows
-AppsKey & RAlt::WinMinimize, A
-~RAlt & AppsKey::WinMinimize, A
+AppsKey & RAlt::WinMinimize A
+~RAlt & AppsKey::WinMinimize A
 SetTitleMatchMode 1
 ###If WinActive(title_cmd) || WinActive("Calculator") || WinActive(title_explorer) || WinActive("VLC media player ahk_class QWidget")
-^w::WinClose, A
-Esc::WinClose, A
+^w::WinClose A
+Esc::WinClose A
 ###If
 SetTitleMatchMode 2
 
@@ -84,30 +83,74 @@ SetTitleMatchMode 2
 AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
-AppsKey & LButton::#n click 2 #n copypaste_to_chrome() #n return
+AppsKey & LButton::#n Click 2 #n copypaste_to_chrome() #n return
 ^+v::
 	v := clipboard
 	if (v != "") {
 		if DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)
 			v := """" . RegExReplace(v, "\\", "/") . """"
-		PutText(v)
+		paste_var(v)
 	} return
 
 // ye l33t command
 global l33t_hidden
 AppsKey & B::
-	InputBox, v, "ye l33t tyme",,,200,100
+	InputBox v, "ye l33t tyme",,,200,100
 	if (v = "h" or v = "hide") {
 		w := WinExist("A")
 		l33t_hidden .= (l33t_hidden ? "|" : "") . w
 		WinHide ahk_id %w%
-		GroupActivate All }
+		GroupActivate All } //!
 	else if (v = "s" or v = "show") { l33t_show() }
-	else if (v = "t" or v = "transparent") { Winset, Transparent, 176, A }
-	else if (v = "o" or v = "opaque") { Winset, Transparent, OFF, A }
-	else if (SubStr(v, 1, 1) = "<") { PutText(v . ">" . GetText() . "</" . RegExReplace(SubStr(v, 2), " .*") . ">") }
+	else if (v = "t" or v = "transparent") { WinSet Transparent, 176, A }
+	else if (v = "o" or v = "opaque") { WinSet Transparent, OFF, A }
+	else if (SubStr(v, 1, 1) = "<") { paste_var(v . ">" . copy_var() . "</" . RegExReplace(SubStr(v, 2), " .*") . ">") }
 	return
-l33t_show() { Loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n WinActivate ahk_id %A_LoopField% } #n l33t_hidden = }
+l33t_show() { loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n WinActivate ahk_id %A_LoopField% } #n l33t_hidden = }
+
+// functions
+copy()  { if WinActive(title_cmd) { Send {Enter}    } else { Send ^c } }
+paste() { if WinActive(title_cmd) { Send !{Space}ep } else { Send ^v } }
+copy_var() { // copy() but preserving clipboard
+	t := ClipboardAll
+	clipboard =
+	copy()
+	ClipWait 0.5, 1
+	r := clipboard
+	clipboard := t
+	return r }
+paste_var(v) { // paste() but preserving clipboard
+	t := ClipboardAll
+	clipboard := v
+	paste()
+	sleep 10
+	clipboard := t
+	}
+//!
+// This checks if a window is, in fact a window.
+// As opposed to the desktop or a menu, etc.
+IsWindow(hwnd) {
+   WinGet, s, Style, ahk_id %hwnd% 
+   return s & 0xC00000 ? (s & 0x80000000 ? 0 : 1) : 0
+   //WS_CAPTION AND !WS_POPUP(for tooltips etc) 
+}
+
+// unfinished
+//~LButton::
+//	MouseGetPos, mouse1x, mouse1y
+//	KeyWait, LButton
+//	MouseGetPos, mouse2x, mouse2y
+//	if abs(mouse1x-mouse2x) > 3 or abs(mouse1y-mouse2y) > 3
+//		copy()
+//	else {
+//		KeyWait, LButton, D T0.3
+//		if ErrorLevel = 0
+//			copy()
+//	}
+//	return
+//~MButton Up::
+//	if A_Cursor = IBeam #n paste()
+//	return
 
 // insert unicode
 #define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
@@ -117,8 +160,8 @@ l33t_show() { Loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n Wi
 	#define m_chord(x,c) AppsKey & x::Send {U(c)} // menu chord
 	#define c_chord(x,c,_) ~Capslock & x::Send {Capslock}{U(c)} #n chord_(x,Capslock,c) // capslock chord
 	#define m_chord_(x,c) AppsKey & x::Send {c}
-	#define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") #n Send `b{U(u)} #n else Send `b{U(l)} #n return
-	#define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") #n Send {U(u)} #n else Send {U(l)} #n return
+	#define chord_shift(x,y,l,u) ~x & y::#n if GetKeyState("shift") { Send `b{U(u)} } else { Send `b{U(l)} } return
+	#define m_chord_shift(x,l,u) AppsKey & x::#n if GetKeyState("shift") { Send {U(u)} } else { Send {U(l)} } return
 	// misc
 	chord(B,=,≈,)			// `= ≈ ↔
 	chord(B,\,≉,)			// `\ ≉ ↔
@@ -267,21 +310,22 @@ l33t_show() { Loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n Wi
 	chord([,v,ᵥ)	// [v ᵥ
 	chord([,x,ₓ)	// [x ₓ
 	// homoiconic keyboard
-	F8::#n Input, k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
+	F8::#n Input k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
 	// did not have keyboard with ⌘Command ⌥Option ⎄Compose ⏏Eject or any other cool key, so did not implement these keys
 	// had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
 	// ⌘Win and ⎇Alt are known to do weird things
-		if Errorlevel=Max #n Send %k%
-		else if InStr(ErrorLevel,"EndKey:") {
-			k := SubStr(ErrorLevel,8)
-			if k=placeholder #n Send nothing
+		if (Errorlevel = "Max") { Send %k% }
+		else if InStr(ErrorLevel, "EndKey:") {
+			k := SubStr(ErrorLevel, 8)
+			if (false) {  } //!
 	#define chord_f8(c,name,before,after) else if k=name #n { before #n Send {U(c)} #n after }
 	//#define chord_f8_s(s,name,before,after) else if k=name #n { before #n Send s #n after }
 	// modifiers
 	chord_f8(^	,LControl,,)	// → F8^ ^	// Ctrl
 	chord_f8(^	,RControl,,)	// → F8^ ^	// Ctrl
-	chord_f8(⎇	,LAlt,msgbox,)	// → F8⎇ ⎇	// Alt
-	chord_f8(⎇	,RAlt,msgbox,)	// → F8⎇ ⎇	// Alt
+	//!
+	chord_f8(⎇	,LAlt,MsgBox,)	// → F8⎇ ⎇	// Alt
+	chord_f8(⎇	,RAlt,MsgBox,)	// → F8⎇ ⎇	// Alt
 	chord_f8(⇧	,LShift,,)		// → F8⇧ ⇧	// Shift
 	chord_f8(⇧	,RShift,,)		// → F8⇧ ⇧	// Shift
 	chord_f8(⌘	,LWin,,)		// → F8⌘ ⌘	// Win
@@ -338,61 +382,3 @@ l33t_show() { Loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n Wi
 	no(7)
 	no(9)
 	no(0)
-
-// functions
-copy()  { if WinActive(title_cmd) { Send {Enter}    } else { Send ^c } }
-paste() { if WinActive(title_cmd) { Send !{Space}ep } else { Send ^v } }
-
-//===--------------------------------------------===//
-
-// Handy function.
-// Copies the selected text to a variable while preserving the clipboard.
-GetText() {
-	t := ClipboardAll
-	clipboard =
-	copy()
-	ClipWait 0.5, 1
-	r := clipboard
-	clipboard := t
-	return r }
-
-// Pastes text from a variable while preserving the clipboard.
-PutText(v) {
-	t := ClipboardAll
-	clipboard := v
-	paste()
-	sleep 10
-	clipboard := t
-	}
-
-// This makes sure sure the same window stays active after showing the InputBox.
-// Otherwise you might get the text pasted into another window unexpectedly.
-SafeInput(Title, Prompt = "", Default = "") {
-	ActiveWin := WinExist("A")
-	InputBox OutPut, %Title%, %Prompt%,,, 120,,,,, %Default%
-	WinActivate ahk_id %ActiveWin%
-	return OutPut }
-
-// This checks if a window is, in fact a window.
-// As opposed to the desktop or a menu, etc.
-IsWindow(hwnd) {
-   WinGet, s, Style, ahk_id %hwnd% 
-   return s & 0xC00000 ? (s & 0x80000000 ? 0 : 1) : 0
-   //WS_CAPTION AND !WS_POPUP(for tooltips etc) 
-}
-
-//~LButton::
-//	MouseGetPos, mouse1x, mouse1y
-//	KeyWait, LButton
-//	MouseGetPos, mouse2x, mouse2y
-//	if abs(mouse1x-mouse2x) > 3 or abs(mouse1y-mouse2y) > 3
-//		copy()
-//	else {
-//		KeyWait, LButton, D T0.3
-//		if ErrorLevel = 0
-//			copy()
-//	}
-//	return
-//~MButton Up::
-//	if A_Cursor = IBeam #n paste()
-//	return
