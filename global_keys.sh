@@ -22,5 +22,6 @@ sed -r -i -e 's/HASH/#/g' "$t"
 sed -r -i -e 's/COMMA/,/g' "$t"
 sed -r -i -e "s/QUOTE/'/g" "$t"
 sed -r -i -e 's/;/`;/g' "$t"
+sed -r -i -e 's/\\\\/\\/g' "$t"
 
 hstart64 //NOCONSOLE "AutoHotkey out/ahk.ahk"

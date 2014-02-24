@@ -1,15 +1,16 @@
 ###SingleInstance force
 ###NoEnv
+SetBatchLines -1
+ListLines Off
 SendMode Input
 SetTitleMatchMode 2
 
 // todo: consider making menukey sticky, like F8
 // ≁ ≔≕ ′″‴
-// todo: make ≡\ copy work for consoles
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
-// todo: make detect-current-folder work with desktop
 // unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
+// sublime title displays current song playing
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -18,8 +19,10 @@ SetTitleMatchMode 2
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
-#define title_explorer "ahk_class CabinetWClass"
-#define title_cmd "ahk_class ConsoleWindowClass"
+#define win_explorer "ahk_class CabinetWClass"
+#define win_cmd "ahk_class ConsoleWindowClass"
+#define win_taskbar "ahk_class Shell_TrayWnd"
+#define win_desktop "ahk_class WorkerW"
 #define U(c) UNICODE c
 #define C #,
 #define B SC029
@@ -42,18 +45,9 @@ kill_rename: #n WinWaitActive Rename ahk_class #32770 #n Send y #n SetTimer kill
 Click: #n Click #n return
 
 // run apps
-open_cmd_in_here() {
-	WinGetText, v, A
-	StringSplit, v, v, `n
-	loop %v0% { IfInString v%A_Index%, Address #n {
-		v := v%A_Index% #n break } }
-	v := RegExReplace(v, "^Address: ", "")
-	StringReplace v, v, `r, , all
-	if (not InStr(FileExist(v), "D")) { v := "C:/Users/zii/skryl/code" }
-	Run cmd /K cd /D "%v%"
-	}
-AppsKey & /::#n if WinExist(title_cmd) { WinActivate #n Send {Up}{Enter} } else { open_cmd_in_here() } return
-AppsKey & ;::    #n if WinExist(title_cmd)    && !GetKeyState("shift") { WinActivate } else { open_cmd_in_here() } return
+run_cmd_current_dir() { t := current_directory() #n Run cmd /K cd /D "%t%" }
+AppsKey & /::#n if WinExist(win_cmd) { WinActivate #n Send {Up}{Enter} } else { run_cmd_current_dir() } return
+AppsKey & ;::    #n if WinExist(win_cmd)    && !GetKeyState("shift") { WinActivate } else { run_cmd_current_dir() } return
 AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") { WinActivate } else { Run calc           } return
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
@@ -73,22 +67,22 @@ AppsKey & .::Send {Media_Next}
 AppsKey & RAlt::WinMinimize A
 ~RAlt & AppsKey::WinMinimize A
 SetTitleMatchMode 1
-###If WinActive(title_cmd) || WinActive("Calculator") || WinActive(title_explorer) || WinActive("VLC media player ahk_class QWidget")
+###if WinActive(win_cmd) || WinActive("Calculator") || WinActive(win_explorer) || WinActive("VLC media player ahk_class QWidget")
 ^w::WinClose A
 Esc::WinClose A
-###If
+###if
 SetTitleMatchMode 2
 
 // misc
 AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
-AppsKey & LButton::#n Click 2 #n copypaste_to_chrome() #n return
+AppsKey & LButton::#n Click 2 #n Sleep 50 #n copypaste_to_chrome() #n return
 ^+v::
 	v := clipboard
 	if (v != "") {
 		if DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)
-			v := """" . RegExReplace(v, "\\", "/") . """"
+			v := """" . slash_back(v) . """"
 		paste_var(v)
 	} return
 
@@ -104,13 +98,13 @@ AppsKey & B::
 	else if (v = "s" or v = "show") { l33t_show() }
 	else if (v = "t" or v = "transparent") { WinSet Transparent, 176, A }
 	else if (v = "o" or v = "opaque") { WinSet Transparent, OFF, A }
-	else if (SubStr(v, 1, 1) = "<") { paste_var(v . ">" . copy_var() . "</" . RegExReplace(SubStr(v, 2), " .*") . ">") }
+	else if (SubStr(v, 1, 1) = "<") { paste_var(v . ">" . copy_var() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">") }
 	return
 l33t_show() { loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n WinActivate ahk_id %A_LoopField% } #n l33t_hidden = }
 
 // functions
-copy()  { if WinActive(title_cmd) { Send {Enter}    } else { Send ^c } }
-paste() { if WinActive(title_cmd) { Send !{Space}ep } else { Send ^v } }
+copy()  { if WinActive(win_cmd) { Send {Enter}    } else { Send ^c } }
+paste() { if WinActive(win_cmd) { Send !{Space}ep } else { Send ^v } }
 copy_var() { // copy() but preserving clipboard
 	t := ClipboardAll
 	clipboard =
@@ -126,6 +120,26 @@ paste_var(v) { // paste() but preserving clipboard
 	sleep 10
 	clipboard := t
 	}
+current_directory() {
+	if WinActive(win_explorer) {
+		WinGetText, v, A
+		StringSplit, v, v, `n
+		loop %v0% { IfInString v%A_Index%, Address #n {
+			v := v%A_Index% #n break } }
+		v := RegExReplace(v, "^Address: ", "")
+		StringReplace v, v, `r, , all
+		if (InStr(FileExist(v), "D"))
+			return slash_back(v)
+	} else if WinActive("Sublime Text") {
+		WinGetTitle v, A
+		v := slash_back(RegExReplace(v, "^(.*)\\\\.*$", "$1"))
+		if (InStr(FileExist(v), "D"))
+			return v
+	} else if WinActive(win_desktop) {
+		return slash_back(A_Desktop)
+	}
+	return "C:/Users/zii/skryl/code" }
+slash_back(v) { return RegExReplace(v, "\\\\", "/") }
 //!
 // This checks if a window is, in fact a window.
 // As opposed to the desktop or a menu, etc.
