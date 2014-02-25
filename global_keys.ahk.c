@@ -11,7 +11,6 @@ SetTitleMatchMode 2
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
 // todo: unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
-// spotify title displays current song playing
 // https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 
 // MACRO_DISPATCH (copied from hydrocarboner)
@@ -54,16 +53,22 @@ AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") { WinActi
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
 #define chrome_newtab(action) if WinExist("Chrome"){ WinActivate #n Send ^t #n action }
-copypaste_to_chrome() { copy() #n chrome_newtab(paste() #n Send {Enter}) }
-AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { copypaste_to_chrome() } return
+paste_to_chrome() { chrome_newtab(paste() #n Send {Enter}) }
+AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { copy() #n paste_to_chrome() } return
 
-// sound controls
+// sound and music controls
 AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}        } return
 AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down}      } return
 AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Send {Volume_Mute}      } return
 AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { Send {Media_Play_Pause} } return
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
+AppsKey & Numpad1::
+	WinGetTitle v, ahk_class SpotifyMainWindow
+	v := SubStr(v, StrLen("Spotify - ")+1)
+	clipboard := v . " lyrics"
+	paste_to_chrome()
+	return
 
 // manipulate windows
 AppsKey & RAlt::WinMinimize A
@@ -79,7 +84,7 @@ SetTitleMatchMode 2
 AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
-AppsKey & LButton::#n Click 2 #n Sleep 50 #n copypaste_to_chrome() #n return
+AppsKey & LButton::#n Click 2 #n Sleep 50 #n copy() #n paste_to_chrome() #n return
 ^+v::
 	v := clipboard
 	if (v != "") {
