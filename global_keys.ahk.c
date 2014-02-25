@@ -7,11 +7,11 @@ SetTitleMatchMode 2
 
 // todo meh: consider making menukey sticky, like F8
 // todo meh: fill out F8
+// todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
 // todo: unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
-// https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -20,10 +20,11 @@ SetTitleMatchMode 2
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
-#define win_explorer "ahk_class CabinetWClass"
-#define win_cmd "ahk_class ConsoleWindowClass"
-#define win_taskbar "ahk_class Shell_TrayWnd"
-#define win_desktop "ahk_class WorkerW"
+global win_explorer := "ahk_class CabinetWClass"
+global win_cmd := "ahk_class ConsoleWindowClass"
+global win_taskbar := "ahk_class Shell_TrayWnd"
+global win_desktop := "ahk_class WorkerW"
+global win_spotify := "ahk_class SpotifyMainWindow"
 #define U(c) UNICODE c
 #define C #,
 #define B SC029
@@ -63,10 +64,7 @@ AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Se
 AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { Send {Media_Play_Pause} } return
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
-AppsKey & Numpad1::
-	WinGetTitle v, ahk_class SpotifyMainWindow
-	chrome(SubStr(v, StrLen("Spotify - ")+1) . " lyrics")
-	return
+AppsKey & Numpad1::chrome(SubStr(WinGetTitle(win_spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // manipulate windows
 AppsKey & RAlt::WinMinimize A
@@ -130,17 +128,15 @@ paste(v = "") { // if no argument, paste from clipboard
 	} }
 current_directory() {
 	if WinActive(win_explorer) {
-		WinGetText, v, A
-		StringSplit, v, v, `n
+		v := WinGetText("A")
+		StringSplit v, v, `n
 		loop %v0% { IfInString v%A_Index%, Address #n {
 			v := v%A_Index% #n break } }
-		v := RegExReplace(v, "^Address: ", "")
-		StringReplace v, v, `r, , all
+		v := slash_back(RegExReplace(RegExReplace(v, "^Address: ", ""), "\r", ""))
 		if (InStr(FileExist(v), "D"))
-			return slash_back(v)
+			return v
 	} else if WinActive("Sublime Text") {
-		WinGetTitle v, A
-		v := slash_back(RegExReplace(v, "^(.*)\\\\.*$", "$1"))
+		v := slash_back(RegExReplace(WinGetTitle("A"), "^(.*)\\\\.*$", "$1"))
 		if (InStr(FileExist(v), "D"))
 			return v
 	} else if WinActive(win_desktop) {
@@ -395,3 +391,15 @@ slash_back(v) { return RegExReplace(v, "\\\\", "/") }
 	no(7)
 	no(9)
 	no(0)
+
+// command functions https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Functions.ahk
+Input(Options = "", EndKeys = "", MatchList = "") { Input, v, %Options%, %EndKeys%, %MatchList% #n return v }
+InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y = "", Font = "", Timeout = "", Default = "") { InputBox, v, %Title%, %Prompt%, %HIDE%, %Width%, %Height%, %X%, %Y%, , %Timeout%, %Default% #n return v }
+Run(Target, WorkingDir = "", Mode = "") { Run, %Target%, %WorkingDir%, %Mode%, v #n return v }
+StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
+SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") { SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive }
+WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
+WinGetClass(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetClass, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
+WinGetText(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetText, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
+WinGetTitle(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetTitle, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
+alert(v) { MsgBox %v% }
