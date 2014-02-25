@@ -46,15 +46,15 @@ kill_rename: #n WinWaitActive Rename ahk_class #32770 #n Send y #n SetTimer kill
 Click: #n Click #n return
 
 // run apps
-run_cmd_current_dir() { t := current_directory() #n Run cmd /K cd /D "%t%" }
-AppsKey & /::#n if WinExist(win_cmd) { WinActivate #n Send {Up}{Enter} } else { run_cmd_current_dir() } return
-AppsKey & ;::    #n if WinExist(win_cmd)    && !GetKeyState("shift") { WinActivate } else { run_cmd_current_dir() } return
+cmd_current_dir() { t := current_directory() #n Run cmd /K cd /D "%t%" }
+AppsKey & /::#n if WinExist(win_cmd) { WinActivate #n Send {Up}{Enter} } else { cmd_current_dir() } return
+AppsKey & ;::    #n if WinExist(win_cmd)    && !GetKeyState("shift") { WinActivate } else { cmd_current_dir() } return
 AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") { WinActivate } else { Run calc           } return
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
 #define chrome_newtab(action) if WinExist("Chrome"){ WinActivate #n Send ^t #n action }
-paste_to_chrome() { chrome_newtab(paste() #n Send {Enter}) }
-AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { copy() #n paste_to_chrome() } return
+chrome(v) { chrome_newtab(paste(v) #n Send {Enter}) }
+AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()) } return
 
 // sound and music controls
 AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}        } return
@@ -65,9 +65,7 @@ AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
 AppsKey & Numpad1::
 	WinGetTitle v, ahk_class SpotifyMainWindow
-	v := SubStr(v, StrLen("Spotify - ")+1)
-	clipboard := v . " lyrics"
-	paste_to_chrome()
+	chrome(SubStr(v, StrLen("Spotify - ")+1) . " lyrics")
 	return
 
 // manipulate windows
@@ -84,13 +82,13 @@ SetTitleMatchMode 2
 AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
-AppsKey & LButton::#n Click 2 #n Sleep 50 #n copy() #n paste_to_chrome() #n return
+AppsKey & LButton::#n Click 2 #n Sleep 50 #n chrome(copy()) #n return
 ^+v::
-	v := clipboard
+	v := Clipboard
 	if (v != "") {
 		if DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)
 			v := """" . slash_back(v) . """"
-		paste_var(v)
+		paste(v)
 	} return
 
 // ye l33t command
@@ -105,28 +103,31 @@ AppsKey & B::
 	else if (v = "s" or v = "show") { l33t_show() }
 	else if (v = "t" or v = "transparent") { WinSet Transparent, 176, A }
 	else if (v = "o" or v = "opaque") { WinSet Transparent, OFF, A }
-	else if (SubStr(v, 1, 1) = "<") { paste_var(v . ">" . copy_var() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">") }
+	else if (SubStr(v, 1, 1) = "<") { paste(v . ">" . copy() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">") }
 	return
 l33t_show() { loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n WinActivate ahk_id %A_LoopField% } #n l33t_hidden = }
 
 // functions
-copy()  { if WinActive(win_cmd) { Send {Enter}    } else { Send ^c } }
-paste() { if WinActive(win_cmd) { Send !{Space}ep } else { Send ^v } }
-copy_var() { // copy() but preserving clipboard
+copy_to_clipboard() { if WinActive(win_cmd) { Send {Enter} } else { Send ^c } }
+copy(v = "") { // preserves clipboard
 	t := ClipboardAll
-	clipboard =
-	copy()
+	Clipboard =
+	copy_to_clipboard()
 	ClipWait 0.5, 1
-	r := clipboard
-	clipboard := t
+	r := Clipboard
+	Clipboard := t
 	return r }
-paste_var(v) { // paste() but preserving clipboard
-	t := ClipboardAll
-	clipboard := v
-	paste()
-	sleep 10
-	clipboard := t
-	}
+global restore_clipboard_v
+restore_clipboard: #n Clipboard := restore_clipboard_v #n return
+paste(v = "") { // if no argument, paste from clipboard
+	if (v = "") {
+		if WinActive(win_cmd) { Send !{Space}ep } else { Send ^v }
+	} else {
+		restore_clipboard_v := ClipboardAll
+		Clipboard := v
+		paste()
+		SetTimer restore_clipboard, -100
+	} }
 current_directory() {
 	if WinActive(win_explorer) {
 		WinGetText, v, A
@@ -145,7 +146,7 @@ current_directory() {
 	} else if WinActive(win_desktop) {
 		return slash_back(A_Desktop)
 	}
-	return "C:/Users/zii/skryl/code" }
+	return slash_back(A_Desktop) . "/../skryl/code" }
 slash_back(v) { return RegExReplace(v, "\\\\", "/") }
 
 // unfinished
@@ -154,11 +155,11 @@ slash_back(v) { return RegExReplace(v, "\\\\", "/") }
 //	KeyWait, LButton
 //	MouseGetPos, mouse2x, mouse2y
 //	if abs(mouse1x-mouse2x) > 3 or abs(mouse1y-mouse2y) > 3
-//		copy()
+//		copy_to_clipboard()
 //	else {
 //		KeyWait, LButton, D T0.3
 //		if ErrorLevel = 0
-//			copy()
+//			copy_to_clipboard()
 //	}
 //	return
 //~MButton Up::
