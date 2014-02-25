@@ -88,11 +88,10 @@ LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Click 2; Sleep 50; chrome(copy()); return
 $^v::; if (clipboard_contains_files() and not WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
-~LWin & f::alert("try win-q")
-~RWin & f::alert("try win-q")
+~LWin & f::print("try win-q")
+~RWin & f::print("try win-q")
 
 // ye l33t command
-global l33t_hidden
 AppsKey & B::
 	InputBox v, "ye l33t tyme",,,200,100
 	if (v = "h" or v = "hide") {
@@ -104,7 +103,7 @@ AppsKey & B::
 	else if (v = "t" or v = "transparent") {WinSet Transparent, 176, A}
 	else if (v = "o" or v = "opaque") {WinSet Transparent, OFF, A}
 	else if (SubStr(v, 1, 1) = "<") {paste(v . ">" . copy() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">")}
-	return
+	return ; global l33t_hidden
 l33t_show() {loop Parse, l33t_hidden, |; {WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField%}; l33t_hidden =}
 
 // functions
@@ -118,7 +117,6 @@ copy(v = "") {// preserves clipboard
 	r := Clipboard
 	Clipboard := t
 	return r}
-global restore_clipboard_v; restore_clipboard:; Clipboard := restore_clipboard_v; return
 paste(v = "") {// if no argument, paste from clipboard
 	if (v = "") {
 		if WinActive(cmd) {Send !‹Space›ep} else {Send ^v}
@@ -127,7 +125,7 @@ paste(v = "") {// if no argument, paste from clipboard
 		Clipboard := v
 		paste()
 		SetTimer restore_clipboard, -100
-	}}
+	}}; global restore_clipboard_v; restore_clipboard:; Clipboard := restore_clipboard_v; return
 current_directory() {
 	if WinActive(explorer) {
 		v := WinGetText("A")
@@ -147,6 +145,8 @@ current_directory() {
 	return slash_back(A_Desktop) . "/../skryl/code"}
 slash_back(v) {return RegExReplace(v, "\\\\", "/")}
 is_mute() {return SoundGet("","MUTE") = "On"}
+print(v) {ToolTip %v%; SetTimer kill_tooltip, -1500} ;kill_tooltip:; ToolTip; return
+alert(v) {MsgBox %v%}
 
 // unfinished
 //~LButton::
@@ -400,10 +400,9 @@ Input(Options = "", EndKeys = "", MatchList = "") {Input, v, %Options%, %EndKeys
 InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y = "", Font = "", Timeout = "", Default = "") {InputBox, v, %Title%, %Prompt%, %HIDE%, %Width%, %Height%, %X%, %Y%, , %Timeout%, %Default%; return v}
 Run(Target, WorkingDir = "", Mode = "") {Run, %Target%, %WorkingDir%, %Mode%, v; return v}
 SoundGet(ComponentType = "", ControlType = "", DeviceNumber = "") {SoundGet, v, %ComponentType%, %ControlType%, %DeviceNumber%; return v}
-StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") {SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive}
+StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinGetClass(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetClass, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinGetText(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetText, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinGetTitle(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetTitle, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
-alert(v) {MsgBox %v%}
