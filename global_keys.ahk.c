@@ -11,7 +11,6 @@ SetTitleMatchMode 2
 // ≁ ≔≕ ′″‴
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
-// todo: unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -20,11 +19,15 @@ SetTitleMatchMode 2
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
-global win_explorer := "ahk_class CabinetWClass"
-global win_cmd := "ahk_class ConsoleWindowClass"
-global win_taskbar := "ahk_class Shell_TrayWnd"
-global win_desktop := "ahk_class WorkerW"
-global win_spotify := "ahk_class SpotifyMainWindow"
+global explorer := "ahk_class CabinetWClass"
+global cmd := "ahk_class ConsoleWindowClass"
+global taskbar := "ahk_class Shell_TrayWnd"
+global desktop := "ahk_class WorkerW"
+global spotify := "Spotify ahk_class SpotifyMainWindow"
+global vlc := "VLC media player ahk_class QWidget"
+global calc := "Calculator ahk_class CalcFrame"
+global chrome := "Chrome ahk_class ChromeWidgetWin1"
+global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define U(c) UNICODE c
 #define C #,
 #define B SC029
@@ -48,12 +51,12 @@ Click: #n Click #n return
 
 // run apps
 cmd_current_dir() { t := current_directory() #n Run cmd /K cd /D "%t%" }
-AppsKey & /::#n if WinExist(win_cmd) { WinActivate #n Send {Up}{Enter} } else { cmd_current_dir() } return
-AppsKey & ;::    #n if WinExist(win_cmd)    && !GetKeyState("shift") { WinActivate } else { cmd_current_dir() } return
-AppsKey & Enter::#n if WinExist("Calculator") && !GetKeyState("shift") { WinActivate } else { Run calc           } return
+AppsKey & /::#n if WinExist(cmd) { WinActivate #n Send {Up}{Enter} } else { cmd_current_dir() } return
+AppsKey & ;::    #n if WinExist(cmd)  && !GetKeyState("shift") { WinActivate } else { cmd_current_dir() } return
+AppsKey & Enter::#n if WinExist(calc) && !GetKeyState("shift") { WinActivate } else { Run calc           } return
 AppsKey &  RCtrl::Send {Launch_Media}
 ~RCtrl & AppsKey::Send {Launch_Media}
-#define chrome_newtab(action) if WinExist("Chrome"){ WinActivate #n Send ^t #n action }
+#define chrome_newtab(action) if WinExist(chrome){ WinActivate #n Send ^t #n action }
 chrome(v) { chrome_newtab(paste(v) #n Send {Enter}) }
 AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()) } return
 
@@ -64,30 +67,22 @@ AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Se
 AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { Send {Media_Play_Pause} } return
 AppsKey & ,::Send {Media_Prev}
 AppsKey & .::Send {Media_Next}
-AppsKey & Numpad1::chrome(SubStr(WinGetTitle(win_spotify), StrLen("Spotify - ")+1) . " lyrics")
+AppsKey & Numpad1::chrome(SubStr(WinGetTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // manipulate windows
 AppsKey & RAlt::WinMinimize A
 ~RAlt & AppsKey::WinMinimize A
-SetTitleMatchMode 1
-###if WinActive(win_cmd) || WinActive("Calculator") || WinActive(win_explorer) || WinActive("VLC media player ahk_class QWidget")
+###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc)
 ^w::WinClose A
 Esc::WinClose A
 ###if
-SetTitleMatchMode 2
 
 // misc
 AppsKey & n::Send {AppsKey}wt^a // new text file
 LCtrl & Capslock::Send ^+{Tab}
 ~Capslock & LCtrl::Send {Capslock}^+{Tab}
 AppsKey & LButton::#n Click 2 #n Sleep 50 #n chrome(copy()) #n return
-^+v::
-	v := Clipboard
-	if (v != "") {
-		if DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)
-			v := """" . slash_back(v) . """"
-		paste(v)
-	} return
+$^v::#n if (clipboard_contains_files() and not WinActive(explorer)) { paste(slash_back(Clipboard)) } else { paste() } return
 
 // ye l33t command
 global l33t_hidden
@@ -106,7 +101,8 @@ AppsKey & B::
 l33t_show() { loop Parse, l33t_hidden, | #n { WinShow ahk_id %A_LoopField% #n WinActivate ahk_id %A_LoopField% } #n l33t_hidden = }
 
 // functions
-copy_to_clipboard() { if WinActive(win_cmd) { Send {Enter} } else { Send ^c } }
+clipboard_contains_files() { return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/) }
+copy_to_clipboard() { if WinActive(cmd) { Send {Enter} } else { Send ^c } }
 copy(v = "") { // preserves clipboard
 	t := ClipboardAll
 	Clipboard =
@@ -115,11 +111,10 @@ copy(v = "") { // preserves clipboard
 	r := Clipboard
 	Clipboard := t
 	return r }
-global restore_clipboard_v
-restore_clipboard: #n Clipboard := restore_clipboard_v #n return
+global restore_clipboard_v #n restore_clipboard: #n Clipboard := restore_clipboard_v #n return
 paste(v = "") { // if no argument, paste from clipboard
 	if (v = "") {
-		if WinActive(win_cmd) { Send !{Space}ep } else { Send ^v }
+		if WinActive(cmd) { Send !{Space}ep } else { Send ^v }
 	} else {
 		restore_clipboard_v := ClipboardAll
 		Clipboard := v
@@ -127,7 +122,7 @@ paste(v = "") { // if no argument, paste from clipboard
 		SetTimer restore_clipboard, -100
 	} }
 current_directory() {
-	if WinActive(win_explorer) {
+	if WinActive(explorer) {
 		v := WinGetText("A")
 		StringSplit v, v, `n
 		loop %v0% { IfInString v%A_Index%, Address #n {
@@ -135,11 +130,11 @@ current_directory() {
 		v := slash_back(RegExReplace(RegExReplace(v, "^Address: ", ""), "\r", ""))
 		if (InStr(FileExist(v), "D"))
 			return v
-	} else if WinActive("Sublime Text") {
+	} else if WinActive(sublime) {
 		v := slash_back(RegExReplace(WinGetTitle("A"), "^(.*)\\\\.*$", "$1"))
 		if (InStr(FileExist(v), "D"))
 			return v
-	} else if WinActive(win_desktop) {
+	} else if WinActive(desktop) {
 		return slash_back(A_Desktop)
 	}
 	return slash_back(A_Desktop) . "/../skryl/code" }
