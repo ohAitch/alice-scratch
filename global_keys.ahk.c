@@ -5,12 +5,14 @@ ListLines Off
 SendMode Input
 SetTitleMatchMode 2
 
-// todo: consider making menukey sticky, like F8
+// todo meh: consider making menukey sticky, like F8
+// todo meh: fill out F8
 // ≁ ≔≕ ′″‴
 // todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
-// unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
-// sublime title displays current song playing
+// todo: unify the ctrl+shift+v paste and console paste and copy-as-path and normal paste
+// spotify title displays current song playing
+// https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -94,7 +96,7 @@ AppsKey & B::
 		w := WinExist("A")
 		l33t_hidden .= (l33t_hidden ? "|" : "") . w
 		WinHide ahk_id %w%
-		GroupActivate All } //!
+		GroupActivate All }
 	else if (v = "s" or v = "show") { l33t_show() }
 	else if (v = "t" or v = "transparent") { WinSet Transparent, 176, A }
 	else if (v = "o" or v = "opaque") { WinSet Transparent, OFF, A }
@@ -140,14 +142,6 @@ current_directory() {
 	}
 	return "C:/Users/zii/skryl/code" }
 slash_back(v) { return RegExReplace(v, "\\\\", "/") }
-//!
-// This checks if a window is, in fact a window.
-// As opposed to the desktop or a menu, etc.
-IsWindow(hwnd) {
-   WinGet, s, Style, ahk_id %hwnd% 
-   return s & 0xC00000 ? (s & 0x80000000 ? 0 : 1) : 0
-   //WS_CAPTION AND !WS_POPUP(for tooltips etc) 
-}
 
 // unfinished
 //~LButton::
@@ -331,58 +325,57 @@ IsWindow(hwnd) {
 		if (Errorlevel = "Max") { Send %k% }
 		else if InStr(ErrorLevel, "EndKey:") {
 			k := SubStr(ErrorLevel, 8)
-			if (false) {  } //!
-	#define chord_f8(c,name,before,after) else if k=name #n { before #n Send {U(c)} #n after }
-	//#define chord_f8_s(s,name,before,after) else if k=name #n { before #n Send s #n after }
+			if (false) { }
+	#define chord_f8(c,name) else if k=name #n { Send {U(c)} }
+	#define chord_f8_(c,name,before,after) else if k=name #n { before #n Send {U(c)} #n after }
 	// modifiers
-	chord_f8(^	,LControl,,)	// → F8^ ^	// Ctrl
-	chord_f8(^	,RControl,,)	// → F8^ ^	// Ctrl
-	//!
-	chord_f8(⎇	,LAlt,MsgBox,)	// → F8⎇ ⎇	// Alt
-	chord_f8(⎇	,RAlt,MsgBox,)	// → F8⎇ ⎇	// Alt
-	chord_f8(⇧	,LShift,,)		// → F8⇧ ⇧	// Shift
-	chord_f8(⇧	,RShift,,)		// → F8⇧ ⇧	// Shift
-	chord_f8(⌘	,LWin,,)		// → F8⌘ ⌘	// Win
-	chord_f8(⌘	,RWin,,)		// → F8⌘ ⌘	// Win
+	chord_f8(^	,LControl)			// → F8^ ^	// Ctrl
+	chord_f8(^	,RControl)			// → F8^ ^	// Ctrl
+	chord_f8_(⎇	,LAlt,Sleep 200,)	// → F8⎇ ⎇	// Alt
+	chord_f8_(⎇	,RAlt,Sleep 200,)	// → F8⎇ ⎇	// Alt
+	chord_f8(⇧	,LShift)			// → F8⇧ ⇧	// Shift
+	chord_f8(⇧	,RShift)			// → F8⇧ ⇧	// Shift
+	chord_f8(⌘	,LWin)				// → F8⌘ ⌘	// Win
+	chord_f8(⌘	,RWin)				// → F8⌘ ⌘	// Win
 	// simple text
-	chord_f8(␣	,Space,,)		// → F8␣ ␣		// Space
-	chord_f8(↹	,Tab,,)			// → F8↹ ↹		// Tab
-	chord_f8(⏎	,Enter,,)		// → F8⏎ ⏎		// Enter
-	chord_f8(⌦	,Delete,,)		// → F8⌦ ⌦	// Delete
-	chord_f8(⌫	,Backspace,,)	// → F8⌫ ⌫	// Backspace
+	chord_f8(␣	,Space)		// → F8␣ ␣		// Space
+	chord_f8(↹	,Tab)		// → F8↹ ↹		// Tab
+	chord_f8(⏎	,Enter)		// → F8⏎ ⏎		// Enter
+	chord_f8(⌦	,Delete)	// → F8⌦ ⌦	// Delete
+	chord_f8(⌫	,Backspace)	// → F8⌫ ⌫	// Backspace
 	// locks
-	chord_f8(⇪	,CapsLock,,SetCapsLockState Off)	// → F8⇪ ⇪	// CapsLock
-	chord_f8(⇩	,NumLock,,SetNumLockState On)		// → F8⇩ ⇩	// NumLock
-	chord_f8(⇳	,ScrollLock,,SetScrollLockState Off)// → F8⇳ ⇳	// ScrollLock
+	chord_f8_(⇪	,CapsLock,,SetCapsLockState Off)	// → F8⇪ ⇪	// CapsLock
+	chord_f8_(⇩	,NumLock,,SetNumLockState On)		// → F8⇩ ⇩	// NumLock
+	chord_f8_(⇳	,ScrollLock,,SetScrollLockState Off)// → F8⇳ ⇳	// ScrollLock
 	// navigation
-	chord_f8(⇱	,Home,,)	// → F8⇱ ⇱	// Home
-	chord_f8(⇲	,End,,)		// → F8⇲ ⇲	// End
-	chord_f8(⇞	,PgUp,,)	// → F8⇞ ⇞	// PgUp
-	chord_f8(⇟	,PgDn,,)	// → F8⇟ ⇟	// PgDn
+	chord_f8(⇱	,Home)	// → F8⇱ ⇱	// Home
+	chord_f8(⇲	,End)	// → F8⇲ ⇲	// End
+	chord_f8(⇞	,PgUp)	// → F8⇞ ⇞	// PgUp
+	chord_f8(⇟	,PgDn)	// → F8⇟ ⇟	// PgDn
 	// special
-	chord_f8(⌤	,Insert,,)		// → F8⌤ ⌤	// Insert
-	chord_f8(⎋	,Escape,,)		// → F8⎋ ⎋	// Escape
-	chord_f8(⎙	,PrintScreen,,)	// → F8⎙ ⎙	// PrintScreen
-	chord_f8(⎉	,Pause,,)		// → F8⎉ ⎉	// Pause
-	chord_f8(⎊	,CtrlBreak,,)	// → F8⎊ ⎊	// Break
+	chord_f8(⌤	,Insert)		// → F8⌤ ⌤	// Insert
+	chord_f8(⎋	,Escape)		// → F8⎋ ⎋	// Escape
+	chord_f8(⎙	,PrintScreen)	// → F8⎙ ⎙	// PrintScreen
+	chord_f8(⎉	,Pause)			// → F8⎉ ⎉	// Pause
+	chord_f8(⎊	,CtrlBreak)		// → F8⎊ ⎊	// Break
 	// arrows
-	chord_f8(↑	,Up,,)		// → F8↑ ↑	// Up
-	chord_f8(↓	,Down,,)	// → F8↓ ↓	// Down
-	chord_f8(←	,Left,,)	// → F8← ←	// Left
-	chord_f8(→	,Right,,)	// → F8→ →	// Right
+	chord_f8(↑	,Up)	// → F8↑ ↑	// Up
+	chord_f8(↓	,Down)	// → F8↓ ↓	// Down
+	chord_f8(←	,Left)	// → F8← ←	// Left
+	chord_f8(→	,Right)	// → F8→ →	// Right
 	// function keys
-	chord_f8(F1	,F1,,)	// → F8F1 F1	// F1
-	chord_f8(F2	,F2,,)	// → F8F2 F2	// F2
-	chord_f8(F3	,F3,,)	// → F8F3 F3	// F3
-	chord_f8(F4	,F4,,)	// → F8F4 F4	// F4
-	chord_f8(F5	,F5,,)	// → F8F5 F5	// F5
-	chord_f8(F6	,F6,,)	// → F8F6 F6	// F6
-	chord_f8(F7	,F7,,)	// → F8F7 F7	// F7
-	chord_f8(F8	,F8,,)	// → F8F8 F8	// F8
-	chord_f8(F9	,F9,,)	// → F8F9 F9	// F9
-	chord_f8(F10,F10,,)	// → F8F10 F10	// F10
-	chord_f8(F11,F11,,)	// → F8F11 F11	// F11
-	chord_f8(F12,F12,,)	// → F8F12 F12	// F12
+	chord_f8(F1	,F1)	// → F8F1 F1	// F1
+	chord_f8(F2	,F2)	// → F8F2 F2	// F2
+	chord_f8(F3	,F3)	// → F8F3 F3	// F3
+	chord_f8(F4	,F4)	// → F8F4 F4	// F4
+	chord_f8(F5	,F5)	// → F8F5 F5	// F5
+	chord_f8(F6	,F6)	// → F8F6 F6	// F6
+	chord_f8(F7	,F7)	// → F8F7 F7	// F7
+	chord_f8(F8	,F8)	// → F8F8 F8	// F8
+	chord_f8(F9	,F9)	// → F8F9 F9	// F9
+	chord_f8(F10,F10)	// → F8F10 F10	// F10
+	chord_f8(F11,F11)	// → F8F11 F11	// F11
+	chord_f8(F12,F12)	// → F8F12 F12	// F12
 			} return
 	// make menukey-mode not break on undefined chars in [a-z0-9]
 	#define no(k) AppsKey & k::return
