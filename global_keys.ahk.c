@@ -43,49 +43,49 @@ exit_cleanup:; l33t_show(); ExitApp
 kill_rename:; WinWaitActive Rename ahk_class #32770; Send y; SetTimer kill_rename, -1; return
 
 // autoclick
-^F1::; loop 10  { Click; Sleep 1 } return
-^F2::; loop 100 { Click; Sleep 1 } return
-^F3::; if (autoclick_on) { autoclick_on := false; SetTimer Click, Off }
-	else { autoclick_on := true; SetTimer Click, 1 } return
+^F1::; loop 10  {Click; Sleep 1} return
+^F2::; loop 100 {Click; Sleep 1} return
+^F3::; if (autoclick_on) {autoclick_on := false; SetTimer Click, Off}
+	else {autoclick_on := true; SetTimer Click, 1} return
 Click:; Click; return
 
 // run apps
-cmd_current_dir() { t := current_directory(); Run cmd /K cd /D "%t%" }
-AppsKey & /::; if WinExist(cmd) { WinActivate; Send {Up}{Enter} } else { cmd_current_dir() } return
-AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") { WinActivate } else { cmd_current_dir() } return
-AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") { WinActivate } else { Run calc           } return
-#define chrome_newtab(action) if WinExist(chrome){ WinActivate; Send ^t; action }
-chrome(v) { chrome_newtab(paste(v); Send {Enter}) }
-AppsKey & \::; if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()) } return
+cmd_current_dir() {t := current_directory(); Run cmd /K cd /D "%t%"}
+AppsKey & /::; if WinExist(cmd) {WinActivate; Send ‹Up›‹Enter›} else {cmd_current_dir()} return
+AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") {WinActivate} else {cmd_current_dir()} return
+AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc          } return
+#define chrome_newtab(action) if WinExist(chrome){WinActivate; Send ^t; action}
+chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
+AppsKey & \::; if GetKeyState("shift") {chrome_newtab()} else {chrome(copy())} return
 
 // sound and music controls
-AppsKey & Right::; if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}   } return
-AppsKey & Left::;  if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down} } return
-AppsKey & Up::;    if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { if WinExist(vlc) { WinActivate }; Send {Media_Play_Pause} } return
-AppsKey & Down::;  if GetKeyState("shift") { MouseMove  0,  1, 0, R } else {
-	if (is_mute()) { if (paused_spotify) { Send {Media_Play_Pause}; paused_spotify := false } }
-	else { if (paused_spotify := WinGetTitle(spotify) != "Spotify") { Send {Media_Play_Pause} } }
-	Send {Volume_Mute} } return
-AppsKey & ,::; if WinExist(vlc) { WinActivate }; Send {Media_Prev}; return
-AppsKey & .::; if WinExist(vlc) { WinActivate }; Send {Media_Next}; return
-AppsKey &  RCtrl::; if WinExist(vlc) { WinActivate } else { Send {Launch_Media} } return
-~RCtrl & AppsKey::; if WinExist(vlc) { WinActivate } else { Send {Launch_Media} } return
+AppsKey & Right::; if GetKeyState("shift") {MouseMove  1,  0, 0, R} else {Send ‹Volume_Up›  } return
+AppsKey & Left::;  if GetKeyState("shift") {MouseMove -1,  0, 0, R} else {Send ‹Volume_Down›} return
+AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {if WinExist(vlc) {WinActivate}; Send ‹Media_Play_Pause›} return
+AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
+	if (is_mute()) {if (paused_spotify) {Send ‹Media_Play_Pause›; paused_spotify := false}}
+	else {if (paused_spotify := WinGetTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}}
+	Send ‹Volume_Mute›} return
+AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
+AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
+AppsKey &  RCtrl::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
+~RCtrl & AppsKey::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
 AppsKey & Numpad1::chrome(SubStr(WinGetTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // manipulate windows
-AppsKey & RAlt::;  if WinActive(vlc) { Send !{Escape} } else { WinMinimize A } return
-~RAlt & AppsKey::; if WinActive(vlc) { Send !{Escape} } else { WinMinimize A } return
+AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
+~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
 ###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc)
 ^w::WinClose A
 Esc::WinClose A
 ###if
 
 // misc
-AppsKey & n::Send {AppsKey}wt^a // new text file
-LCtrl & Capslock::Send ^+{Tab}
-~Capslock & LCtrl::Send {Capslock}^+{Tab}
+AppsKey & n::Send ‹AppsKey›wt^a // new text file
+LCtrl & Capslock::Send ^+‹Tab›
+~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Click 2; Sleep 50; chrome(copy()); return
-$^v::; if (clipboard_contains_files() and not WinActive(explorer)) { paste(slash_back(Clipboard)) } else { paste() } return
+$^v::; if (clipboard_contains_files() and not WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
 
 // ye l33t command
 global l33t_hidden
@@ -95,41 +95,41 @@ AppsKey & B::
 		w := WinExist("A")
 		l33t_hidden .= (l33t_hidden ? "|" : "") . w
 		WinHide ahk_id %w%
-		GroupActivate All }
-	else if (v = "s" or v = "show") { l33t_show() }
-	else if (v = "t" or v = "transparent") { WinSet Transparent, 176, A }
-	else if (v = "o" or v = "opaque") { WinSet Transparent, OFF, A }
-	else if (SubStr(v, 1, 1) = "<") { paste(v . ">" . copy() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">") }
+		GroupActivate All}
+	else if (v = "s" or v = "show") {l33t_show()}
+	else if (v = "t" or v = "transparent") {WinSet Transparent, 176, A}
+	else if (v = "o" or v = "opaque") {WinSet Transparent, OFF, A}
+	else if (SubStr(v, 1, 1) = "<") {paste(v . ">" . copy() . "</" . RegExReplace(SubStr(v, 2), " .*", "") . ">")}
 	return
-l33t_show() { loop Parse, l33t_hidden, |; { WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField% }; l33t_hidden = }
+l33t_show() {loop Parse, l33t_hidden, |; {WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField%}; l33t_hidden =}
 
 // functions
-clipboard_contains_files() { return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/) }
-copy_to_clipboard() { if WinActive(cmd) { Send {Enter} } else { Send ^c } }
-copy(v = "") { // preserves clipboard
+clipboard_contains_files() {return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)}
+copy_to_clipboard() {if WinActive(cmd) {Send ‹Enter›} else {Send ^c}}
+copy(v = "") {// preserves clipboard
 	t := ClipboardAll
 	Clipboard =
 	copy_to_clipboard()
 	ClipWait 0.5, 1
 	r := Clipboard
 	Clipboard := t
-	return r }
+	return r}
 global restore_clipboard_v; restore_clipboard:; Clipboard := restore_clipboard_v; return
-paste(v = "") { // if no argument, paste from clipboard
+paste(v = "") {// if no argument, paste from clipboard
 	if (v = "") {
-		if WinActive(cmd) { Send !{Space}ep } else { Send ^v }
+		if WinActive(cmd) {Send !‹Space›ep} else {Send ^v}
 	} else {
 		restore_clipboard_v := ClipboardAll
 		Clipboard := v
 		paste()
 		SetTimer restore_clipboard, -100
-	} }
+	}}
 current_directory() {
 	if WinActive(explorer) {
 		v := WinGetText("A")
 		StringSplit v, v, `n
-		loop %v0% { IfInString v%A_Index%, Address; {
-			v := v%A_Index%; break } }
+		loop %v0% {IfInString v%A_Index%, Address; {
+			v := v%A_Index%; break}}
 		v := slash_back(RegExReplace(RegExReplace(v, "^Address: ", ""), "\r", ""))
 		if (InStr(FileExist(v), "D"))
 			return v
@@ -140,9 +140,9 @@ current_directory() {
 	} else if WinActive(desktop) {
 		return slash_back(A_Desktop)
 	}
-	return slash_back(A_Desktop) . "/../skryl/code" }
-slash_back(v) { return RegExReplace(v, "\\\\", "/") }
-is_mute() { return SoundGet("","MUTE") = "On" }
+	return slash_back(A_Desktop) . "/../skryl/code"}
+slash_back(v) {return RegExReplace(v, "\\\\", "/")}
+is_mute() {return SoundGet("","MUTE") = "On"}
 
 // unfinished
 //~LButton::
@@ -163,14 +163,14 @@ is_mute() { return SoundGet("","MUTE") = "On" }
 
 // insert unicode
 #define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
-	#define chord_(x,y,c) ~x & y::Send `b{U(c)}
+	#define chord_(x,y,c) ~x & y::Send `b‹U(c)›
 	#define chord3(x,y,c) chord_(x,y,c)
 	#define chord4(x,y,c,_) chord_(x,y,c); chord_(y,x,c)
-	#define m_chord(x,c) AppsKey & x::Send {U(c)} // menu chord
-	#define c_chord(x,c,_) ~Capslock & x::Send {Capslock}{U(c)}; chord_(x,Capslock,c) // capslock chord
-	#define m_chord_(x,c) AppsKey & x::Send {c}
-	#define chord_shift(x,y,l,u) ~x & y::; if GetKeyState("shift") { Send `b{U(u)} } else { Send `b{U(l)} } return
-	#define m_chord_shift(x,l,u) AppsKey & x::; if GetKeyState("shift") { Send {U(u)} } else { Send {U(l)} } return
+	#define m_chord(x,c) AppsKey & x::Send ‹U(c)› // menu chord
+	#define c_chord(x,c,_) ~Capslock & x::Send ‹Capslock›‹U(c)›; chord_(x,Capslock,c) // capslock chord
+	#define m_chord_(x,c) AppsKey & x::Send ‹c›
+	#define chord_shift(x,y,l,u) ~x & y::; if GetKeyState("shift") {Send `b‹U(u)›} else {Send `b‹U(l)›} return
+	#define m_chord_shift(x,l,u) AppsKey & x::; if GetKeyState("shift") {Send ‹U(u)›} else {Send ‹U(l)›} return
 	// misc
 	chord(B,=,≈,)			// `= ≈ ↔
 	chord(B,\,≉,)			// `\ ≉ ↔
@@ -189,8 +189,8 @@ is_mute() { return SoundGet("","MUTE") = "On" }
 	chord(=,\,≢,)	// =\ ≢ ↔
 	chord(=,C,≤,)	// =, ≤ ↔
 	chord(=,.,≥,)	// =. ≥ ↔
-	m_chord([,‹)	// ≡[ ‹
-	m_chord(],›)	// ≡] ›
+	m_chord([,\‹)	// ≡[ ‹
+	m_chord(],\›)	// ≡] ›
 	// greek except omicron and nu . roughly ≡[a-z3] except cqvwn
 	m_chord_shift(a,α,Α) // ≡a α ⇧Α
 	m_chord_shift(b,β,Β) // ≡b β ⇧Β
@@ -319,16 +319,16 @@ is_mute() { return SoundGet("","MUTE") = "On" }
 	chord([,v,ᵥ)	// [v ᵥ
 	chord([,x,ₓ)	// [x ₓ
 	// homoiconic keyboard
-	F8::; Input k, L1,{Escape}{LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Backspace}{Tab}{Enter}{Space}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{CapsLock}{NumLock}{ScrollLock}{PrintScreen}{CtrlBreak}{Pause}{Sleep}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
+	F8::; Input k, L1,‹Escape›‹LControl›‹RControl›‹LShift›‹RShift›‹LAlt›‹RAlt›‹LWin›‹RWin›‹Backspace›‹Tab›‹Enter›‹Space›‹Delete›‹Insert›‹Home›‹End›‹PgUp›‹PgDn›‹Up›‹Down›‹Left›‹Right›‹CapsLock›‹NumLock›‹ScrollLock›‹PrintScreen›‹CtrlBreak›‹Pause›‹Sleep›‹F1›‹F2›‹F3›‹F4›‹F5›‹F6›‹F7›‹F8›‹F9›‹F10›‹F11›‹F12›
 	// did not have keyboard with ⌘Command ⌥Option ⎄Compose ⏏Eject or any other cool key, so did not implement these keys
 	// had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
 	// ⌘Win and ⎇Alt are known to do weird things
-		if (Errorlevel = "Max") { Send %k% }
+		if (Errorlevel = "Max") {Send %k%}
 		else if InStr(ErrorLevel, "EndKey:") {
 			k := SubStr(ErrorLevel, 8)
-			if (false) { }
-	#define chord_f8(c,name) else if k=name; { Send {U(c)} }
-	#define chord_f8_(c,name,before,after) else if k=name; { before; Send {U(c)}; after }
+			if (false) {}
+	#define chord_f8(c,name) else if k=name; {Send ‹U(c)›}
+	#define chord_f8_(c,name,before,after) else if k=name; {before; Send ‹U(c)›; after}
 	// modifiers
 	chord_f8(^	,LControl)			// → F8^ ^	// Ctrl
 	chord_f8(^	,RControl)			// → F8^ ^	// Ctrl
@@ -392,14 +392,14 @@ is_mute() { return SoundGet("","MUTE") = "On" }
 	no(0)
 
 // command functions https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Functions.ahk
-Input(Options = "", EndKeys = "", MatchList = "") { Input, v, %Options%, %EndKeys%, %MatchList%; return v }
-InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y = "", Font = "", Timeout = "", Default = "") { InputBox, v, %Title%, %Prompt%, %HIDE%, %Width%, %Height%, %X%, %Y%, , %Timeout%, %Default%; return v }
-Run(Target, WorkingDir = "", Mode = "") { Run, %Target%, %WorkingDir%, %Mode%, v; return v }
-SoundGet(ComponentType = "", ControlType = "", DeviceNumber = "") { SoundGet, v, %ComponentType%, %ControlType%, %DeviceNumber%; return v }
-StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v }
-SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") { SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive }
-WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v }
-WinGetClass(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetClass, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v }
-WinGetText(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetText, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v }
-WinGetTitle(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGetTitle, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v }
-alert(v) { MsgBox %v% }
+Input(Options = "", EndKeys = "", MatchList = "") {Input, v, %Options%, %EndKeys%, %MatchList%; return v}
+InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y = "", Font = "", Timeout = "", Default = "") {InputBox, v, %Title%, %Prompt%, %HIDE%, %Width%, %Height%, %X%, %Y%, , %Timeout%, %Default%; return v}
+Run(Target, WorkingDir = "", Mode = "") {Run, %Target%, %WorkingDir%, %Mode%, v; return v}
+SoundGet(ComponentType = "", ControlType = "", DeviceNumber = "") {SoundGet, v, %ComponentType%, %ControlType%, %DeviceNumber%; return v}
+StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") {SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive}
+WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGetClass(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetClass, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGetText(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetText, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGetTitle(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetTitle, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+alert(v) {MsgBox %v%}
