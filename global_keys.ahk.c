@@ -10,7 +10,7 @@ SetTitleMatchMode 2
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
-// todo: consider adding mute-pauses functionality.
+// todo: replace #n with ;
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -59,9 +59,12 @@ chrome(v) { chrome_newtab(paste(v) #n Send {Enter}) }
 AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()) } return
 
 // sound and music controls
-AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}        } return
-AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down}      } return
-AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Send {Volume_Mute}      } return
+AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}   } return
+AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down} } return
+AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else {
+	if (is_mute()) { if (paused_spotify) { Send {Media_Play_Pause} #n paused_spotify := false } }
+	else { if (paused_spotify := WinGetTitle(spotify) != "Spotify") { Send {Media_Play_Pause} } }
+	Send {Volume_Mute} } return
 AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { if WinExist(vlc) { WinActivate } #n Send {Media_Play_Pause} } return
 AppsKey & ,::#n if WinExist(vlc) { WinActivate } #n Send {Media_Prev} #n return
 AppsKey & .::#n if WinExist(vlc) { WinActivate } #n Send {Media_Next} #n return
@@ -139,6 +142,7 @@ current_directory() {
 	}
 	return slash_back(A_Desktop) . "/../skryl/code" }
 slash_back(v) { return RegExReplace(v, "\\\\", "/") }
+is_mute() { return SoundGet("","MUTE") = "On" }
 
 // unfinished
 //~LButton::
@@ -391,6 +395,7 @@ slash_back(v) { return RegExReplace(v, "\\\\", "/") }
 Input(Options = "", EndKeys = "", MatchList = "") { Input, v, %Options%, %EndKeys%, %MatchList% #n return v }
 InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y = "", Font = "", Timeout = "", Default = "") { InputBox, v, %Title%, %Prompt%, %HIDE%, %Width%, %Height%, %X%, %Y%, , %Timeout%, %Default% #n return v }
 Run(Target, WorkingDir = "", Mode = "") { Run, %Target%, %WorkingDir%, %Mode%, v #n return v }
+SoundGet(ComponentType = "", ControlType = "", DeviceNumber = "") { SoundGet, v, %ComponentType%, %ControlType%, %DeviceNumber% #n return v }
 StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
 SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") { SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive }
 WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") { WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText% #n return v }
