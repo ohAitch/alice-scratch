@@ -5,11 +5,13 @@ ListLines Off
 SendMode Input
 SetTitleMatchMode 2
 
+// used ⌘: dlq+- ↑→↓← 0-9 ‹Pause›
+
 // todo meh: consider making menukey sticky, like F8
 // todo meh: fill out F8
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
-// todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
+// todo: ≡+mouse : add homoiconicity (this is hard), add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -86,6 +88,8 @@ LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Click 2; Sleep 50; chrome(copy()); return
 $^v::; if (clipboard_contains_files() and not WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
+~LWin & f::alert("try win-q")
+~RWin & f::alert("try win-q")
 
 // ye l33t command
 global l33t_hidden
@@ -162,7 +166,7 @@ is_mute() {return SoundGet("","MUTE") = "On"}
 //	return
 
 // insert unicode
-#define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
+	#define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
 	#define chord_(x,y,c) ~x & y::Send `b‹U(c)›
 	#define chord3(x,y,c) chord_(x,y,c)
 	#define chord4(x,y,c,_) chord_(x,y,c); chord_(y,x,c)
@@ -318,11 +322,11 @@ is_mute() {return SoundGet("","MUTE") = "On"}
 	chord([,u,ᵤ)	// [u ᵤ
 	chord([,v,ᵥ)	// [v ᵥ
 	chord([,x,ₓ)	// [x ₓ
-	// homoiconic keyboard
+// homoiconic keyboard
 	F8::; Input k, L1,‹Escape›‹LControl›‹RControl›‹LShift›‹RShift›‹LAlt›‹RAlt›‹LWin›‹RWin›‹Backspace›‹Tab›‹Enter›‹Space›‹Delete›‹Insert›‹Home›‹End›‹PgUp›‹PgDn›‹Up›‹Down›‹Left›‹Right›‹CapsLock›‹NumLock›‹ScrollLock›‹PrintScreen›‹CtrlBreak›‹Pause›‹Sleep›‹F1›‹F2›‹F3›‹F4›‹F5›‹F6›‹F7›‹F8›‹F9›‹F10›‹F11›‹F12›
 	// did not have keyboard with ⌘Command ⌥Option ⎄Compose ⏏Eject or any other cool key, so did not implement these keys
 	// had difficulty implementing ≣MenuKey so we'll just go with ≡MenuKey, which we can already input with ≡=
-	// ⌘Win and ⎇Alt are known to do weird things
+	// ⌘Win is known to do weird things
 		if (Errorlevel = "Max") {Send %k%}
 		else if InStr(ErrorLevel, "EndKey:") {
 			k := SubStr(ErrorLevel, 8)
@@ -378,7 +382,7 @@ is_mute() {return SoundGet("","MUTE") = "On"}
 	chord_f8(F11,F11)	// → F8F11 F11	// F11
 	chord_f8(F12,F12)	// → F8F12 F12	// F12
 			} return
-	// make menukey-mode not break on undefined chars in [a-z0-9]
+// make menukey-mode not break on undefined chars in [a-z0-9]
 	#define no(k) AppsKey & k::return
 	no(c)
 	no(w)
