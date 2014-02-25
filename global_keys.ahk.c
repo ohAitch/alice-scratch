@@ -9,8 +9,8 @@ SetTitleMatchMode 2
 // todo meh: fill out F8
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
-// todo: slave media combo to detect vlc. ditto with other keys. consider adding mute-pauses functionality.
 // todo: ≡+mouse : add homoiconicity, add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
+// todo: consider adding mute-pauses functionality.
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -26,7 +26,7 @@ global desktop := "ahk_class WorkerW"
 global spotify := "Spotify ahk_class SpotifyMainWindow"
 global vlc := "VLC media player ahk_class QWidget"
 global calc := "Calculator ahk_class CalcFrame"
-global chrome := "Chrome ahk_class ChromeWidgetWin1"
+global chrome := "Chrome"
 global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define U(c) UNICODE c
 #define C #,
@@ -54,8 +54,6 @@ cmd_current_dir() { t := current_directory() #n Run cmd /K cd /D "%t%" }
 AppsKey & /::#n if WinExist(cmd) { WinActivate #n Send {Up}{Enter} } else { cmd_current_dir() } return
 AppsKey & ;::    #n if WinExist(cmd)  && !GetKeyState("shift") { WinActivate } else { cmd_current_dir() } return
 AppsKey & Enter::#n if WinExist(calc) && !GetKeyState("shift") { WinActivate } else { Run calc           } return
-AppsKey &  RCtrl::Send {Launch_Media}
-~RCtrl & AppsKey::Send {Launch_Media}
 #define chrome_newtab(action) if WinExist(chrome){ WinActivate #n Send ^t #n action }
 chrome(v) { chrome_newtab(paste(v) #n Send {Enter}) }
 AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()) } return
@@ -64,14 +62,16 @@ AppsKey & \::#n if GetKeyState("shift") { chrome_newtab() } else { chrome(copy()
 AppsKey & Right::#n if GetKeyState("shift") { MouseMove  1,  0, 0, R } else { Send {Volume_Up}        } return
 AppsKey & Left:: #n if GetKeyState("shift") { MouseMove -1,  0, 0, R } else { Send {Volume_Down}      } return
 AppsKey & Down:: #n if GetKeyState("shift") { MouseMove  0,  1, 0, R } else { Send {Volume_Mute}      } return
-AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { Send {Media_Play_Pause} } return
-AppsKey & ,::Send {Media_Prev}
-AppsKey & .::Send {Media_Next}
+AppsKey & Up::   #n if GetKeyState("shift") { MouseMove  0, -1, 0, R } else { if WinExist(vlc) { WinActivate } #n Send {Media_Play_Pause} } return
+AppsKey & ,::#n if WinExist(vlc) { WinActivate } #n Send {Media_Prev} #n return
+AppsKey & .::#n if WinExist(vlc) { WinActivate } #n Send {Media_Next} #n return
+AppsKey &  RCtrl::#n if WinExist(vlc) { WinActivate } else { Send {Launch_Media} } return
+~RCtrl & AppsKey::#n if WinExist(vlc) { WinActivate } else { Send {Launch_Media} } return
 AppsKey & Numpad1::chrome(SubStr(WinGetTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // manipulate windows
-AppsKey & RAlt::WinMinimize A
-~RAlt & AppsKey::WinMinimize A
+AppsKey & RAlt:: #n if WinActive(vlc) { Send !{Escape} } else { WinMinimize A } return
+~RAlt & AppsKey::#n if WinActive(vlc) { Send !{Escape} } else { WinMinimize A } return
 ###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc)
 ^w::WinClose A
 Esc::WinClose A
