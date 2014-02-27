@@ -85,6 +85,48 @@ AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} r
 Esc::WinClose A
 ###if
 
+// anti-idle
+F6::print(mouse_pos() . " " . pixel())
+F7::; can_mess := not can_mess; return
+anti_idle:
+	if (WinTitle("A") != "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome") {
+		SetTimer anti_idle, -500
+	} else {
+		if (pixel(260, 908) = 0x0000FF) { // garden harvest
+			click(260, 908)
+			if (pixel(300, 250) = 0x007B00) // on garden
+				{Sleep 50; Send ‹Shift Down›; Sleep 50; click(852, 680); Sleep 50; Send ‹Shift Up›; click(300, 680); click(780, 680)}
+		}
+		if (pixel(318, 919) = 0x11157B and can_mess) { // garden plant
+			if (pixel(300, 250) != 0x007B00) // ¬ on garden
+				{mouse_save(); MouseMove 930, 206; Sleep 250; Click 930, 363; mouse_save(1)}
+			Sleep 50; click(300, 680); Sleep 50; click(780, 680) // grey tree plant all
+		}
+		if (pixel( 414, 919) = 0xFF6600) {click( 414, 919)}
+		if (pixel(1096, 857) = 0x237223 and pixel(1115, 821) = 0x1C1C1C) {click(1096, 857)}
+		if (pixel(1158, 849) = 0x2626A8) {click(1158, 849)}
+		if (pixel(1117, 304) = 0x3B869F) {click(1117, 304)}
+		/*if (pixel( 516, 922) = 0x990000 and can_mess) { // adventure
+			if (pixel(288,318) != 0x0027FF) {mouse_save(); MouseMove 930, 206; Sleep 250; Click 930, 657; mouse_save(1)}
+			Send 1
+			if (pixel(914, 456) != 0x7FFFFF) { // at home
+				if      (pixel(585, 207) = 0xE3E3E3 and pixel(790, 203) = 0x3B3B3B) {print("Arcade Tokens: 1")}
+				else if (pixel(540, 203) = 0x989898 and pixel(827, 197) = 0xC0C0C0) {print("Destroyer of Buttons: 1")}
+				else if (pixel(535, 203) = 0xB9B9B9                               ) {print("A Guy Playing TukkunFCG: 2")}
+				else if (pixel(606, 201) = 0xB9B9B9 and pixel(749, 195) = 0x575757) {print("COINS PLX!!!: 2")}
+				else if (pixel(582, 196) = 0x737373 and pixel(793, 202) = 0x989898) {print("Illegal Blue Coins: 1")}
+				else if (pixel(837, 209) = 0x959595 and pixel(674, 198) = 0x030303) {print("A Tired Adventurer: if (pixel(422, 511) = 0xC8E7EF) 2 else 3")}
+				else {
+					Send 3; Sleep 50
+					if (pixel(914, 456) != 0x7FFFFF) {Send 2; Sleep 50
+					if (pixel(914, 456) != 0x7FFFFF) {Send 1}}
+				}
+			}
+		}*/
+		SetTimer anti_idle, -50
+	}
+	return
+
 // misc
 AppsKey & n::Send ‹AppsKey›wt^a // new text file
 LCtrl & Capslock::Send ^+‹Tab›
