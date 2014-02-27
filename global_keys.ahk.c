@@ -35,9 +35,12 @@ global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define S SEMICOLON
 #define Q QUOTE
 
-// register callbacks
+global can_mess := true
+
+// register threads
 OnExit exit_cleanup
 SetTimer kill_rename, -1
+SetTimer anti_idle, -1
 return
 
 // define callbacks
@@ -47,32 +50,32 @@ kill_rename:; WinWaitActive Rename ahk_class #32770; Send y; SetTimer kill_renam
 // autoclick
 ^F1::; loop 10  {Click; Sleep 1} return
 ^F2::; loop 100 {Click; Sleep 1} return
-^F3::; if (autoclick_on) {autoclick_on := false; SetTimer Click, Off}
-	else {autoclick_on := true; SetTimer Click, 1} return
-Click:; Click; return
+^F3::; autoclick := autoclick = 1? "off" : 1; SetTimer Click, %autoclick%; return; Click:; Click; return
 
 // run apps
-cmd_current_dir() {t := current_directory(); Run cmd /K cd /D "%t%"}
-AppsKey & /::; if WinExist(cmd) {WinActivate; Send ‹Up›‹Enter›} else {cmd_current_dir()} return
-AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") {WinActivate} else {cmd_current_dir()} return
-AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc          } return
+AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") {WinActivate; Send ‹Up›‹Enter›} else {t := current_directory(); Run cmd /K cd /D "%t%"} return
+AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome){WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
-AppsKey & \::; if GetKeyState("shift") {chrome_newtab()} else {chrome(copy())} return
+AppsKey & /::; chrome_newtab(); return
+AppsKey & \::; chrome(copy()); return
 
 // sound and music controls
 AppsKey & Right::; if GetKeyState("shift") {MouseMove  1,  0, 0, R} else {Send ‹Volume_Up›  } return
 AppsKey & Left::;  if GetKeyState("shift") {MouseMove -1,  0, 0, R} else {Send ‹Volume_Down›} return
-AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {if WinExist(vlc) {WinActivate}; Send ‹Media_Play_Pause›} return
+AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {
+	if WinExist(vlc) {WinActivate}
+	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›; paused_spotify := false}
+	Send ‹Media_Play_Pause›} return
 AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
 	if (is_mute()) {if (paused_spotify) {Send ‹Media_Play_Pause›; paused_spotify := false}}
-	else {if (paused_spotify := WinGetTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}}
+	else {if (paused_spotify := WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}}
 	Send ‹Volume_Mute›} return
 AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
 AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
 AppsKey &  RCtrl::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
 ~RCtrl & AppsKey::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
-AppsKey & Numpad1::chrome(SubStr(WinGetTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
+AppsKey & Numpad1::chrome(SubStr(WinTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // manipulate windows
 AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
@@ -136,7 +139,7 @@ current_directory() {
 		if (InStr(FileExist(v), "D"))
 			return v
 	} else if WinActive(sublime) {
-		v := slash_back(RegExReplace(WinGetTitle("A"), "^(.*)\\\\.*$", "$1"))
+		v := slash_back(RegExReplace(WinTitle("A"), "^(.*)\\\\.*$", "$1"))
 		if (InStr(FileExist(v), "D"))
 			return v
 	} else if WinActive(desktop) {
@@ -145,8 +148,12 @@ current_directory() {
 	return slash_back(A_Desktop) . "/../skryl/code"}
 slash_back(v) {return RegExReplace(v, "\\\\", "/")}
 is_mute() {return SoundGet("","MUTE") = "On"}
-print(v) {ToolTip %v%; SetTimer kill_tooltip, -1500} ;kill_tooltip:; ToolTip; return
+print(v) {ToolTip %v%; Clipboard := v; SetTimer kill_tooltip, -1500} ;kill_tooltip:; ToolTip; return
 alert(v) {MsgBox %v%}
+mouse_pos() {MouseGetPos x, y; return x . ", " . y}
+pixel(x = "", y = "", rgb = "") {if (not x) {MouseGetPos x, y}; PixelGetColor, v, %X%, %Y%, %RGB%; return v}
+mouse_save(v = "") {static x; static y; if (v) {MouseMove %x%, %y%} else {MouseGetPos x, y}}
+click(x, y) {MouseGetPos x_, y_; Click %x%, %y%; MouseMove %x_%, %y_%}
 
 // unfinished
 //~LButton::
@@ -401,8 +408,8 @@ InputBox(Title = "", Prompt = "", HIDE = "", Width = "", Height = "", X = "", Y 
 Run(Target, WorkingDir = "", Mode = "") {Run, %Target%, %WorkingDir%, %Mode%, v; return v}
 SoundGet(ComponentType = "", ControlType = "", DeviceNumber = "") {SoundGet, v, %ComponentType%, %ControlType%, %DeviceNumber%; return v}
 SplitPath(ByRef InputVar, ByRef OutFileName = "", ByRef OutDir = "", ByRef OutExtension = "", ByRef OutNameNoExt = "", ByRef OutDrive = "") {SplitPath, InputVar, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive}
-StatusBarGetText(Part = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {StatusBarGetText, v, %Part%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
-WinGet(Cmd = "", WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGet, v, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
-WinGetClass(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetClass, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
-WinGetText(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetText, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
-WinGetTitle(WinTitle = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetTitle, v, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+StatusBarGetText(Part = "", title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {StatusBarGetText, v, %Part%, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGet(Cmd = "", title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGet, v, %Cmd%, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGetClass(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetClass, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinGetText(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetText, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+WinTitle(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetTitle, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
