@@ -34,6 +34,7 @@ global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define C COMMA
 #define S SEMICOLON
 #define Q QUOTE
+#define P . " " .
 
 global can_mess := true
 
@@ -86,46 +87,88 @@ Esc::WinClose A
 ###if
 
 // anti-idle
-F6::print(mouse_pos() . " " . pixel())
+F6::print(mouse_pos() P pixel())
 F7::; can_mess := not can_mess; return
+//F7::; print(is_location("adventures")); return
+is_anti_idle() {return WinTitle("A") = "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome"}
+is_location(v) {return\
+	(v="garden"    )? pixel(300, 250) = 0x007B00 :\
+	(v="garden2"   )? pixel(316, 270) = 0x5E1700 :\
+	(v="button"    )? pixel(528, 641) = 0x6B0066 :\
+	(v="adventures")? pixel(288, 318) = 0x0027FF :\
+		printf("no location detector entry") }
+printf(v) {print(v); return false}
+location(v) {
+	if (is_location(v)) {
+	} else if (v="garden" and is_location("garden2")) {
+		click(425, 528)
+	} else if (v="garden2") {
+		location("garden")
+		click(425, 528)
+	} else {mouse_save()
+		locations := ‹feature:2,mystery:3,garden:4,battle:5,button:6,printer:7,arcade:8,stadium:9,fcg:10,lol:11,adventures:12,fishing:13,business:14,dragon:15,epic:16,box:17,cards:18,typing:19›
+		n := locations[v]
+		MouseMove 930, 212; Sleep 250
+		if (n > 12) {MouseMove 930, 693; Sleep 1100}
+		click(930, 212 + 37 * (n > 12? n - 7 : n))
+		mouse_save(1)}}
+replant() {Send ‹Shift Down›; Sleep 50; click(852, 680); Sleep 50; Send ‹Shift Up›; click(300, 680); click(780, 680)}
 anti_idle:
-	if (WinTitle("A") != "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome") {
+	if (not is_anti_idle()) {
 		SetTimer anti_idle, -500
 	} else {
-		if (pixel(260, 908) = 0x0000FF) { // garden harvest
-			click(260, 908)
-			if (pixel(300, 250) = 0x007B00) // on garden
-				{Sleep 50; Send ‹Shift Down›; Sleep 50; click(852, 680); Sleep 50; Send ‹Shift Up›; click(300, 680); click(780, 680)}
-		}
-		if (pixel(318, 919) = 0x11157B and can_mess) { // garden plant
-			if (pixel(300, 250) != 0x007B00) // ¬ on garden
-				{mouse_save(); MouseMove 930, 206; Sleep 250; Click 930, 363; mouse_save(1)}
-			Sleep 50; click(300, 680); Sleep 50; click(780, 680) // grey tree plant all
-		}
+		if (pixel( 260, 908) = 0x0000FF) {click(260, 908); if (is_location("garden")) {replant()}}
+		if (pixel( 318, 919) = 0x11157B and can_mess) {location("garden"); replant(); Sleep 2000}
 		if (pixel( 414, 919) = 0xFF6600) {click( 414, 919)}
-		if (pixel(1096, 857) = 0x237223 and pixel(1115, 821) = 0x1C1C1C) {click(1096, 857)}
+		if (pixel(1096, 857) = 0x237223 and (pixel(1114, 821) != 0x555555 or pixel(1128, 822) != 0x383838 or pixel(1141, 821) != 0x505050 or pixel(1150, 821) != 0x4D4D4D)) {click(1096, 857)}
 		if (pixel(1158, 849) = 0x2626A8) {click(1158, 849)}
 		if (pixel(1117, 304) = 0x3B869F) {click(1117, 304)}
-		/*if (pixel( 516, 922) = 0x990000 and can_mess) { // adventure
-			if (pixel(288,318) != 0x0027FF) {mouse_save(); MouseMove 930, 206; Sleep 250; Click 930, 657; mouse_save(1)}
+		if (pixel( 516, 922) = 0x990000 and can_mess) { // adventure
+			/*location("adventures")
+			Sleep 1000
 			Send 1
-			if (pixel(914, 456) != 0x7FFFFF) { // at home
-				if      (pixel(585, 207) = 0xE3E3E3 and pixel(790, 203) = 0x3B3B3B) {print("Arcade Tokens: 1")}
-				else if (pixel(540, 203) = 0x989898 and pixel(827, 197) = 0xC0C0C0) {print("Destroyer of Buttons: 1")}
-				else if (pixel(535, 203) = 0xB9B9B9                               ) {print("A Guy Playing TukkunFCG: 2")}
-				else if (pixel(606, 201) = 0xB9B9B9 and pixel(749, 195) = 0x575757) {print("COINS PLX!!!: 2")}
-				else if (pixel(582, 196) = 0x737373 and pixel(793, 202) = 0x989898) {print("Illegal Blue Coins: 1")}
-				else if (pixel(837, 209) = 0x959595 and pixel(674, 198) = 0x030303) {print("A Tired Adventurer: if (pixel(422, 511) = 0xC8E7EF) 2 else 3")}
+			if (pixel(288,318) = 0x0027FF and pixel(839, 454) != 0x7FFFFF) { // ¬ at home
+				if      (pixel(585, 207) = 0xE3E3E3 and pixel(790, 203) = 0x3B3B3B) {Send 1} // Arcade Tokens
+				else if (pixel(540, 203) = 0x989898 and pixel(827, 197) = 0xC0C0C0) {Send 1} // Destroyer of Buttons
+				else if (pixel(535, 203) = 0xB9B9B9                               ) {Send 2} // A Guy Playing TukkunFCG
+				else if (pixel(606, 201) = 0xB9B9B9 and pixel(749, 195) = 0x575757) {Send 2} // COINS PLX!!!
+				else if (pixel(582, 196) = 0x737373 and pixel(793, 202) = 0x989898) {Send 1} // Illegal Blue Coins
+				else if (pixel(837, 209) = 0x959595 and pixel(674, 198) = 0x030303) {if (pixel(422, 511) = 0xC8E7EF) {Send 2} else {Send 3)}} // A Tired Adventurer
 				else {
-					Send 3; Sleep 50
-					if (pixel(914, 456) != 0x7FFFFF) {Send 2; Sleep 50
-					if (pixel(914, 456) != 0x7FFFFF) {Send 1}}
+					Sleep 1000
+					Send 3; Sleep 200
+					if (pixel(839, 454) != 0x7FFFFF) {Send 2; Sleep 200
+					if (pixel(839, 454) != 0x7FFFFF) {Send 1}}
+					Sleep 2000
 				}
 			}
-		}*/
+			Sleep 800*/
+		}
+		// fishing: first, get a lock on 843, 686 0x0000FF
+		if (pixel(1050, 615) = 0x08D686 and not idle_mode) {SetTimer idle_mode, -1000; idle_mode := true}
+		if (can_mess) {location("button")}
+		if (is_location("button")) {
+			if (not ly or not ry) {
+				PixelSearch _,lyu, 370,285,     370,539, 0x666666,, Fast
+				PixelSearch _,lyl, 370,lyu+140, 370,539, 0x000000,, Fast
+				ly := avgi(lyu,lyl)
+				PixelSearch _,ryu, 891,285,     891,539, 0x666666,, Fast
+				PixelSearch _,ryl, 891,ryu+140, 891,539, 0x000000,, Fast
+				ry := avgi(ryu,ryl)
+			} else {
+				Y := avgi(ly,ry)
+				PixelSearch x,y, 265,Y, 1002,Y, 0x990000, 32, Fast
+				x := x + 75
+				PixelSearch _,yu, x,y-110,  x,y,      0x990000, 32, Fast
+				PixelSearch _,yl, x,yu+100, x,yu+160, 0x990000, 32, Fast
+				y := avgi(yu,yl)
+				click(x,y)
+				if (((pixel(400,Y) = 0x000099) + (pixel(500,Y) = 0x000099) + (pixel(600,Y) = 0x000099) + (pixel(700,Y) = 0x000099) + (pixel(800,Y) = 0x000099) + (pixel(900,Y) = 0x000099)) > 2) {click(358, 686)}
+			}
+		}
 		SetTimer anti_idle, -50
-	}
-	return
+	} return
+	idle_mode:; if (is_anti_idle() and pixel(1050, 615) = 0x08D686) {click(1050, 615)}; idle_mode := false; return
 
 // misc
 AppsKey & n::Send ‹AppsKey›wt^a // new text file
@@ -190,12 +233,21 @@ current_directory() {
 	return slash_back(A_Desktop) . "/../skryl/code"}
 slash_back(v) {return RegExReplace(v, "\\\\", "/")}
 is_mute() {return SoundGet("","MUTE") = "On"}
-print(v) {ToolTip %v%; Clipboard := v; SetTimer kill_tooltip, -1500} ;kill_tooltip:; ToolTip; return
+print(x="", y="", v="") {
+	if (y) {v := (v? x . ", " . y . "|" . v : x . ", " . y); ToolTip %v%, x, y} else {v := x; ToolTip %v%}
+	Clipboard := v; SetTimer kill_tooltip, -1500}; kill_tooltip:; Tooltip; return;
+	//static tooltip_i := 0; tooltip_i := tooltip_i + 1; if (tooltip_i > 20) {tooltip_i := 1}
+	//if (y) {v := (v? x . ", " . y . "|" . v : x . ", " . y); ToolTip %v%, x, y, %tooltip_i%} else {v := x; ToolTip %v%,,, %tooltip_i%}
+	//Clipboard := v; SetTimer kill_tooltip_%tooltip_i%, -1500}
+	//#define t(i) kill_tooltip_##i:; Tooltip, ,,, i; return;
+	//t(1)t(2)t(3)t(4)t(5)t(6)t(7)t(8)t(9)t(10)t(11)t(12)t(13)t(14)t(15)t(16)t(17)t(18)t(19)t(20)
+	//#undef t
 alert(v) {MsgBox %v%}
 mouse_pos() {MouseGetPos x, y; return x . ", " . y}
 pixel(x = "", y = "", rgb = "") {if (not x) {MouseGetPos x, y}; PixelGetColor, v, %X%, %Y%, %RGB%; return v}
-mouse_save(v = "") {static x; static y; if (v) {MouseMove %x%, %y%} else {MouseGetPos x, y}}
-click(x, y) {MouseGetPos x_, y_; Click %x%, %y%; MouseMove %x_%, %y_%}
+mouse_save(v = "") {static x; static y; if (v) {MouseMove x, y} else {MouseGetPos x, y}}
+click(x, y) {MouseGetPos x_, y_; Click %x%, %y%; MouseMove x_, y_}
+avgi(x,y) {return floor((x+y)/2)}
 
 // unfinished
 //~LButton::
