@@ -36,7 +36,7 @@ global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define Q QUOTE
 #define P . " " .
 
-global can_mess := true
+can_mess := true
 
 // register threads
 OnExit exit_cleanup
@@ -56,7 +56,7 @@ kill_rename:; WinWaitActive Rename ahk_class #32770; Send y; SetTimer kill_renam
 // run apps
 AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") {WinActivate; Send ‹Up›‹Enter›} else {t := current_directory(); Run cmd /K cd /D "%t%"} return
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
-#define chrome_newtab(action) if WinExist(chrome){WinActivate; Send ^t; action}
+#define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
 AppsKey & /::; chrome_newtab(); return
 AppsKey & \::; chrome(copy()); return
@@ -66,11 +66,11 @@ AppsKey & Right::; if GetKeyState("shift") {MouseMove  1,  0, 0, R} else {Send �
 AppsKey & Left::;  if GetKeyState("shift") {MouseMove -1,  0, 0, R} else {Send ‹Volume_Down›} return
 AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {
 	if WinExist(vlc) {WinActivate}
-	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›; paused_spotify := false}
+	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›}
 	Send ‹Media_Play_Pause›} return
 AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
-	if (is_mute()) {if (paused_spotify) {Send ‹Media_Play_Pause›; paused_spotify := false}}
-	else {if (paused_spotify := WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}}
+	if (is_mute()) {if ((A_TickCount - paused_spotify) < 5*60*1000) {Send ‹Media_Play_Pause›}}
+	else {if (WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›; paused_spotify := A_TickCount}}
 	Send ‹Volume_Mute›} return
 AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
 AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
@@ -89,7 +89,6 @@ Esc::WinClose A
 // anti-idle
 F6::print(mouse_pos() P pixel())
 F7::; can_mess := not can_mess; return
-//F7::; print(is_location("adventures")); return
 is_anti_idle() {return WinTitle("A") = "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome"}
 is_location(v) {return\
 	(v="garden"    )? pixel(300, 250) = 0x007B00 :\
