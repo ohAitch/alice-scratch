@@ -69,8 +69,7 @@ AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {
 	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›}
 	Send ‹Media_Play_Pause›} return
 AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
-	if (is_mute()) {if ((A_TickCount - paused_spotify) < 5*60*1000) {Send ‹Media_Play_Pause›}}
-	else {if (WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›; paused_spotify := A_TickCount}}
+	if (not is_mute() and WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}
 	Send ‹Volume_Mute›} return
 AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
 AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
