@@ -12,6 +12,7 @@ SetTitleMatchMode 2
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
 // todo: ≡+mouse : add homoiconicity (this is hard), add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
+// todo: modify ≡+leftmouse behavior to simply copy and paste but also work with leftmouse+≡
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -23,7 +24,7 @@ SetTitleMatchMode 2
 global explorer := "ahk_class CabinetWClass"
 global cmd := "ahk_class ConsoleWindowClass"
 global taskbar := "ahk_class Shell_TrayWnd"
-global desktop := "ahk_class WorkerW"
+#define WinActive_desktop (WinActive("ahk_class WorkerW") or WinActive("ahk_class Progman"))
 global spotify := "Spotify ahk_class SpotifyMainWindow"
 global vlc := "VLC media player ahk_class QWidget"
 global calc := "Calculator ahk_class CalcFrame"
@@ -32,16 +33,14 @@ global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 #define U(c) UNICODE c
 #define B SC029
 #define C COMMA
-#define S SEMICOLON
+#define S BSEMICOLON
 #define Q QUOTE
 #define P . " " .
-
-can_mess := true
 
 // register threads
 OnExit exit_cleanup
 SetTimer kill_rename, -1
-SetTimer anti_idle, -1
+//SetTimer anti_idle, -1
 return
 
 // define callbacks
@@ -54,7 +53,8 @@ kill_rename:; WinWaitActive Rename ahk_class #32770; Send y; SetTimer kill_renam
 ^F3::; autoclick := autoclick = 1? "off" : 1; SetTimer Click, %autoclick%; return; Click:; Click; return
 
 // run apps
-AppsKey & S::;     if WinExist(cmd)  && !GetKeyState("shift") {WinActivate; Send ‹Up›‹Enter›} else {t := current_directory(); Run cmd /K cd /D "%t%"} return
+AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
+AppsKey & -::; t := current_directory(); Run bash -c "cd %t%SEMICOLONbash"; return
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
@@ -69,7 +69,7 @@ AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {
 	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›}
 	Send ‹Media_Play_Pause›} return
 AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
-	if (not is_mute() and WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}
+	if (!is_mute() and WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}
 	Send ‹Volume_Mute›} return
 AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
 AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
@@ -85,95 +85,12 @@ AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} r
 Esc::WinClose A
 ###if
 
-// anti-idle
-F6::print(mouse_pos() P pixel())
-F7::; can_mess := not can_mess; return
-is_anti_idle() {return WinTitle("A") = "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome"}
-is_location(v) {return\
-	(v="garden"    )? pixel(300, 250) = 0x007B00 :\
-	(v="garden2"   )? pixel(316, 270) = 0x5E1700 :\
-	(v="button"    )? pixel(528, 641) = 0x6B0066 :\
-	(v="adventures")? pixel(288, 318) = 0x0027FF :\
-		printf("no location detector entry") }
-printf(v) {print(v); return false}
-location(v) {
-	if (is_location(v)) {
-	} else if (v="garden" and is_location("garden2")) {
-		click(425, 528)
-	} else if (v="garden2") {
-		location("garden")
-		click(425, 528)
-	} else {mouse_save()
-		locations := ‹feature:2,mystery:3,garden:4,battle:5,button:6,printer:7,arcade:8,stadium:9,fcg:10,lol:11,adventures:12,fishing:13,business:14,dragon:15,epic:16,box:17,cards:18,typing:19›
-		n := locations[v]
-		MouseMove 930, 212; Sleep 250
-		if (n > 12) {MouseMove 930, 693; Sleep 1100}
-		click(930, 212 + 37 * (n > 12? n - 7 : n))
-		mouse_save(1)}}
-replant() {Send ‹Shift Down›; Sleep 50; click(852, 680); Sleep 50; Send ‹Shift Up›; click(300, 680); click(780, 680)}
-anti_idle:
-	if (not is_anti_idle()) {
-		SetTimer anti_idle, -500
-	} else {
-		if (pixel( 260, 908) = 0x0000FF) {click(260, 908); if (is_location("garden")) {replant()}}
-		if (pixel( 318, 919) = 0x11157B and can_mess) {location("garden"); replant(); Sleep 2000}
-		if (pixel( 414, 919) = 0xFF6600) {click( 414, 919)}
-		if (pixel(1096, 857) = 0x237223 and (pixel(1114, 821) != 0x555555 or pixel(1128, 822) != 0x383838 or pixel(1141, 821) != 0x505050 or pixel(1150, 821) != 0x4D4D4D)) {click(1096, 857)}
-		if (pixel(1158, 849) = 0x2626A8) {click(1158, 849)}
-		if (pixel(1117, 304) = 0x3B869F) {click(1117, 304)}
-		if (pixel( 516, 922) = 0x990000 and can_mess) { // adventure
-			/*location("adventures")
-			Sleep 1000
-			Send 1
-			if (pixel(288,318) = 0x0027FF and pixel(839, 454) != 0x7FFFFF) { // ¬ at home
-				if      (pixel(585, 207) = 0xE3E3E3 and pixel(790, 203) = 0x3B3B3B) {Send 1} // Arcade Tokens
-				else if (pixel(540, 203) = 0x989898 and pixel(827, 197) = 0xC0C0C0) {Send 1} // Destroyer of Buttons
-				else if (pixel(535, 203) = 0xB9B9B9                               ) {Send 2} // A Guy Playing TukkunFCG
-				else if (pixel(606, 201) = 0xB9B9B9 and pixel(749, 195) = 0x575757) {Send 2} // COINS PLX!!!
-				else if (pixel(582, 196) = 0x737373 and pixel(793, 202) = 0x989898) {Send 1} // Illegal Blue Coins
-				else if (pixel(837, 209) = 0x959595 and pixel(674, 198) = 0x030303) {if (pixel(422, 511) = 0xC8E7EF) {Send 2} else {Send 3)}} // A Tired Adventurer
-				else {
-					Sleep 1000
-					Send 3; Sleep 200
-					if (pixel(839, 454) != 0x7FFFFF) {Send 2; Sleep 200
-					if (pixel(839, 454) != 0x7FFFFF) {Send 1}}
-					Sleep 2000
-				}
-			}
-			Sleep 800*/
-		}
-		// fishing: first, get a lock on 843, 686 0x0000FF
-		if (pixel(1050, 615) = 0x08D686 and not idle_mode) {SetTimer idle_mode, -1000; idle_mode := true}
-		if (can_mess) {location("button")}
-		if (is_location("button")) {
-			if (not ly or not ry) {
-				PixelSearch _,lyu, 370,285,     370,539, 0x666666,, Fast
-				PixelSearch _,lyl, 370,lyu+140, 370,539, 0x000000,, Fast
-				ly := avgi(lyu,lyl)
-				PixelSearch _,ryu, 891,285,     891,539, 0x666666,, Fast
-				PixelSearch _,ryl, 891,ryu+140, 891,539, 0x000000,, Fast
-				ry := avgi(ryu,ryl)
-			} else {
-				Y := avgi(ly,ry)
-				PixelSearch x,y, 265,Y, 1002,Y, 0x990000, 32, Fast
-				x := x + 75
-				PixelSearch _,yu, x,y-110,  x,y,      0x990000, 32, Fast
-				PixelSearch _,yl, x,yu+100, x,yu+160, 0x990000, 32, Fast
-				y := avgi(yu,yl)
-				click(x,y)
-				if (((pixel(400,Y) = 0x000099) + (pixel(500,Y) = 0x000099) + (pixel(600,Y) = 0x000099) + (pixel(700,Y) = 0x000099) + (pixel(800,Y) = 0x000099) + (pixel(900,Y) = 0x000099)) > 2) {click(358, 686)}
-			}
-		}
-		SetTimer anti_idle, -50
-	} return
-	idle_mode:; if (is_anti_idle() and pixel(1050, 615) = 0x08D686) {click(1050, 615)}; idle_mode := false; return
-
 // misc
 AppsKey & n::Send ‹AppsKey›wt^a // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Click 2; Sleep 50; chrome(copy()); return
-$^v::; if (clipboard_contains_files() and not WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
+$^v::; if (clipboard_contains_files() and !WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
 ~LWin & f::print("try win-q")
 ~RWin & f::print("try win-q")
 
@@ -225,7 +142,7 @@ current_directory() {
 		v := slash_back(RegExReplace(WinTitle("A"), "^(.*)\\\\.*$", "$1"))
 		if (InStr(FileExist(v), "D"))
 			return v
-	} else if WinActive(desktop) {
+	} else if WinActive_desktop {
 		return slash_back(A_Desktop)
 	}
 	return slash_back(A_Desktop) . "/../skryl/code"}
@@ -242,7 +159,7 @@ print(x="", y="", v="") {
 	//#undef t
 alert(v) {MsgBox %v%}
 mouse_pos() {MouseGetPos x, y; return x . ", " . y}
-pixel(x = "", y = "", rgb = "") {if (not x) {MouseGetPos x, y}; PixelGetColor, v, %X%, %Y%, %RGB%; return v}
+pixel(x = "", y = "", rgb = "") {if (!x) {MouseGetPos x, y}; PixelGetColor, v, %X%, %Y%, %RGB%; return v}
 mouse_save(v = "") {static x; static y; if (v) {MouseMove x, y} else {MouseGetPos x, y}}
 click(x, y) {MouseGetPos x_, y_; Click %x%, %y%; MouseMove x_, y_}
 avgi(x,y) {return floor((x+y)/2)}
@@ -263,6 +180,91 @@ avgi(x,y) {return floor((x+y)/2)}
 //~MButton Up::
 //	if A_Cursor = IBeam; paste()
 //	return
+
+
+// anti-idle
+/*F6::print(mouse_pos() P pixel())
+F7::; can_mess := !can_mess; return
+is_anti_idle() {return WinTitle("A") = "Play Anti-Idle: The Game, a free online game on Kongregate - Google Chrome"}
+is_location(v) {return\
+	(v="garden"    )? pixel(300, 250) = 0x007B00 :\
+	(v="garden2"   )? pixel(316, 270) = 0x5E1700 :\
+	(v="button"    )? pixel(528, 641) = 0x6B0066 :\
+	(v="adventures")? pixel(288, 318) = 0x0027FF :\
+		printf("no location detector entry") }
+printf(v) {print(v); return false}
+location(v) {
+	if (is_location(v)) {
+	} else if (v="garden" and is_location("garden2")) {
+		click(425, 528)
+	} else if (v="garden2") {
+		location("garden")
+		click(425, 528)
+	} else {mouse_save()
+		locations := ‹feature:2,mystery:3,garden:4,battle:5,button:6,printer:7,arcade:8,stadium:9,fcg:10,lol:11,adventures:12,fishing:13,business:14,dragon:15,epic:16,box:17,cards:18,typing:19›
+		n := locations[v]
+		MouseMove 930, 212; Sleep 250
+		if (n > 12) {MouseMove 930, 693; Sleep 1100}
+		click(930, 212 + 37 * (n > 12? n - 7 : n))
+		mouse_save(1)}}
+replant() {Send ‹Shift Down›; Sleep 50; click(852, 680); Sleep 50; Send ‹Shift Up›; click(300, 680); click(780, 680)}
+anti_idle:
+	if (!is_anti_idle()) {
+		SetTimer anti_idle, -500
+	} else {
+		if (pixel( 260, 908) = 0x0000FF) {click(260, 908); if (is_location("garden")) {replant()}}
+		if (pixel( 318, 919) = 0x11157B and can_mess) {location("garden"); replant(); Sleep 2000}
+		if (pixel( 414, 919) = 0xFF6600) {click( 414, 919)}
+		if (pixel(1096, 857) = 0x237223 and (pixel(1114, 821) != 0x555555 or pixel(1128, 822) != 0x383838 or pixel(1141, 821) != 0x505050 or pixel(1150, 821) != 0x4D4D4D)) {click(1096, 857)}
+		if (pixel(1158, 849) = 0x2626A8) {click(1158, 849)}
+		if (pixel(1117, 304) = 0x3B869F) {click(1117, 304)}
+		if (pixel( 516, 922) = 0x990000 and can_mess) { // adventure
+			//location("adventures")
+			//Sleep 1000
+			//Send 1
+			//if (pixel(288,318) = 0x0027FF and pixel(839, 454) != 0x7FFFFF) { // ¬ at home
+			//	if      (pixel(585, 207) = 0xE3E3E3 and pixel(790, 203) = 0x3B3B3B) {Send 1} // Arcade Tokens
+			//	else if (pixel(540, 203) = 0x989898 and pixel(827, 197) = 0xC0C0C0) {Send 1} // Destroyer of Buttons
+			//	else if (pixel(535, 203) = 0xB9B9B9                               ) {Send 2} // A Guy Playing TukkunFCG
+			//	else if (pixel(606, 201) = 0xB9B9B9 and pixel(749, 195) = 0x575757) {Send 2} // COINS PLX!!!
+			//	else if (pixel(582, 196) = 0x737373 and pixel(793, 202) = 0x989898) {Send 1} // Illegal Blue Coins
+			//	else if (pixel(837, 209) = 0x959595 and pixel(674, 198) = 0x030303) {if (pixel(422, 511) = 0xC8E7EF) {Send 2} else {Send 3)}} // A Tired Adventurer
+			//	else {
+			//		Sleep 1000
+			//		Send 3; Sleep 200
+			//		if (pixel(839, 454) != 0x7FFFFF) {Send 2; Sleep 200
+			//		if (pixel(839, 454) != 0x7FFFFF) {Send 1}}
+			//		Sleep 2000
+			//	}
+			//}
+			//Sleep 800
+		}
+		// fishing: first, get a lock on 843, 686 0x0000FF
+		if (pixel(1050, 615) = 0x08D686 and !idle_mode) {SetTimer idle_mode, -1000; idle_mode := true}
+		if (can_mess) {location("button")}
+		if (is_location("button")) {
+			if (!ly or !ry) {
+				PixelSearch _,lyu, 370,285,     370,539, 0x666666,, Fast
+				PixelSearch _,lyl, 370,lyu+140, 370,539, 0x000000,, Fast
+				ly := avgi(lyu,lyl)
+				PixelSearch _,ryu, 891,285,     891,539, 0x666666,, Fast
+				PixelSearch _,ryl, 891,ryu+140, 891,539, 0x000000,, Fast
+				ry := avgi(ryu,ryl)
+			} else {
+				Y := avgi(ly,ry)
+				PixelSearch x,y, 265,Y, 1002,Y, 0x990000, 32, Fast
+				x := x + 75
+				PixelSearch _,yu, x,y-110,  x,y,      0x990000, 32, Fast
+				PixelSearch _,yl, x,yu+100, x,yu+160, 0x990000, 32, Fast
+				y := avgi(yu,yl)
+				click(x,y)
+				if (((pixel(400,Y) = 0x000099) + (pixel(500,Y) = 0x000099) + (pixel(600,Y) = 0x000099) + (pixel(700,Y) = 0x000099) + (pixel(800,Y) = 0x000099) + (pixel(900,Y) = 0x000099)) > 2) {click(358, 686)}
+			}
+		}
+		SetTimer anti_idle, -50
+	} return
+	idle_mode:; if (is_anti_idle() and pixel(1050, 615) = 0x08D686) {click(1050, 615)}; idle_mode := false; return*/
+
 
 // insert unicode
 	#define chord(...) MACRO_DISPATCH(chord,##__VA_ARGS__)
