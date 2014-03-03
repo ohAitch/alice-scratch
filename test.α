@@ -1,4 +1,7 @@
 #!/usr/bin/env node
 
-console.log("welcome \
-stranger")
+print ← λ{console.log(v)}
+
+print('welcome \
+stranger')
+print(5≤8)
