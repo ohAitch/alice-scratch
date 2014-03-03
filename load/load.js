@@ -2,7 +2,7 @@
 
 repl = require('repl')
 fs = require('fs')
-main = require('./main')
+//main = require('./main')
 
 //module.exports.hex = hex
 
@@ -42,6 +42,13 @@ js_decode_symbol = memoize_o({},function(v){
 		else if (v[0] === 'l' || v[0] === 'g')  {r += js_decode_short[v.slice(0,2)]; v = v.slice(2)}
 		else {r += js_decode_short[v[0]]; v = v.slice(1)}
 		} return r+v})
+
+compile_lang_s = function(s){
+	return s.replace(/\\\n(.*?)(?=\n)/g,'$1\n')
+}
+compile_lang_f = function(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),compile_lang_s(fs.readFileSync(f).toString()))}
+
+compile_lang_f(argv[0].replace('.a','.α'))
 
 /*
 	var tasks = {}
