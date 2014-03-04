@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-//"use strict"
-
-//repl ← require('repl')
-fs ← require('fs')
-_ ← require('../lib/underscore-min')
-
-//module.exports.hex ←! hex
-
-argv ← process.argv[2:]
-argv₀ ←! argv₀.replace('.a','.α')
 
 print ← console.log.bind(console)
+
+print('<3')

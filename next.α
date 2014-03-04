@@ -6,10 +6,194 @@ _ ← require('../lib/underscore-min')
 //module.exports.hex ←! hex
 
 // todo: change space from 4 to 2x2 ?
+// todo: add /* */ ?
 
 //===--------------------------------------------===// utils //===--------------------------------------------===//
 
 print ← console.log.bind(console)
-memoize_o ← λ(o,f){return λ{v in o? oᵥ : (oᵥ ←! f(v))}}
+memoize_o ← λ(o,f){return λ(v){r ← own(o,v); return r = undefined? (oᵥ ←! f(v)) : r}}
+merge_o ← λ(a,b){for (k in b) aₖ ←! bₖ; return a}
+Object.map ←!  λ(v,f){f ← f || λ{[v,b]};    r ← {}; Object.keys(v).forEach(λ(k){t ← f.call(v, k, vₖ);	if (t) r[t₀] ←! t₁}); return r}
+Object.mapv ←! λ(v,f){f ← f || λ{[v,true]}; r ← {};              v.forEach(λ(v){t ← f(v);           	if (t) r[t₀] ←! t₁}); return r}
+now ← λ{Date.now() / 1000}
+run ← {
+	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
+	every:λ(s,f){return {id:setInterval(f,s*1000), cancel:λ{cancelInterval(this.id)}}},
+	tomorrow:λ(f){
+		start ← new Date()
+		cancel ← false
+		r ← run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
+			λ(){if (new Date().getDate() = start.getDate()) run.in(1,λ); else {if (¬cancel) f()}})
+		return {cancel:λ(){cancel ←! true; r.cancel()}}}
+	}
+ord ← λ{v.charCodeAt(0)}
+chr ← λ{String.fromCharCode(v)}
+seq ← λ{typeof v = 'string'? v.split('') : v}
+extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
+own ← λ(o,m){if (Object.prototype.hasOwnProperty.call(o,m)) return oₘ}
+delset ← λ(o,m,v){if (v = undefined) delete oₘ; else oₘ ←! v}
+String.prototype.repeat ←! λ{new Array(v+1).join(this)}
 
-print('eeeeee')
+//===--------------------------------------------===// js_valid_symbol //===--------------------------------------------===//
+
+pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
+hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
+js_valid_symbol ← new (λ(){
+	_short ← {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
+	encode_short ← Object.map(_short,λ{[v,'ǂ'+b]})
+	decode_short ← Object.map(_short,λ{[b,v]})
+	is_start ← memoize_o(Object.mapv(seq(';ǂ \t\n\x0b\x0c\x0d'),λ{[v,false]}),λ(v){try {eval('var '+v )} catch (e) {return false} return true})
+	is_part  ← memoize_o(Object.mapv(seq(';ǂ \t\n\x0b\x0c\x0d'),λ{[v,false]}),λ(v){try {eval('var a'+v)} catch (e) {return false} return true})
+	encode_char ← memoize_o(encode_short, λ(v){return is_part(v)? v : 'ǂu'+hex(ord(v),4)})
+
+	keywords ← ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
+	encode_keywords ← merge_o(Object.mapv(keywords,λ{[v,'_'+v]}), Object.mapv(keywords,λ{['_'+v,'ǂ_'+v]}))
+	decode_keywords ← Object.map(encode_keywords,λ{[b,v]})
+	this.is_part ←! is_part
+	this.encode ←! memoize_o(encode_keywords,λ(v){r ← seq(v).map(encode_char).join(''); return is_start(r₀)? r : 'ǂ'+r})
+	this.decode ←! memoize_o(decode_keywords,λ(v){
+		v ← v₀ = 'ǂ'? v[1:] : v
+		r ← ''; i←null; while ((i←!v.indexOf('ǂ')) ≠ -1) {
+			r += v[0:i]; v ←! v[i+1:]
+			if (v₀ = 'u') {r += chr(parseInt(v[1:5],16)); v ←! v[5:]}
+			else if (v₀ = 'l' || v₀ = 'g') {r += decode_short[v[:2]]; v ←! v[2:]}
+			else {r += decode_short[v₀]; v ←! v[1:]}
+			} return r+v})
+	})
+
+//===--------------------------------------------===// <edge> //===--------------------------------------------===//
+
+Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
+Symbol.prototype.space ←! 'neither'
+Symbol.prototype.space_before ←! λ{this.space = 'both' || this.space = 'before'}
+Symbol.prototype.space_after  ←! λ{this.space = 'both' || this.space = 'after'}
+S ← λ(v,line){return new Symbol(v,line)}
+SP ← {}
+
+// hacks
+js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
+split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (v instanceof Symbol && v.v = s) r.push([]); else r₋₁.push(v)}); return r}
+pre ← λ(v){print('---',v); return v}
+Array.prototype.map2 ←! λ(f){r ← []; if (this.length=0) return r; for (i←0;i<this.length-1;i++) r.push(f(thisᵢ,this[i+1])); r.push(f(this₋₁,null)); return r}
+Symbol.prototype.spa  ←! λ(){this.space ←! 'after'; return this}
+
+printable ← λ{(0x20≤ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
+
+repr_js ← λ(v,line,next){mrj ← λ{v.map2(λ{repr_js(v,line,b)}).join('')}; t←null;
+return v instanceof Symbol? (v.line && line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) : '') +
+		(v.space_before()?' ':'') +
+		(next instanceof Symbol && next.v = '←'? 'var ' : '') +
+		(	(v.v = 'λ' && (next instanceof Array && next₀.v = '('))? 'function λ' :
+			(v.v = 'λ' && (next instanceof Array && next₀.v = '{'))? λ(r){next.splice(1,0,S('return').spa()); return r}('function λ'+'(v,b,c)') :
+				js_valid_symbol_encode(v.v)
+				) +
+		(v.space_after() && ¬(next instanceof Symbol && next.space_before())?' ':'') :
+	v instanceof Array?
+		v₀.v = '[' && ¬v₀.space_before() && v.some(λ{v instanceof Symbol && v.v = ':'})?
+			'.slice('+((t ←! [(t ←! split_symbol(v[1:],':'))₀.length = 0? [S('0')] : t₀, t₁])₁.length = 0? mrj(t₀) : t.map(mrj).join(','))+')' :
+			v₀.v + mrj(v[1:]) + groups[v₀.v] :
+	typeof v = 'string'? (v.match(~/'/g)||[]).length ≤ (v.match(~/"/g)||[]).length?
+		"'"+seq(v).map(λ{{"'":"\\'",'\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+"'" :
+		'"'+seq(v).map(λ{{'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"' :
+	v instanceof RegExp? v+'' :
+		'<what:'+v+'>'}
+repr_js_file ← λ(forms){mrj ← λ{v.map2(λ{repr_js(v,line,b)}).join('')}
+	line ← [1]
+	return '#!/usr/bin/env node\n'+mrj(forms).replace(~/^ /mg,'').replace(~/^(.*)\n/,'//$1')
+}
+
+reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : null) || (λ['']? λ[''](start,s,line) : null)}})
+	reader_or.prototype.get ←! λ(s){return this[s₀]? (this[s₀] instanceof reader_or? this[s₀].get(s[1:]) : this[s₀]) : null}
+	reader_or.prototype.set ←! λ(ss,r){
+		seq(ss).map(λ(s){
+			c ← s = ''? '' : s₀; s ← s[1:]
+			if (s ≠ '') (this[c] instanceof reader_or? this[c] : this[c] ←! new reader_or().set([''],own(this,c))).set([s],r)
+			else delset(this,c,r)
+		}.bind(this)); return this}
+
+string_reader ← λ(start,s,line){
+	r ← ''
+	for (;;) {
+		c ← s₀; s ←! slice_eof(s,1)
+		if (c = start) return [r,s,line]
+		if (c = '\\') {
+			c ← s₀; s ←! slice_eof(s,1)
+			switch (c) {
+				case "'": case '"': case '\\': r += c; break
+				case 'n': r += '\n'; break
+				case 't': r += '\t'; break
+				case 'x': r += chr(parseInt(s[:2],16)); s ←! slice_eof(s,2); break
+				case 'u': r += chr(parseInt(s[:4],16)); s ←! slice_eof(s,4); break
+				default: r += '\\'+c; break
+			} }
+		else if (c = '\n') {line++; if (r ≠ '') r += '\n'}
+		else r += c
+	} }
+	slice_eof ← λ(s,l){if (s.length < l) throw 'EOF while reading string'; return s[l:]}
+regex_reader ← λ(start,s,line){
+	t ← s.match(~/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/)
+	if (¬t) throw 'could not match regex: '+start+s[:10]
+	return [eval('/'+t₁),s[t₁.length:],line]}
+
+readers ← new reader_or()
+readers.set(['//'], λ{[SP,b.replace(~/^.*/,''),c]})
+readers.set(' \t\x0c\x0d', λ{[SP,b,c]})
+readers.set('\n', λ{[SP,b,c+1]})
+readers.set(seq('()[]{}‹›.`~?:;,').concat(['~@']), λ{[S(v,c),b,c]})
+readers.set(_.range(0,0x80).map(chr).filter(λ{v.match(~/[a-zA-Z0-9_$%]/)}), λ(c,s,l){r ← s.match(~/^[a-zA-Z0-9_$%]*/)₀; return [S(c+r,l),s[r.length:],l]})
+readers.set([''], λ(c,s,l){r ← c; while (¬readers.get(s)) {r += s₀; s ←! s[1:]} return [S(r,l),s,l]})
+readers.set('\'"', string_reader)
+readers.set(['~'+'/'], regex_reader)
+
+groups ← {'(':')','[':']','{':'}','‹':'›'}
+
+lex ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← readers('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
+group ← λ(g,l){
+	if (l = undefined) {r ← group(S('('),g.concat([S(')')])); if (r₁.length > 0) throw '<what>'; return r₀[1:]}
+	else {
+		e ← groups[g.v]
+		r ← [g]; for (;;) {
+			if (l.length = 0) throw 'unfinished group'+repr_js(r)
+			if (l₀.v = e) return [r,l[1:]]
+			while (l₀ instanceof Symbol && own(groups,l₀.v)) {t ← group(l₀,l[1:]); r.push(t₀); l ←! t₁}
+			if (l₀.v = e) return [r,l[1:]]
+			r.push(l₀); l ←! l[1:] }
+	} }
+read ← λ(s){
+	r ← [SP];
+	t←null; if (t ←! s.match(~/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
+	r ← r.concat(lex(s)); r.push(SP)
+	for (i←1;i<r.length-1;i++) if (rᵢ instanceof Symbol) {
+		rᵢ.space ←! r[i-1] = SP?
+			r[i+1] = SP? 'both' : 'before' :
+			r[i+1] = SP? 'after' : 'neither' }
+	r ← r.filter(λ{v ≠ SP})
+	r ← group(r)
+	return r}
+
+compile_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
+
+compile_f(process.argv₂.replace('.a','.α'))
+
+//# ,; are the void operators and return nothing at all?
+
+//# we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
+
+//#define (you can comment out newlines with a backslash)
+//#include (<header>, "file")
+//#if elif else ifdef ifndef (taking in constant expressions with arithmetical operators, and taking in definedness)
+
+//i want
+
+//#require
+//possibly a #use like thing but that probably should not be a primitive?
+
+//#define name tokens
+//#define name(comma, separated, list) tokens
+//#define name[comma, separated, list] tokens
+//#define name[comma, separated, list] tokens
+
+
+//{expr,} is a void block, and {expr} is not a void block, and i think {expr } and {expr\n} should probably be the same as {expr}
+//"var name =" is probably "name ←"
+//"name =" could be "name ←!". am not sure.

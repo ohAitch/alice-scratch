@@ -1,142 +1,176 @@
 #!/usr/bin/env node
-//"use strict"
+//__literal__('#!/usr/bin/env node')
 
-//repl = require('repl')
-fs = require('fs')
-//main = require('./main')
+var fs = require('fs')
+var _ = require('../lib/underscore-min')
 
-//module.exports.hex = hex
 
-var argv = process.argv.slice(2)
 
-print = console.log.bind(console)
-memoize_o = function(o,f){return function(v,b,c,d){return v in o? o[v] : (o[v] = f(v))}}
-Object.map = function(v,f){f = f || function(v,b,c,d){return [v,b]}
-	var r = {}; Object.keys(v).forEach(function(k){var t = f.call(v, k, v[k]); if (t) r[t[0]] = t[1]}); return r}
-now = function(v,b,c,d){return Date.now() / 1000}
-run = {
-	in:   function(s,f){return {id:setTimeout( f,s*1000), cancel:function(v,b,c,d){return cancelTimeout( this.id)}}},
-	every:function(s,f){return {id:setInterval(f,s*1000), cancel:function(v,b,c,d){return cancelInterval(this.id)}}},
-	tomorrow:function(f){
-		var start = new Date()
-		var cancel = false
-		var r = run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
-			function t(){if (new Date().getDate() === start.getDate()) run.in(1,t); else {if (!cancel) f()}})
-		return {cancel:function(){cancel = true; r.cancel()}}}
-}
 
-var pad_left = function(v,s,l){while (v.length < l) v = s + v; return v}
-var hex = function(v,l){return pad_left(v.toString(16),'0',l)}
 
-var js_short = {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
-var js_encode_short = Object.map(js_short,function(v,b,c,d){return [v,'ǂ'+b]})
-var js_decode_short = Object.map(js_short,function(v,b,c,d){return [b,v]})
-var js_symbol_start = memoize_o({';':false,' ':false,'ǂ':false},function(v){try {eval('var '+v)} catch (e) {return false} return true})
-var js_symbol_part = function(v){if (v === ';' || v === ' ' || v === 'ǂ') return false; try {eval('var a'+v)} catch (e) {return false} return true}
-var js_encode_char = memoize_o(js_encode_short, function(v){return js_symbol_part(v)? v : 'ǂu'+hex(v.charCodeAt(0),4)})
-js_encode_symbol = memoize_o({},function(v){var r = v.split('').map(js_encode_char).join(''); return js_symbol_start(r[0])? r : 'ǂ'+r})
-js_decode_symbol = memoize_o({},function(v){
-	v = v[0] === 'ǂ'? v.slice(1) : v
-	var r = ''; var i; while ((i=v.indexOf('ǂ')) !== -1) {
-		r += v.slice(0,i); v = v.slice(i+1)
-		if (v[0] === 'u') {r += String.fromCharCode(parseInt(v.slice(1,5),16)); v = v.slice(5)}
-		else if (v[0] === 'l' || v[0] === 'g') {r += js_decode_short[v.slice(0,2)]; v = v.slice(2)}
-		else {r += js_decode_short[v[0]]; v = v.slice(1)}
-		} return r+v})
 
-repr = function(s){
-	var r = '"'
-}
 
-compile_lang_s = function(s){
-	return s
-		.replace(/\\\n(.*?)(?=\n)/g,'$1\n')
-		.replace(/λ\(/g,'function λ'+'(')
-		.replace(/λ\{/g,'function λ'+'(v,b,c,d){return ')
-		.replace(eval('/([^?+])='+'(?![\'=\\\\])/g'),'$1===')
-		.replace(eval('/←!'+'(?!\')/g'),'=')
-		.replace(/(\w+ *)←/g,'var $1=')
-		.replace(eval('/≠'+'(?!\')/g'),'!==')
-		.replace(eval('/≤'+'(?!\')/g'),'<=')
-		.replace(eval('/≥'+'(?!\')/g'),'>=')
-		.replace(eval('/¬'+'(?!\')/g'),'!')
-		.replace(/\[:([^[\]:]+)\]/g,'.slice(0,$1)')
-		.replace(/\[([^[\]:]+):\]/g,'.slice($1)')
-		.replace(/\[(\w+):(\w+)\]/g,'.slice($1,$2)')
-		.replace(eval('/₋₁'+'(?!\')/g'),'.slice(-1)[0]')
-		.replace(eval('/₀'+'(?!\')/g'),'[0]')
-		.replace(eval('/₁'+'(?!\')/g'),'[1]')
-		.replace(eval('/₂'+'(?!\')/g'),'[2]')
-		.replace(eval('/ᵥ'+'(?!\')/g'),'[v]')
-		.replace(eval('/ᵢ'+'(?!\')/g'),'[i]')
-		.replace(eval('/ₖ'+'(?!\')/g'),'[k]')
-		.replace(eval('/ₘ'+'(?!\')/g'),'[m]')
-}
-/*compile_lang_s = function(s){
-	return 'console.log('+repr(string_reader(s.slice(1),s[0])[0])+')'
-}*/
+var print = console.log.bind(console)
+var memoize_o = function λ(o,f){return function λ(v){var r = own(o,v); return r === undefined? (o[v] = f(v)) : r}}
+var merge_o = function λ(a,b){for (k in b) a[k] = b[k]; return a}
+Object.map = function λ(v,f){var f = f || function λ(v,b,c){return [v,b]}; var r = {}; Object.keys(v).forEach(function λ(k){var t = f.call(v, k, v[k]); if (t) r[t[0]] = t[1]}); return r}
+Object.mapv = function λ(v,f){var f = f || function λ(v,b,c){return [v,true]}; var r = {}; v.forEach(function λ(v){var t = f(v); if (t) r[t[0]] = t[1]}); return r}
+var now = function λ(v,b,c){return Date.now() / 1000}
+var run = {
+in: function λ(s,f){return {id:setTimeout( f,s*1000), cancel:function λ(v,b,c){return cancelTimeout( this.id)}}},
+every:function λ(s,f){return {id:setInterval(f,s*1000), cancel:function λ(v,b,c){return cancelInterval(this.id)}}},
+tomorrow:function λ(f){
+var start = new Date()
+var cancel = false
+var r = run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
+function λ(){if (new Date().getDate() === start.getDate()) run.in(1,λ); else {if (!cancel) f()}})
+return {cancel:function λ(){cancel = true; r.cancel()}}}}
 
-string_reader = function(s,start){
-	var r = ''
-	for (;;) {
-		if (s.length === 0) throw 'EOF while reading string'
-		var c = s[0]; s = s.slice(1)
-		if (c === start) return [r,s]
-		if (c === '\\') {
-			if (s.length === 0) throw 'EOF while reading string'
-			c = s[0]; s = s.slice(1)
-			switch (c) {
-				case "'": case '"': case '\\': break
-				case 'n': c = '\n'; break
-				case 't': c = '\t'; break
-				case 'x': if (s.length < 2) throw 'EOF while reading string'; c = String.fromCharCode(parseInt(s.slice(0,2),16)); s = s.slice(2); break
-				case 'u': if (s.length < 4) throw 'EOF while reading string'; c = String.fromCharCode(parseInt(s.slice(0,4),16)); s = s.slice(4); break
-				default: c = '\\'+c; break
-			}
-		}
-		r += c
-	}
-}
-compile_lang_f = function(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),compile_lang_s(fs.readFileSync(f).toString()))}
+var ord = function λ(v,b,c){return v.charCodeAt(0)}
+var chr = function λ(v,b,c){return String.fromCharCode(v)}
+var seq = function λ(v,b,c){return typeof v === 'string'? v.split('') : v}
+var extend_function = function λ(f){var r = function λ(){var r = f(); r.__proto__ = λ.prototype; return r}; r.prototype.__proto__ = Function.prototype; return r}
+var own = function λ(o,m){if (Object.prototype.hasOwnProperty.call(o,m)) return o[m]}
+var delset = function λ(o,m,v){if (v === undefined) delete o[m]; else o[m] = v}
+String.prototype.repeat = function λ(v,b,c){return new Array(v+1).join(this)}
 
-compile_lang_f(argv[0].replace('.a','.α'))
 
-/*
-reader_macro('"', <string reader>)
-reader_macro(['~/'], <regex reader>)
-reader_macro(['//'], <eat all characters through eof|'\n'|'\r', return space>)
-reader_macro(' \t\n\r\x0b\x0c', <return space>)
-# and combine all spaces to a single space?
-reader_macro(/\\\n\s+/, <return nothing at all>)
-reader_macro(['~@']+list('()[]{}‹›.`~,;'), <return self as a symbol (operator)>)
-reader_macro('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$%', <eat all characters with same reader macro, return as a symbol (word)>)
-reader_macro('', <eat all characters with same reader macro, return as a symbol (operator)>)
 
-# SPACE === symbol('')
-# and then strip whitespace
-# for tokens, detect space-operator-space space-operator operator-space operator, tag as 'space_both' 'space_after' 'space_before' 'space_neither'
+var pad_left = function λ(v,s,l){while (v.length < l) v = s + v; return v}
+var hex = function λ(v,l){return pad_left(v.toString(16),'0',l)}
+var js_valid_symbol = new (function λ(){
+var _short = {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '\u2026':'r', '\u2190':'w', '\u2192':'e', '\u00ac':'n', '\u2200':'A', '\u2260':'N', '\u01c2':'\u01c2', '<':'lt', '\u2264':'le', '>':'gt', '\u2265':'ge'}
+var encode_short = Object.map(_short,function λ(v,b,c){return [v,'\u01c2'+b]})
+var decode_short = Object.map(_short,function λ(v,b,c){return [b,v]})
+var is_start = memoize_o(Object.mapv(seq(';\u01c2 \t\n\u000b\u000c\u000d'),function λ(v,b,c){return [v,false]}),function λ(v){try {eval('var '+v )} catch (e){return false} return true})
+var is_part = memoize_o(Object.mapv(seq(';\u01c2 \t\n\u000b\u000c\u000d'),function λ(v,b,c){return [v,false]}),function λ(v){try {eval('var a'+v)} catch (e){return false} return true})
+var encode_char = memoize_o(encode_short, function λ(v){return is_part(v)? v : '\u01c2u'+hex(ord(v),4)})
 
-# and then make groups:
-for v in ['()','[]','{}','‹›']: reader_group(v)
+var keywords = ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
+var encode_keywords = merge_o(Object.mapv(keywords,function λ(v,b,c){return [v,'_'+v]}), Object.mapv(keywords,function λ(v,b,c){return ['_'+v,'\u01c2_'+v]}))
+var decode_keywords = Object.map(encode_keywords,function λ(v,b,c){return [b,v]})
+this.is_part = is_part
+this.encode = memoize_o(encode_keywords,function λ(v){var r = seq(v).map(encode_char).join(''); return is_start(r[0])? r : '\u01c2'+r})
+this.decode = memoize_o(decode_keywords,function λ(v){
+var v = v[0] === '\u01c2'? v.slice(1) : v
+var r = ''; var i=null; while ((i=v.indexOf('\u01c2')) !== -1){
+r += v.slice(0,i); v = v.slice(i+1)
+if (v[0] === 'u'){r += chr(parseInt(v.slice(1,5),16)); v = v.slice(5)}
+else if (v[0] === 'l' || v[0] === 'g'){r += decode_short[v.slice(0,2)]; v = v.slice(2)}
+else {r += decode_short[v[0]]; v = v.slice(1)}}
+return r+v})})
 
-# oh dear. we forgot about {} blocks and line number preservation
-# or, don't have those four categories; just convert space before and space after into prefix and postfix (or: do this only at a later level)
 
-# ,; are the void operators and return nothing at all
 
-# we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7/how_the_preprocessor_works.html
 
-#define (you can comment out newlines with a backslash)
-#include (<header>, "file")
-#if elif else ifdef ifndef (taking in constant expressions with arithmetical operators, and taking in definedness)
+var Symbol = function λ(v,line){this.v = v; if (line) this.line = line}
+Symbol.prototype.space = 'neither'
+Symbol.prototype.space_before = function λ(v,b,c){return this.space === 'both' || this.space === 'before'}
+Symbol.prototype.space_after = function λ(v,b,c){return this.space === 'both' || this.space === 'after'}
+var S = function λ(v,line){return new Symbol(v,line)}
+var SP = {}
 
-i want
 
-#require
-possibly a #use like thing but that probably should not be a primitive?
+var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
+var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
+var pre = function λ(v){print('---',v); return v}
+Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; for (var i=0;i<this.length-1;i++) r.push(f(this[i],this[i+1])); r.push(f(this.slice(-1)[0],null)); return r}
+Symbol.prototype.spa = function λ(){this.space = 'after'; return this}
 
-#define name tokens
-#define name(comma, separated, list) tokens
-#define name[comma, separated, list] tokens
-#define name[comma, separated, list] tokens
-*/
+var printable = function λ(v,b,c){return (0x20<=ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
+
+var repr_js = function λ(v,line,next){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}; var t=null;
+return v instanceof Symbol? (v.line && line? '\n'.repeat(function λ(v){line[0] += v; return v}(Math.max(0, v.line-line[0]))) : '') + (
+v.space_before()?' ':'') + (
+next instanceof Symbol && next.v === '\u2190'? 'var ' : '') + ((
+v.v === 'λ' && (next instanceof Array && next[0].v === '('))? 'function λ' : (
+v.v === 'λ' && (next instanceof Array && next[0].v === '{'))? function λ(r){next.splice(1,0,S('return').spa()); return r}('function λ'+'(v,b,c)') :
+js_valid_symbol_encode(v.v))
++ (
+v.space_after() && !(next instanceof Symbol && next.space_before())?' ':'') :
+v instanceof Array?
+v[0].v === '[' && !v[0].space_before() && v.some(function λ(v,b,c){return v instanceof Symbol && v.v === ':'})? '.slice('
++((t = [(t = split_symbol(v.slice(1),':'))[0].length === 0? [S('0')] : t[0], t[1]])[1].length === 0? mrj(t[0]) : t.map(mrj).join(','))+')' :
+v[0].v + mrj(v.slice(1)) + groups[v[0].v] :
+typeof v === 'string'? (v.match(/'/g)||[]).length <= (v.match(/"/g)||[]).length? "'"
++seq(v).map(function λ(v,b,c){return {"'":"\\'",'\n':'\\n','\t':'\\t','\\':'\\\\'}[v] || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+"'" : '"'
++seq(v).map(function λ(v,b,c){return {'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}[v] || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"' :
+v instanceof RegExp? v+'' : '<what:'
++v+'>'}
+var repr_js_file = function λ(forms){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}
+var line = [1]
+return '#!/usr/bin/env node\n'+mrj(forms).replace(/^ /gm,'').replace(/^(.*)\n/,'//$1')}
+
+
+var reader_or = extend_function(function λ(v,b,c){return function λ(start,s,line){return (λ[s[0]]? λ[s[0]](start+s[0],s.slice(1),line) : null) || (λ['']? λ[''](start,s,line) : null)}})
+reader_or.prototype.get = function λ(s){return this[s[0]]? (this[s[0]] instanceof reader_or? this[s[0]].get(s.slice(1)) : this[s[0]]) : null}
+reader_or.prototype.set = function λ(ss,r){
+seq(ss).map(function λ(s){
+var c = s === ''? '' : s[0]; var s = s.slice(1)
+if (s !== '')(this[c] instanceof reader_or? this[c] : this[c] = new reader_or().set([''],own(this,c))).set([s],r)
+else delset(this,c,r)}
+.bind(this)); return this}
+
+var string_reader = function λ(start,s,line){
+var r = ''
+for (;;){
+var c = s[0]; s = slice_eof(s,1)
+if (c === start) return [r,s,line]
+if (c === '\\'){
+var c = s[0]; s = slice_eof(s,1)
+switch (c){
+case "'": case '"': case '\\': r += c; break
+case 'n': r += '\n'; break
+case 't': r += '\t'; break
+case 'x': r += chr(parseInt(s.slice(0,2),16)); s = slice_eof(s,2); break
+case 'u': r += chr(parseInt(s.slice(0,4),16)); s = slice_eof(s,4); break
+_default: r += '\\'+c; break }}
+
+else if (c === '\n'){line++; if (r !== '') r += '\n'}
+else r += c }}
+
+var slice_eof = function λ(s,l){if (s.length < l) throw 'EOF while reading string'; return s.slice(l)}
+var regex_reader = function λ(start,s,line){
+var t = s.match(/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/)
+if (!t) throw 'could not match regex: '+start+s.slice(0,10)
+return [eval('/'+t[1]),s.slice(t[1].length),line]}
+
+var readers = new reader_or()
+readers.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
+readers.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
+readers.set('\n', function λ(v,b,c){return [SP,b,c+1]})
+readers.set(seq('()[]{}\u2039\u203a.`~?:;,').concat(['~@']), function λ(v,b,c){return [S(v,c),b,c]})
+readers.set(_.range(0,0x80).map(chr).filter(function λ(v,b,c){return v.match(/[a-zA-Z0-9_$%]/)}), function λ(c,s,l){var r = s.match(/^[a-zA-Z0-9_$%]*/)[0]; return [S(c+r,l),s.slice(r.length),l]})
+readers.set([''], function λ(c,s,l){var r = c; while (!readers.get(s)){r += s[0]; s = s.slice(1)} return [S(r,l),s,l]})
+readers.set('\'"', string_reader)
+readers.set(['~'+'/'], regex_reader)
+
+var groups = {'(':')','[':']','{':'}','\u2039':'\u203a'}
+
+var lex = function λ(s){var r = []; var line = 1; while (s !== ''){var form = readers('',s,line); r.push(form[0]); s = form[1]; line = form[2]} return r}
+var group = function λ(g,l){
+if (l === undefined){var r = group(S('('),g.concat([S(')')])); if (r[1].length > 0) throw '<what>'; return r[0].slice(1)}
+else {
+var e = groups[g.v]
+var r = [g]; for (;;){
+if (l.length === 0) throw 'unfinished group'+repr_js(r)
+if (l[0].v === e) return [r,l.slice(1)]
+while (l[0] instanceof Symbol && own(groups,l[0].v)){var t = group(l[0],l.slice(1)); r.push(t[0]); l = t[1]}
+if (l[0].v === e) return [r,l.slice(1)]
+r.push(l[0]); l = l.slice(1)}}}
+
+var read = function λ(s){
+var r = [SP];
+var t=null; if (t = s.match(/^#!.*/)){r.push(S('__literal__'),S('('),t[0],S(')')); s = s.slice(t[0].length)}
+var r = r.concat(lex(s)); r.push(SP)
+for (var i=1;i<r.length-1;i++) if (r[i] instanceof Symbol){
+r[i].space = r[i-1] === SP?
+r[i+1] === SP? 'both' : 'before' :
+r[i+1] === SP? 'after' : 'neither'}
+var r = r.filter(function λ(v,b,c){return v !== SP})
+var r = group(r)
+return r}
+
+var compile_f = function λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
+
+compile_f(process.argv[2].replace('.a','.α'))
