@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+//"use strict"
+//repl ← require('repl')
+fs ← require('fs')
+_ ← require('../lib/underscore-min')
+//module.exports.hex ←! hex
+
+// todo: change space from 4 to 2x2 ?
+
+//===--------------------------------------------===// utils //===--------------------------------------------===//
+
+print ← console.log.bind(console)
+memoize_o ← λ(o,f){return λ{v in o? oᵥ : (oᵥ ←! f(v))}}
+
+print('eeeeee')

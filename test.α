@@ -1,7 +1,13 @@
 #!/usr/bin/env node
+//"use strict"
 
-print ← λ{console.log(v)}
+//repl ← require('repl')
+fs ← require('fs')
+_ ← require('../lib/underscore-min')
 
-print('welcome stranger,
-love')
-print(5≤8)
+//module.exports.hex ←! hex
+
+argv ← process.argv[2:]
+argv₀ ←! argv₀.replace('.a','.α')
+
+print ← console.log.bind(console)

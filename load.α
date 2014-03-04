@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 //"use strict"
-
 //repl ← require('repl')
 fs ← require('fs')
 _ ← require('../lib/underscore-min')
-
 //module.exports.hex ←! hex
 
-argv ← process.argv[2:]
-argv₀ ←! argv₀.replace('.a','.α')
+// todo: change space from 4 to 2x2 ?
+
+// todo: .replace(/λ\(/g,'function λ'+'(')
+// todo: .replace(/λ\{/g,'function λ'+'(v,b,c,d){return ')
+// todo: .replace(/(\w+ *)←/g,'var $1=')
+
+//===--------------------------------------------===// utils //===--------------------------------------------===//
 
 print ← console.log.bind(console)
 memoize_o ← λ(o,f){return λ{v in o? oᵥ : (oᵥ ←! f(v))}}
@@ -33,6 +36,8 @@ extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; r
 own ← λ(o,m){if (o.hasOwnProperty(m)) return oₘ}
 delset ← λ(o,m,v){if (v = undefined) delete oₘ; else oₘ ←! v}
 String.prototype.repeat ←! λ{new Array(v+1).join(this)}
+
+//===--------------------------------------------===// js_valid_symbol //===--------------------------------------------===//
 
 pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
 hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
@@ -60,22 +65,34 @@ js_valid_symbol ← new (λ(){
 			} return r+v})
 	})
 
+//===--------------------------------------------===// <edge> //===--------------------------------------------===//
+
+js_valid_symbol_encode ← λ{{'=':'===','λ':'function','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'}ᵥ || (Object.mapv('< > , . : for return in ?'.split(' '))ᵥ?v:null) || (v.match(/^\d+$/)||[null])₀ || js_valid_symbol.encode(v)}
+split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (v instanceof Symbol && v.v = s) r.push([]); else r₋₁.push(v)}); return r}
+pre ← λ(v){print('---',v); return v}
+
 Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
 Symbol.prototype.space ←! 'neither'
+Symbol.prototype.space_before ←! λ{this.space = 'both' || this.space = 'before'}
+Symbol.prototype.space_after  ←! λ{this.space = 'both' || this.space = 'after'}
 S ← λ(v,line){return new Symbol(v,line)}
 SP ← {}
 
 printable ← λ{(0x20≤ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
-repr_js ← λ(v,line){return\
+repr_js ← λ(v,line){mrj ← λ{v.map(λ{repr_js(v,line)}).join('')}; var t; return\
 	typeof v = 'string'? (v.match(/'/g)||[]).length ≤ (v.match(/"/g)||[]).length?
 		"'"+seq(v).map(λ{{"'":"\\'",'\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+"'" :
 		'"'+seq(v).map(λ{{'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"' :
-	v instanceof Array? '['+v.map(λ{repr_js(v,line)}).join(' ')+']' :
-	v instanceof Symbol? v.line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) + v.v : v.v :
+	v instanceof Array?
+		v₀.v = '[' && ¬v₀.space_before() && v.some(λ{v instanceof Symbol && v.v = ':'})?
+			'.slice('+((t ←! [(t ←! split_symbol(v[1:],':'))₀.length = 0? [0] : t₀, t₁])₁.length = 0? mrj(t₀) : t.map(mrj).join(','))+')' :
+			v₀.v + mrj(v[1:]) + groups[v₀.v] :
+	v instanceof Symbol? (v.line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) : '') +
+		(v.space_before()?' ':'') + js_valid_symbol_encode(v.v) + (v.space_after()?' ':'') :
 		'<what>'}
-repr_js_file ← λ(forms){
+repr_js_file ← λ(forms){mrj ← λ{v.map(λ{repr_js(v,line)}).join('')}
 	line ← [1]
-	return '#!/usr/bin/env node\n'+forms.map(λ{repr_js(v,line)}).join(' ').split('\n').map(λ{'console.log('+repr_js(v)+')'}).join('\n')
+	return '#!/usr/bin/env node\n'+mrj(forms).replace(/^ /mg,'').replace(/^(.*)\n/,'//$1')
 }
 
 reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : null) || (λ['']? λ[''](start,s,line) : null)}})
@@ -113,7 +130,7 @@ regex_reader ← λ(start,s,line){
 readers ← new reader_or()
 readers.set('\'"', string_reader)
 readers.set(['~/'], regex_reader)
-readers.set(['//'], λ{[SP,b.replace(/^[^\n]+/,''),c+1]})
+readers.set(['//'], λ{[SP,b.replace(/^.*/,''),c]})
 readers.set(' \t\x0c\x0d', λ{[SP,b,c]})
 readers.set('\n', λ{[SP,b,c+1]})
 readers.set(seq('()[]{}‹›.`~,:;').concat(['~@']), λ{[S(v,c),b,c]})
@@ -147,10 +164,12 @@ read ← λ(s){
 	return r}
 
 compile_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
-compile_f(argv₀)
+
+compile_f(process.argv₂.replace('.a','.α'))
+
+// next: make slicers work? iunno. that's next if i start at the top of this file.
 
 /*
-
 # ,; are the void operators and return nothing at all?
 
 # we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7/how_the_preprocessor_works.html
