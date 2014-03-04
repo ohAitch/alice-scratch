@@ -1,74 +1,129 @@
 #!/usr/bin/env node
+//"use strict"
 
 //repl ← require('repl')
 fs ← require('fs')
-//main ← require('./main')
+_ ← require('../lib/underscore-min')
 
-//module.exports.hex ← hex
+//module.exports.hex ←! hex
 
-var argv ← process.argv.slice(2)
+argv ← process.argv[2:]
+argv₀ ←! argv₀.replace('.a','.α')
 
 print ← console.log.bind(console)
-memoize_o ← λ(o,f){return λ{v in o? o[v] : (o[v] ← f(v))}}
-Object.map ← λ(v,f){f ← f || λ{[v,b]}
-	var r ← {}; Object.keys(v).forEach(λ(k){var t ← f.call(v, k, v[k]); if (t) r[t[0]] ← t[1]}); return r}
+memoize_o ← λ(o,f){return λ{v in o? oᵥ : (oᵥ ←! f(v))}}
+merge_o ← λ(a,b){for (k in b) aₖ ←! bₖ; return a}
+Object.map ←!  λ(v,f){f ←! f || λ{[v,b]};    r ← {}; Object.keys(v).forEach(λ(k){t ← f.call(v, k, vₖ);	if (t) r[t₀] ←! t₁}); return r}
+Object.mapv ←! λ(v,f){f ←! f || λ{[v,true]}; r ← {};              v.forEach(λ(v){t ← f(v);          	if (t) r[t₀] ←! t₁}); return r}
 now ← λ{Date.now() / 1000}
 run ← {
 	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
 	every:λ(s,f){return {id:setInterval(f,s*1000), cancel:λ{cancelInterval(this.id)}}},
 	tomorrow:λ(f){
-		var start ← new Date()
-		var cancel ← false
-		var r ← run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
-			λ t(){if (new Date().getDate() = start.getDate()) run.in(1,t); else {if (¬cancel) f()}})
-		return {cancel:λ(){cancel ← true; r.cancel()}}}
+		start ← new Date()
+		cancel ← false
+		r ← run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
+			λ(){if (new Date().getDate() = start.getDate()) run.in(1,λ); else {if (¬cancel) f()}})
+		return {cancel:λ(){cancel ←! true; r.cancel()}}}
+}
+ord ← λ{v.charCodeAt(0)}
+chr ← λ{String.fromCharCode(v)}
+seq ← λ{typeof v = 'string'? v.split('') : v}
+extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
+own ← λ(o,m){if (o.hasOwnProperty(m)) return oₘ}
+delset ← λ(o,m,v){if (v = undefined) delete oₘ; else oₘ ←! v}
+
+pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
+hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
+
+js_valid_symbol ← new (λ(){
+	_short ← {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
+	encode_short ← Object.map(_short,λ{[v,'ǂ'+b]})
+	decode_short ← Object.map(_short,λ{[b,v]})
+	is_symbol_start ← memoize_o({';':false,' ':false,'ǂ':false},λ(v){try {eval('var '+v)} catch (e) {return false} return true})
+	is_symbol_part ← λ(v){if (v = ';' || v = ' ' || v = 'ǂ') return false; try {eval('var a'+v)} catch (e) {return false} return true}
+	encode_char ← memoize_o(encode_short, λ(v){return is_symbol_part(v)? v : 'ǂu'+hex(ord(v),4)})
+
+	keywords ← ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
+	encode_keywords ← merge_o(Object.mapv(keywords,λ{[v,'_'+v]}), Object.mapv(keywords,λ{['_'+v,'ǂ_'+v]}))
+	decode_keywords ← Object.map(encode_keywords,λ{[b,v]})
+
+	this.encode ←! memoize_o(encode_keywords,λ(v){r ← seq(v).map(encode_char).join(''); return is_symbol_start(r₀)? r : 'ǂ'+r})
+	this.decode ←! memoize_o(decode_keywords,λ(v){
+		v ← v₀ = 'ǂ'? v[1:] : v
+		r ← ''; var i; while ((i←!v.indexOf('ǂ')) ≠ -1) {
+			r += v[0:i]; v ←! v[i+1:]
+			if (v₀ = 'u') {r += chr(parseInt(v[1:5],16)); v ←! v[5:]}
+			else if (v₀ = 'l' || v₀ = 'g') {r += decode_short[v[:2]]; v ←! v[2:]}
+			else {r += decode_short[v₀]; v ←! v[1:]}
+			} return r+v})
+	})
+
+repr_js ← λ(v){return\
+	v instanceof Array?
+		v₀ = '__string__'? λ(a,b){return a.length ≤ b.length? a : b}(
+			"'"+seq(v₁).map(λ{{"'":"\\'",'\n':'\\n','\t':'\\t'}ᵥ || (ord(v)<0x20 || ord(v)≥0x7f? '\\u'+hex(ord(v),4) : v)}).join('')+"'",
+			'"'+seq(v₁).map(λ{{'"':'\\"','\n':'\\n','\t':'\\t'}ᵥ || (ord(v)<0x20 || ord(v)≥0x7f? '\\u'+hex(ord(v),4) : v)}).join('')+'"'
+			) :
+			'<[what]>' :
+	v = ''? undefined :
+	typeof v = 'string'? v :
+		'<what>'}
+repr_js_file ← λ(forms){
+	return '#!/usr/bin/env node\nconsole.log("'+forms.map(repr_js).join(',')+'")'
 }
 
-var pad_left ← λ(v,s,l){while (v.length < l) v ← s + v; return v}
-var hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
+reader_or ← extend_function(λ{λ(start,s){return (λ[s₀]? λ[s₀](start+s₀,s[1:]) : null) || (λ['']? λ[''](start,s) : null)}})
+	reader_or.prototype.get ←! λ(s){return this[s₀]? (this[s₀] instanceof reader_or? this[s₀].get(s[1:]) : this[s₀]) : null}
+	reader_or.prototype.set ←! λ(ss,r){
+		seq(ss).map(λ(s){
+			c ← s = ''? '' : s₀; s ← s[1:]
+			if (s ≠ '') (this[c] instanceof reader_or? this[c] : this[c] ←! new reader_or().set([''],own(this,c))).set([s],r)
+			else delset(this,c,r)
+		}.bind(this)); return this}
 
-var js_short ← {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
-var js_encode_short ← Object.map(js_short,λ{[v,'ǂ'+b]})
-var js_decode_short ← Object.map(js_short,λ{[b,v]})
-var js_symbol_start ← memoize_o({';':false,' ':false,'ǂ':false},λ(v){try {eval('var '+v)} catch (e) {return false} return true})
-var js_symbol_part ← λ(v){if (v = ';' || v = ' ' || v = 'ǂ') return false; try {eval('var a'+v)} catch (e) {return false} return true}
-var js_encode_char ← memoize_o(js_encode_short, λ(v){return js_symbol_part(v)? v : 'ǂx'+hex(v.charCodeAt(0),4)})
-js_encode_symbol ← memoize_o({},λ(v){var r ← v.split('').map(js_encode_char).join(''); return js_symbol_start(r[0])? r : 'ǂ'+r})
-js_decode_symbol ← memoize_o({},λ(v){
-	v ← v[0] = 'ǂ'? v.slice(1) : v
-	var r ← ''; var i; while ((i←v.indexOf('ǂ')) ≠ -1) {
-		r += v.slice(0,i); v ← v.slice(i+1)
-		if (v[0] = 'x') {r += String.fromCharCode(parseInt(v.slice(1,5),16)); v ← v.slice(5)}
-		else if (v[0] = 'l' || v[0] = 'g')  {r += js_decode_short[v.slice(0,2)]; v ← v.slice(2)}
-		else {r += js_decode_short[v[0]]; v ← v.slice(1)}
-		} return r+v})
+string_reader ← λ(start,s){
+	r ← ''
+	var indent
+	for (;;) {
+		c ← s₀; s ←! slice_eof(s,1)
+		if (c = start) return [['__string__',r],s]
+		if (c = '\\') {
+			c ←! s₀; s ←! slice_eof(s,1)
+			switch (c) {
+				case "'": case '"': case '\\': break
+				case 'n': c ←! '\n'; break
+				case 't': c ←! '\t'; break
+				case 'x': c ←! chr(parseInt(s[:2],16)); s ←! slice_eof(s,2); break
+				case 'u': c ←! chr(parseInt(s[:4],16)); s ←! slice_eof(s,4); break
+				default: c ←! '\\'+c; break
+			}
+		} else if (c = '\n') {
+			if (r = '') c ←! ''
+			s ←! slice_eof(s,indent ←! indent || s.match(/^[ \t]*/)₀.length)}
+		r += c
+	} }
+	slice_eof ← λ(s,l) {if (s.length < l) throw 'EOF while reading string'; return s[l:]}
 
-compile_lang_s ← λ(s){
-	return s
-		.replace(/\\\n(.*?)(?=\n)/g,'$1\n')
-		.replace(/λ\{/g,'function(v,b,c,d){return ')
-		.replace(eval('/λ'+'(?![\'\\\\])/g'),'function')
-		.replace(eval('/([^?+])='+'(?![\'=\\\\])/g'),'$1===')
-		.replace(eval('/←'+'(?!\')/g'),'=')
-		.replace(eval('/≠'+'(?!\')/g'),'!==')
-		.replace(eval('/≤'+'(?!\')/g'),'<=')
-		.replace(eval('/≥'+'(?!\')/g'),'>=')
-		.replace(eval('/¬'+'(?!\')/g'),'!')
-}
-compile_lang_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),compile_lang_s(fs.readFileSync(f).toString()))}
+readers ← new reader_or()
 
-compile_lang_f(argv[0].replace('.a','.α'))
+readers.set('\'"', string_reader)
+readers.set(['\'m'], string_reader)
+//readers.set(['~/'], regex_reader)
+readers.set(['//'], λ{['',b.replace(/^[^\n]+/,'')]})
+readers.set(' \t\n\x0c\x0d', λ{['',b]})
+readers.set(['\\\n'], λ{[undefined,b.replace(/^[ \t]*(.*(?:\n|$))/,'$1\n')]})
+
+readers.set(seq('()[]{}‹›.`~,:;').concat(['~@']), λ{[v,b]})
+readers.set(_.range(0,0x80).map(chr).filter(λ{v.match(/[a-zA-Z0-9_$%]/)}), λ(c,s){r ← s.match(/^[a-zA-Z0-9_$%]*/)₀; return [c+r,s[r.length:]]})
+readers.set([''], λ(c,s){r ← c; while (¬readers.get(s)) {r += s₀; s ←! s[1:]} print('good.',r,s[:10]); return [r,s]})
+
+read ← λ(s){r ← []; while (s ≠ '') {form ← readers('',s); if (form₀ ≠ undefined && ¬(r₋₁ = '' && form₀ = '')) r.push(form₀); s ←! form₁} return r}
+
+compile_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
+compile_f(argv₀)
 
 /*
-reader_macro('"', <string reader>)
-reader_macro(['~/'], <regex reader>)
-reader_macro(['//'], <eat all characters through eof|'\n'|'\r', return space>)
-reader_macro(' \t\n\r\x0b\x0c', <return space>)
-# and combine all spaces to a single space?
-reader_macro(['~@']+list('()[]{}‹›.`~,;'), <return self as a symbol (operator)>)
-reader_macro('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$%', <eat all characters with same reader macro, return as a symbol (word)>)
-reader_macro('', <eat all characters with same reader macro, return as a symbol (operator)>)
-
 # SPACE = symbol('')
 # and then strip whitespace
 # for tokens, detect space-operator-space space-operator operator-space operator, tag as 'space_both' 'space_after' 'space_before' 'space_neither'
@@ -76,21 +131,12 @@ reader_macro('', <eat all characters with same reader macro, return as a symbol 
 # and then make groups:
 for v in ['()','[]','{}','‹›']: reader_group(v)
 
-# oh dear. we forgot about semicolon insertion slash newlines, {} blocks, and line number preservation
+# oh dear. we forgot about {} blocks and line number preservation
 # or, don't have those four categories; just convert space before and space after into prefix and postfix (or: do this only at a later level)
 
-so it looks like (1) comma and semicolon may as well be synonymous and (2)
+# ,; are the void operators and return nothing at all
 
-known multileft: pythonic for
-but that's not actually multileft. you can implement that by just letting () and [] know that they might be generators.
-
-# http://es5.github.io/
 # we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7/how_the_preprocessor_works.html
-
-
-
-
-cpp
 
 #define (you can comment out newlines with a backslash)
 #include (<header>, "file")
@@ -105,4 +151,9 @@ possibly a #use like thing but that probably should not be a primitive?
 #define name(comma, separated, list) tokens
 #define name[comma, separated, list] tokens
 #define name[comma, separated, list] tokens
+
+
+{expr,} is a void block, and {expr} is not a void block, and i think {expr } and {expr\n} should probably be the same as {expr}
+"var name =" is probably "name ←"
+"name =" could be "name ←!". am not sure.
 */
