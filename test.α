@@ -2,6 +2,6 @@
 
 print ← λ{console.log(v)}
 
-print('welcome \
-stranger')
+print('welcome stranger,
+	love')
 print(5≤8)
