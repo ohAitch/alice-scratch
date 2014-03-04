@@ -68,6 +68,7 @@ compile_lang_s = function(s){
 		.replace(eval('/₁'+'(?!\')/g'),'[1]')
 		.replace(eval('/₂'+'(?!\')/g'),'[2]')
 		.replace(eval('/ᵥ'+'(?!\')/g'),'[v]')
+		.replace(eval('/ᵢ'+'(?!\')/g'),'[i]')
 		.replace(eval('/ₖ'+'(?!\')/g'),'[k]')
 		.replace(eval('/ₘ'+'(?!\')/g'),'[m]')
 }

@@ -13,8 +13,8 @@ argv₀ ←! argv₀.replace('.a','.α')
 print ← console.log.bind(console)
 memoize_o ← λ(o,f){return λ{v in o? oᵥ : (oᵥ ←! f(v))}}
 merge_o ← λ(a,b){for (k in b) aₖ ←! bₖ; return a}
-Object.map ←!  λ(v,f){f ←! f || λ{[v,b]};    r ← {}; Object.keys(v).forEach(λ(k){t ← f.call(v, k, vₖ);	if (t) r[t₀] ←! t₁}); return r}
-Object.mapv ←! λ(v,f){f ←! f || λ{[v,true]}; r ← {};              v.forEach(λ(v){t ← f(v);          	if (t) r[t₀] ←! t₁}); return r}
+Object.map ←!  λ(v,f){f ← f || λ{[v,b]};    r ← {}; Object.keys(v).forEach(λ(k){t ← f.call(v, k, vₖ);	if (t) r[t₀] ←! t₁}); return r}
+Object.mapv ←! λ(v,f){f ← f || λ{[v,true]}; r ← {};              v.forEach(λ(v){t ← f(v);           	if (t) r[t₀] ←! t₁}); return r}
 now ← λ{Date.now() / 1000}
 run ← {
 	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
@@ -61,19 +61,21 @@ js_valid_symbol ← new (λ(){
 	})
 
 Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
+Symbol.prototype.space ←! 'neither'
 S ← λ(v,line){return new Symbol(v,line)}
+SP ← {}
 
 printable ← λ{(0x20≤ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
 repr_js ← λ(v,line){return\
 	typeof v = 'string'? (v.match(/'/g)||[]).length ≤ (v.match(/"/g)||[]).length?
 		"'"+seq(v).map(λ{{"'":"\\'",'\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+"'" :
 		'"'+seq(v).map(λ{{'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"' :
-	//v instanceof Array?
+	v instanceof Array? '['+v.map(λ{repr_js(v,line)}).join(' ')+']' :
 	v instanceof Symbol? v.line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) + v.v : v.v :
 		'<what>'}
 repr_js_file ← λ(forms){
 	line ← [1]
-	return '#!/usr/bin/env node\n'+forms.map(λ{repr_js(v,line)}).join(',').split('\n').map(λ{'console.log('+repr_js(v)+')'}).join('\n')
+	return '#!/usr/bin/env node\n'+forms.map(λ{repr_js(v,line)}).join(' ').split('\n').map(λ{'console.log('+repr_js(v)+')'}).join('\n')
 }
 
 reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : null) || (λ['']? λ[''](start,s,line) : null)}})
@@ -87,54 +89,67 @@ reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](sta
 
 string_reader ← λ(start,s,line){
 	r ← ''
-	var indent
 	for (;;) {
 		c ← s₀; s ←! slice_eof(s,1)
 		if (c = start) return [r,s,line]
 		if (c = '\\') {
-			c ←! s₀; s ←! slice_eof(s,1)
+			c ← s₀; s ←! slice_eof(s,1)
 			switch (c) {
-				case "'": case '"': case '\\': break
-				case 'n': c ←! '\n'; break
-				case 't': c ←! '\t'; break
-				case 'x': c ←! chr(parseInt(s[:2],16)); s ←! slice_eof(s,2); break
-				case 'u': c ←! chr(parseInt(s[:4],16)); s ←! slice_eof(s,4); break
-				default: c ←! '\\'+c; break
-			}
-		} else if (c = '\n') {
-			if (r = '') c ←! ''
-			line++
-			s ←! slice_eof(s,indent ←! indent || s.match(/^[ \t]*/)₀.length)}
-		r += c
+				case "'": case '"': case '\\': r += c; break
+				case 'n': r += '\n'; break
+				case 't': r += '\t'; break
+				case 'x': r += chr(parseInt(s[:2],16)); s ←! slice_eof(s,2); break
+				case 'u': r += chr(parseInt(s[:4],16)); s ←! slice_eof(s,4); break
+				default: r += '\\'+c; break
+			} }
+		else if (c = '\n') {line++; if (r ≠ '') r += '\n'}
+		else r += c
 	} }
-	slice_eof ← λ(s,l) {if (s.length < l) throw 'EOF while reading string'; return s[l:]}
+	slice_eof ← λ(s,l){if (s.length < l) throw 'EOF while reading string'; return s[l:]}
+regex_reader ← λ(start,s,line){
+	throw 'sorry, regex not yet implemented'
+	}
 
 readers ← new reader_or()
-
 readers.set('\'"', string_reader)
-//readers.set(['~/'], regex_reader)
-readers.set(['//'], λ{['',b.replace(/^[^\n]+/,''),c+1]})
-readers.set(' \t\x0c\x0d', λ{['',b,c]})
-readers.set('\n', λ{['',b,c+1]})
-
+readers.set(['~/'], regex_reader)
+readers.set(['//'], λ{[SP,b.replace(/^[^\n]+/,''),c+1]})
+readers.set(' \t\x0c\x0d', λ{[SP,b,c]})
+readers.set('\n', λ{[SP,b,c+1]})
 readers.set(seq('()[]{}‹›.`~,:;').concat(['~@']), λ{[S(v,c),b,c]})
 readers.set(_.range(0,0x80).map(chr).filter(λ{v.match(/[a-zA-Z0-9_$%]/)}), λ(c,s,l){r ← s.match(/^[a-zA-Z0-9_$%]*/)₀; return [S(c+r,l),s[r.length:],l]})
 readers.set([''], λ(c,s,l){r ← c; while (¬readers.get(s)) {r += s₀; s ←! s[1:]} return [S(r,l),s,l]})
 
-read ← λ(s){r ← []; line ← 1
-	t ← s.match(/^#!.*/); if (t) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
-	while (s ≠ '') {form ← readers('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
+groups ← {'(':')','[':']','{':'}','‹':'›'}
+
+lex ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← readers('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
+group ← λ(g,l){
+	if (l = undefined) {r ← group(S('('),g.concat([S(')')])); if (r₁.length > 0) throw '<what>'; return r₀[1:]}
+	else {
+		e ← groups[g.v]
+		r ← [g]; for (;;) {
+			if (l.length = 0) throw 'unfinished group'
+			if (l₀.v = e) return [r,l[1:]]
+			while (l₀ instanceof Symbol && groups[l₀.v]) {t ← group(l₀,l[1:]); r.push(t₀); l ←! t₁}
+			if (l₀.v = e) return [r,l[1:]]
+			r.push(l₀); l ←! l[1:] }
+	} }
+read ← λ(s){
+	r ← [SP];
+	var t; if (t ←! s.match(/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
+	r ← r.concat(lex(s)); r.push(SP)
+	for (i←1;i<r.length-1;i++) if (rᵢ instanceof Symbol) {
+		rᵢ.space ←! r[i-1] = SP?
+			r[i+1] = SP? 'both' : 'before' :
+			r[i+1] = SP? 'after' : 'neither' }
+	r ← r.filter(λ{v ≠ SP})
+	r ← group(r)
+	return r}
 
 compile_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
 compile_f(argv₀)
 
 /*
-# and then strip whitespace
-# for tokens, detect space-operator-space space-operator operator-space operator, tag as 'space_both' 'space_after' 'space_before' 'space_neither'
-# or, don't have those four categories; just convert space before and space after into prefix and postfix (or: do this only at a later level)
-
-# and then make groups:
-for v in ['()','[]','{}','‹›']: reader_group(v)
 
 # ,; are the void operators and return nothing at all?
 
