@@ -5,8 +5,6 @@ fs ← require('fs')
 _ ← require('../lib/underscore-min')
 //module.exports.hex ←! hex
 
-// todo: change space from 4 to 2x2 ?
-
 //===--------------------------------------------===// utils //===--------------------------------------------===//
 
 print ← console.log.bind(console)
@@ -63,32 +61,32 @@ js_valid_symbol ← new (λ(){
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
 Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
-Symbol.prototype.space ←! 'neither'
-Symbol.prototype.space_before ←! λ{this.space = 'both' || this.space = 'before'}
-Symbol.prototype.space_after  ←! λ{this.space = 'both' || this.space = 'after'}
+Symbol.prototype.space_before ←! false
+Symbol.prototype.space_after  ←! false
 S ← λ(v,line){return new Symbol(v,line)}
 SP ← {}
 
 // hacks
 js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','₃':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
 split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (v instanceof Symbol && v.v = s) r.push([]); else r₋₁.push(v)}); return r}
-pre ← λ(v){print('---',v); return v}
+ran_as ← process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀
+pr ← λ(){if (ran_as = 'bin\\load.js') print.apply(this,['##'].concat(arguments)); return arguments₀}
 Array.prototype.map2 ←! λ(f){r ← []; if (this.length=0) return r; for (i←0;i<this.length-1;i++) r.push(f(thisᵢ,this[i+1])); r.push(f(this₋₁,null)); return r}
-Symbol.prototype.spa  ←! λ(){this.space ←! 'after'; return this}
+Symbol.prototype.spa ←! λ(){this.space_after ←! true; return this}
 
 printable ← λ{(0x20≤ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
 
 repr_js ← λ(v,line,next){mrj ← λ{v.map2(λ{repr_js(v,line,b)}).join('')}; t←null;
 return v instanceof Symbol? (v.line && line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) : '') +
-		(v.space_before()?' ':'') +
+		(v.space_before?' ':'') +
 		(next instanceof Symbol && next.v = '←'? 'var ' : '') +
 		(	(v.v = 'λ' && (next instanceof Array && next₀.v = '('))? 'function λ' :
 			(v.v = 'λ' && (next instanceof Array && next₀.v = '{'))? λ(r){next.splice(1,0,S('return').spa()); return r}('function λ'+'(v,b,c)') :
 				js_valid_symbol_encode(v.v)
 				) +
-		(v.space_after() && ¬(next instanceof Symbol && next.space_before())?' ':'') :
+		(v.space_after && ¬(next instanceof Symbol && next.space_before)?' ':'') :
 	v instanceof Array?
-		v₀.v = '[' && ¬v₀.space_before() && v.some(λ{v instanceof Symbol && v.v = ':'})?
+		v₀.v = '[' && ¬v₀.space_before && v.some(λ{v instanceof Symbol && v.v = ':'})?
 			'.slice('+((t ←! [(t ←! split_symbol(v[1:],':'))₀.length = 0? [S('0')] : t₀, t₁])₁.length = 0? mrj(t₀) : t.map(mrj).join(','))+')' :
 			v₀.v + mrj(v[1:]) + groups[v₀.v] :
 	typeof v = 'string'? (v.match(~/'/g)||[]).length ≤ (v.match(~/"/g)||[]).length?
@@ -97,6 +95,7 @@ return v instanceof Symbol? (v.line && line? '\n'.repeat(λ(v){line₀ += v; ret
 	v instanceof RegExp? v+'' :
 		'<what:'+v+'>'}
 repr_js_file ← λ(forms){mrj ← λ{v.map2(λ{repr_js(v,line,b)}).join('')}
+	pr(forms)
 	line ← [1]
 	return '#!/usr/bin/env node\n'+mrj(forms).replace(~/^ /mg,'').replace(~/^(.*)\n/,'//$1')
 }
@@ -134,20 +133,27 @@ regex_reader ← λ(start,s,line){
 	if (¬t) throw 'could not match regex: '+start+s[:10]
 	return [eval('/'+t₁),s[t₁.length:],line]}
 
-readers ← new reader_or()
-readers.set(['//'], λ{[SP,b.replace(~/^.*/,''),c]})
-readers.set(['/*'], λ{[SP,b.replace(~/^[^]*?\*\//,''),c]})
-readers.set(' \t\x0c\x0d', λ{[SP,b,c]})
-readers.set('\n', λ{[SP,b,c+1]})
-readers.set(seq('()[]{}‹›.`~?:;,').concat(['~@']), λ{[S(v,c),b,c]})
-readers.set(_.range(0,0x80).map(chr).filter(λ{v.match(~/[a-zA-Z0-9_$%]/)}), λ(c,s,l){r ← s.match(~/^[a-zA-Z0-9_$%]*/)₀; return [S(c+r,l),s[r.length:],l]})
-readers.set([''], λ(c,s,l){r ← c; while (¬readers.get(s)) {r += s₀; s ←! s[1:]} return [S(r,l),s,l]})
-readers.set('\'"', string_reader)
-readers.set(['~'+'/'], regex_reader)
+reader_macros ← new reader_or()
+reader_macros.set(['//'], λ{[SP,b.replace(~/^.*/,''),c]})
+reader_macros.set(['/*'], λ{[SP,b.replace(~/^[^]*?\*\//,''),c]})
+reader_macros.set(' \t\x0c\x0d', λ{[SP,b,c]})
+reader_macros.set('\n', λ{[SP,b,c+1]})
+reader_macros.set(seq('()[]{}‹›.`~?:;,').concat(['~@']), λ{[S(v,c),b,c]})
+reader_macros.set(_.range(0,0x80).map(chr).filter(λ{v.match(~/[a-zA-Z0-9_$%]/)}), λ(c,s,l){r ← s.match(~/^[a-zA-Z0-9_$%]*/)₀; return [S(c+r,l),s[r.length:],l]})
+reader_macros.set([''], λ(c,s,l){r ← c; while (¬reader_macros.get(s)) {r += s₀; s ←! s[1:]} return [S(r,l),s,l]})
+reader_macros.set('\'"', string_reader)
+reader_macros.set(['~'+'/'], regex_reader)
 
 groups ← {'(':')','[':']','{':'}','‹':'›'}
+/*
+token_macros ← {}
+token_macros_add ← λ(s,f){
 
-lex ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← readers('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
+	'['
+}
+}
+*/
+lex ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← reader_macros('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
 group ← λ(g,l){
 	if (l = undefined) {r ← group(S('('),g.concat([S(')')])); if (r₁.length > 0) throw '<what>'; return r₀[1:]}
 	else {
@@ -164,9 +170,8 @@ read ← λ(s){
 	t←null; if (t ←! s.match(~/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
 	r ← r.concat(lex(s)); r.push(SP)
 	for (i←1;i<r.length-1;i++) if (rᵢ instanceof Symbol) {
-		rᵢ.space ←! r[i-1] = SP?
-			r[i+1] = SP? 'both' : 'before' :
-			r[i+1] = SP? 'after' : 'neither' }
+		if (r[i-1] = SP) rᵢ.space_before ←! true
+		if (r[i+1] = SP) rᵢ.space_after ←! true }
 	r ← r.filter(λ{v ≠ SP})
 	r ← group(r)
 	return r}
@@ -175,7 +180,18 @@ compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync
 
 compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
 
-print('--- ran as:',process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀,'---')
+print('--- ran as:',ran_as,'---')
+/*
+v[] indexer
+[] list
+v[:] slicer
+[:] slicer λ
+v() call (or conventional macro)
+() parenthetical
+v{} call (or conventional macro)
+{} block (same as parenthetical)
+{:} object
+*/
 
 //# ,; are the void operators and return nothing at all?
 

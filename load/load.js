@@ -7,8 +7,6 @@ var _ = require('../lib/underscore-min')
 
 
 
-
-
 var print = console.log.bind(console)
 var memoize_o = function λ(o,f){return function λ(v){var r = own(o,v); return r === undefined? (o[v] = f(v)) : r}}
 var merge_o = function λ(a,b){for (k in b) a[k] = b[k]; return a}
@@ -63,32 +61,32 @@ return r+v})})
 
 
 var Symbol = function λ(v,line){this.v = v; if (line) this.line = line}
-Symbol.prototype.space = 'neither'
-Symbol.prototype.space_before = function λ(v,b,c){return this.space === 'both' || this.space === 'before'}
-Symbol.prototype.space_after = function λ(v,b,c){return this.space === 'both' || this.space === 'after'}
+Symbol.prototype.space_before = false
+Symbol.prototype.space_after = false
 var S = function λ(v,line){return new Symbol(v,line)}
 var SP = {}
 
 
 var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
 var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
-var pre = function λ(v){print('---',v); return v}
+var ran_as = process.argv[1].match(/[^\\]*\\[^\\]*$/)[0]
+var pr = function λ(){if (ran_as === 'bin\\load.js') print.apply(this,['##'].concat(arguments)); return arguments[0]}
 Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; for (var i=0;i<this.length-1;i++) r.push(f(this[i],this[i+1])); r.push(f(this.slice(-1)[0],null)); return r}
-Symbol.prototype.spa = function λ(){this.space = 'after'; return this}
+Symbol.prototype.spa = function λ(){this.space_after = true; return this}
 
 var printable = function λ(v,b,c){return (0x20<=ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
 
 var repr_js = function λ(v,line,next){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}; var t=null;
 return v instanceof Symbol? (v.line && line? '\n'.repeat(function λ(v){line[0] += v; return v}(Math.max(0, v.line-line[0]))) : '') + (
-v.space_before()?' ':'') + (
+v.space_before?' ':'') + (
 next instanceof Symbol && next.v === '\u2190'? 'var ' : '') + ((
 v.v === 'λ' && (next instanceof Array && next[0].v === '('))? 'function λ' : (
 v.v === 'λ' && (next instanceof Array && next[0].v === '{'))? function λ(r){next.splice(1,0,S('return').spa()); return r}('function λ'+'(v,b,c)') :
 js_valid_symbol_encode(v.v))
 + (
-v.space_after() && !(next instanceof Symbol && next.space_before())?' ':'') :
+v.space_after && !(next instanceof Symbol && next.space_before)?' ':'') :
 v instanceof Array?
-v[0].v === '[' && !v[0].space_before() && v.some(function λ(v,b,c){return v instanceof Symbol && v.v === ':'})? '.slice('
+v[0].v === '[' && !v[0].space_before && v.some(function λ(v,b,c){return v instanceof Symbol && v.v === ':'})? '.slice('
 +((t = [(t = split_symbol(v.slice(1),':'))[0].length === 0? [S('0')] : t[0], t[1]])[1].length === 0? mrj(t[0]) : t.map(mrj).join(','))+')' :
 v[0].v + mrj(v.slice(1)) + groups[v[0].v] :
 typeof v === 'string'? (v.match(/'/g)||[]).length <= (v.match(/"/g)||[]).length? "'"
@@ -97,6 +95,7 @@ typeof v === 'string'? (v.match(/'/g)||[]).length <= (v.match(/"/g)||[]).length?
 v instanceof RegExp? v+'' : '<what:'
 +v+'>'}
 var repr_js_file = function λ(forms){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}
+pr(forms)
 var line = [1]
 return '#!/usr/bin/env node\n'+mrj(forms).replace(/^ /gm,'').replace(/^(.*)\n/,'//$1')}
 
@@ -134,20 +133,20 @@ var t = s.match(/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/)
 if (!t) throw 'could not match regex: '+start+s.slice(0,10)
 return [eval('/'+t[1]),s.slice(t[1].length),line]}
 
-var readers = new reader_or()
-readers.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
-readers.set(['/*'], function λ(v,b,c){return [SP,b.replace(/^[^]*?\*\//,''),c]})
-readers.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
-readers.set('\n', function λ(v,b,c){return [SP,b,c+1]})
-readers.set(seq('()[]{}\u2039\u203a.`~?:;,').concat(['~@']), function λ(v,b,c){return [S(v,c),b,c]})
-readers.set(_.range(0,0x80).map(chr).filter(function λ(v,b,c){return v.match(/[a-zA-Z0-9_$%]/)}), function λ(c,s,l){var r = s.match(/^[a-zA-Z0-9_$%]*/)[0]; return [S(c+r,l),s.slice(r.length),l]})
-readers.set([''], function λ(c,s,l){var r = c; while (!readers.get(s)){r += s[0]; s = s.slice(1)} return [S(r,l),s,l]})
-readers.set('\'"', string_reader)
-readers.set(['~'+'/'], regex_reader)
+var reader_macros = new reader_or()
+reader_macros.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
+reader_macros.set(['/*'], function λ(v,b,c){return [SP,b.replace(/^[^]*?\*\//,''),c]})
+reader_macros.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
+reader_macros.set('\n', function λ(v,b,c){return [SP,b,c+1]})
+reader_macros.set(seq('()[]{}\u2039\u203a.`~?:;,').concat(['~@']), function λ(v,b,c){return [S(v,c),b,c]})
+reader_macros.set(_.range(0,0x80).map(chr).filter(function λ(v,b,c){return v.match(/[a-zA-Z0-9_$%]/)}), function λ(c,s,l){var r = s.match(/^[a-zA-Z0-9_$%]*/)[0]; return [S(c+r,l),s.slice(r.length),l]})
+reader_macros.set([''], function λ(c,s,l){var r = c; while (!reader_macros.get(s)){r += s[0]; s = s.slice(1)} return [S(r,l),s,l]})
+reader_macros.set('\'"', string_reader)
+reader_macros.set(['~'+'/'], regex_reader)
 
 var groups = {'(':')','[':']','{':'}','\u2039':'\u203a'}
 
-var lex = function λ(s){var r = []; var line = 1; while (s !== ''){var form = readers('',s,line); r.push(form[0]); s = form[1]; line = form[2]} return r}
+var lex = function λ(s){var r = []; var line = 1; while (s !== ''){var form = reader_macros('',s,line); r.push(form[0]); s = form[1]; line = form[2]} return r}
 var group = function λ(g,l){
 if (l === undefined){var r = group(S('('),g.concat([S(')')])); if (r[1].length > 0) throw '<what>'; return r[0].slice(1)}
 else {
@@ -164,9 +163,8 @@ var r = [SP];
 var t=null; if (t = s.match(/^#!.*/)){r.push(S('__literal__'),S('('),t[0],S(')')); s = s.slice(t[0].length)}
 var r = r.concat(lex(s)); r.push(SP)
 for (var i=1;i<r.length-1;i++) if (r[i] instanceof Symbol){
-r[i].space = r[i-1] === SP?
-r[i+1] === SP? 'both' : 'before' :
-r[i+1] === SP? 'after' : 'neither'}
+if (r[i-1] === SP) r[i].space_before = true
+if (r[i+1] === SP) r[i].space_after = true }
 var r = r.filter(function λ(v,b,c){return v !== SP})
 var r = group(r)
 return r}
@@ -175,4 +173,4 @@ var compile_f = function λ(ǂ_in,out){fs.writeFileSync(out,repr_js_file(read(fs
 
 compile_f(process.argv[2].replace('.a','.α'),process.argv[3])
 
-print('--- ran as:',process.argv[1].match(/[^\\]*\\[^\\]*$/)[0],'---')
+print('--- ran as:',ran_as,'---')
