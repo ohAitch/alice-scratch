@@ -6,7 +6,6 @@ _ ← require('../lib/underscore-min')
 //module.exports.hex ←! hex
 
 // todo: change space from 4 to 2x2 ?
-// todo: add /* */ ?
 
 //===--------------------------------------------===// utils //===--------------------------------------------===//
 
@@ -71,7 +70,7 @@ S ← λ(v,line){return new Symbol(v,line)}
 SP ← {}
 
 // hacks
-js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
+js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','₃':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
 split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (v instanceof Symbol && v.v = s) r.push([]); else r₋₁.push(v)}); return r}
 pre ← λ(v){print('---',v); return v}
 Array.prototype.map2 ←! λ(f){r ← []; if (this.length=0) return r; for (i←0;i<this.length-1;i++) r.push(f(thisᵢ,this[i+1])); r.push(f(this₋₁,null)); return r}
@@ -137,6 +136,7 @@ regex_reader ← λ(start,s,line){
 
 readers ← new reader_or()
 readers.set(['//'], λ{[SP,b.replace(~/^.*/,''),c]})
+readers.set(['/*'], λ{[SP,b.replace(~/^[^]*?\*\//,''),c]})
 readers.set(' \t\x0c\x0d', λ{[SP,b,c]})
 readers.set('\n', λ{[SP,b,c+1]})
 readers.set(seq('()[]{}‹›.`~?:;,').concat(['~@']), λ{[S(v,c),b,c]})
@@ -171,9 +171,11 @@ read ← λ(s){
 	r ← group(r)
 	return r}
 
-compile_f ← λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
+compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
 
-compile_f(process.argv₂.replace('.a','.α'))
+compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
+
+print('--- ran as:',process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀,'---')
 
 //# ,; are the void operators and return nothing at all?
 

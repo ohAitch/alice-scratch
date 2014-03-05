@@ -9,7 +9,6 @@ var _ = require('../lib/underscore-min')
 
 
 
-
 var print = console.log.bind(console)
 var memoize_o = function λ(o,f){return function λ(v){var r = own(o,v); return r === undefined? (o[v] = f(v)) : r}}
 var merge_o = function λ(a,b){for (k in b) a[k] = b[k]; return a}
@@ -71,7 +70,7 @@ var S = function λ(v,line){return new Symbol(v,line)}
 var SP = {}
 
 
-var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
+var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
 var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
 var pre = function λ(v){print('---',v); return v}
 Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; for (var i=0;i<this.length-1;i++) r.push(f(this[i],this[i+1])); r.push(f(this.slice(-1)[0],null)); return r}
@@ -137,6 +136,7 @@ return [eval('/'+t[1]),s.slice(t[1].length),line]}
 
 var readers = new reader_or()
 readers.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
+readers.set(['/*'], function λ(v,b,c){return [SP,b.replace(/^[^]*?\*\//,''),c]})
 readers.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
 readers.set('\n', function λ(v,b,c){return [SP,b,c+1]})
 readers.set(seq('()[]{}\u2039\u203a.`~?:;,').concat(['~@']), function λ(v,b,c){return [S(v,c),b,c]})
@@ -171,6 +171,8 @@ var r = r.filter(function λ(v,b,c){return v !== SP})
 var r = group(r)
 return r}
 
-var compile_f = function λ(f){fs.writeFileSync('bin/'+f.replace('.α','.js'),repr_js_file(read(fs.readFileSync(f).toString())))}
+var compile_f = function λ(ǂ_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(ǂ_in).toString())))}
 
-compile_f(process.argv[2].replace('.a','.α'))
+compile_f(process.argv[2].replace('.a','.α'),process.argv[3])
+
+print('--- ran as:',process.argv[1].match(/[^\\]*\\[^\\]*$/)[0],'---')
