@@ -7,12 +7,11 @@ SetTitleMatchMode 2
 
 // used ⌘: dlq+- ↑→↓← 0-9 ‹Pause›
 
-// todo meh: consider making menukey sticky, like F8
-// todo meh: fill out F8
+// todo eh: consider making menukey sticky, like F8
+// todo eh: fill out F8
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴
-// todo: ≡+mouse : add homoiconicity (this is hard), add functions. such as "highlight entire url pointed at" or "go to url pointed at" or something.
-// todo: modify ≡+leftmouse behavior to simply copy and paste but also work with leftmouse+≡
+// todo eh: mouse : add homoiconicity (this is hard)
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -40,12 +39,13 @@ global sublime := "Sublime Text ahk_class PX_WINDOW_CLASS"
 // register threads
 OnExit exit_cleanup
 SetTimer kill_rename, -1
-//SetTimer anti_idle, -1
+SetTimer kill_sublime_nag, -1
 return
 
 // define callbacks
 exit_cleanup:; l33t_show(); ExitApp
 kill_rename:; WinWaitActive Rename ahk_class #32770; Send y; SetTimer kill_rename, -1; return
+kill_sublime_nag:; WinWaitActive This is an unregistered copy ahk_class #32770; Send ‹Tab›‹Enter›; SetTimer kill_sublime_nag, -1; return
 
 // autoclick
 ^F1::; loop 10  {Click; Sleep 1} return
@@ -58,6 +58,7 @@ AppsKey & -::; t := current_directory(); Run bash -c "cd %t%SEMICOLONbash"; retu
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
+feeling_lucky(v) {chrome("http://www.google.com/search?sourceid=navclient&gfns=1&q=" . v)}
 AppsKey & /::; chrome_newtab(); return
 AppsKey & \::; chrome(copy()); return
 
@@ -75,24 +76,19 @@ AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
 AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
 AppsKey &  RCtrl::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
 ~RCtrl & AppsKey::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
-AppsKey & Numpad1::chrome(SubStr(WinTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
-
-// manipulate windows
-AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
-~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
-###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc)
-^w::WinClose A
-Esc::WinClose A
-###if
+AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // misc
-AppsKey & n::Send ‹AppsKey›wt^a // new text file
+AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
+~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
+###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc); ^w::WinClose A; Esc::WinClose A; ###if
+###if WinActive(explorer); ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
-AppsKey & LButton::; Click 2; Sleep 50; chrome(copy()); return
+AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
+~LButton & AppsKey::; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
 $^v::; if (clipboard_contains_files() and !WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
 ~LWin & f::print("try win-q")
-~RWin & f::print("try win-q")
 
 // ye l33t command
 AppsKey & B::
@@ -109,9 +105,21 @@ AppsKey & B::
 	return ; global l33t_hidden
 l33t_show() {loop Parse, l33t_hidden, |; {WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField%}; l33t_hidden =}
 
-// functions
+// copy / paste / clipboard
+###if WinActive(cmd) and RegExMatch(WinTitle("A"),"^Select "); ^c::copy_to_clipboard(); Enter::copy_to_clipboard(); ###if
 clipboard_contains_files() {return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)}
-copy_to_clipboard() {if WinActive(cmd) {Send ‹Enter›} else {Send ^c}}
+copy_to_clipboard() {
+	if WinActive(cmd) {
+		Send ‹Enter›
+		v := Clipboard
+		v := RegExReplace(v,"\r","")
+		StringSplit v, v, `n
+		// only works for single linebreaks :c
+		loop %v0% {if (StrLen(v%A_Index%) >= 79) {t := A_Index+1; v%A_Index% := v%A_Index% . v%t%; v%t% := "__EMPTY_LINE__"}}
+		r := ""; did_fix := false
+		loop %v0% {if (v%A_Index% != "__EMPTY_LINE__") {r := r . "`n" . v%A_Index%} else {did_fix := true}}
+		if (did_fix) {Clipboard := SubStr(r,2)}
+	} else {Send ^c}}
 copy(v = "") {// preserves clipboard
 	t := ClipboardAll
 	Clipboard =
@@ -129,6 +137,8 @@ paste(v = "") {// if no argument, paste from clipboard
 		paste()
 		SetTimer restore_clipboard, -100
 	}}; global restore_clipboard_v; restore_clipboard:; Clipboard := restore_clipboard_v; return
+
+// misc functions
 current_directory() {
 	if WinActive(explorer) {
 		v := WinGetText("A")
@@ -507,3 +517,245 @@ WinGet(Cmd = "", title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") 
 WinGetClass(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetClass, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinGetText(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetText, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
 WinTitle(title = "", WinText = "", ExcludeTitle = "", ExcludeText = "") {WinGetTitle, v, %title%, %WinText%, %ExcludeTitle%, %ExcludeText%; return v}
+
+/*
+;Init
+{
+	#Persistent 
+	#SingleInstance force
+	CoordMode, Mouse, Screen
+	SetTitleMatchMode, 2
+
+	SetupTrayMenu()
+
+	GUI_HIDE_TIME = 3000
+	FADE_STEP_AMT = 10
+	Return
+}
+
+SetupTrayMenu()
+{
+	Menu, Tray, NoStandard
+
+	Menu, Tray, Add, Remove transparency from all windows, ShowAll
+	Menu, Tray, Add
+
+	Menu, Tray, Standard
+
+	Return 
+}
+
+ShowAll:
+{
+	WinGet, id, list
+
+	Loop, %id%
+	{
+	WinSet, Transparent, Off, % "ahk_id" id%A_Index%
+	}
+
+	Return
+}
+
+^+T::
+{
+	GetTransInfo(true)
+	Return
+}
+
+GetTransInfo(bUseWinUnderMouse)
+{
+	global g_iPosX
+	global g_iPosY
+	global g_iActiveWinID
+	global g_bWinOnTop
+
+	IfWinExist, TransGui
+	{
+	Gui, Destroy
+	}
+	Else
+	{
+	If( bUseWinUnderMouse )
+	{
+	MouseGetPos, g_iPosX, g_iPosY, g_iActiveWinID
+	}
+
+	WinGet, hWinExStyle, ExStyle, ahk_id %g_iActiveWinID%
+
+	; 0x8 is WS_EX_TOPMOST.
+	g_bWinOnTop := (hWinExStyle & 0x8) > 0
+
+	CreateGui()
+	}
+	Return
+}
+
+CreateGui()
+{
+	global g_iTransAmt
+	global g_iTransText
+	global g_iActiveWinID
+	global g_bWinOnTop
+	global g_iPosX
+	global g_iPosY
+	global GUI_HIDE_TIME
+
+	Gui, Destroy
+
+	WinGet, g_iTransAmt, Transparent, ahk_id %g_iActiveWinID%
+
+	If(g_iTransAmt == "")
+	{
+	g_iTransAmt = 255
+	}
+
+	g_iTransAmt := Round( g_iTransAmt / 2.55 )
+
+	Gui, +ToolWindow -Caption +Border +AlwaysOnTop
+
+	Gui, Add, Text, w25 vg_iTransText, %g_iTransAmt%`%
+
+	Gui, Add, Slider, Vertical Invert NoTicks AltSubmit Center Line5 Page100 Buddy1g_iTransText Buddy2g_bWinOnTop gChangeWinTrans vg_iTransAmt, %g_iTransAmt%
+
+	Gui, Add, Checkbox, vg_bWinOnTop gChangeWinTop Checked%g_bWinOnTop%, Top
+
+	Gui, Margin, 0
+
+	GetGuiPos()
+
+	Gui, Show, x%g_iPosX% y%g_iPosY%, TransGui
+
+	SetTimer, CheckToHide, %GUI_HIDE_TIME%
+
+	Return
+}
+
+GetGuiPos()
+{
+	global g_iPosY
+	global g_iPosX
+	global g_iTransAmt
+
+	SysGet, iVirtualScreenHeight, 79
+	SysGet, iVirtualScreenWidth, 78
+
+	If( g_iPosX < 22 )
+	{
+	g_iPosX = 0
+	}
+	Else If( g_iPosX > iVirtualScreenWidth - 29 )
+	{
+	g_iPosX := iVirtualScreenWidth - 51
+	}
+	Else
+	{
+	g_iPosX -= 22
+	}
+
+	If( g_iPosY < 40 )
+	{
+	g_iPosY = 0
+	}
+	Else If( g_iPosY > iVirtualScreenHeight - 77 )
+	{
+	g_iPosY := iVirtualScreenHeight - 115
+	}
+	Else
+	{
+	g_iPosY -= (78 - (Round(g_iTransAmt/2.63)))
+
+	}
+
+	Return
+}
+
+CheckToHide:
+{
+	MouseGetPos,,,iCurWinId
+	WinGet, iTransGuiID,,TransGui
+
+	If( iCurWinId == iTransGuiID )
+	{
+	SetTimer, CheckToHide, %GUI_HIDE_TIME%
+	}
+	Else
+	{
+	HideGui()
+	}
+	Return
+}
+
+HideGui()
+{
+	global g_iHideFadeAmt
+
+	g_iHideFadeAmt = 255
+	SetTimer, MiniLoop, 1
+
+	SetTimer, CheckToHide, Off
+	Return
+}
+
+MiniLoop:
+{
+	If( g_iHideFadeAmt <= 0)
+	{
+	Gui, Destroy
+	SetTimer, MiniLoop, Off
+	}
+	Else
+	{
+	WinSet, Transparent, %g_iHideFadeAmt%, TransGui
+	g_iHideFadeAmt -= %FADE_STEP_AMT%
+	}
+
+	Return
+}
+
+ChangeWinTop:
+{
+	SetTimer, CheckToHide, %GUI_HIDE_TIME%
+	SetTimer, MiniLoop, Off
+	WinSet, Transparent, 255, TransGui
+
+	GuiControlGet, g_bWinOnTop
+	If( g_bWinOnTop )
+	{
+	WinSet, AlwaysOnTop, On, ahk_id %g_iActiveWinID%
+	WinSet, AlwaysOnTop, On, TransGui
+	}
+	Else
+	{
+	WinSet, AlwaysOnTop, Off, ahk_id %g_iActiveWinID%
+	}
+
+	Return
+}
+
+ChangeWinTrans:
+{
+	Sleep 100
+
+	GuiControlGet, g_iTransAmt
+
+	SetTimer, CheckToHide, %GUI_HIDE_TIME%
+	SetTimer, MiniLoop, Off
+
+	WinSet, Transparent, 255, TransGui
+
+	If(g_iTransAmt == 100)
+	{
+	WinSet, Transparent, Off, ahk_id %g_iActiveWinID%
+	}
+	Else
+	{
+	iRealTransAmt := Round( g_iTransAmt * 2.55 )
+	WinSet, Transparent, %iRealTransAmt%, ahk_id %g_iActiveWinID%
+	}
+
+	GuiControl,, g_iTransText, %g_iTransAmt%`%
+	iRealTransAmt =
+	Return
+}
+*/
