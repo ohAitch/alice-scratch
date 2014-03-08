@@ -1,4 +1,11 @@
+////////////////////////////////////////////////////
+//////////////////////////////////////////////////// everything except section main
+/////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// see: lang-alpha
+//////////////////////////////////////////////////// well, not actually, but everything worth using is there
+////////////////////////////////////////////////////
 //===--------------------------------------------===// greenspuns //===--------------------------------------------===//
+
+function λ(s){return eval('(function(v,w,x,y,z){return '+s+'})')}
 
 function overload(){var fns = dict_by(m('length'),arguments); return function(){return fns[arguments.length].apply(this,arguments)}}
 function bind(root,member){return root[member].bind(root)}
