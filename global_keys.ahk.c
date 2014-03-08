@@ -20,10 +20,11 @@ SetTitleMatchMode 2
 #define __VA_LEN__(...)   ARG_16(0,##__VA_ARGS__,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define MACRO_DISPATCH(fn,...) PASTE2_2(fn,__VA_LEN__(__VA_ARGS__))(__VA_ARGS__)
 
-global explorer := "ahk_class CabinetWClass"
-global cmd := "ahk_class ConsoleWindowClass"
 global taskbar := "ahk_class Shell_TrayWnd"
+global explorer := "ahk_class CabinetWClass"
 #define WinActive_desktop (WinActive("ahk_class WorkerW") or WinActive("ahk_class Progman"))
+#define WinActive_folder (WinActive(explorer) or WinActive("ahk_class WorkerW") or WinActive("ahk_class Progman"))
+global cmd := "ahk_class ConsoleWindowClass"
 global spotify := "Spotify ahk_class SpotifyMainWindow"
 global vlc := "VLC media player ahk_class QWidget"
 global calc := "Calculator ahk_class CalcFrame"
@@ -54,7 +55,7 @@ kill_sublime_nag:; WinWaitActive This is an unregistered copy ahk_class #32770; 
 
 // run apps
 AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
-AppsKey & -::; t := current_directory(); Run bash -c "cd %t%SEMICOLONbash"; return
+AppsKey & -::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONbash"; return
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
@@ -82,12 +83,12 @@ AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+
 AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
 ~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
 ###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc); ^w::WinClose A; Esc::WinClose A; ###if
-###if WinActive(explorer); ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
+###if WinActive_folder; ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
 ~LButton & AppsKey::; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
-$^v::; if (clipboard_contains_files() and !WinActive(explorer)) {paste(slash_back(Clipboard))} else {paste()} return
+$^v::; if (clipboard_contains_files() and !WinActive_folder) {paste(slash_back(Clipboard))} else {paste()} return
 ~LWin & f::print("try win-q")
 
 // ye l33t command
@@ -106,19 +107,19 @@ AppsKey & B::
 l33t_show() {loop Parse, l33t_hidden, |; {WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField%}; l33t_hidden =}
 
 // copy / paste / clipboard
-###if WinActive(cmd) and RegExMatch(WinTitle("A"),"^Select "); ^c::copy_to_clipboard(); Enter::copy_to_clipboard(); ###if
+//###if WinActive(cmd) and RegExMatch(WinTitle("A"),"^Select "); ^c::copy_to_clipboard(); Enter::copy_to_clipboard(); ###if
 clipboard_contains_files() {return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)}
 copy_to_clipboard() {
 	if WinActive(cmd) {
 		Send ‹Enter›
-		v := Clipboard
+		/*v := Clipboard
 		v := RegExReplace(v,"\r","")
 		StringSplit v, v, `n
 		// only works for single linebreaks :c
 		loop %v0% {if (StrLen(v%A_Index%) >= 79) {t := A_Index+1; v%A_Index% := v%A_Index% . v%t%; v%t% := "__EMPTY_LINE__"}}
 		r := ""; did_fix := false
 		loop %v0% {if (v%A_Index% != "__EMPTY_LINE__") {r := r . "`n" . v%A_Index%} else {did_fix := true}}
-		if (did_fix) {Clipboard := SubStr(r,2)}
+		if (did_fix) {Clipboard := SubStr(r,2)}*/
 	} else {Send ^c}}
 copy(v = "") {// preserves clipboard
 	t := ClipboardAll
