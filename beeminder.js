@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name       beeminder misc
+// @name       beeminder tweaks
 // @namespace  alice0meta.beeminder
 // @version    0.1
 // @match      http*://*.beeminder.com/*
@@ -18,6 +18,7 @@ function scroll_to(v) {
 // experimental
 function s(v,s) {return eval('(function(v){'+s.replace(/\./g,'v.')+';return v})')(v)}
 
+/////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lang-alpha
 // time
 Date.now_s = function(){return Date.now() / 1000}
 var run = {
