@@ -6,8 +6,8 @@ pause() { read -p 'Press [Enter] to continue . . .'; }
 #slash_back() { r=$(echo "$1" | sed 's/\//\\/g'); }
 #cygpath_w() { local t=`pwd`; cd "$1"; r=`pwd -W`; cd "$t"; }
 
-t="out/ahk.ahk"
-u="out/temp"
+t="bin/ahk.ahk"
+u="bin/temp"
 
 cp global_keys.ahk.c "$t"
 sed -r -i -e 's/\{/{NEWLINE /g' "$t"
@@ -28,4 +28,4 @@ sed -r -i -e 's/SEMICOLON/;/g' "$t"
 sed -r -i -e "s/QUOTE/'/g" "$t"
 sed -r -i -e 's/\\\\/\\/g' "$t"
 
-hstart64 //NOCONSOLE "AutoHotkey out/ahk.ahk"
+hstart64 //NOCONSOLE "AutoHotkey bin/ahk.ahk"
