@@ -1,10 +1,9 @@
 #!/bin/bash
-
-r='output of most recently called function'
-
 pause() { read -p 'Press [Enter] to continue . . .'; }
-#slash_back() { r=$(echo "$1" | sed 's/\//\\/g'); }
-#cygpath_w() { local t=`pwd`; cd "$1"; r=`pwd -W`; cd "$t"; }
+script_dir() { echo $(dirname "${BASH_SOURCE[0]}"); }
+cd $(script_dir)
+#slash_back() { echo $(echo "$1" | sed 's/\//\\/g'); }
+#cygpath_w() { local t=`pwd`; cd "$1"; echo `pwd -W`; cd "$t"; }
 
 t="bin/ahk.ahk"
 u="bin/temp"
