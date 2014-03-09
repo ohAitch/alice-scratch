@@ -1,7 +1,6 @@
 #!/bin/bash
-pause() { read -p 'Press [Enter] to continue . . .'; }
-script_dir() { echo $(dirname "${BASH_SOURCE[0]}"); }
-cd $(script_dir)
+eval $mydir
+
 #slash_back() { echo $(echo "$1" | sed 's/\//\\/g'); }
 #cygpath_w() { local t=`pwd`; cd "$1"; echo `pwd -W`; cd "$t"; }
 
@@ -27,4 +26,5 @@ sed -r -i -e 's/SEMICOLON/;/g' "$t"
 sed -r -i -e "s/QUOTE/'/g" "$t"
 sed -r -i -e 's/\\\\/\\/g' "$t"
 
+#! should probably be bash
 hstart64 //NOCONSOLE "AutoHotkey bin/ahk.ahk"
