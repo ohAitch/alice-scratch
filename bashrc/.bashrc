@@ -1,5 +1,5 @@
-export PATH=$PATH:.
 export PS1='$(pwd)>'
+export PATH="$PATH:/c/Program Files/7-Zip:."
 
 LWJGL_VERSION=2.9.0
 export ALI="$USERPROFILE/ali"
@@ -11,6 +11,9 @@ export LOMBOK="$ALI/code/#libs/lombok.jar"
 
 e() { explorer .; }
 sb() { "C:\Program Files\Sublime Text 3\sublime_text.exe" $1; }
+
+pause() { read -p 'Press [Enter] to continue . . .'; }; export -f pause
+export mydir='cd $(dirname "${BASH_SOURCE[0]}")' # call with: eval $mydir
 
 # command_not_found_handle seems broken
 err_handle() {
