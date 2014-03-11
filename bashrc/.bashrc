@@ -1,19 +1,20 @@
-export PS1='$(pwd)>'
-export PATH="$PATH:/c/Program Files/7-Zip:."
+pause() { read -p 'Press [Enter] to continue . . .'; }; export -f pause
+export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
+slash_fwd()  { echo $(echo "$1" | sed 's/\\/\//g'); }; export -f slash_fwd
+slash_back() { echo $(echo "$1" | sed 's/\//\\/g'); }; export -f slash_back
 
-LWJGL_VERSION=2.9.0
-export ALI="$USERPROFILE/ali"
+export PATH="$PATH:/c/Users/zii/ali/apps/#PATH:/c/Program Files/7-Zip:."
+export ALI="$(slash_fwd $USERPROFILE)/ali"
 export CLOJURE="$ALI/code/#libs/clojure-1.5.1/clojure-1.5.1-slim.jar"
-export LWJGL="$ALI/code/#libs/lwjgl-$LWJGL_VERSION/jar/lwjgl-debug.jar;$ALI/code/#libs/lwjgl-$LWJGL_VERSION/jar/lwjgl_util.jar"
-export LWJGL_NATIVE="$ALI/code/#libs/lwjgl-$LWJGL_VERSION/native/windows"
+lwjgl_version=2.9.0
+export LWJGL="$ALI/code/#libs/lwjgl-$lwjgl_version/jar/lwjgl-debug.jar;$ALI/code/#libs/lwjgl-$lwjgl_version/jar/lwjgl_util.jar"
+export LWJGL_NATIVE="$ALI/code/#libs/lwjgl-$lwjgl_version/native/windows"
 export JAVA_LWJGL_NATIVE="-Djava.library.path=$LWJGL_NATIVE"
 export LOMBOK="$ALI/code/#libs/lombok.jar"
 
+export PS1='$(pwd)>'
 e() { explorer .; }
 sb() { "C:\Program Files\Sublime Text 3\sublime_text.exe" $1; }
-
-pause() { read -p 'Press [Enter] to continue . . .'; }; export -f pause
-export mydir='cd $(dirname "${BASH_SOURCE[0]}")' # call with: eval $mydir
 
 # command_not_found_handle seems broken
 err_handle() {
