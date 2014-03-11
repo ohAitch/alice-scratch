@@ -1,1 +1,1 @@
-bash -x daily.sh
+bash -i daily.sh
