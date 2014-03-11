@@ -156,7 +156,7 @@ current_directory() {
 	} else if WinActive_desktop {
 		return slash_back(A_Desktop)
 	}
-	return slash_back(A_Desktop) . "/../skryl/code"}
+	return slash_back(A_Desktop) . "/../ali/code"}
 slash_back(v) {return RegExReplace(v, "\\\\", "/")}
 is_mute() {return SoundGet("","MUTE") = "On"}
 print(x="", y="", v="") {

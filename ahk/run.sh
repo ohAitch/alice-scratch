@@ -1,9 +1,6 @@
 #!/bin/bash
 eval $mydir
 
-#slash_back() { echo $(echo "$1" | sed 's/\//\\/g'); }
-#cygpath_w() { local t=`pwd`; cd "$1"; echo `pwd -W`; cd "$t"; }
-
 t="bin/ahk.ahk"
 u="bin/temp"
 
