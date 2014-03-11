@@ -18,8 +18,9 @@ cd "$USERPROFILE/desktop"; eval 7z a "desktop.7z" $(node $files) > /dev/null; mv
 pause
 
 # data outside of the automated backup:
-# 	files inside folders on desktop
-# 	skype logs
-# 	steam, but meh
+#	files inside folders on desktop
+#	skype logs
+#	steam, but meh
 #	spotify playlists
-# 	other stuff ?
+#	other stuff ?
+#	private data in github repos ignored by gitignore
