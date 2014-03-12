@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm bin/*
 load/load.js load.a bin/load.js
 bin/load.js test.a bin/test.js

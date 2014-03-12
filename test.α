@@ -1,14 +1,12 @@
 #!/usr/bin/env node
-//"use strict"
-//repl ← require('repl')
-fs ← require('fs')
-_ ← require('../lib/underscore-min')
-//module.exports.hex ←! hex
 
-__sub__ ← λ{v[b]}
-__slice__ ← λ(a,b){return b=undefined? v.slice(a) : (v.slice(a,b))}
-__sliceλ__ ← λ(a,b){return b=undefined? λ{v[a:]} : λ{v[a:b]}}
-
-//===--------------------------------------------===// utils //===--------------------------------------------===//
-
-print ← console.log.bind(console)
+if (typeof 1) 1 else {1}
+while (¬true) {1}
+return 1 * 1
+return;
+return
+v ← 1 = 1 > 1 < 1 ≤ 1 ≠ 1 & 1 in {1:1} isa Array
+throw v
+v ←! 1
+//try 1 catch (e) {1}
+try 1 catch {1}

@@ -14,9 +14,11 @@ __sliceλ__ ← λ(a,b){return b=undefined? λ{v[a:]} : λ{v[a:b]}}
 print ← console.log.bind(console)
 memoize_o ← λ(o,f){return λ(v){r ← own(o,v); return r = undefined? (oᵥ ←! f(v)) : r}}
 //merge_o ← λ(a,b){for (k in b) aₖ ←! bₖ; return a}
-merge_o ← λ(a,b){Object.keys(b).forEach(λ(k){aₖ ←! bₖ}); return a}
+merge_o ← λ(a,b){r ← {}; Object.keys(a).forEach(λ(k){rₖ ←! aₖ}); Object.keys(b).forEach(λ(k){rₖ ←! bₖ}); return r}
 Object.map ←!  λ(v,f){f ← f || λ{[v,b]};    r ← {}; Object.keys(v).forEach(λ(k){t ← f.call(v, k, vₖ);	if (t) r[t₀] ←! t₁}); return r}
 Object.mapv ←! λ(v,f){f ← f || λ{[v,true]}; r ← {};              v.forEach(λ(v){t ← f(v);           	if (t) r[t₀] ←! t₁}); return r}
+dict_by ← λ(v,f){return Object.mapv(v,λ{[f(v),v]})}
+frequencies ← λ(v){r ← {}; v.forEach(λ{rᵥ ←! v in r? rᵥ+1 : 1}); return r}
 now ← λ{Date.now() / 1000}
 run ← {
 	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
@@ -30,19 +32,23 @@ run ← {
 	}
 ord ← λ{v.charCodeAt(0)}
 chr ← λ{String.fromCharCode(v)}
-seq ← λ{typeof v = 'string'? v.split('') : v}
+seq ← λ{typeof v = 'string'? v.split('') : v instanceof Array? v : Object.keys(v).map(λ(k){return [k,vₖ]})}
 extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
 own ← λ(o,m){if (Object.prototype.hasOwnProperty.call(o,m)) return oₘ}
 delset ← λ(o,m,v){if (v = undefined) delete oₘ; else oₘ ←! v}
 String.prototype.repeat ←! λ{new Array(v+1).join(this)}
-//Array.prototype.interpose ←! λ(sep){return Array.prototype.concat.apply([],this.map(λ{v.concat(sep)}))[:-1]}
+//Array.prototype.interpose ←! λ(sep){return this.map(λ{v.concat(sep)}).m_concat()[:-1]}
 windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
 err ← λ(v){throw Error(v)}
+Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
+pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
+hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
+Date.prototype.hours = λ(v){this.setHours(this.getHours()+v); return this}
+Date.prototype.yyyy_mm_dd = λ(){m ← (this.getMonth()+1)+''; d ← this.getDate()+''; return this.getFullYear()+'-'+(m₁?m:'0'+m)+'-'+(d₁?d:'0'+d)}
+guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
 
 //===--------------------------------------------===// characters //===--------------------------------------------===//
 
-pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
-hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
 js_valid_symbol ← new (λ(){
 	_short ← {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
 	encode_short ← Object.map(_short,λ{[v,'ǂ'+b]})
@@ -66,16 +72,14 @@ js_valid_symbol ← new (λ(){
 			else {r += decode_short[v₀]; v ←! v[1:]}
 			} return r+v})
 	})
-
-	super_sub_table ← '₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' ')
-unicode ← {
-	subscripts:   super_sub_table.map(λ{v₀}).filter(λ{v≠'-'}),
-	midscripts:   super_sub_table.map(λ{v₁}).filter(λ{v≠'-'}),
-	superscripts: super_sub_table.map(λ{v₂}).filter(λ{v≠'-'}),
-	subscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(λ{[[v₁,v₀],[v₂,v₀]]})),λ{v})),
-	midscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(λ{[[v₀,v₁],[v₂,v₁]]})),λ{v})),
-	superscript: λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(λ{[[v₀,v₂],[v₁,v₂]]})),λ{v}))
-	}
+unicode ← λ(table){
+	subscripts:   table.map(λ{v₀}).filter(λ{v≠'-'}),
+	midscripts:   table.map(λ{v₁}).filter(λ{v≠'-'}),
+	superscripts: table.map(λ{v₂}).filter(λ{v≠'-'}),
+	subscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₁,v₀],[v₂,v₀]]}).m_concat(),λ{v})),
+	midscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₀,v₁],[v₂,v₁]]}).m_concat(),λ{v})),
+	superscript: λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₀,v₂],[v₁,v₂]]}).m_concat(),λ{v}))
+	}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' '))
 
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
@@ -246,7 +250,27 @@ anyfix_macros_set(['λ'], λ(v,sym,rest){
 		t ← anyfix_macro_eval_1([],rest); b ← t₀₀; rest ← t₁; if (t₀.length ≠ 1) err('bad λ')
 		return [[[sym,p,b]],rest] }
 	else return [[v,sym],rest] })
-//anyfix_macros_set(['if'], λ(v,sym,rest){err('not yet defined')})
+/*anyfix_macros_set(['if'], λ(v,sym,rest){
+	t ← anyfix_macro_eval_expr(rest); q ← t₀; rest ← t₁
+	t ← anyfix_macro_eval_expr(rest); q ← t₀; rest ← t₁
+	if expr [:] expr [else] expr
+})*/
+anyfix_macros_gen ← λ(v){
+	parse ← λ{v.match(~/(\[.*?\])|[^[\]]+/g).map(λ{v₀='['? [parse(v[1:-1])] : v.trim().split(' ')}).m_concat()}
+	[ '…', [ ':' ], '…', [ 'else', '…' ] ]
+	t ← parse(v); n ← t₀; v ← t[1:]
+	anyfix_macros_set([n],λ(form,sym,rest){
+		r ← []
+		v.forEach(λ(v){
+			if (v='…') {t ← anyfix_macro_eval_expr(rest); return [(form=undefined?[]:[form]).concat([t₀]), rest]}
+			else if (v instanceof Array) {
+				
+			}
+			else
+		})
+	})
+}
+anyfix_macros_gen('if … [:] … [else …]')
 //anyfix_macros_set(['while'], λ(v,sym,rest){err('not yet defined')})
 //anyfix_macros_set(['return'], λ(v,sym,rest){err('not yet defined')})
 //anyfix_macros_set(['throw'], λ(v,sym,rest){err('not yet defined')})
@@ -303,7 +327,9 @@ print('--- ran as:',ran_as,'---')
 //#require
 //possibly a #use like thing but that probably should not be a primitive?
 
-//{expr,} is a void block, and {expr} is not a void block, and i think {expr } and {expr\n} should probably be the same as {expr}
+// oh dear. we may want standard macros to get their arguments with partial but incomplete anyfix parsing.
+
+//{expr,} is a void block, and {expr} is not a void block
 
 // output js "return(v)" not "return v"
 
@@ -326,3 +352,5 @@ print('--- ran as:',ran_as,'---')
 //	bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
 //	assignment				+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
 //	statement				delete …	yield …
+
+// derp, if ~/ is regex ~" should be too
