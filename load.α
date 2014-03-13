@@ -32,20 +32,20 @@ run ← {
 	}
 ord ← λ{v.charCodeAt(0)}
 chr ← λ{String.fromCharCode(v)}
-seq ← λ{typeof v = 'string'? v.split('') : v instanceof Array? v : Object.keys(v).map(λ(k){return [k,vₖ]})}
+seq ← λ{typeof v = 'string'? v.split('') : v isa Array? v : Object.keys(v).map(λ(k){return [k,vₖ]})}
 extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
 own ← λ(o,m){if (Object.prototype.hasOwnProperty.call(o,m)) return oₘ}
 delset ← λ(o,m,v){if (v = undefined) delete oₘ; else oₘ ←! v}
 String.prototype.repeat ←! λ{new Array(v+1).join(this)}
 //Array.prototype.interpose ←! λ(sep){return this.map(λ{v.concat(sep)}).m_concat()[:-1]}
 windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
-err ← λ(v){throw Error(v)}
+err ← λ(){print.apply(console,['#error#:'].concat(Array.prototype.slice.apply(arguments))); throw Error()}
 Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
 pad_left ← λ(v,s,l){while (v.length < l) v ←! s + v; return v}
 hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
 Date.prototype.hours = λ(v){this.setHours(this.getHours()+v); return this}
 Date.prototype.yyyy_mm_dd = λ(){m ← (this.getMonth()+1)+''; d ← this.getDate()+''; return this.getFullYear()+'-'+(m₁?m:'0'+m)+'-'+(d₁?d:'0'+d)}
-guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
+//guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
 
 //===--------------------------------------------===// characters //===--------------------------------------------===//
 
@@ -72,33 +72,54 @@ js_valid_symbol ← new (λ(){
 			else {r += decode_short[v₀]; v ←! v[1:]}
 			} return r+v})
 	})
-unicode ← λ(table){
+unicode ← λ(table){return {
 	subscripts:   table.map(λ{v₀}).filter(λ{v≠'-'}),
-	midscripts:   table.map(λ{v₁}).filter(λ{v≠'-'}),
+	midscripts:   table.map(λ{v₁}),
 	superscripts: table.map(λ{v₂}).filter(λ{v≠'-'}),
 	subscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₁,v₀],[v₂,v₀]]}).m_concat(),λ{v})),
 	midscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₀,v₁],[v₂,v₁]]}).m_concat(),λ{v})),
 	superscript: λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(Object.mapv(table.map(λ{[[v₀,v₂],[v₁,v₂]]}).m_concat(),λ{v}))
-	}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' '))
+	}}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' '))
 
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
+running_as ← process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀
+print('--- running as:',running_as,'---')
+
 Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
-	Symbol.prototype.space ←! λ{(this.space_before?'_':'')+'$'+(this.space_after?'_':'')}
+	Symbol.prototype.space ←! λ(v){if (v=undefined) return (this.space_before?'_':'')+'$'+(this.space_after?'_':''); else {if (v₀≠'_') this.space_before ←! false; if (v₋₁≠'_') this.space_after ←! false; return this}}
 	Symbol.prototype.space_before ←! true
 	Symbol.prototype.space_after ←! true
 	Symbol.prototype.inspect ←! λ{'`'+this.v}
 	Symbol.prototype.with_v ←! λ(v){r ← new Symbol(v,this.line); if (¬this.space_before) r.space_before = false; if (¬this.space_after) r.space_after = false; return r}
 	S ← λ(v){r ← new Symbol(v.replace(~/^ /,'').replace(~/ $/,'')); if (v₀≠' ') r.space_before ←! false; if (v₋₁≠' ') r.space_after ←! false; return r}
+	symbol_set_decode ← λ(v){
+		n ← v; s ← ''
+		t ← v.match(~/^(([−↔±∓])\2*)(.*)$/);  s += t && t₁.length%2≠0? t₂ : '?'; v ← t? t₁[:Math.floor(t₁.length/2)]+t₃ : v
+		t ← v.match(~/^(.*?)(([−↔±∓])\3*)$/); s += t && t₂.length%2≠0? t₃ : '?'; v ← t? t₂[:Math.floor(t₂.length/2)]+t₁ : v
+		n ← v=''? n : v; s ← v=''? '??' : s
+		return (symbol_set_table[s]||err('bad symbol set')).map(λ{new Symbol(n).space(v)})}
+		symbol_set_table ← {
+			'−−':['$'],
+			'−↔':['$_'],
+			'↔−':['_$'],
+			'↔↔':['_$_'],
+			'?−':['$','_$'],
+			'?↔':['$_','_$_'],
+			'−?':['$','$_'],
+			'↔?':['_$','_$_'],
+			'±±':['$','_$_'],
+			'±∓':['$_','_$'],
+			'??':['$','$_','_$','_$_']
+			}
 SP ← {}
 
 // hacks
-js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','₃':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / || && ? += ++ if else for return in new typeof delete try catch while this switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
+js_valid_symbol_encode ← λ{own({'=':'===','←!':'=','←':'=','≠':'!==','≤':'<=','≥':'>=','¬':'!','₋₁':'.slice(-1)[0]','₀':'[0]','₁':'[1]','₂':'[2]','₃':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / % || && ? += ++ if else for return in new typeof delete try catch while this switch case throw break continue'.split(' ')),v)?v:null) || (v.match(~/^\d/)?v:null) || js_valid_symbol.encode(v)}
 split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (v isa Symbol && v.v = s) r.push([]); else r₋₁.push(v)}); return r}
 has_sym ← λ(v,s){return v.some(λ{v isa Symbol && v.v=s})}
 split_slice ← λ(l){r ← split_symbol(l,':'); r ← [(r₀.length = 0? [S('0')] : r₀)].concat(r[1:]); return r₁.length = 0? r[:1] : r}
-ran_as ← process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀
-pr ← λ(){if (ran_as = 'bin\\load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments₀}
+pr ← λ(){if (running_as = 'bin\\load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments₀}
 Array.prototype.map2 ←! λ(f){r ← []; if (this.length=0) return r; i←0; while (i<this.length-1) {r.push(f(thisᵢ,this[i+1])); i++} r.push(f(this₋₁,null)); return r}
 
 printable ← λ{(0x20≤ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
@@ -159,13 +180,21 @@ reader_or ← extend_function(λ{λ(start,s,line){
 		}.bind(this)); return this}
 reader_macros ← new reader_or()
 groups ← {}
-anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){ss.map(λ(s){
-	if      (typeof s = 'string' && f = undefined) delete anyfix_macros[s]
-	else if (typeof s = 'string' && f ≠ undefined) anyfix_macros[s] ←! {'_$_':f,'$_':f,'_$':f,'$':f}
-	else if (typeof s ≠ 'string' && f = undefined) delete anyfix_macros[s.v][s.space()]
-	else if (typeof s ≠ 'string' && f ≠ undefined) {if (¬own(anyfix_macros,s.v)) anyfix_macros[s.v] ←! {}; anyfix_macros[s.v][s.space()] ←! f}
-	})}
-lex ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← reader_macros('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
+anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){(ss instanceof Array? ss : [ss]).map(λ(s){symbol_set_decode(s).map(λ(s){
+	v ← s.v; s ← s.space()
+	if (f=undefined) {if (own(anyfix_macros,v)) {delete anyfix_macros[v][s]; if (Object.keys(anyfix_macros[v]).length=0) delete anyfix_macros[v]}}
+	else {if (¬own(anyfix_macros,v)) anyfix_macros[v] ←! {}; anyfix_macros[v][s] ←! f}
+	}) }) }
+lex ← λ(s){
+	r ← [SP]
+	t←null; if (t ←! s.match(~/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
+	r ← r.concat(lex_(s)); r.push(SP)
+	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {
+		if (r[i-1] ≠ SP) rᵢ.space_before ←! false
+		if (r[i+1] ≠ SP) rᵢ.space_after ←! false } i++}
+	r ← r.filter(λ{v ≠ SP})
+	return r}
+	lex_ ← λ(s){r ← []; line ← 1; while (s ≠ '') {form ← reader_macros('',s,line); r.push(form₀); s ←! form₁; line ←! form₂} return r}
 group ← λ(g,l){
 	if (l = undefined) {r ← group(S('{'),g.concat([S('}')])); if (r₁.length > 0) err(); return r₀[1:]}
 	else {
@@ -177,21 +206,17 @@ group ← λ(g,l){
 			if (l₀ isa Symbol && l₀.v = e) return [r,l[1:]]
 			r.push(l₀); l ←! l[1:] }
 	} }
-anyfix_macro_eval ← λ(forms){r ← []; while (forms.length > 0) {t ← anyfix_macro_eval_1(r,forms); r ←! t₀; forms ←! t₁} return r}
-anyfix_macro_eval_n ← λ(n,forms){r ← []; while (forms.length > 0 && r.length < n) {t ← anyfix_macro_eval_1(r,forms); r ←! t₀; forms ←! t₁} return [r,forms]}
-anyfix_macro_eval_1 ← λ(r,forms){
-	l ← r.length
-	while (forms.length > 0 && r.length < l+1) {
-		v ← forms₀; forms ←! forms[1:]
-		//[r[:-1] forms] ← 
-		if (v isa Array) {
-			t ← anyfix_macros[v₀.v][v₀.space()](r₋₁,v₀,[anyfix_macro_eval(v[1:])].concat(forms))
-			r ←! r[:-1].concat(t₀); forms ←! t₁ }
-		else if (v isa Symbol && own(anyfix_macros,v.v)) {
-			t ← anyfix_macros[v.v][v.space()](r₋₁,v,forms)
-			r ←! r[:-1].concat(t₀); forms ←! t₁ }
-		else r.push(v)
-	} return [r,forms]}
+anyfix_macro_eval ← λ(tokens){r ← []; while (tokens.length > 0) {t ← anyfix_macro_eval_1(r,tokens); r ←! t₀; tokens ←! t₁} return r}
+anyfix_macro_eval_n ← λ(n,tokens){r ← []; while (tokens.length > 0 && r.length < n) {t ← anyfix_macro_eval_1(r,tokens); r ←! t₀; tokens ←! t₁} return [r,tokens]}
+anyfix_macro_eval_form ← λ(forms,tokens,dont){while (¬(forms.length>1 || tokens.length=0 || (tokens₀.v = dont && forms.length>0))) {t ← anyfix_macro_eval_1(forms,tokens); forms ←! t₀; tokens ←! t₁} return [forms₀,forms[1:],tokens]}
+anyfix_macro_eval_1 ← λ(forms,tokens){ // forms should be all prior forms
+	l ← forms.length
+	while (tokens.length > 0 && forms.length < l+1) {
+		v ← tokens₀; tokens ←! tokens[1:]
+		if (v isa Array) {t ← (anyfix_macros[v₀.v][v₀.space()]||err(v₀,v₀.space()))(forms,v₀,[anyfix_macro_eval(v[1:])].concat(tokens)); forms ←! t₀; tokens ←! t₁ }
+		else if (v isa Symbol && own(anyfix_macros,v.v)) {t ← anyfix_macros[v.v][v.space()](forms,v,tokens);       forms ←! t₀; tokens ←! t₁ }
+		else forms.push(v)
+	} return [forms,tokens]}
 
 reader_macros.set([''], λ(_,s,l){
 	is ← js_valid_symbol.is_part(s₀)
@@ -207,120 +232,129 @@ reader_macros.set(['~/'], regex_reader)
 
 ;['()','[]','{}','‹›'].map(λ{groups[v₀] ←! v₁})
 
-// token macros
-
 ;(λ(){
-	vector ← λ(v,sym,rest){return [(v=undefined?[]:[v]).concat([(has_sym(rest₀,':')? [S('__sliceλ__')].concat(split_slice(rest₀)) :
-		[sym.with_v('__array__')].concat(rest₀))]),rest[1:]]}
-	block ← λ(v,sym,rest){return [(v=undefined?[]:[v]).concat([[S('__do__')].concat(rest₀)]),rest[1:]]}
-anyfix_macros_set(['['], vector)
-anyfix_macros_set([S('['),S('[ ')], λ(v,sym,rest){return v=undefined? vector(v,sym,rest) : [
-	(has_sym(rest₀,':')?
-		[[S('__slice__'),v].concat(split_slice(rest₀))] :
-		[[S('__sub__'),v].concat(rest₀)]
-		),rest[1:]]})
-anyfix_macros_set(['('],block)
-anyfix_macros_set([S('('),S('( ')], λ(v,sym,rest){return v=undefined? block(v,sym,rest) : [[[v].concat(rest₀)],rest[1:]]})
+	vector ← λ(forms,sym,tokens){return [forms.concat([(has_sym(tokens₀,':')? [S('__sliceλ__')].concat(split_slice(tokens₀)) :
+		[sym.with_v('__array__')].concat(tokens₀))]),tokens[1:]]}
+	block ← λ(forms,sym,tokens){return [forms.concat([[S('__do__')].concat(tokens₀)]),tokens[1:]]}
+anyfix_macros_set('[', vector)
+anyfix_macros_set('−[', λ(forms,sym,tokens){return forms.length=0? vector([],sym,tokens) : [
+	forms[:-1].concat([
+		(has_sym(tokens₀,':')?
+			[[S('__slice__'),forms₋₁].concat(split_slice(tokens₀))] :
+			[[S('__sub__'),forms₋₁].concat(tokens₀)]
+			)]),tokens[1:]]})
+anyfix_macros_set('(',block)
+anyfix_macros_set('−(', λ(forms,sym,tokens){return forms.length=0? block([],sym,tokens) : [forms[:-1].concat([[forms₋₁].concat(tokens₀)]),tokens[1:]]})
 })()
-anyfix_macros_set(['{'], λ(v,sym,rest){
-	return [(v=undefined?[]:[v]).concat([(has_sym(rest₀,':')?
-		Object.mapv(windows(2,split_symbol(rest₀,':')),λ{[v₀₋₁.v,v₁₀]}) :
-		[S('__do__')].concat(rest₀))]),rest[1:]] })
-anyfix_macros_set(['‹'], λ(v,sym,rest){err('‹› not implemented')})
-anyfix_macros_set(['.'], λ(v,sym,rest){return [[[sym,v||(pr(v,rest), err('bad .')),rest₀]],rest[1:]]})
-anyfix_macros_set([';',','], λ(v,sym,rest){t ← anyfix_macro_eval_1([],rest); return [[v].concat(t₀),t₁]})
+anyfix_macros_set('{', λ(forms,sym,tokens){
+	return [forms.concat([(has_sym(tokens₀,':')?
+		Object.mapv(windows(2,split_symbol(tokens₀,':')),λ{[v₀₋₁.v,v₁₀]}) :
+		[S('__do__')].concat(tokens₀))]),
+		tokens[1:]] })
+anyfix_macros_set('‹', λ(forms,sym,tokens){err('‹› not implemented')})
+anyfix_macros_set('.', λ(forms,sym,tokens){return [forms[:-1].concat([[sym,forms₋₁||err('bad .',forms₋₁,tokens),tokens₀]]),tokens[1:]]})
+anyfix_macros_set([';',','], λ(forms,sym,tokens){t ← anyfix_macro_eval_1([],tokens); return [forms.concat(t₀),t₁]})
 anyfix_macros_set(unicode.subscripts.concat(unicode.subscripts.map(λ{'₋'+v})),
-	λ(v,sym,rest){return [[[S('__sub__'),v,sym.with_v(unicode.midscript(sym.v))]],rest]})
-anyfix_macros_set(['?'], λ(v,sym,rest){
-	t ← anyfix_macro_eval_n(2,rest); ac ← t₀; rest ← t₁
-	if (¬(ac.length = 2 && ac₁ isa Symbol && ac₁.v = ':')) {pr(ac); err('bad ?:')}
-	// may disrespect precedence
-	t ← anyfix_macro_eval_n(2,rest); b ← t₀₀; rest ← t₀[1:].concat(t₁)
-	return [[[sym.with_v('__if__'),v,ac₀,b]],rest]})
-anyfix_macros_set(['λ'], λ(v,sym,rest){
-	if (rest₀ isa Array && rest₀₀.v = '(') {
-		p ← rest₀[1:].filter(λ{¬(v isa Symbol && v.v = ',')}); rest ← rest[1:]
+	λ(forms,sym,tokens){return [forms[:-1].concat([[S('__sub__'),forms₋₁,sym.with_v(unicode.midscript(sym.v))]]),tokens]})
+anyfix_macros_set('λ', λ(forms,sym,tokens){
+	if (tokens₀ isa Array && tokens₀₀.v = '(') {
+		p ← tokens₀[1:].filter(λ{¬(v isa Symbol && v.v = ',')}); tokens ← tokens[1:]
 		// may disrespect precedence
-		pr(rest)
-		t ← anyfix_macro_eval_1([],rest); b ← t₀₀; rest ← t₁; if (t₀.length ≠ 1) err('bad λ')
-		return [[[sym,p,b]],rest] }
-	else if (rest₀ isa Array && rest₀₀.v = '{') {
+		t ← anyfix_macro_eval_1([],tokens); b ← t₀₀; tokens ← t₁; if (t₀.length ≠ 1) err('bad λ')
+		return [forms.concat([[sym,p,b]]),tokens] }
+	else if (tokens₀ isa Array && tokens₀₀.v = '{') {
 		p ← [S('v'),S('b'),S('c')]
 		// may disrespect precedence
-		t ← anyfix_macro_eval_1([],rest); b ← t₀₀; rest ← t₁; if (t₀.length ≠ 1) err('bad λ')
-		return [[[sym,p,b]],rest] }
-	else return [[v,sym],rest] })
-/*anyfix_macros_set(['if'], λ(v,sym,rest){
-	t ← anyfix_macro_eval_expr(rest); q ← t₀; rest ← t₁
-	t ← anyfix_macro_eval_expr(rest); q ← t₀; rest ← t₁
-	if expr [:] expr [else] expr
-})*/
-anyfix_macros_gen ← λ(v){
-	parse ← λ{v.match(~/(\[.*?\])|[^[\]]+/g).map(λ{v₀='['? [parse(v[1:-1])] : v.trim().split(' ')}).m_concat()}
-	[ '…', [ ':' ], '…', [ 'else', '…' ] ]
-	t ← parse(v); n ← t₀; v ← t[1:]
-	anyfix_macros_set([n],λ(form,sym,rest){
-		r ← []
-		v.forEach(λ(v){
-			if (v='…') {t ← anyfix_macro_eval_expr(rest); return [(form=undefined?[]:[form]).concat([t₀]), rest]}
-			else if (v instanceof Array) {
-				
+		t ← anyfix_macro_eval_1([],tokens); b ← t₀₀; tokens ← t₁; if (t₀.length ≠ 1) err('bad λ')
+		return [forms.concat([[sym,p,b]]),tokens] }
+	else return [forms.concat([sym]),tokens] })
+anyfix_macros_gen ← λ(v,n){
+	// this is horrifying and needs a good refactoring
+	parse ← λ{v.match(~/(\[.*?\])|[^[\]]+/g).map(λ{v₀='['? [parse(v[1:-1])] : v.trim().split(' ')}).m_concat().filter(λ{v ≠ ''})}
+	t ← parse(v); n ← n||t₀; vs ← t[1:]
+	anyfix_macros_set(n,λ(forms,sym,tokens){
+		buf ← []
+		r ← ['__'+n+'__']
+		vs.forEach(λ(v,i){
+			if (v='…') {
+				dont ← vs[i+1] isa Array && vs[i+1]₀ ≠ '…'? vs[i+1]₀ : undefined
+				t ← anyfix_macro_eval_form(buf,tokens,dont); r.push(t₀); buf ←! t₁; tokens ←! t₂}
+			else if (v isa Array) {
+				tokens_ ← tokens
+				buf_ ← buf
+				r_ ← []
+				vs_ ← v
+				if (vs_.every(λ(v){
+						if (v='…') {
+							dont ← vs_[i+1] isa Array && vs_[i+1]₀ ≠ '…'? vs_[i+1]₀ : undefined
+							t ← anyfix_macro_eval_form(buf_,tokens_,dont); r_.push(t₀); buf_ ←! t₁; tokens_ ←! t₂}
+						else {
+							if (buf_.length=0 && tokens_₀ isa Symbol && tokens_₀.v = v)
+								tokens_ ←! tokens_[1:]
+							else return false
+						}
+						return true
+					})) {
+					tokens ←! tokens_
+					r ←! r.concat(r_)
+					buf ←! buf_
+				}
 			}
-			else
+			else err('|'+v+'|')
 		})
-	})
-}
+		return [forms.concat([r],buf),tokens]
+	}) }
+//anyfix_macros_gen('… ? … [:] …','__if__')
 anyfix_macros_gen('if … [:] … [else …]')
-//anyfix_macros_set(['while'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['return'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['throw'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['try'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['new'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['¬'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['typeof'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['*'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['/'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['+'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['-'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['isa'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['in'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['¬in'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['='], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['≠'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['<'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['>'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['≤'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['≥'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['&','&&'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['|','||'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['←'], λ(v,sym,rest){err('not yet defined')})
-//anyfix_macros_set(['←!'], λ(v,sym,rest){err('not yet defined')})
-
+anyfix_macros_gen('while … [:] …')
+anyfix_macros_gen('return […]') // !!
+anyfix_macros_gen('throw …') // !! [ [ '__throw__', `v ] ]
+anyfix_macros_gen('try … [catch …] [finally …]') // !!
+anyfix_macros_gen('new …')
+anyfix_macros_gen('typeof …')
+//anyfix_macros_gen('… isa …')
+//anyfix_macros_gen('… in …')
+//anyfix_macros_gen('… ¬in …')
+//anyfix_macros_gen('¬…')
+//anyfix_macros_gen('… * …')
+//anyfix_macros_gen('*…')
+//anyfix_macros_gen('…*')
+//anyfix_macros_gen('… / …')
+//anyfix_macros_gen('… % …') //-
+//anyfix_macros_gen('… + …')
+//anyfix_macros_gen('… - …')
+//anyfix_macros_gen('… = …')
+//anyfix_macros_gen('… ≠ …')
+//anyfix_macros_gen('… < …')
+//anyfix_macros_gen('… > …')
+//anyfix_macros_gen('… ≤ …')
+//anyfix_macros_gen('… ≥ …')
+//anyfix_macros_gen('… & …'); anyfix_macros_gen('… && …') //-
+//anyfix_macros_gen('… | …'); anyfix_macros_gen('… || …') //-
+//anyfix_macros_gen('… ← …')
+//anyfix_macros_gen('… ←! …')
 
 // __do__
 
 read ← λ(s){
-	r ← [SP];
-	t←null; if (t ←! s.match(~/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
-	r ← r.concat(lex(s)); r.push(SP)
-	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {
-		if (r[i-1] ≠ SP) rᵢ.space_before ←! false
-		if (r[i+1] ≠ SP) rᵢ.space_after ←! false } i++}
-	r ← r.filter(λ{v ≠ SP})
-	r ← group(r)
+	// lex: characters are lexed into tokens with λ(rest_characters) → [token,rest_characters]
+	// group: tokens are grouped into tokens so that this is higher-priority than any other anyfix macro
+	// anyfix: tokens naming anyfix macros are expanded into forms with λ(previous_forms,symbol,rest_tokens) → [previous_forms,rest_tokens], but they are not allowed to eat more than the last form of previous_forms . these functions may be called multiple times, so they should be pure.
+	// ?: forms naming macros are expanded into forms
+	// ?: forms are translated into javascript
+	r ← group(lex(s))
 	pr(repr_js(anyfix_macro_eval(r)))
+	//repr_js(anyfix_macro_eval(r)).forEach(λ{pr(b,v)})
 	return r}
 
 compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_lexed_file(read(fs.readFileSync(_in).toString())))}
 
 compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
 
-print('--- ran as:',ran_as,'---')
-
 // shuffle anyfix macros so that they actually have access to the entire previous part and just don't use it ?
 
 // when we construct an object in the anyfix macros with Object.mapv, it throws away much information
-// line [[S('__slice__'),v].concat(split_slice(rest₀))] groups up the slice arguments way too much
+// line [[S('__slice__'),v].concat(split_slice(tokens₀))] groups up the slice arguments way too much
 
 //# we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
 //i want
@@ -330,6 +364,7 @@ print('--- ran as:',ran_as,'---')
 // oh dear. we may want standard macros to get their arguments with partial but incomplete anyfix parsing.
 
 //{expr,} is a void block, and {expr} is not a void block
+// ,, ought to mean ,undefined, or somesuch
 
 // output js "return(v)" not "return v"
 

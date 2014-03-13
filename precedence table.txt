@@ -5,7 +5,7 @@ add						+	-
 bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
 comparison, asymmetric	isa	in	¬in
 comparison, pythonic	=	≠	<	>	≤	≥
-logical					&	|	&&	||
+logical					&	|
 conditional				…?…:…
 assignment				←	←!	+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
 statement				delete …	yield …
