@@ -86,8 +86,10 @@ AppsKey & RAlt::; ~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else
 ###if WinActive_folder; ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
-AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
-~LButton & AppsKey::; t := copy(); chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t); return
+AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; // continue on next line
+~LButton & AppsKey::; t := copy();
+	if (RegExMatch(t,"⏎([^\s⏎]+)",tt)) {chrome("C:/Users/zii/ali/misc/linked/" . tt1)}
+	else {chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t)} return
 $^v::; if (clipboard_contains_files() and !WinActive_folder) {paste(slash_back(Clipboard))} else {paste()} return
 ~LWin & f::print("try win-q")
 
