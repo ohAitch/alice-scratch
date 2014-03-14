@@ -53,16 +53,6 @@ kill_sublime_nag:; WinWaitActive This is an unregistered copy ahk_class #32770; 
 ^F2::; loop 100 {Click; Sleep 1} return
 ^F3::; autoclick := autoclick = 1? "off" : 1; SetTimer Click, %autoclick%; return; Click:; Click; return
 
-// run apps
-AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
-AppsKey & -::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONbash"; return
-AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
-#define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
-chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
-feeling_lucky(v) {chrome("http://www.google.com/search?sourceid=navclient&gfns=1&q=" . v)}
-AppsKey & /::; chrome_newtab(); return
-AppsKey & \::; chrome(copy()); return
-
 // sound and music controls
 AppsKey & Right::; if GetKeyState("shift") {MouseMove  1,  0, 0, R} else {Send ‹Volume_Up›  } return
 AppsKey & Left::;  if GetKeyState("shift") {MouseMove -1,  0, 0, R} else {Send ‹Volume_Down›} return
@@ -79,10 +69,20 @@ AppsKey &  RCtrl::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›
 ~RCtrl & AppsKey::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
 AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
+// run apps
+AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
+AppsKey & -::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONbash"; return
+AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
+#define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
+chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
+feeling_lucky(v) {chrome("http://www.google.com/search?sourceid=navclient&gfns=1&q=" . v)}
+AppsKey & /::; chrome_newtab(); return
+AppsKey & \::; chrome(copy()); return
+
 // misc
-AppsKey & RAlt::;  if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
-~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
+AppsKey & RAlt::; ~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
 ###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc); ^w::WinClose A; Esc::WinClose A; ###if
+###if WinActive(cmd); ^a::Send !‹Space›es; ###if
 ###if WinActive_folder; ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
@@ -205,7 +205,9 @@ avgi(x,y) {return floor((x+y)/2)}
 	// misc
 	chord(B,=,≈,)			// `= ≈ ↔
 	chord(B,\,≉,)			// `\ ≉ ↔
-	chord(C,S,∴)			// ,; ∴ ↔
+	chord(C,S,∴,)			// ,; ∴ ↔
+	chord(-,=,∓)			// -= ∓ ↔
+	chord(=,-,±)			// =- ± ↔
 	m_chord(8,∞)			// ≡8 ∞
 	m_chord(v,✓)			// ≡v ✓
 	m_chord_shift(Q,‘,“)	// ≡' ‘ ⇧“
