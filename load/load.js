@@ -13,9 +13,12 @@ var __sliceλ__ = function λ(a,b){return b===undefined? function λ(v,b,c){retu
 
 var print = console.log.bind(console)
 var memoize_o = function λ(o,f){return function λ(v){var r = own(o,v); return r === undefined? (o[v] = f(v)) : r}}
-var merge_o = function λ(a,b){for (k in b) a[k] = b[k]; return a}
+
+var merge_o = function λ(a,b){var r = {}; Object.keys(a).forEach(function λ(k){r[k] = a[k]}); Object.keys(b).forEach(function λ(k){r[k] = b[k]}); return r}
 Object.map = function λ(v,f){var f = f || function λ(v,b,c){return [v,b]}; var r = {}; Object.keys(v).forEach(function λ(k){var t = f.call(v, k, v[k]); if (t) r[t[0]] = t[1]}); return r}
 Object.mapv = function λ(v,f){var f = f || function λ(v,b,c){return [v,true]}; var r = {}; v.forEach(function λ(v){var t = f(v); if (t) r[t[0]] = t[1]}); return r}
+var dict_by = function λ(v,f){return Object.mapv(v,function λ(v,b,c){return [f(v),v]})}
+var frequencies = function λ(v){var r = {}; v.forEach(function λ(v,b,c){return r[v] = v in r? r[v]+1 : 1}); return r}
 var now = function λ(v,b,c){return Date.now() / 1000}
 var run = {
 in: function λ(s,f){return {id:setTimeout( f,s*1000), cancel:function λ(v,b,c){return cancelTimeout( this.id)}}},
@@ -29,19 +32,23 @@ return {cancel:function λ(){cancel = true; r.cancel()}}}}
 
 var ord = function λ(v,b,c){return v.charCodeAt(0)}
 var chr = function λ(v,b,c){return String.fromCharCode(v)}
-var seq = function λ(v,b,c){return typeof v === 'string'? v.split('') : v}
+var seq = function λ(v,b,c){return typeof v === 'string'? v.split('') : v instanceof Array? v : Object.keys(v).map(function λ(k){return [k,v[k]]})}
 var extend_function = function λ(f){var r = function λ(){var r = f(); r.__proto__ = λ.prototype; return r}; r.prototype.__proto__ = Function.prototype; return r}
 var own = function λ(o,m){if (Object.prototype.hasOwnProperty.call(o,m)) return o[m]}
 var delset = function λ(o,m,v){if (v === undefined) delete o[m]; else o[m] = v}
 String.prototype.repeat = function λ(v,b,c){return new Array(v+1).join(this)}
 
 var windows = function λ(n,l){var r = []; while (l.length >= n){r.push(l.slice(0,n)); l = l.slice(1)} return r}
-var err = function λ(v){throw Error(v)}
-
-
-
+var err = function λ(){print.apply(console,['#error#:'].concat(Array.prototype.slice.apply(arguments))); throw Error()}
+Array.prototype.m_concat = function λ(v,b,c){return Array.prototype.concat.apply([],this)}
 var pad_left = function λ(v,s,l){while (v.length < l) v = s + v; return v}
 var hex = function λ(v,l){return pad_left(v.toString(16),'0',l)}
+Date.prototype.hours === function λ(v){this.setHours(this.getHours()+v); return this}
+Date.prototype.yyyy_mm_dd === function λ(){var m = (this.getMonth()+1)+''; var d = this.getDate()+''; return this.getFullYear()+'-'+(m[1]?m:'0'+m)+'-'+(d[1]?d:'0'+d)}
+
+
+
+
 var js_valid_symbol = new (function λ(){
 var _short = {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '\u2026':'r', '\u2190':'w', '\u2192':'e', '\u00ac':'n', '\u2200':'A', '\u2260':'N', '\u01c2':'\u01c2', '<':'lt', '\u2264':'le', '>':'gt', '\u2265':'ge'}
 var encode_short = Object.map(_short,function λ(v,b,c){return [v,'\u01c2'+b]})
@@ -65,43 +72,61 @@ else if (v[0]==='l' || v[0]==='g'){r += decode_short[v.slice(0,2)]; v = v.slice(
 else {r += decode_short[v[0]]; v = v.slice(1)}}
 return r+v})})
 
-
-var super_sub_table = '\u20800\u2070 \u20811\u00b9 \u20822\u00b2 \u20833\u00b3 \u20844\u2074 \u20855\u2075 \u20866\u2076 \u20877\u2077 \u20888\u2078 \u20899\u2079 \u208a+\u207a \u208b-\u207b \u208c=\u207c \u208d(\u207d \u208e)\u207e ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' ')
-var unicode = {
-subscripts: super_sub_table.map(function λ(v,b,c){return v[0]}).filter(function λ(v,b,c){return v!=='-'}),
-midscripts: super_sub_table.map(function λ(v,b,c){return v[1]}).filter(function λ(v,b,c){return v!=='-'}),
-superscripts: super_sub_table.map(function λ(v,b,c){return v[2]}).filter(function λ(v,b,c){return v!=='-'}),
-subscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(function λ(v,b,c){return [[v[1],v[0]],[v[2],v[0]]]})),function λ(v,b,c){return v})),
-midscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(function λ(v,b,c){return [[v[0],v[1]],[v[2],v[1]]]})),function λ(v,b,c){return v})),
-superscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv([].concat.apply([],super_sub_table.map(function λ(v,b,c){return [[v[0],v[2]],[v[1],v[2]]]})),function λ(v,b,c){return v}))}
-
+var unicode = function λ(table){return {
+subscripts: table.map(function λ(v,b,c){return v[0]}).filter(function λ(v,b,c){return v!=='-'}),
+midscripts: table.map(function λ(v,b,c){return v[1]}),
+superscripts: table.map(function λ(v,b,c){return v[2]}).filter(function λ(v,b,c){return v!=='-'}),
+subscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv(table.map(function λ(v,b,c){return [[v[1],v[0]],[v[2],v[0]]]}).m_concat(),function λ(v,b,c){return v})),
+midscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv(table.map(function λ(v,b,c){return [[v[0],v[1]],[v[2],v[1]]]}).m_concat(),function λ(v,b,c){return v})),
+superscript: function λ(f){return function λ(v,b,c){return seq(v).map(function λ(v,b,c){return f[v]}).join('')}}(Object.mapv(table.map(function λ(v,b,c){return [[v[0],v[2]],[v[1],v[2]]]}).m_concat(),function λ(v,b,c){return v}))}}('\u20800\u2070 \u20811\u00b9 \u20822\u00b2 \u20833\u00b3 \u20844\u2074 \u20855\u2075 \u20866\u2076 \u20877\u2077 \u20888\u2078 \u20899\u2079 \u208a+\u207a \u208b-\u207b \u208c=\u207c \u208d(\u207d \u208e)\u207e ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'
+.split(' '))
 
 
+
+var running_as = process.argv[1].match(/[^\\]*\\[^\\]*$/)[0]
+print('--- running as:',running_as,'---')
 
 var Symbol = function λ(v,line){this.v = v; if (line) this.line = line}
-Symbol.prototype.space = function λ(v,b,c){return (this.space_before?'_':'')+'$'+(this.space_after?'_':'')}
+Symbol.prototype.space = function λ(v){if (v===undefined) return (this.space_before?'_':'')+'$'+(this.space_after?'_':''); else {if (v[0]!=='_') this.space_before = false; if (v.slice(-1)[0]!=='_') this.space_after = false; return this}}
 Symbol.prototype.space_before = true
 Symbol.prototype.space_after = true
 Symbol.prototype.inspect = function λ(v,b,c){return '`'+this.v}
 Symbol.prototype.with_v = function λ(v){var r = new Symbol(v,this.line); if (!this.space_before) r.space_before === false; if (!this.space_after) r.space_after === false; return r}
 var S = function λ(v){var r = new Symbol(v.replace(/^ /,'').replace(/ $/,'')); if (v[0]!==' ') r.space_before = false; if (v.slice(-1)[0]!==' ') r.space_after = false; return r}
+var symbol_set_decode = function λ(v){
+var n = v; var s = ''
+var t = v.match(/^(([−↔±∓])\2*)(.*)$/); s += t && t[1].length%2!==0? t[2] : '?'; var v = t? t[1].slice(0,Math.floor(t[1].length/2))+t[3] : v
+var t = v.match(/^(.*?)(([−↔±∓])\3*)$/); s += t && t[2].length%2!==0? t[3] : '?'; var v = t? t[2].slice(0,Math.floor(t[2].length/2))+t[1] : v
+var n = v===''? n : v; var s = v===''? '??' : s
+return (symbol_set_table[s]||err('bad symbol set')).map(function λ(v,b,c){return new Symbol(n).space(v)})}
+var symbol_set_table = {'\u2212\u2212'
+:['$'], '\u2212\u2194'
+:['$_'], '\u2194\u2212'
+:['_$'], '\u2194\u2194'
+:['_$_'], '?\u2212'
+:['$','_$'], '?\u2194'
+:['$_','_$_'], '\u2212?'
+:['$','$_'], '\u2194?'
+:['_$','_$_'], '\u00b1\u00b1'
+:['$','_$_'], '\u00b1\u2213'
+:['$_','_$'], '??'
+:['$','$_','_$','_$_']}
+
+var symbol_set_decode_ = function λ(v,b,c){return symbol_set_decode(v)[0].v}
 var SP = {}
-var Call = function λ(){this.push.apply(this,arguments)}
-Call.prototype = new Array()
-var Ca = function λ(){var F = function λ(v,b,c){return Call.apply(this,v)}; F.prototype = Call.prototype; return function λ(v,b,c){return new F(v)}}()
 
 
-var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / % || && ? += ++ if else for return in new typeof delete try catch while this instanceof switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
+var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / % || && ? += ++ if else for return in new typeof delete try catch while this switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
 var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
 var has_sym = function λ(v,s){return v.some(function λ(v,b,c){return v instanceof Symbol && v.v===s})}
 var split_slice = function λ(l){var r = split_symbol(l,':'); var r = [(r[0].length === 0? [S('0')] : r[0])].concat(r.slice(1)); return r[1].length === 0? r.slice(0,1) : r}
-var ran_as = process.argv[1].match(/[^\\]*\\[^\\]*$/)[0]
-var pr = function λ(){if (ran_as === 'bin\\load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments[0]}
-Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; for (var i=0;i<this.length-1;i++) r.push(f(this[i],this[i+1])); r.push(f(this.slice(-1)[0],null)); return r}
+var pr = function λ(){if (running_as === 'bin\\load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments[0]}
+Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; var i=0; while (i<this.length-1){r.push(f(this[i],this[i+1])); i++} r.push(f(this.slice(-1)[0],null)); return r}
 
 var printable = function λ(v,b,c){return (0x20<=ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
 
-var repr_js = function λ(v,line,next){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}
+var repr_js = function λ(v){return v}
+var repr_js_lexed = function λ(v,line,next){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js_lexed(v,line,b)}).join('')}
 return v instanceof Symbol? (v.line && line? '\n'.repeat(function λ(v){line[0] += v; return v}(Math.max(0, v.line-line[0]))) : '') + (
 v.space_before?' ':'') + (
 next instanceof Symbol && next.v==='\u2190'? 'var ' : '') + ((
@@ -119,26 +144,24 @@ typeof v === 'string'? (v.match(/'/g)||[]).length <= (v.match(/"/g)||[]).length?
 +seq(v).map(function λ(v,b,c){return {'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}[v] || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"' :
 v instanceof RegExp? v+'' : '<what:'
 +v+'>'}
-var repr_js_file = function λ(forms){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js(v,line,b)}).join('')}
+var repr_js_lexed_file = function λ(forms){var mrj = function λ(v,b,c){return v.map2(function λ(v,b,c){return repr_js_lexed(v,line,b)}).join('')}
 var line = [1]
 return '#!/usr/bin/env node\n'+mrj(forms).replace(/^ /gm,'').replace(/^(.*)\n/,'//$1')}
 
 
 var string_reader = function λ(start,s,line){
 var r = ''
-for (;;){
+while (true){
 var c = s[0]; s = slice_eof(s,1)
 if (c === start) return [r,s,line]
 if (c === '\\'){
 var c = s[0]; s = slice_eof(s,1)
-switch (c){
-case "'": case '"': case '\\': r += c; break
-case 'n': r += '\n'; break
-case 't': r += '\t'; break
-case 'x': r += chr(parseInt(s.slice(0,2),16)); s = slice_eof(s,2); break
-case 'u': r += chr(parseInt(s.slice(0,4),16)); s = slice_eof(s,4); break
-_default: r += '\\'+c; break }}
-
+if (c==="'"||c==='"'||c==='\\') r += c
+else if (c==='n') r += '\n'
+else if (c==='t') r += '\t'
+else if (c==='x'){r += chr(parseInt(s.slice(0,2),16)); s = slice_eof(s,2)}
+else if (c==='u'){r += chr(parseInt(s.slice(0,4),16)); s = slice_eof(s,4)}
+else r += '\\'+c }
 else if (c === '\n'){line++; if (r !== '') r += '\n'}
 else r += c }}
 
@@ -158,109 +181,175 @@ else delset(this,c,r)}
 .bind(this)); return this}
 var reader_macros = new reader_or()
 var groups = {}
-var anyfix_macros = {}; var anyfix_macros_set = function λ(ss,f){ss.map(function λ(s){
-if (typeof s === 'string' && f === undefined) delete anyfix_macros[s]
-else if (typeof s === 'string' && f !== undefined) anyfix_macros[s] = {'_$_':f,'$_':f,'_$':f,'$':f}
-else if (typeof s !== 'string' && f === undefined) delete anyfix_macros[s.v][s.space()]
-else if (typeof s !== 'string' && f !== undefined){if (!own(anyfix_macros,s.v)) anyfix_macros[s.v] = {}; anyfix_macros[s.v][s.space()] = f}})}
+var anyfix_macros = {}; var anyfix_macros_set = function λ(ss,f){(ss instanceof Array? ss : [ss]).map(function λ(s){symbol_set_decode(s).map(function λ(s){
+var v = s.v; var s = s.space()
+if (f===undefined){if (own(anyfix_macros,v)){delete anyfix_macros[v][s]; if (Object.keys(anyfix_macros[v]).length===0) delete anyfix_macros[v]}}
+else {if (!own(anyfix_macros,v)) anyfix_macros[v] = {}; anyfix_macros[v][s] = f}})})}
 
-var lex = function λ(s){var r = []; var line = 1; while (s !== ''){var form = reader_macros('',s,line); r.push(form[0]); s = form[1]; line = form[2]} return r}
+var lex = function λ(s){
+var r = [SP]
+var t=null; if (t = s.match(/^#!.*/)){r.push(S('__literal__'),S('('),t[0],S(')')); s = s.slice(t[0].length)}
+var r = r.concat(lex_(s)); r.push(SP)
+var i=1; while (i<r.length-1){if (r[i] instanceof Symbol){
+if (r[i-1] !== SP) r[i].space_before = false
+if (r[i+1] !== SP) r[i].space_after = false } i++}
+var r = r.filter(function λ(v,b,c){return v !== SP})
+return r}
+var lex_ = function λ(s){var r = []; var line = 1; while (s !== ''){var form = reader_macros('',s,line); r.push(form[0]); s = form[1]; line = form[2]} return r}
 var group = function λ(g,l){
 if (l === undefined){var r = group(S('{'),g.concat([S('}')])); if (r[1].length > 0) err(); return r[0].slice(1)}
 else {
 var e = groups[g.v]
-var r = [g]; for (;;){
-if (l.length === 0) err('unfinished group'+repr_js(r))
+var r = [g]; while (true){
+if (l.length === 0) err('unfinished group'+repr_js_lexed(r))
 if (l[0] instanceof Symbol && l[0].v === e) return [r,l.slice(1)]
 while (l[0] instanceof Symbol && own(groups,l[0].v)){var t = group(l[0],l.slice(1)); r.push(t[0]); l = t[1]}
 if (l[0] instanceof Symbol && l[0].v === e) return [r,l.slice(1)]
 r.push(l[0]); l = l.slice(1)}}}
 
-var anyfix_macro_eval = function λ(forms){var r = []; while (forms.length > 0){var t = anyfix_macro_eval_1(r,forms); r = t[0]; forms = t[1]} return r}
-var anyfix_macro_eval_n = function λ(n,forms){var r = []; while (forms.length > 0 && r.length < n){var t = anyfix_macro_eval_1(r,forms); r = t[0]; forms = t[1]} return [r,forms]}
-var anyfix_macro_eval_1 = function λ(r,forms){
-var l = r.length
-while (forms.length > 0 && r.length < l+1){
-var v = forms[0]; forms = forms.slice(1)
+var anyfix_macro_eval = function λ(tokens){var r = []; while (tokens.length > 0){var t = anyfix_macro_eval_1(r,tokens); r = t[0]; tokens = t[1]} return r}
+var anyfix_macro_eval_n = function λ(n,tokens){var r = []; while (tokens.length > 0 && r.length < n){var t = anyfix_macro_eval_1(r,tokens); r = t[0]; tokens = t[1]} return [r,tokens]}
+var anyfix_macro_eval_form = function λ(buf,tokens,dont){while (!(buf.length>1 || tokens.length===0 || (buf.length>0 && dont && dont(tokens)))){var t = anyfix_macro_eval_1(buf,tokens); buf = t[0]; tokens = t[1]} return [buf[0],buf.slice(1),tokens]}
+var anyfix_macro_eval_1 = function λ(forms,tokens){
+var v = tokens[0]; tokens = tokens.slice(1)
+if (v instanceof Array){var t = ((anyfix_macros[v[0].v]||err(v[0]))[v[0].space()]||err(v[0],v[0].space()))(forms,v[0],[v.slice(1)].concat(tokens)); forms = t[0]; tokens = t[1]}
+else if (v instanceof Symbol && own(anyfix_macros,v.v) && anyfix_macros[v.v][v.space()]){var t = anyfix_macros[v.v][v.space()](forms,v,tokens); forms = t[0]; tokens = t[1]}
+else forms.push(v)
+return [forms,tokens]}
 
-if (v instanceof Array){
-var t = anyfix_macros[v[0].v][v[0].space()](r.slice(-1)[0],v[0],[anyfix_macro_eval(v.slice(1))].concat(forms))
-r = r.slice(0,-1).concat(t[0]); forms = t[1] }
-else if (v instanceof Symbol && own(anyfix_macros,v.v)){
-var t = anyfix_macros[v.v][v.space()](r.slice(-1)[0],v,forms)
-r = r.slice(0,-1).concat(t[0]); forms = t[1] }
-else r.push(v)}
-return [r,forms]}
+var anyfix_macro_eval_p1 = function λ(forms,tokens){var l = forms.length; while (tokens.length > 0 && forms.length < l+1){var t = anyfix_macro_eval_1(forms,tokens); forms = t[0]; tokens = t[1]} return [forms,tokens]}
 
 reader_macros.set([''], function λ(_,s,l){
 var is = js_valid_symbol.is_part(s[0])
 var r = ''; while (s !== '' && !reader_macros.get(s) && js_valid_symbol.is_part(s[0]) === is){r += s[0]; s = s.slice(1)}
 return [new Symbol(r,l),s,l]})
-reader_macros.set([].concat(seq('()[]{}\u2039\u203a.`~?:;,'),['~@'],unicode.subscripts,unicode.subscripts.map(function λ(v,b,c){return '\u208b'+v})), function λ(v,b,c){return [new Symbol(v,c),b,c]})
+reader_macros.set([].concat(seq('()[]{}\u2039\u203a.`~?:;,'),['~@','\u00acin'],unicode.subscripts,unicode.subscripts.map(function λ(v,b,c){return '\u208b'+v})), function λ(v,b,c){return [new Symbol(v,c),b,c]})
 reader_macros.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
 reader_macros.set('\n', function λ(v,b,c){return [SP,b,c+1]})
 reader_macros.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
-reader_macros.set(['/*'], function λ(_,s,l){var t = s.match(/^[^]*?\*\//)[0]; return [SP,s.slice(t.length),l+t.match(/\n/g).length]})
+reader_macros.set(['/*'], function λ(_,s,l){var t = s.match(/^[^]*?\*\//)[0]; return [SP,s.slice(t.length),l+(t.match(/\n/g)||[]).length]})
 reader_macros.set('\'"', string_reader)
 reader_macros.set(['~/'], regex_reader)
 
 ;['()','[]','{}','\u2039\u203a'].map(function λ(v,b,c){return groups[v[0]] = v[1]})
 
-
-
 ;(function λ(){
-var vector = function λ(v,sym,rest){return [(v===undefined?[]:[v]).concat([(has_sym(rest[0],':')? Ca([S('__sliceλ__')].concat(split_slice(rest[0]))) : rest[0])]),rest.slice(1)]}
-var block = function λ(v,sym,rest){return [(v===undefined?[]:[v]).concat([Ca([S('__do__')].concat(rest[0]))]),rest.slice(1)]}
-anyfix_macros_set(['['], vector)
-anyfix_macros_set([S('['),S('[ ')], function λ(v,sym,rest){return v===undefined? vector(v,sym,rest) : [(
-has_sym(rest[0],':')? [
-Ca([S('__slice__'),v].concat(split_slice(rest[0])))] : [
-Ca([S('__sub__'),v].concat(rest[0]))])
-,rest.slice(1)]})
-anyfix_macros_set(['('],block)
-anyfix_macros_set([S('('),S('( ')], function λ(v,sym,rest){return v===undefined? block(v,sym,rest) : [[Ca([v].concat(rest[0]))],rest.slice(1)]})})()
+var vector = function λ(forms,sym,tokens){tokens[0] = anyfix_macro_eval(tokens[0]); return [forms.concat([(has_sym(tokens[0],':')? [S('__sliceλ__')].concat(split_slice(tokens[0])) : [
+sym.with_v('__array__')].concat(tokens[0]))]),tokens.slice(1)]}
+var block = function λ(forms,sym,tokens){return [forms.concat([[S('__do__')].concat(anyfix_macro_eval(tokens[0]))]),tokens.slice(1)]}
+anyfix_macros_set('[', vector)
+anyfix_macros_set('\u2212[', function λ(forms,sym,tokens){return forms.length===0? vector([],sym,tokens) : (tokens[0] = anyfix_macro_eval(tokens[0])),[
+forms.slice(0,-1).concat([(
+has_sym(tokens[0],':')? [[
+S('__slice__'),forms.slice(-1)[0]].concat(split_slice(tokens[0]))] : [[
+S('__sub__'),forms.slice(-1)[0]].concat(tokens[0])])])
+,tokens.slice(1)]})
+anyfix_macros_set('(',block)
+anyfix_macros_set('\u2212(', function λ(forms,sym,tokens){return forms.length===0? block([],sym,tokens) : [forms.slice(0,-1).concat([[forms.slice(-1)[0]].concat(anyfix_macro_eval(tokens[0]))]),tokens.slice(1)]})})()
 
-anyfix_macros_set(['{'], function λ(v,sym,rest){
-return [(v===undefined?[]:[v]).concat([(has_sym(rest[0],':')?
-Object.mapv(windows(2,split_symbol(rest[0],':')),function λ(v,b,c){return [v[0].slice(-1)[0].v,v[1][0]]}) :
-Ca([S('__do__')].concat(rest[0])))]),rest.slice(1)]})
-anyfix_macros_set(['\u2039'], function λ(v,sym,rest){err('\u2039\u203a not implemented')})
-anyfix_macros_set(['.'], function λ(v,sym,rest){return [[Ca([sym,v||(pr(v,rest), err('bad .')),rest[0]])],rest.slice(1)]})
-anyfix_macros_set([';',','], function λ(v,sym,rest){var t = anyfix_macro_eval_n(1,rest); return [[v].concat(t[0]),t[1]]})
-anyfix_macros_set(['?'], function λ(v,sym,rest){
-var t = anyfix_macro_eval_n(3,rest)
-pr(t)
-if (t[0].length !== 3 || !(t[0][1] instanceof Symbol && t[0][1].v === ':')) err('bad ?:')
-return [Ca([sym.with_v('__if__'),v,t[0][0],t[0][2]]),t[1]]})
+anyfix_macros_set('{', function λ(forms,sym,tokens){
+var r=null
+var starts_like_dict = function λ(v,b,c){return (v[0] instanceof Symbol || typeof v[0] === 'string') && (v[1] instanceof Symbol && v[1].v===':')}
+if (starts_like_dict(tokens[0])){
+r = {}; var buf = []; var tokens_ = tokens[0]
+while (tokens_.length>0){pr(tokens_); if (!starts_like_dict(tokens_)) err(tokens_); var t = anyfix_macro_eval_form(buf,tokens_.slice(2),starts_like_dict); r[tokens_[0].v] = t[0]; buf = t[1]; var tokens_ = t[2]}
+r = [r].concat(buf)}
 
-
-
-
-
-
-
-
-
+else r = [[S('__do__')].concat(anyfix_macro_eval(tokens[0]))]
+return [forms.concat(r),tokens.slice(1)]})
+anyfix_macros_set('\u2039', function λ(forms,sym,tokens){err('\u2039\u203a not implemented')})
+anyfix_macros_set('.', function λ(forms,sym,tokens){return [forms.slice(0,-1).concat([[sym,forms.slice(-1)[0]||err('bad .',forms.slice(-1)[0],tokens),tokens[0]]]),tokens.slice(1)]})
+anyfix_macros_set([';',','], function λ(forms,sym,tokens){return [forms,tokens]})
 anyfix_macros_set(unicode.subscripts.concat(unicode.subscripts.map(function λ(v,b,c){return '\u208b'+v})),
-function λ(v,sym,rest){return [[Ca([S('__sub__'),v,sym.with_v(unicode.midscript(sym.v))])],rest]})
+function λ(forms,sym,tokens){return [forms.slice(0,-1).concat([[S('__sub__'),forms.slice(-1)[0],sym.with_v(unicode.midscript(sym.v))]]),tokens]})
+anyfix_macros_set('λ', function λ(forms,sym,tokens){
+if (tokens[0] instanceof Array && tokens[0][0].v === '('){
+var p = tokens[0].slice(1).filter(function λ(v,b,c){return !(v instanceof Symbol && v.v === ',')}); var tokens = tokens.slice(1)
+
+var t = anyfix_macro_eval_p1([],tokens); var b = t[0][0]; var tokens = t[1]; if (t[0].length !== 1) err('bad λ')
+return [forms.concat([[sym,p,b]]),tokens]}
+else if (tokens[0] instanceof Array && tokens[0][0].v === '{'){
+var p = [S('v'),S('b'),S('c')]
+
+var t = anyfix_macro_eval_p1([],tokens); var b = t[0][0]; var tokens = t[1]; if (t[0].length !== 1) err('bad λ')
+return [forms.concat([[sym,p,b]]),tokens]}
+else return [forms.concat([sym]),tokens]})
+var anyfix_macros_gen = function λ(v,to){
+
+var parse = function λ(v,b,c){return v.match(/(\[.*?\])|[^[\]]+/g).map(function λ(v,b,c){return v[0]==='['? [parse(v.slice(1,-1))] : v.trim().split(' ')}).m_concat().filter(function λ(v,b,c){return v !== ''})}
+var t = parse(v); var first = t[0]==='\u2026'; var t = first?t.slice(1):t; var n = t[0]; var vs = t.slice(1)
+anyfix_macros_set(n,function λ(forms,sym,tokens){
+var buf = []
+var r = [to||symbol_set_decode_(n)]; if (first) r.push(forms.slice(-1)[0]!==undefined?forms.slice(-1)[0]:err())
+vs.forEach(function λ(v,i){
+if (v==='\u2026'){
+var dont = vs[i+1] instanceof Array && vs[i+1][0] !== '\u2026'? vs[i+1][0] : undefined
+var t = anyfix_macro_eval_form(buf,tokens,function λ(v,b,c){return v[0] instanceof Symbol && v[0].v === dont}); r.push(t[0]); buf = t[1]; tokens = t[2]}
+else if (v instanceof Array){
+var tokens_ = tokens
+var buf_ = buf
+var r_ = []
+var vs_ = v
+if (vs_.every(function λ(v){
+if (v==='\u2026'){
+var dont = vs_[i+1] instanceof Array && vs_[i+1][0] !== '\u2026'? vs_[i+1][0] : undefined
+var t = anyfix_macro_eval_form(buf_,tokens_,function λ(v,b,c){return v[0] instanceof Symbol && v[0].v === dont}); r_.push(t[0]); buf_ = t[1]; tokens_ = t[2]}
+else {
+if (buf_.length===0 && tokens_[0] instanceof Symbol && tokens_[0].v === v)
+tokens_ = tokens_.slice(1)
+else return false }
+
+return true })){
+
+tokens = tokens_
+r = r.concat(r_)
+buf = buf_ }}
 
 
+else err('|'+v+'|')})
 
+return [(first?forms.slice(0,-1):forms).concat([r],buf),tokens]})}
+
+anyfix_macros_gen('if \u2026 [:] \u2026 [else \u2026]')
+anyfix_macros_gen('\u2026 ? \u2026 [:] \u2026','if')
+anyfix_macros_gen('while \u2026 [:] \u2026')
+anyfix_macros_gen('return [\u2026]')
+anyfix_macros_gen('throw \u2026')
+anyfix_macros_gen('try \u2026 [catch \u2026] [finally \u2026]')
+anyfix_macros_gen('new \u2026')
+anyfix_macros_gen('typeof \u2026')
+anyfix_macros_gen('\u00ac\u2212 \u2026')
+anyfix_macros_gen('\u2026 isa \u2026')
+anyfix_macros_gen('\u2026 in \u2026')
+anyfix_macros_gen('\u2026 \u00acin \u2026')
+anyfix_macros_gen('\u2026 * \u2026')
+anyfix_macros_gen('\u2026 / \u2026')
+anyfix_macros_gen('\u2026 % \u2026')
+anyfix_macros_gen('\u2026 + \u2026')
+anyfix_macros_gen('\u2026 - \u2026')
+anyfix_macros_gen('-\u2212 \u2026')
+anyfix_macros_gen('\u2026 = \u2026')
+anyfix_macros_gen('\u2026 \u2260 \u2026')
+anyfix_macros_gen('\u2026 < \u2026')
+anyfix_macros_gen('\u2026 > \u2026')
+anyfix_macros_gen('\u2026 \u2264 \u2026')
+anyfix_macros_gen('\u2026 \u2265 \u2026')
+anyfix_macros_gen('\u2026 & \u2026'); anyfix_macros_gen('\u2026 && \u2026')
+anyfix_macros_gen('\u2026 | \u2026'); anyfix_macros_gen('\u2026 || \u2026')
+anyfix_macros_gen('\u2026 \u2190 \u2026')
+anyfix_macros_gen('\u2026 \u2190! \u2026')
 
 var read = function λ(s){
-var r = [SP];
-var t=null; if (t = s.match(/^#!.*/)){r.push(S('__literal__'),S('('),t[0],S(')')); s = s.slice(t[0].length)}
-var r = r.concat(lex(s)); r.push(SP)
-for (var i=1;i<r.length-1;i++) if (r[i] instanceof Symbol){
-if (r[i-1] !== SP) r[i].space_before = false
-if (r[i+1] !== SP) r[i].space_after = false }
-var r = r.filter(function λ(v,b,c){return v !== SP})
-var r = group(r)
 
+
+
+
+
+
+var r = group(lex(s))
+repr_js(anyfix_macro_eval(r)).forEach(function λ(v,b,c){return pr(b,v)})
 return r}
 
-var compile_f = function λ(ǂ_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(ǂ_in).toString())))}
+var compile_f = function λ(ǂ_in,out){fs.writeFileSync(out,repr_js_lexed_file(read(fs.readFileSync(ǂ_in).toString())))}
 
 compile_f(process.argv[2].replace('.a','.α'),process.argv[3])
-
-print('--- ran as:',ran_as,'---')
