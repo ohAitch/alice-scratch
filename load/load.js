@@ -201,7 +201,7 @@ if (l === undefined){var r = group(S('{'),g.concat([S('}')])); if (r[1].length >
 else {
 var e = groups[g.v]
 var r = [g]; while (true){
-if (l.length === 0) err('unfinished group'+repr_js_lexed(r))
+if (l.length === 0) err('unfinished group'+g.line)
 if (l[0] instanceof Symbol && l[0].v === e) return [r,l.slice(1)]
 while (l[0] instanceof Symbol && own(groups,l[0].v)){var t = group(l[0],l.slice(1)); r.push(t[0]); l = t[1]}
 if (l[0] instanceof Symbol && l[0].v === e) return [r,l.slice(1)]
@@ -227,7 +227,7 @@ reader_macros.set([].concat(seq('()[]{}\u2039\u203a.`~?:;,'),['~@','\u00acin'],u
 reader_macros.set(' \t\u000c\u000d', function λ(v,b,c){return [SP,b,c]})
 reader_macros.set('\n', function λ(v,b,c){return [SP,b,c+1]})
 reader_macros.set(['//'], function λ(v,b,c){return [SP,b.replace(/^.*/,''),c]})
-reader_macros.set(['/*'], function λ(_,s,l){var t = s.match(/^[^]*?\*\//)[0]; return [SP,s.slice(t.length),l+(t.match(/\n/g)||[]).length]})
+reader_macros.set(['/*'], function λ(_,s,l){var t = s.match(/^[^]*?(\*\/|$)/)[0]; return [SP,s.slice(t.length),l+(t.match(/\n/g)||[]).length]})
 reader_macros.set('\'"', string_reader)
 reader_macros.set(['~/'], regex_reader)
 
