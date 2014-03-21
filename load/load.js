@@ -116,7 +116,7 @@ var symbol_set_decode_ = function λ(v,b,c){return symbol_set_decode(v)[0].v}
 var SP = {}
 
 
-var js_valid_symbol_encode = function λ(v,b,c){return own({'=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / % || && ? += ++ if else for return in new typeof delete try catch while this switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
+var js_valid_symbol_encode = function λ(v,b,c){return own({'$args':'Array.prototype.slice.apply(arguments)','=':'===','\u2190!':'=','\u2190':'=','\u2260':'!==','\u2264':'<=','\u2265':'>=','\u00ac':'!','\u208b\u2081':'.slice(-1)[0]','\u2080':'[0]','\u2081':'[1]','\u2082':'[2]','\u2083':'[3]','ᵥ':'[v]','ᵢ':'[i]','ₖ':'[k]','ₘ':'[m]','isa':'instanceof'},v) || (own(Object.mapv('< > , . : ; + - * / % || && ? += ++ if else for return in new typeof delete try catch while this switch case throw break continue'.split(' ')),v)?v:null) || (v.match(/^\d/)?v:null) || js_valid_symbol.encode(v)}
 var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
 var has_sym = function λ(v,s){return v.some(function λ(v,b,c){return v instanceof Symbol && v.v===s})}
 var split_slice = function λ(l){var r = split_symbol(l,':'); var r = [(r[0].length === 0? [S('0')] : r[0])].concat(r.slice(1)); return r[1].length === 0? r.slice(0,1) : r}
