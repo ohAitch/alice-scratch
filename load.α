@@ -27,7 +27,7 @@ now ← λ{Date.now() / 1000}
 ord ← λ{v.charCodeAt(0)}
 chr ← λ{String.fromCharCode(v)}
 own ← λ(o,m){return Object.prototype.hasOwnProperty.call(o,m)? oₘ : undefined}
-err ← λ(){print.apply(console, ['#error#:'].concat($args)); throw Error()}
+err ← λ(){print.apply(console, ['#error#:'].concat($args)); throw(Error())}
 extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
 delset ← λ(o,m,v){if (¬is(v)) delete(oₘ); else oₘ ←! v}
 is ← λ{v≠undefined}
@@ -98,21 +98,20 @@ unicode ← λ(table){return {
 
 //===--------------------------------------------===// Symbol //===--------------------------------------------===//
 
-// todo: make default space both
-
-Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
-Symbol.prototype.space ←! λ(v){if (¬is(v)) {return (this.space_before?'_':'')+'$'+(this.space_after?'_':'')} else {if (v₀≠'_') this.space_before ←! false; if (v₋₁≠'_') this.space_after ←! false; return this}}
-Symbol.prototype.space_before ←! true
-Symbol.prototype.space_after ←! true
+Symbol ← λ(v,line,before,after){this.v ←! v; if (line) this.line ←! line; this.space_before ←! is(before)?before:true; this.space_after ←! is(after)?after:true}
+	space_update ← λ(me){me._space ←! (me.space_before?'_':'')+'$'+(me.space_after?'_':'')}
+Object.defineProperty(Symbol.prototype,'space',{get:λ{this._space},set:λ{this._space ←! v; this._space_before ←! v₀='_'; this._space_after ←! v₋₁='_'}})
+Object.defineProperty(Symbol.prototype,'space_before',{get:λ{this._space_before},set:λ(v){this._space_before ←! v; space_update(this)}})
+Object.defineProperty(Symbol.prototype,'space_after', {get:λ{this._space_after },set:λ(v){this._space_after  ←! v; space_update(this)}})
 Symbol.prototype.inspect ←! λ{'`'+this.v}
-Symbol.prototype.with_v ←! λ(v){r ← new Symbol(v,this.line); if (¬this.space_before) r.space_before ←! false; if (¬this.space_after) r.space_after ←! false; return r}
-S ← λ(v){r ← new Symbol(v.replace(~/^ /,'').replace(~/ $/,'')); if (v₀≠' ') r.space_before ←! false; if (v₋₁≠' ') r.space_after ←! false; return r}
+Symbol.prototype.with_v ←! λ{new Symbol(v,this.line,this.space_before,this.space_after)}
+S ← λ{new Symbol(v,undefined,false,false)}
 symbol_set_decode ← λ(v){
 	n ← v; s ← ''
 	t ← v.match(~/^(([−↔±∓])\2*)(.*)$/);  s += t && t₁.length%2≠0? t₂ : '?'; v ← t? t₁[:Math.floor(t₁.length/2)]+t₃ : v
 	t ← v.match(~/^(.*?)(([−↔±∓])\3*)$/); s += t && t₂.length%2≠0? t₃ : '?'; v ← t? t₂[:Math.floor(t₂.length/2)]+t₁ : v
 	n ← v=''? n : v; s ← v=''? '??' : s
-	return (symbol_set_table[s]||err('bad symbol set',s)).map(λ{new Symbol(n).space(v)})}
+	return (symbol_set_table[s]||err('bad symbol set',s)).map(λ(v){r ← new Symbol(n); r.space ←! v; return r})}
 	symbol_set_table ← {
 		'−−':['$'],
 		'−↔':['$_'],
@@ -194,7 +193,7 @@ reader_macros.set('\n', λ(_,s,l){return [SP,s,l+1]})
 reader_macros.set(['//'], λ(_,s,l){return [SP,s.replace(~/^.*/,''),l]})
 reader_macros.set(['/*'], λ(_,s,l){t ← s.match(~/^[^]*?(\*\/|$)/)₀; return [SP,s[t.length:],l+(t.match(~/\n/g)||[]).length]})
 reader_macros.set('\'"', λ(start,s,line){
-	t ← s.match(start='"'? ~/^((?:.*[^\\])?)"/ : ~/^((?:.*[^\\])?)'/) || err('string is not closed @'+line); s ←! s[t₀.length:]; v ← t₁
+	t ← s.match(start='"'? ~/^((?:(?:.*[^\\])?(?:\\\\)*)?)"/ : ~/^((?:(?:.*[^\\])?(?:\\\\)*)?)'/) || err('string is not closed @'+line); s ←! s[t₀.length:]; v ← t₁
 	return [v.match(~/\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|\\[nt'"\\]|./g).map(λ(v){
 		if (v='\n') line += 1; return {"\\'":"'",'\\"':'"','\\\\':'\\','\\n':'\n','\\t':'\t'}ᵥ || (v.length>2? chr(parseInt(v[2:],16)) : v)
 		}).join(''),s,line]})
@@ -220,7 +219,7 @@ lex ← λ{group(tokenize(v))}
 //===--------------------------------------------===// "anyfix" "macros" //===--------------------------------------------===//
 
 anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){(ss isa Array? ss : [ss]).map(λ(s){symbol_set_decode(s).map(λ(s){
-	v ← s.v; s ← s.space()
+	v ← s.v; s ← s.space
 	if (¬is(f)) {if (own(anyfix_macros,v)) {delete(anyfix_macros[v][s]); if (Object.keys(anyfix_macros[v]).no) delete(anyfix_macros[v])}}
 	else {if (¬own(anyfix_macros,v)) {anyfix_macros[v] ←! {}} anyfix_macros[v][s] ←! f}
 	}) }) }
@@ -230,8 +229,8 @@ anyfix_macro_eval_l ← λ(tokens){r ← []; while (¬tokens.no) {t ← anyfix_m
 anyfix_macro_eval_form ← λ(buf,tokens,dont){while (¬(buf.length>1 || tokens.no || (¬buf.no && dont && dont(tokens)))) {t ← anyfix_macro_eval_1(buf,tokens); buf ←! t₀; tokens ←! t₁} return [buf₀,buf[1:],tokens]}
 anyfix_macro_eval_1 ← λ(forms,tokens){
 	v ← tokens₀; tokens ←! tokens[1:]
-	if (v isa Array) {t ← ((anyfix_macros[v₀.v]||err(v₀))[v₀.space()]||err(v₀,v₀.space()))(forms,v₀, [v[1:]].concat(tokens)); forms ←! t₀; tokens ←! t₁}
-	else if (v isa Symbol && own(anyfix_macros,v.v) && anyfix_macros[v.v][v.space()]) {t ← anyfix_macros[v.v][v.space()](forms,v,tokens); forms ←! t₀; tokens ←! t₁}
+	if (v isa Array) {t ← ((anyfix_macros[v₀.v]||err(v₀))[v₀.space]||err(v₀,v₀.space))(forms,v₀, [v[1:]].concat(tokens)); forms ←! t₀; tokens ←! t₁}
+	else if (v isa Symbol && own(anyfix_macros,v.v) && anyfix_macros[v.v][v.space]) {t ← anyfix_macros[v.v][v.space](forms,v,tokens); forms ←! t₀; tokens ←! t₁}
 	else forms.push(v)
 	return [forms,tokens]}
 
@@ -278,7 +277,7 @@ anyfix_macros_set('λ', λ(forms,sym,tokens){
 		// may disrespect precedence
 		tokens₀₀.v ←! '(' //! gah
 		t ← anyfix_macro_eval_p1([],tokens); b ← t₀₀; tokens ← t₁; if (t₀.length ≠ 1) err('bad λ')
-		return [forms.concat([[sym,p, [S('return ')].concat([b])]]),tokens] }
+		return [forms.concat([[sym,p, [S('return')].concat([b])]]),tokens] }
 	else return [forms.concat([sym]),tokens] })
 anyfix_macros_gen ← λ(v,to){
 	// this is horrifying and needs a good refactoring
@@ -406,3 +405,9 @@ compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
 // ¬in has to be a reader macro too ...
 
 // fix the "at ╬╗ (c:\User" shit
+
+// actually yeah, → operator
+
+// probably just add floats to the lexer
+
+// yeah, just have a bit() anyfix namespace that provides ~ | ^ & >>> >> << ~= |= ^= &= >>>= >>= <<=

@@ -4,11 +4,11 @@
 (typeof 1)? 1 1
 while (¬true) {1}
 return 1 * 1
-//return;
-//return
+return,
+5
+return
+5
 v ← 1 = 1 > 1 < 1 ≤ 1 ≠ 1 & 1 in {1:1} isa Array
 throw v()
 v ←! 1
 try 1 catch {1}
-
-"repr_js_file ← λ(form){return repr\n_js(form, [1])[1: -1].replace(~/ +/mg,' ').replace(~/^ /mg,'').replace(~/;$/m,'')}"
