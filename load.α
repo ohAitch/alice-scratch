@@ -48,30 +48,41 @@ Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
 //Date.prototype.hours ←! λ(v){this.setHours(this.getHours()+v); return this}
 //Date.prototype.yyyy_mm_dd ←! λ(){m ← (this.getMonth()+1)+''; d ← this.getDate()+''; return this.getFullYear()+'-'+(m₁?m:'0'+m)+'-'+(d₁?d:'0'+d)}
 
+//===--------------------------------------------===// reader_or //===--------------------------------------------===//
+
+reader_or ← extend_function(λ{λ(start,s,line){
+	return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : undefined) || (λ['']? λ[''](start,s,line) : undefined)}})
+	reader_or.prototype.get ←! λ(s){return this[s₀]? (this[s₀] isa reader_or? this[s₀].get(s[1:]) : this[s₀]) : undefined}
+	reader_or.prototype.set ←! λ(ss,r){
+		seq(ss).map(λ(s){
+			c ← s=''? '' : s₀; s ← s[1:]
+			if (s ≠ '') (this[c] isa reader_or? this[c] : this[c] ←! new reader_or().set([''],own(this,c))).set([s],r)
+			else delset(this,c,r)
+		}.bind(this)); return this}
+	reader_or.prototype.reduce_l ←! λ(s){r ← []; line ← 1; while (s ≠ '') {t ← this('',s,line); r.push(t₀); s ←! t₁; line ←! t₂} return r}
+	reader_or.prototype.reduce   ←! λ(s){r ← [];           while (s ≠ '') {t ← this('',s     ); r.push(t₀); s ←! t₁            } return r}
+
 //===--------------------------------------------===// characters //===--------------------------------------------===//
 
 js_valid_symbol ← new (λ(){
-	_short ← {' ':'_', '!':'1', '#':'3', '%':'5', '&':'7', '(':'9', ')':'0', '*':'8', '+':'p', ',':'C', '-':'m', '.':'d', '/':'s', ':':'c', '=':'E', '?':'q', '@':'2', '[':'L', '\\':'b', '^':'6', '`':'k', '{':'B', '|':'o', '~':'t', '…':'r', '←':'w', '→':'e', '¬':'n', '∀':'A', '≠':'N', 'ǂ':'ǂ', '<':'lt', '≤':'le', '>':'gt', '≥':'ge'}
-	encode_short ← object(seq(_short).map(λ{[v₀,'ǂ'+v₁]}))
-	decode_short ← object(seq(_short).map(λ{[v₁,v₀]}))
+	//! _short
+	_short ← [' _'].concat("!1 #3 %5 &7 (9 )0 *8 +p ,C -m .d /s :c =E ?q @2 [L 'b ^6 `k {B |o ~t …r ←w →e ¬n ∀A ≠N ǂǂ <lt ≤le >gt ≥ge".split(' ')).map(λ{[v₀,v[1:]]})
+	encode_short ← object(_short.map(λ{[v₀,'ǂ'+v₁]}))
+	decode_short ← object(_short.map(λ{[v₁,v₀]}))
 	is_start ← memoize_o(object(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]})),λ(v){try {eval('var '+v )} catch (e) {return false} return true})
 	is_part  ← memoize_o(object(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]})),λ(v){try {eval('var a'+v)} catch (e) {return false} return true})
 	encode_char ← memoize_o(encode_short, λ(v){return is_part(v)? v : 'ǂu'+hex(ord(v),4)})
 
 	keywords ← ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
-	encode_keywords ← object(keywords.map(λ{[v,'ǂ'+v]}))
-	decode_keywords ← object(seq(encode_keywords).map(λ{[v₁,v₀]}))
+
+	decoder ← new reader_or()
+	decoder.set([''],λ(_,s){return [s₀,s[1:]]})
+	decoder.set(['ǂu'],λ(_,s){return [chr(parseInt(s[:4],16)),s[4:]]})
+	seq(decode_short).map(λ(kv){k ← kv₀; v ← kv₁; decoder.set(['ǂ'+k],λ(_,s){return [v,s]})})
 
 	this.is_part ←! is_part
-	this.encode ←! memoize_o(encode_keywords,λ(v){r ← seq(v).map(encode_char).join(''); return (¬is_start(r₀)?'ǂ':'')+r})
-	this.decode ←! memoize_o(decode_keywords,λ(v){
-		v ← v₀='ǂ'? v[1:] : v
-		r ← ''; i←undefined; while ((i←!v.indexOf('ǂ')) ≠ -1) {
-			r += v[0:i]; v ←! v[i+1:]
-			if (v₀='u') {r += chr(parseInt(v[1:5],16)); v ←! v[5:]}
-			else if (v₀='l' || v₀='g') {r += decode_short[v[:2]]; v ←! v[2:]}
-			else {r += decode_short[v₀]; v ←! v[1:]}
-			} return r+v})
+	this.encode ←! memoize_o(object(keywords.map(λ{[v,'ǂ'+v]})),λ(v){r ← seq(v).map(encode_char).join(''); return (¬is_start(r₀)?'ǂ':'')+r})
+	this.decode ←! memoize_o(object(keywords.map(λ{['ǂ'+v,v]})),λ{decoder.reduce(v₀='ǂ'? v[1:] : v).join('')})
 	})
 unicode ← λ(table){return {
 	subscripts:   table.map(λ{v₀}).filter(λ{v≠'-'}),
@@ -109,18 +120,18 @@ Symbol ← λ(v,line){this.v ←! v; if (line) this.line ←! line}
 			'?↔':['$_','_$_'],
 			'−?':['$','$_'],
 			'↔?':['_$','_$_'],
+			'??':['$','$_','_$','_$_'],
 			'±±':['$','_$_'],
-			'±∓':['$_','_$'],
-			'??':['$','$_','_$','_$_']
+			'±∓':['$_','_$']
 			}
 	symbol_set_decode_ ← λ{symbol_set_decode(v)₀.v}
-SP ← {}
+	SP ← {}
 
 // hacks
 se ← λ{(v isa Symbol) && v.v=b}
 split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (se(v,s)) r.push([]); else r₋₁.push(v)}); return r}
 has_sym ← λ(v,s){return v.some(λ{se(v,s)})}
-split_slice ← λ(l){r ← split_symbol(l,':'); r ← [[(r₀₀=undefined? S('0') : r₀₀)]].concat(r[1:]).m_concat(); return r}
+split_slice ← λ(l){r ← split_symbol(l,':'); r ← [[(is(r₀₀)? r₀₀ : S('0'))]].concat(r[1:]).m_concat(); return r}
 pr ← λ(){if (running_as = 'bin\\load.js') print.apply(this,['##'].concat($args)); return $args₀}
 
 String.prototype.repr ←! String.prototype.repr_js ←! λ(){v ← this.valueOf(); return (v.match(~/'/g)||[]).length ≤ (v.match(~/"/g)||[]).length? //?
@@ -186,15 +197,6 @@ regex_reader ← λ(start,s,line){
 	t ← s.match(~/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/) || err('could not match regex: '+start+s[:10])
 	return [eval('/'+t₁),s[t₁.length:],line]}
 
-reader_or ← extend_function(λ{λ(start,s,line){
-	return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : undefined) || (λ['']? λ[''](start,s,line) : undefined)}})
-	reader_or.prototype.get ←! λ(s){return this[s₀]? (this[s₀] isa reader_or? this[s₀].get(s[1:]) : this[s₀]) : undefined}
-	reader_or.prototype.set ←! λ(ss,r){
-		seq(ss).map(λ(s){
-			c ← s=''? '' : s₀; s ← s[1:]
-			if (s ≠ '') (this[c] isa reader_or? this[c] : this[c] ←! new reader_or().set([''],own(this,c))).set([s],r)
-			else delset(this,c,r)
-		}.bind(this)); return this}
 reader_macros ← new reader_or()
 groups ← {}
 anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){(ss isa Array? ss : [ss]).map(λ(s){symbol_set_decode(s).map(λ(s){
@@ -205,13 +207,12 @@ anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){(ss isa Array? ss : [ss]).m
 lex ← λ(s){
 	r ← [SP]
 	t←undefined; if (t ←! s.match(~/^#!.*/)) {r.push(S('__literal__'),S('('),t₀,S(')')); s ←! s[t₀.length:]}
-	r ← r.concat(lex_(s)); r.push(SP)
+	r ← r.concat(reader_macros.reduce_l(s)); r.push(SP)
 	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {
 		if (r[i-1] ≠ SP) rᵢ.space_before ←! false
 		if (r[i+1] ≠ SP) rᵢ.space_after ←! false } i+=1}
 	r ← r.filter(λ{v ≠ SP})
 	return r}
-	lex_ ← λ(s){r ← []; line ← 1; while (s ≠ '') {t ← reader_macros('',s,line); r.push(t₀); s ←! t₁; line ←! t₂} return r}
 group ← λ(g){
 	group ← λ(g,l){
 		e ← groups[g.v]
@@ -235,8 +236,8 @@ anyfix_macro_eval_1 ← λ(forms,tokens){
 anyfix_macro_eval_p1 ← λ(forms,tokens){l ← forms.length; while (¬tokens.no && forms.length < l+1) {t ← anyfix_macro_eval_1(forms,tokens); forms ←! t₀; tokens ←! t₁} return [forms,tokens]}
 
 reader_macros.set([''], λ(_,s,l){
-	is ← js_valid_symbol.is_part(s₀)
-	r ← ''; while (s ≠ '' && ¬reader_macros.get(s) && js_valid_symbol.is_part(s₀) = is) {r += s₀; s ←! s[1:]}
+	first_type ← js_valid_symbol.is_part(s₀)
+	r ← ''; while (s ≠ '' && ¬reader_macros.get(s) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
 	return [new Symbol(r,l),s,l]})
 reader_macros.set([].concat(seq('()[]{}‹›.`~?:;,'), ['~@','¬in'],unicode.subscripts,unicode.subscripts.map(λ{'₋'+v})), λ{[new Symbol(v,c),b,c]})
 reader_macros.set(' \t\x0c\x0d', λ{[SP,b,c]})
