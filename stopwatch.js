@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// todo: if we're going to use a tmp, it should be in a sane dir
+
 var exec = require('child_process').exec
 var fs = require('fs')
 var repl = require('repl')
@@ -23,7 +25,7 @@ go = function λ(){
 	λ.now = now()
 	var quit = [false]; λ.quit = quit
 	;(function t(times){var n = now(); times = times.filter(function(v){return !(v - n < 0)})
-		if (!quit[0] && times.length>0) setTimeout(function(){alert("oh dude it's been like "+number_to_word_20_99(Math.round((now() - go.now)/60))+' minutes . finish up the thing?',function(){t(times.slice(1))})},(times[0] - n)*1000)
+		if (times.length>0) setTimeout(function(){if (!quit[0]) alert("oh dude it's been like "+number_to_word_20_99(Math.round((now() - go.now)/60))+' minutes . finish up the thing?',function(){t(times.slice(1))})},(times[0] - n)*1000)
 		})([20,30,40,50,60].map(function(v){return v*60 + go.now}))
 	return r}
 go.now = now()
