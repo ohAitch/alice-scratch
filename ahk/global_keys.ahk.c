@@ -10,7 +10,7 @@ SetTitleMatchMode 2
 // todo eh: consider making menukey sticky, like F8
 // todo eh: fill out F8
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
-// ≁ ≔≕ ′″‴
+// ≁ ≔≕ ′″‴ ∘
 // todo eh: mouse : add homoiconicity (this is hard)
 
 // MACRO_DISPATCH (copied from hydrocarboner)
@@ -83,11 +83,13 @@ AppsKey & \::; chrome(copy()); return
 AppsKey & RAlt::; ~RAlt & AppsKey::; if WinActive(vlc) {Send !‹Escape›} else {WinMinimize A} return
 ###if WinActive(cmd) || WinActive(calc) || WinActive(explorer) || WinActive(vlc); ^w::WinClose A; Esc::WinClose A; ###if
 ###if WinActive(cmd); ^a::Send !‹Space›es; ###if
+###if WinActive_folder; F2::Send ‹F2›^a; ###if
 ###if WinActive_folder; ^n::; Send ‹AppsKey›wt; Sleep 50; Send ^a; return; ###if // new text file
 LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; // continue on next line
-~LButton & AppsKey::; t := copy();
+//~LButton & AppsKey::;
+	t := copy();
 	if (RegExMatch(t,"⏎([^\s⏎]+)",tt)) {chrome("C:/Users/zii/ali/misc/linked/" . tt1)}
 	else {chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t)} return
 $^v::; if (clipboard_contains_files() and !WinActive_folder) {paste(slash_back(Clipboard))} else {paste()} return
@@ -109,7 +111,7 @@ AppsKey & B::
 l33t_show() {loop Parse, l33t_hidden, |; {WinShow ahk_id %A_LoopField%; WinActivate ahk_id %A_LoopField%}; l33t_hidden =}
 
 // copy / paste / clipboard
-//###if WinActive(cmd) and RegExMatch(WinTitle("A"),"^Select "); ^c::copy_to_clipboard(); Enter::copy_to_clipboard(); ###if
+###if WinActive(cmd) and RegExMatch(WinTitle("A"),"^Select "); ^c::; Enter::; copy_to_clipboard(); return; ###if
 clipboard_contains_files() {return DllCall("IsClipboardFormatAvailable", "UInt", 15 /*CF_HDROP*/)}
 copy_to_clipboard() {
 	if WinActive(cmd) {
@@ -155,7 +157,7 @@ current_directory() {
 		v := slash_back(RegExReplace(WinTitle("A"), "^(.*)\\\\.*$", "$1"))
 		if (InStr(FileExist(v), "D"))
 			return v
-	} else if WinActive_desktop {
+	} else if (WinActive_desktop or WinActive(taskbar)) {
 		return slash_back(A_Desktop)
 	}
 	return slash_back(A_Desktop) . "/../ali/code"}

@@ -1,1 +1,1 @@
-bash -i daily.sh
+bash -i "%~dp0/daily.sh"

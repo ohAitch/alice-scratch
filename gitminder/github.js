@@ -25,7 +25,6 @@ Object.mapv = function(v,f){f = f || function(v){return [v,true]}; r = {}; v.for
 var merge_o = function(a,b){var r = {}; Object.keys(a).forEach(function(k){r[k] = a[k]}); Object.keys(b).forEach(function(k){r[k] = b[k]}); return r}
 var seq = function(v){return typeof v === 'string'? v.split('') : v instanceof Array? v : Object.keys(v).map(function(k){return [k,v[k]]})}
 var pad_left = function(v,s,l){while (v.length < l) v = s + v; return v}
-
 function frequencies(v){var r = {}; v.forEach(function(v){r[v] = v in r? r[v]+1 : 1}); return r}
 function dict_by(sq,f){var r = {}; for(var i=0;i<sq.length;i++) r[f(sq[i])] = sq[i]; return r}
 Date.prototype.hours = function(v){this.setHours(this.getHours()+v); return this}

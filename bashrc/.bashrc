@@ -3,7 +3,7 @@ export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
 slash_fwd()  { echo $(echo "$1" | sed 's/\\/\//g'); }; export -f slash_fwd
 slash_back() { echo $(echo "$1" | sed 's/\//\\/g'); }; export -f slash_back
 
-export PATH="$PATH:/c/Users/zii/ali/apps/#PATH:/c/Program Files/7-Zip:."
+export PATH="$PATH:/c/Users/zii/ali/apps/#PATH:/c/Program Files/7-Zip:/c/Program Files/nodejs/:/c/Users/zii/AppData/Roaming/npm:."
 export ALI="$(slash_fwd $USERPROFILE)/ali"
 export CLOJURE="$ALI/code/#libs/clojure-1.5.1/clojure-1.5.1-slim.jar"
 lwjgl_version=2.9.0
@@ -14,9 +14,13 @@ export LOMBOK="$ALI/code/#libs/lombok.jar"
 
 export PS1='$(pwd)>'
 e() { explorer .; }
-sb() { "C:\Program Files\Sublime Text 3\sublime_text.exe" $1; }
+x() { exit; }
+sb() { "C:/Program Files/Sublime Text 3/sublime_text.exe" $1; }
 
-# command_not_found_handle seems broken
+command_not_found_handle() {
+	# only supported in bash 4
+	echo what
+}
 err_handle() {
 	status=$?
 	if [[ $status -ne 127 ]]; then return; fi
