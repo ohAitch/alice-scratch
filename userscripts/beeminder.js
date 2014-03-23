@@ -49,7 +49,7 @@ var run = {
 	// on this specific goal, display most recent datapoint
 	if (location.href === 'https://www.beeminder.com/alice0meta/goals/team') {
 		//'< no request :c >'
-		var t = $('.recent-data').find('span').map(function(v){var t = v.attr('data-comment').match(/\| (.*)/); return t?[t[1],parseInt(v.text().match(/^(\d+)/)[1])]:undefined}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
+		var t = $.map($('.recent-data').find('span'),function(v){var t = $(v).attr('data-comment').match(/\| (.*)/); return [t?[t[1],parseInt($(v).text().match(/^(\d+)/)[1])]:undefined]}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
 		var msg; $('body').append(msg = $('<div id="datapoint-msg" style="top:20px; left:20px; position:fixed; max-width:400px; font-family:monospace; text-align:left; padding:0px 3px; border: 1px solid #000; background-color:rgba(255,255,255,.7); white-space:pre-wrap">'))
 		;(function t(){
 			msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
