@@ -72,6 +72,7 @@ AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+
 // run apps
 AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
 AppsKey & -::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONbash"; return
+F7::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONrun.sh"; return
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
