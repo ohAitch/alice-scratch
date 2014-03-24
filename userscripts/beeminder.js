@@ -46,6 +46,9 @@ var run = {
 	if ($('#admin-links').children('.content-container').children('h3').text()==="Dogfood Mandate")
 		$('#admin-links').remove()
 
+	// provide convenient link to datapoints in sane order
+	$($('.control')[0]).append($('<div class="settings"><a href="'+location.pathname+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
+
 	// on this specific goal, display most recent datapoint
 	if (location.href === 'https://www.beeminder.com/alice0meta/goals/team') {
 		//'< no request :c >'
