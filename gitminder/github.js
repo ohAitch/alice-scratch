@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-// this is fairly poorly written . notably, it is not-quite-javascript written in javascript, and it doesn't really follow node convention
+// this is fairly poorly written . it probably doesn't really follow node style convention
 
-// each run, grabs about 0.6mb from github and 10kb from beeminder, with my settings
+// each run, for me, grabs about 0.6mb from github and 10kb from beeminder
 
 // issues:
 // may break on really unusual timezones
-// will break on commits to repos you don't own
+// doesn't track commits to repos you don't own
 // doesn't track non-commits
-// fetched-kb may break on unicode
+// fetched-kb may report low values for non-ascii
 
 var http = require('http')
 var https = require('https')
@@ -29,7 +29,7 @@ function frequencies(v){var r = {}; v.forEach(function(v){r[v] = v in r? r[v]+1 
 function dict_by(sq,f){var r = {}; for(var i=0;i<sq.length;i++) r[f(sq[i])] = sq[i]; return r}
 Date.prototype.hours = function(v){this.setHours(this.getHours()+v); return this}
 Date.prototype.yyyy_mm_dd = function(){var m = (this.getMonth()+1)+''; var d = this.getDate()+''; return this.getFullYear()+'-'+(m[1]?m:'0'+m)+'-'+(d[1]?d:'0'+d)}
-function guid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){var r = Math.random()*16|0; return (c === 'x' ? r : (r&0x3|0x8)).toString(16)})}
+//function guid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){var r = Math.random()*16|0; return (c === 'x' ? r : (r&0x3|0x8)).toString(16)})}
 
 function header_links(v){return !v? {} : Object.mapv(v.split(',').map(function(v){return v.split(';').map(function(v){return v.trim()})}).map(function(v){return [v[1].match(/^rel="(.*)"$/)[1],v[0].match(/^<(.*)>$/)[1]]}),function(v){return v})}
 function request(path,query,headers,f,base){
@@ -59,16 +59,21 @@ function beeminder_get(f){beeminder('/users/me/goals/'+goal+'/datapoints.json',{
 function beeminder_add(v){beeminder('POST /users/me/goals/'+goal+'/datapoints/create_all.json',{datapoints:JSON.stringify(v instanceof Array? v : [v])},function(v){print('beeminder_add returned:',v)})}
 function beeminder_delete(ids){(ids instanceof Array? ids : [ids]).map(function(id){beeminder('DELETE /users/me/goals/'+goal+'/datapoints/'+id+'.json',{},function(v){print('beeminder_delete returned:',v)})})}
 
+var dry_run = false
+if (dry_run) print('--- dry run ---')
+else print('--- modifications will be for real ---')
 github_all_commits(function(v){
 	var dates = v.filter(function(v){return v.committer.login === user}).map(function(v){return v.commit.author.date}).sort()
 	var dates = frequencies(dates.map(function(v){return new Date(v).hours(-3).yyyy_mm_dd()}))
 	//print(dates)
 	beeminder_get(function(v){
 		// bee warned, arbitrary hacks lie here
-		var beedays = v.filter(function(v){return v.comment !== 'temp'}).map(function(v){return [new Date(v.timestamp*1000).yyyy_mm_dd(), v.value, v.id]})
+		var beedays = v.filter(function(v){return v.comment !== 'temp'}).map(function(v){return [new Date(v.timestamp*1000).yyyy_mm_dd(), parseInt(v.value), v.id]})
 		var beedict = dict_by(beedays,function(v){return v[0]})
-		//print(beedays)
-		beedays.map(function(v){if (v[1] !== dates[v[0]]) {print('discrepancy:',v) }})//; beeminder_delete(v[2])}})
-		Object.keys(dates).map(function(k){if ("2014-03-10" <= k && !beedict[k]) {print('missing',k,dates[k]); beeminder_add({timestamp:new Date(k).hours(12)/1000,value:dates[k],comment:'auto-entered by aligitminder'})}})
+		Object.keys(dates).map(function(k){if (!beedict[k] || beedict[k][1]!==dates[k]) {
+			var v = {timestamp:new Date(k).hours(12)/1000,value:dates[k],comment:'auto-entered by aligitminder'}
+			print('adding',new Date(v.timestamp*1000).yyyy_mm_dd(),v.value,beedict[k])
+			if (!dry_run) beeminder_add(v)}})
+		beedays.map(function(v){if (v[1] !== dates[v[0]]) {print('deleting',v); if (!dry_run) beeminder_delete(v[2])}})
 	})
 })
