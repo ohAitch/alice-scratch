@@ -32,33 +32,48 @@ var run = {
 }
 
 ;(function($){
-	// style
-	$('.delete_datapoint').css({padding:'0px 1em'})
-	
-	// if #goal-user exists, scroll to it
-	//if ($('#goal-user')[0]) scroll_to('goal-user')
+	function at_a_goal(){return location.pathname.match(/^\/\w+\/(goals\/)?\w/)}
 
-	// get rid of header
-	$('#header').remove()
-	$('.content').css({'padding-top': '0px'})
+	// make feedback button actually link to the feedback forums, although middle-click still doesn't work
+	$('#uvTabLabel').attr('href','https://beeminder.uservoice.com/forums/3011-general')
 
-	// remove datapoint deletion dialog
-	$('.delete_datapoint').removeAttr('data-confirm')
+	if (at_a_goal()) {
+		// dark theme
+		$('head').append('<style media="screen" type="text/css">'+
+			'body > div.content { min-height:100% }'+
+			'div.header,'+
+			'#goal-user > div.content-container > div.user-profile > a:nth-child(2) > img,'+ // profile picture
+			'body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(v){run.in(v,function(){$('#uvTab').css({'border-top-color':'','border-right-color':'','border-bottom-color':'','-webkit-box-shadow':'','box-shadow':''})})})
+		
+		// style
+		$('.delete_datapoint').css({padding:'0px 1em'})
 
-	// remove dogfood mandate box
-	if ($('#admin-links').children('.content-container').children('h3').text()==="Dogfood Mandate")
-		$('#admin-links').remove()
+		// remove header
+		$('#header').remove()
+		$('.content').css({'padding-top': '0px'})
 
-	// provide convenient link to datapoints in sane order
-	$($('.control')[0]).append($('<div class="settings"><a href="'+location.pathname+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
+		// remove footer
+		$('#footer').remove()
 
-	// on this specific goal, display most recent datapoint
-	if (location.href === 'https://www.beeminder.com/alice0meta/goals/team') {
-		//'< no request :c >'
-		var t = $.map($('.recent-data').find('span'),function(v){var t = $(v).attr('data-comment').match(/\| (.*)/); return [t?[t[1],parseInt($(v).text().match(/^(\d+)/)[1])]:undefined]}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
-		var msg; $('body').append(msg = $('<div id="datapoint-msg" style="top:20px; left:20px; position:fixed; max-width:400px; font-family:monospace; text-align:left; padding:0px 3px; border: 1px solid #000; background-color:rgba(255,255,255,.7); white-space:pre-wrap">'))
-		;(function t(){
-			msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
-			run.tomorrow(t)})()
-	}
+		// remove datapoint deletion dialog
+		$('.delete_datapoint').removeAttr('data-confirm')
+
+		// remove dogfood mandate box
+		if ($('#admin-links').children('.content-container').children('h3').text()==='Dogfood Mandate')
+			$('#admin-links').remove()
+
+		// provide convenient link to datapoints in sane order
+		$($('.control')[0]).append($('<div class="settings"><a href="'+location.pathname.replace(/^((\/[^\/]+){0,3}).*/,'$1')+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
+
+		// on this specific goal, display most recent datapoint
+		if (location.pathname === '/alice0meta/goals/team') {
+			//'< no request :c >'
+			var t = $.map($('.recent-data').find('span'),function(v){var t = $(v).attr('data-comment').match(/\| (.*)/); return [t?[t[1],parseInt($(v).text().match(/^(\d+)/)[1])]:undefined]}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
+			var msg; $('body').append(msg = $('<div id="datapoint-msg" style="top:20px; left:20px; position:fixed; max-width:400px; font-family:monospace; text-align:left; padding:0px 3px; border: 1px solid #000; background-color:rgba(255,255,255,.7); white-space:pre-wrap">'))
+			;(function t(){
+				msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
+				run.tomorrow(t)})()
+		}
+	}	
 })(jQuery)
