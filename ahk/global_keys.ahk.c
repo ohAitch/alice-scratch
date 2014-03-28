@@ -12,6 +12,9 @@ SetTitleMatchMode 2
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
 // ≁ ≔≕ ′″‴ ∘
 // todo eh: mouse : add homoiconicity (this is hard)
+// todo: run (F7) should kill any terminated run console windows
+// todo: media controls should be more generalized. notably, mute does not pause vlc. i mean, it still won't, but refactor this.
+// todo: add " to url end
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
@@ -71,8 +74,8 @@ AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+
 
 // run apps
 AppsKey & S::; if WinExist(cmd) {WinActivate; if !GetKeyState("shift") {Send ‹Up›‹Enter›}; return} // else, execute next label
-AppsKey & -::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONbash"; return
-F7::; t := current_directory(); Run bash -c "cd \"%t%\"SEMICOLONrun.sh"; return
+AppsKey & -::; t := current_directory(); Run bash -ci "cd \"%t%\"SEMICOLONbash"; return
+F7::; t := current_directory(); Run bash -ci "cd \"%t%\"SEMICOLONrun.shSEMICOLONpause"; return
 AppsKey & Enter::; if WinExist(calc) && !GetKeyState("shift") {WinActivate} else {Run calc} return
 #define chrome_newtab(action) if WinExist(chrome) {WinActivate; Send ^t; action}
 chrome(v) {chrome_newtab(paste(v); Send ‹Enter›)}
@@ -90,9 +93,11 @@ LCtrl & Capslock::Send ^+‹Tab›
 ~Capslock & LCtrl::Send ‹Capslock›^+‹Tab›
 AppsKey & LButton::; Send ‹LButton down›; KeyWait LButton; Send ‹LButton up›; // continue on next line
 //~LButton & AppsKey::;
-	t := copy();
-	if (RegExMatch(t,"⏎([^\s⏎]+)",tt)) {chrome("C:/Users/zii/ali/misc/linked/" . tt1)}
-	else {chrome(RegExMatch(t,"https?://[^ )\\]]+",tt)? tt : t)} return
+	v := copy();
+	if (RegExMatch(v,"⏎([^\s⏎]+)",t)) {chrome("C:/Users/zii/ali/misc/linked/" . t1)}
+	else if (RegExMatch(v,"https?://[^ )\\]]+",t)) {chrome(t)}
+	else if (RegExMatch(v,"[\\w.-_]+@[\\w.-_]+\\.[\\w.-_]+",t)) {chrome("mailto:" . t)}
+	else {chrome(v)} return
 $^v::; if (clipboard_contains_files() and !WinActive_folder) {paste(slash_back(Clipboard))} else {paste()} return
 ~LWin & f::print("try win-q")
 
@@ -210,6 +215,7 @@ avgi(x,y) {return floor((x+y)/2)}
 	// misc
 	chord(B,=,≈,)			// `= ≈ ↔
 	chord(B,\,≉,)			// `\ ≉ ↔
+	chord(1,/,‽,)			// 1/ ‽ ↔
 	chord(C,S,∴,)			// ,; ∴ ↔
 	chord(-,=,∓)			// -= ∓ ↔
 	chord(=,-,±)			// =- ± ↔
