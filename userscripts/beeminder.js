@@ -7,6 +7,7 @@
 
 // todo: add checks so that things get executed only on the right pages
 // todo‽: consider writing an svg graph generator
+// todo: the datapoints link doesn't handle not having goals in the url
 
 /////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lw_unread.js
 /*function scroll_to(v) {
@@ -42,7 +43,7 @@ var run = {
 		$('head').append('<style media="screen" type="text/css">'+
 			'body > div.content { min-height:100% }'+
 			'div.header,'+
-			'#goal-user > div.content-container > div.user-profile > a:nth-child(2) > img,'+ // profile picture
+			'#goal-user > div.content-container > div.user-profile > a > img,'+ // profile picture
 			'body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
 		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(v){run.in(v,function(){$('#uvTab').css({'border-top-color':'','border-right-color':'','border-bottom-color':'','-webkit-box-shadow':'','box-shadow':''})})})
 		
