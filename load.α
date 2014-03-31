@@ -35,23 +35,6 @@ String.prototype.repeat ←! λ{new Array(v+1).join(this)}
 Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
 Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
 
-//frequencies ← λ{v.reduce(λ(r,v){rᵥ ←! (own(r,v)||0)+1; return r},{})}
-/*run ← {
-	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
-	every:λ(s,f){return {id:setInterval(f,s*1000), cancel:λ{cancelInterval(this.id)}}},
-	tomorrow:λ(f){
-		start ← new Date()
-		cancel ← false
-		r ← run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
-			λ(){if (new Date().getDate() = start.getDate()) run.in(1,λ); else {if (¬cancel) f()}})
-		return {cancel:λ(){cancel ←! true; r.cancel()}}}
-	}*/
-//windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
-//guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
-//Array.prototype.interpose ←! λ(sep){return this.map(λ{v.concat(sep)}).m_concat()[:-1]}
-//Date.prototype.hours ←! λ(v){this.setHours(this.getHours()+v); return this}
-//Date.prototype.yyyy_mm_dd ←! λ(){m ← (this.getMonth()+1)+''; d ← this.getDate()+''; return this.getFullYear()+'-'+(m₁?m:'0'+m)+'-'+(d₁?d:'0'+d)}
-
 //===--------------------------------------------===// reader_or //===--------------------------------------------===//
 
 reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : undefined) || (λ['']? λ[''](start,s,line) : undefined)}})
@@ -127,7 +110,9 @@ symbol_set_decode ← λ(v){
 		}
 symbol_set_decode_ ← λ{symbol_set_decode(v)₀.v}
 SP ← {}
-se ← λ{(v isa Symbol) && v.v=b} // hack
+se ← λ{v isa Symbol && v.v=b} // hack
+s_int ← λ{v isa Symbol && v.v.match(~/^[0-9]+$/)} // hack
+s_mk_float ← λ{new Symbol(v.v+'.'+b.v,v.line,v.space_before,b.space_after)} // hack
 
 //===--------------------------------------------===// load.α hack utils //===--------------------------------------------===//
 
@@ -164,7 +149,7 @@ repr_js ← λ(v,line){rj ← λ{repr_js(v,line)}; mrj ← λ{v.map(rj).join(b||
 					v₀.v='←!'? '('+rj(v₁)+' = '+rj(v₂)+')' :
 					v₀.v='¬'? '(!'+rj(v₁)+')' :
 					v₀.v='new'? 'new '+rj(v₁).replace(~/^\((.*)\)$/,'$1') :
-					v₀.v='return'? 'return '+rj(v₁) :
+					v₀.v='return'? 'return '+rj(v₁) : // should be return(…) or return
 					v₀.v='throw'? 'throw '+rj(v₁) :
 					v₀.v='delete'? 'delete '+rj(v₁) :
 					v₀.v='while'? 'while('+rj(v₁)+'){'+rj(v₂)+'}' :
@@ -183,11 +168,18 @@ repr_js_file ← λ(form){return repr_js(form, [1])[1: -1].replace(~/ +/mg,' ').
 //===--------------------------------------------===// reader macros (lexing) //===--------------------------------------------===//
 
 reader_macros ← new reader_or()
+tokenize ← λ(s){
+	t←undefined; r ← [].concat([SP],((t ←! s.match(~/^#!.*/))? [S('__literal__'),S('('),t₀,S(')'),SP] : []),reader_macros.reduce_l(t? s[t₀.length:] : s),[SP])
+	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {rᵢ.space_before ←! r[i-1]=SP; rᵢ.space_after ←! r[i+1]=SP} i+=1}
+	return r.filter(λ{v ≠ SP})}
+
+subscript_ops ← [].concat(unicode.subscripts,unicode.subscripts.map(λ{'₋'+v}))
+
 reader_macros.set([''], λ(_,s,l){
 	first_type ← js_valid_symbol.is_part(s₀)
 	r ← ''; while (s ≠ '' && ¬reader_macros.get(s) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
 	return [new Symbol(r,l),s,l]})
-reader_macros.set([].concat(seq('()[]{}‹›.`~?:;,'), ['~@','¬in'],unicode.subscripts,unicode.subscripts.map(λ{'₋'+v})), λ{[new Symbol(v,c),b,c]})
+reader_macros.set([].concat(seq('()[]{}‹›.`~?:,;'), ['~@','¬in'],subscript_ops), λ(_,s,l){return [new Symbol(_,l),s,l]})
 reader_macros.set(' \t\x0c\x0d', λ(_,s,l){return [SP,s,l]})
 reader_macros.set('\n', λ(_,s,l){return [SP,s,l+1]})
 reader_macros.set(['//'], λ(_,s,l){return [SP,s.replace(~/^.*/,''),l]})
@@ -199,12 +191,107 @@ reader_macros.set('\'"', λ(start,s,line){
 		}).join(''),s,line]})
 reader_macros.set(['~/'], λ(start,s,line){t ← (s.match(~/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/) || err('could not match regex: '+start+s[:10]))₁; return [eval('/'+t),s[t.length:],line]})
 
-groups ← {'(':')','[':']','{':'}','‹':'›'}
+//===--------------------------------------------===// "precedence/open/anyfix/operator macros" //===--------------------------------------------===//
 
-tokenize ← λ(s){
-	t←undefined; r ← [].concat([SP],((t ←! s.match(~/^#!.*/))? [S('__literal__'),S('('),t₀,S(')'),SP] : []),reader_macros.reduce_l(t? s[t₀.length:] : s),[SP])
-	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {rᵢ.space_before ←! r[i-1]=SP; rᵢ.space_after ←! r[i+1]=SP} i+=1}
-	return r.filter(λ{v ≠ SP})}
+operator_eval ← λ(tokens){
+
+}
+
+def_group ← λ(a,b){}
+def_precedence ← λ(value,name){}
+def_operators ← λ(precedence,operators){
+	if (precedence isa Array)
+	else if (typeof(precedence)='number')
+	else
+}
+
+;[	['15	→ group			\\[…*\\] (…*) {…*} \\‹…*\\›'],
+	['14	x lex-like		\\d+\\.\\d+ ;'],
+	['13	← λ				λ…*'],
+	['12	→ quote			`… ~… ~@…'],
+	['11	← tight			\\[ ( { \\‹ .\\.. .−\\[ .−( '+subscript_ops.map(λ{'.'+v}).join(' ')],
+	['10	← new			new…'],
+	// it's 5am and i'm going to bed. the lines above are the lines that are not fully architected. the lines below should be fine.
+	['9		→ prefix		¬−. ↔-−.'],
+	['8		← mul			.*. ./. .%.'],
+	['7		← add			.+. .-.'],
+	['6		← bitwise		'],
+	['5		← cmp 			.isa. .in. .¬in.'],
+	['4		→ cmp-chained	.=. .≠. .<. .>. .≤. .≥.'],
+	['3		← logical		.&. .\\|.'],
+	['2		→ if-infix		.?.:.'],
+	['1		→ top			.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?'],
+	['0		x separator		, :',λ{[v,c]}].map(λ(v){t ← v.split(~/\t+/); def_operators([[t₀,t₁],t₂.split(' ')])})
+
+/*
+open_eval ← λ{operators_expand(open_macro_eval(groups_expand(v)))}
+
+groups ← {'(':')','[':']','{':'}','‹':'›'}
+open_macros ← {}
+operators ← {}
+open_macros_set ← λ
+operators_add ← λ
+
+groups_expand ← λ(g){r ← group_expand(S('{'),g.concat([S('}')])); if (¬r₁.no) err(); return r₀}
+	group_expand ← λ(g,l){
+		check ← λ(){if (l.no) err('group is not closed @'+g.line)}
+		check()
+		r ← [g]; while(true){
+			if (se(l₀,groups[g.v])) return [r,l[1:]]
+			if (l₀ isa Symbol && own(groups,l₀.v)) {t ← group_expand(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
+			r.push(l₀); l ←! l[1:]; check()}}
+
+open_macro_eval ← λ(v){
+
+}
+
+operators_expand ← λ(v){
+
+}
+
+open_macros_set('λ',λ(forms,sym,tokens){
+
+})
+open_macros_set('−.−',λ(forms,sym,tokens){return s_int(forms₋₁) && s_int(tokens₀)? [forms[: -1].concat([s_mk_float(forms₋₁,tokens₀)]),tokens[1:]] : [forms.concat([sym]),tokens]})
+
+anyfix_macros_set('.', λ(forms,sym,tokens){return [forms[: -1].concat([[sym,forms₋₁||err('bad .',forms₋₁,tokens),tokens₀]]),tokens[1:]]})
+anyfix_macros_set([';',','], λ(forms,sym,tokens){return [forms,tokens]})
+anyfix_macros_set(unicode.subscripts.concat(unicode.subscripts.map(λ{'₋'+v})),
+	λ(forms,sym,tokens){return [forms[: -1].concat([[S('__sub__'),forms₋₁,sym.with_v(unicode.midscript(sym.v))]]),tokens]})
+anyfix_macros_set('λ', λ(forms,sym,tokens){
+	// don't require () ?
+	if (tokens₀ isa Array && tokens₀₀.v = '(') {
+		p ← tokens₀[1:].filter(λ{¬se(v,',')}); tokens ← tokens[1:]
+		// may disrespect precedence
+		t ← anyfix_macro_eval_p1([],tokens); b ← t₀₀; tokens ← t₁; if (t₀.length ≠ 1) err('bad λ')
+		return [forms.concat([[sym,p,b]]),tokens] }
+	else if (tokens₀ isa Array && tokens₀₀.v = '{') {
+		p ← [S('v'),S('b'),S('c')]
+		// may disrespect precedence
+		tokens₀₀.v ←! '(' //! gah
+		t ← anyfix_macro_eval_p1([],tokens); b ← t₀₀; tokens ← t₁; if (t₀.length ≠ 1) err('bad λ')
+		return [forms.concat([[sym,p, [S('return')].concat([b])]]),tokens] }
+	else return [forms.concat([sym]),tokens] })
+
+--- phase macro ---
+group			[] () {} ‹›
+special			λ .
+--- phase evaluated ---
+← tight			[ ( { ‹ ….… …−[ …−( …₀ᵢ // …++ …--
+← new			new…
+→ prefix		¬−… ↔-−… // ↔+−…
+← mul			…*… …/… …%… // % is temporary
+← add			…+… …-…
+← bitwise
+← cmp 			…isa… …in… …¬in…
+s cmp-chained	…=… …≠… …<… …>… …≤… …≥…
+← logical		…&… …|… // maybe && || and or ?
+→ if-infix		…?…:…
+→ assignment	…←… …←!… …+=… // temporary hacks, bah -= *= /= &= |=
+? separator		…;… …,…
+s ?				λ… if…[:]…[else…] while…[:]… return[…] try…[catch…][finally…] // maybe throw ?
+
+groups ← {'(':')','[':']','{':'}','‹':'›'}
 group ← λ(g){
 	group ← λ(g,l){
 		check ← λ(){if (l.no) err('group is not closed @'+g.line)}
@@ -214,9 +301,9 @@ group ← λ(g){
 			if (l₀ isa Symbol && own(groups,l₀.v)) {t ← group(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
 			r.push(l₀); l ←! l[1:]; check()}}
 	r ← group(S('{'),g.concat([S('}')])); if (¬r₁.no) err(); return r₀}
-lex ← λ{group(tokenize(v))}
 
-//===--------------------------------------------===// "anyfix" "macros" //===--------------------------------------------===//
+open_macro_eval ← λ{anyfix_macro_eval(group(v))}
+
 
 anyfix_macros ← {}; anyfix_macros_set ← λ(ss,f){(ss isa Array? ss : [ss]).map(λ(s){symbol_set_decode(s).map(λ(s){
 	v ← s.v; s ← s.space
@@ -343,18 +430,16 @@ anyfix_macros_gen('… | …'); anyfix_macros_gen('… || …') //-
 anyfix_macros_gen('… ← …')
 anyfix_macros_gen('… ←! …')
 anyfix_macros_gen('… += …')
-
+*/
 //===--------------------------------------------===// <edge> //===--------------------------------------------===//
 
 read ← λ(s){
 	seq(s).map(λ{printableᵥ ←! true})
-	// lex: characters are lexed into tokens with λ(rest_characters) → [token,rest_characters]
-	// group: tokens are grouped into tokens so that this is higher-priority than any other anyfix macro
-	// anyfix: tokens naming anyfix macros are expanded into forms with λ(previous_forms,symbol,rest_tokens) → [previous_forms,rest_tokens], but they are not allowed to eat more than the last form of previous_forms . these functions may be called multiple times, so they should be pure.
-
+	// tokenize: characters are tokenized with λ(rest_characters) → [token,rest_characters]
+	// anyfix/open macros: was // anyfix: tokens naming anyfix macros are expanded into forms with λ(previous_forms,symbol,rest_tokens) → [previous_forms,rest_tokens], but they are not allowed to eat more than the last form of previous_forms . these functions may be called multiple times, so they should be pure.
 	// ?: forms naming macros are expanded into forms
 	// ?: forms are translated into javascript
-	r ← anyfix_macro_eval(lex(s))
+	r ← operator_eval(tokenize(s))
 	pr(r)
 	return r}
 
@@ -362,23 +447,18 @@ compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync
 
 compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
 
-// shuffle anyfix macros so that they actually have access to the entire previous part and just don't use it ?
+//===--------------------------------------------===// todo //===--------------------------------------------===//
 
-// when we construct an object in the anyfix macros with Object.map, it throws away much information
-// line [[S('__slice__'),v].concat(split_slice(tokens₀))] groups up the slice arguments way too much
+// keep in mind that the basic idea was always just "write a really nice preprocessor" http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
 
-//# we have left it unclear what exactly the goal is, and i believe we may be suffering from scope creep http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
-//i want
-//#require
-//possibly a #use like thing but that probably should not be a primitive?
+// void is a macro for undefined
 
-// oh dear. we may want standard macros to get their arguments with partial but incomplete anyfix parsing.
-
-//{expr,} is a void block, and {expr} is not a void block
-// ,, ought to mean ,undefined, or somesuch
-// return, ought to return undefined
-
-// output js "return(v)" not "return v"
+// {expr,} = void
+// {expr} = expr
+// [1,,1] = [1 void 1]
+// [1,1] = [1 1] = [1 1,] = [1 1]
+// [1 1,,] = [1 1 void]
+// [,1 1] = [void 1 1]
 
 // try compiling an empty file
 
@@ -404,10 +484,10 @@ compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
 
 // ¬in has to be a reader macro too ...
 
-// fix the "at ╬╗ (c:\User" shit
+// fix the shit where all the functions are named λ
 
 // actually yeah, → operator
 
-// probably just add floats to the lexer
-
 // yeah, just have a bit() anyfix namespace that provides ~ | ^ & >>> >> << ~= |= ^= &= >>>= >>= <<=
+
+// i am starting to worry that we may have failed enormously by not studying perl

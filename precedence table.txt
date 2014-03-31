@@ -1,17 +1,20 @@
-← group			[ ( { ‹
-s special		λ…… try…… new…… if…[:]…[else…] while…[:]…
-← tight			…−[ …−( ….… …₀ᵢ // …++ …--
-→ prefix		¬−… ↔-−… // ↔+−…
-← mul			…*… …/… …%… // % is temporary
-← add			…+… …-…
-← bitwise
-← cmp 			…isa… …in… …¬in…
-s cmp-chained	…=… …≠… …<… …>… …≤… …≥…
-← logical		…&… …|… // maybe && || and or ?
-→ if-infix		…?…:…
-→ assignment	…←… …←!… …+=… // temporary hacks, bah -= *= /= &= |=
-← open			return… // maybe throw
-? separator		…;… …,…
+15	→ group			\[…*\] (…*) {…*} \‹…*\›
+14	x lex-like		.\.. ; λ…* newΣ
+13	← λ				λ…*
+// continue from here
+12	← tight			\[ ( { \‹ .\.. .−\[ .−( .‹₀₁₂ᵢₐ› // .++ .--
+11	← new			new..
+10	→ prefix		¬−. ↔-−. // ↔+−.
+9	← mul			.*. ./. .%. // % is temporary
+8	← add			.+. .-.
+7	← bitwise		
+6	← cmp 			.isa. .in. .¬in.
+5	→ cmp-chained	.=. .≠. .<. .>. .≤. .≥.
+4	← logical		.&. .\|. // maybe && || and or ?
+3	→ if-infix		.?.:.
+2	→ statement		.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]? // bah, throw(?) -= *= /= &= |=
+1	→ quote			`. ~. ~@.
+0	x separator		, :
 
 original:
 
