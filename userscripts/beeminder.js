@@ -3,11 +3,13 @@
 // @namespace  alice0meta.beeminder
 // @version    0.1
 // @match      http*://*.beeminder.com/*
+// @match      https://www.hipchat.com/*
 // ==/UserScript==
 
 // todo: add checks so that things get executed only on the right pages
 // todo‽: consider writing an svg graph generator
-// todo: the datapoints link doesn't handle not having goals in the url
+
+;(function($){
 
 /////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lw_unread.js
 /*function scroll_to(v) {
@@ -32,8 +34,19 @@ var run = {
 		return {cancel:function(){cancel = true; r.cancel();}}}
 }
 
-;(function($){
-	function this_goal(){var r = location.pathname.match(/^(\/[^\/]+)(?:\/goals)?(\/[^\/]+).*/); if (r) return r[1]+'/goals'+r[2]}
+function import_jquery(){var t = document.createElement('script'); t.src = '//code.jquery.com/jquery-latest.min.js'; document.getElementsByTagName('head')[0].appendChild(t)}
+//import_jquery(); $('head').append('<style media="screen" type="text/css"> body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+
+if (location.hostname.match(/hipchat\.com$/)) {
+	// dark theme
+	$('head').append('<style media="screen" type="text/css">'+
+		'body > div.logo,'+
+		'#tabs,'+
+		'#status_ui,'+
+		'.preview,'+
+		'body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+} else if (location.hostname.match(/beeminder\.com$/)) {
+	function this_goal(){var r = location.pathname.match(/^(\/[^\/]+)(?:\/goals)?(\/[^\/]+).*/); if (r && r[1]!=='settings' && r[1]!=='email') return r[1]+'/goals'+r[2]}
 
 	// make feedback button actually link to the feedback forums, although middle-click still doesn't work
 	$('#uvTabLabel').attr('href','https://beeminder.uservoice.com/forums/3011-general')
@@ -76,5 +89,8 @@ var run = {
 				msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
 				run.tomorrow(t)})()
 		}
-	}	
+	}
+}
+
+
 })(jQuery)
