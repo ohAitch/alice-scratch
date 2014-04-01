@@ -34,7 +34,7 @@ var run = {
 		return {cancel:function(){cancel = true; r.cancel();}}}
 }
 
-function import_jquery(){var t = document.createElement('script'); t.src = '//code.jquery.com/jquery-latest.min.js'; document.getElementsByTagName('head')[0].appendChild(t)}
+//function import_jquery(){var t = document.createElement('script'); t.src = '//code.jquery.com/jquery-latest.min.js'; document.getElementsByTagName('head')[0].appendChild(t)}
 //import_jquery(); $('head').append('<style media="screen" type="text/css"> body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
 
 if (location.hostname.match(/hipchat\.com$/)) {
@@ -48,37 +48,22 @@ if (location.hostname.match(/hipchat\.com$/)) {
 } else if (location.hostname.match(/beeminder\.com$/)) {
 	function this_goal(){var r = location.pathname.match(/^(\/[^\/]+)(?:\/goals)?(\/[^\/]+).*/); if (r && r[1]!=='settings' && r[1]!=='email') return r[1]+'/goals'+r[2]}
 
-	// make feedback button actually link to the feedback forums, although middle-click still doesn't work
-	$('#uvTabLabel').attr('href','https://beeminder.uservoice.com/forums/3011-general')
-
 	if (this_goal()) {
+		// remove header and footer
+		$('#header').remove()
+		$('#footer').remove()
+		$('.content').css({'padding-top':'0px', 'padding-bottom':'0px'})
+
 		// dark theme
 		$('head').append('<style media="screen" type="text/css">'+
 			'body > div.content { min-height:100% }'+
 			'div.header,'+
-			'#goal-user > div.content-container > div.user-profile > a > img,'+ // profile picture
+			'#goal-user > div.content-container > div.user-profile > a > img,'+
 			'body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
-		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(v){run.in(v,function(){$('#uvTab').css({'border-top-color':'','border-right-color':'','border-bottom-color':'','-webkit-box-shadow':'','box-shadow':''})})})
-		
-		// style
-		$('.delete_datapoint').css({padding:'0px 1em'})
-
-		// remove header
-		$('#header').remove()
-		$('.content').css({'padding-top': '0px'})
-
-		// remove footer
-		$('#footer').remove()
-
-		// remove datapoint deletion dialog
-		$('.delete_datapoint').removeAttr('data-confirm')
-
-		// remove dogfood mandate box
-		if ($('#admin-links').children('.content-container').children('h3').text()==='Dogfood Mandate')
-			$('#admin-links').remove()
+		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(time){run.in(time,function(){$('#uvTab').css({'border-color':'inherit'})})})
 
 		// provide convenient link to datapoints in sane order
-		$($('.control')[0]).append($('<div class="settings"><a href="'+this_goal()+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
+		$('#goal-box > div.header > div.control').append($('<div class="settings"><a href="'+this_goal()+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
 
 		// on this specific goal, display most recent datapoint
 		if (this_goal()==='/alice0meta/goals/team') {
@@ -89,7 +74,20 @@ if (location.hostname.match(/hipchat\.com$/)) {
 				msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
 				run.tomorrow(t)})()
 		}
+
+		// datapoint deletion buttons: restyle, remove confirmation
+		$('.delete_datapoint').css({padding:'0px 1em'}).removeAttr('data-confirm')
+
+		// add another submit button in admin box
+		$('.edit_goal.admin').last().find('fieldset:nth-child(2)').append($('<input class="btn" id="goal_submit_2" name="commit" type="submit" value="Submit">'))
+
+		// remove dogfood mandate box
+		if ($('#admin-links > div.content-container > h3').text()==='Dogfood Mandate')
+			$('#admin-links').remove()
 	}
+
+	// make feedback button actually link to the feedback forums, although middle-click still doesn't work
+	$('#uvTabLabel').attr('href','https://beeminder.uservoice.com/forums/3011-general')
 }
 
 
