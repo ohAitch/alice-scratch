@@ -10,11 +10,12 @@ SetTitleMatchMode 2
 // todo eh: consider making menukey sticky, like F8
 // todo eh: fill out F8
 // todo eh: look at https://raw.github.com/polyethene/AutoHotkey-Scripts/master/Hotstrings.ahk
-// ≁ ≔≕ ′″‴ ∘
 // todo eh: mouse : add homoiconicity (this is hard)
-// todo: run (F7) should kill any terminated run console windows
+// ≁ ≔≕ ′″‴ ∘
+// todo: run (F7) should kill any terminated run consoles
 // todo: media controls should be more generalized. notably, mute does not pause vlc. i mean, it still won't, but refactor this.
 // todo: add " to url end
+// todo: ≡/ should also work with text already on the clipboard, if copy copies nothing
 
 // MACRO_DISPATCH (copied from hydrocarboner)
 #define PASTE2(a,b) a ## b
