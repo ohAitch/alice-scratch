@@ -1,23 +1,14 @@
 // ==UserScript==
-// @name       beeminder tweaks
-// @namespace  alice0meta.beeminder
-// @version    0.1
-// @match      http*://*.beeminder.com/*
-// @match      https://www.hipchat.com/*
+// @name        beeminder tweaks
+// @namespace   alice0meta.beeminder
+// @version     0.11
+// @description a collection of miscellaneous beeminder-related tweaks
+// @match       http*://*.beeminder.com/*
+// @match       https://www.hipchat.com/*
 // ==/UserScript==
 
-// todo: add checks so that things get executed only on the right pages
 // todo‽: consider writing an svg graph generator
 
-;(function($){
-
-/////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lw_unread.js
-/*function scroll_to(v) {
-	// this may be rather hacky and bad, unsure
-	var t = location.href
-	location.replace(typeof v === 'string'? v.replace(/^#?/,'#') : '#'+v.id)
-	window.history.replaceState(null,null,t)
-}*/
 // experimental
 function s(v,s) {return eval('(function(v){'+s.replace(/\./g,'v.')+';return v})')(v)}
 /////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lang-alpha
@@ -49,27 +40,48 @@ if (location.hostname.match(/hipchat\.com$/)) {
 	function this_goal(){var r = location.pathname.match(/^(\/[^\/]+)(?:\/goals)?(\/[^\/]+).*/); if (r && r[1]!=='settings' && r[1]!=='email') return r[1]+'/goals'+r[2]}
 
 	if (this_goal()) {
-		// remove header and footer
+		// remove misc elements
 		$('#header').remove()
 		$('#footer').remove()
 		$('.content').css({'padding-top':'0px', 'padding-bottom':'0px'})
+		$('#goal-stats').remove()
+		$('#goal-legend').remove()
 
 		// dark theme
 		$('head').append('<style media="screen" type="text/css">'+
 			'body > div.content { min-height:100% }'+
 			'div.header,'+
 			'#goal-user > div.content-container > div.user-profile > a > img,'+
-			'body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+			'.dark-theme, body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
 		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(time){run.in(time,function(){$('#uvTab').css({'border-color':'inherit'})})})
 
 		// provide convenient link to datapoints in sane order
 		$('#goal-box > div.header > div.control').append($('<div class="settings"><a href="'+this_goal()+'/datapoints?dir=desc&sort=measured_at"><div style="background: url(https://raw.githubusercontent.com/alice0meta/userscripts/master/userscripts/datapoints_icon.png); background-repeat: no-repeat; height: 36px; width: 36px; background-size:32px 32px; background-position: 2px;"></div></a></div>'))
 
+		// if on a graph page, add a graph tooltipthingy
+		if ($('#graph-image').length>0) {
+			var graph = $('#graph-image')
+			var zoom_div; $('body').append(zoom_div = $('<div class="dark-theme" style="position:fixed; display:none; height:100px; width:100px; overflow:hidden; background:url('+graph[0].src+'); background-size:'+696*3+'px; border: 1px solid black; border-radius:100%">'))
+			var zoom_on = false
+			$(document).on('mousemove',function(e){
+				var t = graph.offset()
+				var x = e.pageX - t.left
+				var y = e.pageY - t.top
+				if ((0 <= x && x < graph.width() && 0 <= y && y < graph.height()) !== zoom_on)
+					zoom_div.css({display:(zoom_on = !zoom_on)?'inline':'none'})
+				if (zoom_on) {
+					var w = zoom_div.width()
+					var h = zoom_div.height()
+					zoom_div.css({left:e.clientX - w/2, top:e.clientY - h/2, 'background-position':(-x*3+w/2)+'px '+(-y*3+h/2+10)+'px'})
+				}
+			})
+		}
+
 		// on this specific goal, display most recent datapoint
 		if (this_goal()==='/alice0meta/goals/team') {
 			//'< no request :c >'
-			var t = $.map($('.recent-data').find('span'),function(v){var t = $(v).attr('data-comment').match(/\| (.*)/); return [t?[t[1],parseInt($(v).text().match(/^(\d+)/)[1])]:undefined]}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
-			var msg; $('body').append(msg = $('<div id="datapoint-msg" style="top:20px; left:20px; position:fixed; max-width:400px; font-family:monospace; text-align:left; padding:0px 3px; border: 1px solid #000; background-color:rgba(255,255,255,.7); white-space:pre-wrap">'))
+			var t = $.map($('.recent-data > ol > li > span'),function(v){var t = $(v).attr('data-comment').match(/\| (.*)/); return [t?[t[1],parseInt($(v).text().match(/^(\d+)/)[1])]:undefined]}).filter(function(v){return v}).slice(-1)[0]; var data = t[0]; var day = t[1]
+			var msg; $('body').append(msg = $('<div style="top:20px; left:20px; position:fixed; max-width:400px; font-family:monospace; text-align:left; padding:0px 3px; border: 1px solid #000; background-color:rgba(255,255,255,.7); white-space:pre-wrap">'))
 			;(function t(){
 				msg.text('alice-'+(s(new Date(),'.setDate(.getDate()-1)').getDate() === day? 'yesterday' : day)+' asks:\n'+data)
 				run.tomorrow(t)})()
@@ -89,6 +101,3 @@ if (location.hostname.match(/hipchat\.com$/)) {
 	// make feedback button actually link to the feedback forums, although middle-click still doesn't work
 	$('#uvTabLabel').attr('href','https://beeminder.uservoice.com/forums/3011-general')
 }
-
-
-})(jQuery)
