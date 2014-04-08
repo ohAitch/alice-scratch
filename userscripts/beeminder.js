@@ -4,16 +4,16 @@
 // @version     0.11
 // @description a collection of miscellaneous beeminder-related tweaks
 // @match       http*://*.beeminder.com/*
-// @match       https://www.hipchat.com/*
+// @match       https://*.hipchat.com/*
 // ==/UserScript==
 
 // todo‽: consider writing an svg graph generator
-
+if (location.hostname.match(/beeminder\.com$/)) {
 // experimental
 function s(v,s) {return eval('(function(v){'+s.replace(/\./g,'v.')+';return v})')(v)}
 /////  THE FOLLOWING IS COPIED FROM ELSEWHERE  ///// lang-alpha
 // time
-Date.now_s = function(){return Date.now() / 1000}
+//Date.now_s = function(){return Date.now() / 1000}
 var run = {
 	in:   function(s,f){return {id:setTimeout( f,s*1000), cancel:function(){cancelTimeout( this.id)}}},
 	every:function(s,f){return {id:setInterval(f,s*1000), cancel:function(){cancelInterval(this.id)}}},
@@ -25,18 +25,24 @@ var run = {
 		return {cancel:function(){cancel = true; r.cancel();}}}
 }
 
-//function import_jquery(){var t = document.createElement('script'); t.src = '//code.jquery.com/jquery-latest.min.js'; document.getElementsByTagName('head')[0].appendChild(t)}
-//import_jquery(); $('head').append('<style media="screen" type="text/css"> body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+/*
+function import_jquery(){
+var t = document.createElement('script'); t.src = '//code.jquery.com/jquery-latest.min.js'; document.getElementsByTagName('head')[0].appendChild(t)
+}
+import_jquery(); $('head').append('<style media="screen" type="text/css"> body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+*/
 
-if (location.hostname.match(/hipchat\.com$/)) {
+$.css = function(v){$('head').append('<style media="screen" type="text/css">'+v+'</style>')}
+
+/*if (location.hostname.match(/hipchat\.com$/)) {
 	// dark theme
-	$('head').append('<style media="screen" type="text/css">'+
+	$.css(
 		'body > div.logo,'+
 		'#tabs,'+
 		'#status_ui,'+
 		'.preview,'+
-		'body { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
-} else if (location.hostname.match(/beeminder\.com$/)) {
+		'body { -webkit-filter: invert(100%) hue-rotate(180deg) }')
+} else*/ //if (location.hostname.match(/beeminder\.com$/)) {
 	function this_goal(){var r = location.pathname.match(/^(\/[^\/]+)(?:\/goals)?(\/[^\/]+).*/); if (r && r[1]!=='settings' && r[1]!=='email') return r[1]+'/goals'+r[2]}
 
 	if (this_goal()) {
@@ -48,11 +54,11 @@ if (location.hostname.match(/hipchat\.com$/)) {
 		$('#goal-legend').remove()
 
 		// dark theme
-		$('head').append('<style media="screen" type="text/css">'+
+		$.css(
 			'body > div.content { min-height:100% }'+
 			'div.header,'+
 			'#goal-user > div.content-container > div.user-profile > a > img,'+
-			'.dark-theme, body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }</style>')
+			'.dark-theme, body > div.content { -webkit-filter: invert(100%) hue-rotate(180deg) }')
 		;[0.3,0.4,1,2,3,4,5,6,7,8,9,10].map(function(time){run.in(time,function(){$('#uvTab').css({'border-color':'inherit'})})})
 
 		// provide convenient link to datapoints in sane order
