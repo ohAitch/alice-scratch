@@ -69,7 +69,7 @@
 
 (def CAPTURE_PERIOD 10) ; seconds
 
-(def screens-dir (str (System/getenv "SKRYL")"/history/screens/"))
+(def screens-dir (str (System/getenv "ALI")"/history/screens/"))
 
 (defn capture[] (write-image (print-screen) (str screens-dir (format (datestr "yyyy-MM-dd/HH.mm.ss' %d.png'") (long (idle.$/idle-time))))))
 (defn main[] (init-loops)
