@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+eval $mydir
 
-cp "$USERPROFILE\AppData\Local\Google\Chrome\User Data\Default\Bookmarks" "$ALI/history/bookmarks/`date \"+%Y-%m-%d %H.%M\"`"
+#chrome="$USERPROFILE/AppData/Local/Google/Chrome/User Data" #windows
+chrome=~/"Library/Application Support/Google/Chrome" #osx
 
-cd $ALI; git add -A .; git commit -m "automated"
+cp "$chrome/Default/Bookmarks" ~/"ali/history/bookmarks/`date \"+%Y-%m-%d %H.%M\"`"
 
-cd ../gitminder
-./run.sh
+cd ~/ali; git add -A .; git commit -m "automated"
+
+#cd ../gitminder
+#./run.sh

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 eval $mydir
 
 t="bin/ahk.ahk"

@@ -341,25 +341,25 @@ avgi(x,y) {return floor((x+y)/2)}
 	chord(],s,ˢ)],			// ]s ˢ
 	chord_shift(],t,ᵗ,ᵀ)	// ]t ᵗ ⇧ᵀ
 	chord_shift(],u,ᵘ,ᵁ)	// ]u ᵘ ⇧ᵁ
-	chord_shift(],v,ᵛ,ⱽ)		// ]v ᵛ ⇧ⱽ
+	chord_shift(],v,ᵛ,ⱽ)	// ]v ᵛ ⇧ⱽ
 	chord_shift(],w,ʷ,ᵂ)	// ]w ʷ ⇧ᵂ
 	chord(],x,ˣ)			// ]x ˣ
 	chord(],y,ʸ)			// ]y ʸ
 	chord(],z,ᶻ)			// ]z ᶻ
 	chord([,a,ₐ)	// [a ₐ
 	chord([,e,ₑ)	// [e ₑ
-	chord([,h,ₕ)		// [h ₕ
+	chord([,h,ₕ)	// [h ₕ
 	chord([,i,ᵢ)	// [i ᵢ
-	chord([,j,ⱼ) 	// [j ⱼ
-	chord([,k,ₖ) 	// [k ₖ
-	chord([,l,ₗ) 	// [l ₗ
-	chord([,m,ₘ)		// [m ₘ
-	chord([,n,ₙ)		// [n ₙ
+	chord([,j,ⱼ)	// [j ⱼ
+	chord([,k,ₖ)	// [k ₖ
+	chord([,l,ₗ)	// [l ₗ
+	chord([,m,ₘ)	// [m ₘ
+	chord([,n,ₙ)	// [n ₙ
 	chord([,o,ₒ)	// [o ₒ
-	chord([,p,ₚ)		// [p ₚ
+	chord([,p,ₚ)	// [p ₚ
 	chord([,r,ᵣ)	// [r ᵣ
-	chord([,s,ₛ) 	// [s ₛ
-	chord([,t,ₜ) 	// [t ₜ
+	chord([,s,ₛ)	// [s ₛ
+	chord([,t,ₜ)	// [t ₜ
 	chord([,u,ᵤ)	// [u ᵤ
 	chord([,v,ᵥ)	// [v ᵥ
 	chord([,x,ₓ)	// [x ₓ

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 eval $mydir
 
 files="`pwd`/files.js"
