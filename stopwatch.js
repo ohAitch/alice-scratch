@@ -25,14 +25,14 @@ number_to_word_20_99 = function(v){return (['','','twenty','thirty','forty','fif
 	(v%10===0?'':'-'+['','one','two','three','four','five','six','seven','eight','nine'][v%10]))||v+''}
 
 go = function λ(){
-	if (λ.quit) λ.quit[0] = true
+	//if (λ.quit) λ.quit[0] = true
 	var r = '@'+new Date().yyyy_mm_dd_hh_mm()+' '+pretty_time(now() - λ.now)+': '
 	copy(r)
 	λ.now = now()
-	var quit = [false]; λ.quit = quit
+	/*var quit = [false]; λ.quit = quit
 	;(function t(times){var n = now(); times = times.filter(function(v){return !(v - n < 0)})
 		if (times.length>0) setTimeout(function(){if (!quit[0]) alert("oh dude it's been like "+number_to_word_20_99(Math.round((now() - go.now)/60))+' minutes . finish up the thing?',function(){t(times.slice(1))})},(times[0] - n)*1000)
-		})([20,30,40,50,60,80,100,120,140,160,180].map(function(v){return v*60 + go.now}))
+		})([20,30,40,50,60,80,100,120,140,160,180].map(function(v){return v*60 + go.now}))*/
 	return r}
 go.now = now()
 
