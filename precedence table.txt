@@ -1,31 +1,173 @@
-15	→ group			\[…*\] (…*) {…*} \‹…*\›
-14	x lex-like		.\.. ; λ…* newΣ
-13	← λ				λ…*
-// continue from here
-12	← tight			\[ ( { \‹ .\.. .−\[ .−( .‹₀₁₂ᵢₐ› // .++ .--
-11	← new			new..
+// && || % are probably temporary
+// add ++ -- with .−\[
+// add ↔+−. with ↔-−.
+// add ./\ᵛ+/ with ./₋?\ᵥ/
+// add -= *= /= &= |= with +=
+// ? bah, throw
+
+12	←	λ…*{
+
+actually might do want −+− to be higher than ↔*↔
+also −←− higher than ↔+↔
+
+\[…*\] (…*) {…*}
+/\d+/\./\d+/ λ…*<→{> new/.+/
+\[ ( { .\.. .−\[ .−(
+¬−. ↔+−.
+.+.
+.?.:.
+.←.
+.+=.
+λ.. if.:?.,?[else.]? return.?
+`. ~.
+, :
+
+"is there anything i want to push out despite spacing? check from bottom up (top down)"
+
+a, b + 7, 9
+
+maybe ,
+if shouldn''t. if is a statement. if _always_ pushes out, except against ,
+v+2 * 7
+
+[] _eats_ tokens without giving them any opportunity to bind to anything
+
+left is the current token, top is the next token
+wall: left token sees nothing
+warr: right token sees nothing
+n/a: these don''t interact anyway
+     ,    `    λ    if   rt   +=   ←    ?:   +    ¬     +    [    (    {    .    .[   .(   .    nw   []   ()   {}   |
+,    n/a  n/a  n/a  n/a  n/a  warr warr warr warr n/a   n/a  n/a  n/a  n/a  warr warr warr warr n/a  n/a  n/a  n/a  |
+`    wall                                                                                                           |
+λ    wall                                                                                                           |
+if   wall                                                                                                           |
+rt   wall                                                                                                           |
++=   wall                                                                                                           |
+←    wall                                                                                                           |
+?:   wall                                                                                                           |
++    wall                                                                                                           |
+¬    wall                                                                                                           |
++    wall                                                                                                           |
+[    n/a                                                                                                            |
+(    n/a                                                                                                            |
+{    n/a                                                                                                            |
+.    wall                                                                                                           |
+.[   n/a                                                                                                            |
+.(   n/a                                                                                                            |
+.    wall                                                                                                           |
+nw   wall                                                                                                           |
+[]   eat                                                                                                            |
+()   eat                                                                                                            |
+{}   eat                                                                                                            |
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+regime breakers:
+	\[…*\] (…*) {…*} ‹…*›
+	λ
+	new
+	;
+
+230 231 \[…*\] (…*) {…*} ‹…*›
+220 220 ; λ…*<→{> new/.+/
+
+210 210 \[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
+
+200 201 ¬−. ↔-−.
+190 190 .*. .\/. .%.
+180 180 .+. .-.
+170 170 // bitwise?
+160 160 .isa. .in. .¬in.
+150 151 .=. .≠. .\<. .\>. .≤. .≥.
+140 140 .&. .|. .&&. .||.
+130 131 .\?.:.
+120 121 .←. .←!.
+120 120 .+=.
+
+120 121 .←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+110 111 `. ~. ~@.
+100 100 , :
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+230 231 \[…*\] (…*) {…*} ‹…*›
+220 220 ; λ…*<→{> new/.+/
+
+210 210 \[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
+200 201 ¬−. ↔-−.
+190 190 .*. .\/. .%.
+180 180 .+. .-.
+170 170 // bitwise?
+160 160 .isa. .in. .¬in.
+150 151 .=. .≠. .\<. .\>. .≤. .≥.
+140 140 .&. .|. .&&. .||.
+130 131 .\?.:.
+120 121 .←. .←!.
+120 120 .+=.
+
+120 121 .←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+110 111 `. ~. ~@.
+100 100 , :
+
+/*
+add more than minimum? alpha precedence
+
+because then it will be possible to put things between
+it should always be possible to do that
+(independent libraries ??)
+
+it might be worth considering that case.
+
+"fail-fast" could be adequate
+*/
+
+// ... this is pretty complicated
+// how the hell do you think we might support other libraries other than by just letting them add operators at existing precedences?
+
+// maybe we need to just let operators explicitly choose which things they bind to and which they don't
+
+/*
+looking on the internet:
+
+http://compilers.iecc.com/comparch/article/01-07-068
+
+Perhaps there is an option where only a limited amount ordering is required; perhaps a pre-parsing phase which defines operators.
+
+Extending Haskell precedences levels you could imagine changing to a rational number, that way you can always fit an operator between two existing operator. But a better choice would probably be to switch to the precedences being a partial order. So given two operators they can be related and then handled accordingly, or unrelated which would force parenthesis.
+*/
+
+→ means higher right priority
+← means equal right priority
+
+13	→ group			\[…*\] (…*) {…*} ‹…*›
+12	← lex-like		/\d+/\./\d+/ ; λ…*<→{> new/.+/
+11	← tight			\[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/ // .++ .--
 10	→ prefix		¬−. ↔-−. // ↔+−.
-9	← mul			.*. ./. .%. // % is temporary
+9	← mul			.*. .\/. .%. // % is temporary
 8	← add			.+. .-.
 7	← bitwise		
 6	← cmp 			.isa. .in. .¬in.
-5	→ cmp-chained	.=. .≠. .<. .>. .≤. .≥.
-4	← logical		.&. .\|. // maybe && || and or ?
+5	→ cmp-chained	.=. .≠. .\<. .\>. .≤. .≥.
+4	← logical		.&. .|. // maybe && || and or ?
 3	→ if-infix		.?.:.
 2	→ statement		.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]? // bah, throw(?) -= *= /= &= |=
 1	→ quote			`. ~. ~@.
-0	x separator		, :
+0	← separator		, :
 
-original:
+grouping	13	→	\[…*\] (…*) {…*} ‹…*›
+lex-like	12	←	/\d+/\./\d+/ ; λ…*<→{> new/.+/
 
-tight					….…	…(…)	…[…]	new …(…)	…++	…--
-prefix					+…	-…	¬…	bit~…	typeof …
-mul						*	/
-add						+	-
-bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
-comparison, asymmetric	isa	in	¬in
-comparison, pythonic	=	≠	<	>	≤	≥
-logical					&	|
-conditional				…?…:…
-assignment				←	←!	+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
-statement				delete …	yield …
+tight		11	←	\[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
+prefix		10	→	¬−. ↔-−. // ↔+−.
+mul			9	←	.*. .\/. .%.
+add			8	←	.+. .-.
+bitwise		7	←	
+comparison	6	←	.isa. .in. .¬in.
+cmp chained	5	→	.=. .≠. .\<. .\>. .≤. .≥.
+logical		4	←	.&. .|. .&&. .||.
+?:			3	→	.?.:.
+statement	2	→	.←. .←!. .+=.
+
+statement	2	→	.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+quote		1	→	`. ~. ~@.
+separator	0	←	, :

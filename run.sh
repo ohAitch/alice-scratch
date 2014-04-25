@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+eval $mydir
 
 rm bin/*
 load/load.js load.a bin/load.js
