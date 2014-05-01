@@ -36,78 +36,63 @@ left is the current token, top is the next token
 wall: left token sees nothing
 warr: right token sees nothing
 n/a: these don''t interact anyway
-     ,    `    λ    if   rt   +=   ←    ?:   +    ¬     +    [    (    {    .    .[   .(   .    nw   []   ()   {}   |
-,    n/a  n/a  n/a  n/a  n/a  warr warr warr warr n/a   n/a  n/a  n/a  n/a  warr warr warr warr n/a  n/a  n/a  n/a  |
-`    wall                                                                                                           |
-λ    wall                                                                                                           |
-if   wall                                                                                                           |
-rt   wall                                                                                                           |
-+=   wall                                                                                                           |
-←    wall                                                                                                           |
-?:   wall                                                                                                           |
-+    wall                                                                                                           |
-¬    wall                                                                                                           |
-+    wall                                                                                                           |
-[    n/a                                                                                                            |
-(    n/a                                                                                                            |
-{    n/a                                                                                                            |
-.    wall                                                                                                           |
-.[   n/a                                                                                                            |
-.(   n/a                                                                                                            |
-.    wall                                                                                                           |
-nw   wall                                                                                                           |
-[]   eat                                                                                                            |
-()   eat                                                                                                            |
-{}   eat                                                                                                            |
+
+     ,    `    λ    if   rt   +=   ←    ?:   +    ¬     +    [    (    {    .    .[   .(   .    |
+,    n/a  n/a  n/a  n/a  n/a  warr warr warr warr n/a   n/a  n/a  n/a  n/a  warr warr warr warr |
+`    wall                                                                                       |
+λ    wall                                                                                       |
+if   wall                                                                                       |
+rt   wall                                                                                       |
++=   wall                                                                                       |
+←    wall                                                                                       |
+?:   wall                                                                                       |
++    wall                                                                                       |
+¬    wall                                                                                       |
++    wall                                                                                       |
+[    n/a                                                                                        |
+(    n/a                                                                                        |
+{    n/a                                                                                        |
+.    wall                                                                                       |
+.[   n/a                                                                                        |
+.(   n/a                                                                                        |
+.    wall                                                                                       |
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 regime breakers:
-	\[…*\] (…*) {…*} ‹…*›
+	\[…*\] (…*) {…*}
 	λ
 	new
 	;
 
-230 231 \[…*\] (…*) {…*} ‹…*›
+230 231 \[…*\] (…*) {…*}
 220 220 ; λ…*<→{> new/.+/
 
-210 210 \[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
+210 210 \[ ( { .\.. .−\[ .−( ./₋?\ᵥ/
 
 200 201 ¬−. ↔-−.
 190 190 .*. .\/. .%.
 180 180 .+. .-.
 170 170 // bitwise?
 160 160 .isa. .in. .¬in.
-150 151 .=. .≠. .\<. .\>. .≤. .≥.
+150 151 .=. .≠. .<. .>. .≤. .≥.
 140 140 .&. .|. .&&. .||.
 130 131 .\?.:.
 120 121 .←. .←!.
 120 120 .+=.
 
-120 121 .←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+120 121 λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
 110 111 `. ~. ~@.
 100 100 , :
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//===--------------------------===// current //===-------------------------===//
+// okay, we've let our thoughts on this percolate for a while. let's see if we can write out the operators in a sensible way.
+// we need to take into account all four spacings, which the below does *not* yet.
 
-230 231 \[…*\] (…*) {…*} ‹…*›
-220 220 ; λ…*<→{> new/.+/
-
-210 210 \[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
-200 201 ¬−. ↔-−.
-190 190 .*. .\/. .%.
-180 180 .+. .-.
-170 170 // bitwise?
-160 160 .isa. .in. .¬in.
-150 151 .=. .≠. .\<. .\>. .≤. .≥.
-140 140 .&. .|. .&&. .||.
-130 131 .\?.:.
-120 121 .←. .←!.
-120 120 .+=.
-
-120 121 .←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+120 121 return.?
 110 111 `. ~. ~@.
 100 100 , :
+
 
 /*
 add more than minimum? alpha precedence
