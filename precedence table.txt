@@ -6,23 +6,6 @@
 // add back .in. .¬in. with isa
 // ? bah, throw
 
-12	←	λ…*{
-
-actually might do want ₋+₋ to be higher than ␣*␣
-also ₋←₋ higher than ␣+␣
-
-\[…*\] (…*) {…*}
-/\d+/\./\d+/ λ…*<→{> new/.+/
-\[ ( { .\.. .₋\[ .₋(
-¬₋. ␣+₋.
-.+.
-.?.:.
-.←.
-.+=.
-λ.. if.:?.,?[else.]? return.?
-`. ~.
-, :
-
 "is there anything i want to push out despite spacing? check from bottom up (top down)"
 
 a, b + 7, 9
@@ -33,44 +16,9 @@ v+2 * 7
 
 [] _eats_ tokens without giving them any opportunity to bind to anything
 
-left is the current token, top is the next token
-wall: left token sees nothing
-warr: right token sees nothing
-n/a: these don''t interact anyway
-
-     ,    `    λ    if   rt   +=   ←    ?:   +    ¬     +    [    (    {    .    .[   .(   .    |
-,    n/a  n/a  n/a  n/a  n/a  warr warr warr warr n/a   n/a  n/a  n/a  n/a  warr warr warr warr |
-`    wall                                                                                       |
-λ    wall                                                                                       |
-if   wall                                                                                       |
-rt   wall                                                                                       |
-+=   wall                                                                                       |
-←    wall                                                                                       |
-?:   wall                                                                                       |
-+    wall                                                                                       |
-¬    wall                                                                                       |
-+    wall                                                                                       |
-[    n/a                                                                                        |
-(    n/a                                                                                        |
-{    n/a                                                                                        |
-.    wall                                                                                       |
-.[   n/a                                                                                        |
-.(   n/a                                                                                        |
-.    wall                                                                                       |
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-regime breakers:
-	\[…*\] (…*) {…*}
-	λ
-	new
-	; && ||
-
 230 231 \[…*\] (…*) {…*}
 220 220 ; λ…*<→{> new/.+/
-
 210 210 \[ ( { .\.. .₋\[ .₋( ./₋?\ᵥ/
-
 200 201 ¬₋. ␣-₋.
 190 190 .*. .\/. .%.
 180 180 .+. .-.
@@ -81,7 +29,6 @@ regime breakers:
 130 131 .\?.:.
 120 121 .←. .←!.
 120 120 .+=.
-
 120 121 λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
 110 111 `. ~. ~@.
 100 100 , :
@@ -113,7 +60,6 @@ regime breakers:
 	\[ ( {
 
 // todo:
-
 .₋\[ .₋(
 .₋/₋?\ᵥ/
 .␣\.₋. .₋\.₋.
@@ -140,102 +86,12 @@ regime breakers:
 `₋. ~₋. ~@₋.
 , :
 
-// todo:
-, : ` ~ ~@ λ if while return try += ← ←!
-?: & | && || = ≠ < > ≤ ≥ isa in ¬in + - * / % ¬ - [ ( { . [ ( ᵥ
+// add more than minimum? alpha precedence (so, 190 195 instead of 190 191? or just allow floats.)
 
+// it might be worth considering the case of independent libraries.
+// "fail-fast" could be adequate
 
-//===------------===// whoops. this wasn't quite perfect. //===------------===//
-
-890 891 .₋+₋.
-831 830 .₋←₋. .₋←!₋.
-820 821 return₋.?
-811 810 `₋. ~₋. ~@₋.
-
-190 191 .␣+␣.
-131 130 .␣←␣. .␣←!␣.
-120 121 return␣.?
-111 110 `␣. ~␣. ~@␣.
-
-100 100 , :
-`¬value
-`while etc
-// left undefined:
-unbalanced versions of ← ←! +
-
-λ if while try += ?: & | && || = ≠ < > ≤ ≥ isa in ¬in - * / % ¬ - [ ( { . [ ( ᵥ
-
-
-/*
-add more than minimum? alpha precedence
-
-because then it will be possible to put things between
-it should always be possible to do that
-(independent libraries ??)
-
-it might be worth considering that case.
-
-"fail-fast" could be adequate
-*/
-
-// ... this is pretty complicated
-// how the hell do you think we might support other libraries other than by just letting them add operators at existing precedences?
-
-// maybe we need to just let operators explicitly choose which things they bind to and which they don't
-
-/*
-looking on the internet:
-
-http://compilers.iecc.com/comparch/article/01-07-068
-
-Perhaps there is an option where only a limited amount ordering is required; perhaps a pre-parsing phase which defines operators.
-
-Extending Haskell precedences levels you could imagine changing to a rational number, that way you can always fit an operator between two existing operator. But a better choice would probably be to switch to the precedences being a partial order. So given two operators they can be related and then handled accordingly, or unrelated which would force parenthesis.
-*/
-
-→ means higher right priority
-← means equal right priority
-
-13	→ group			\[…*\] (…*) {…*} ‹…*›
-12	← lex-like		/\d+/\./\d+/ ; λ…*<→{> new/.+/
-11	← tight			\[ ( { ‹ .\.. .₋\[ .₋( ./₋?\ᵥ/ // .++ .--
-10	→ prefix		¬₋. ␣-₋. // ␣+₋.
-9	← mul			.*. .\/. .%. // % is temporary
-8	← add			.+. .-.
-7	← bitwise		
-6	← cmp 			.isa. .in. .¬in.
-5	→ cmp-chained	.=. .≠. .\<. .\>. .≤. .≥.
-4	← logical		.&. .|. // maybe && || and or ?
-3	→ if-infix		.?.:.
-2	→ statement		.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]? // bah, throw(?) -= *= /= &= |=
-1	→ quote			`. ~. ~@.
-0	← separator		, :
-
-grouping	13	→	\[…*\] (…*) {…*} ‹…*›
-lex-like	12	←	/\d+/\./\d+/ ; λ…*<→{> new/.+/
-
-tight		11	←	\[ ( { ‹ .\.. .₋\[ .₋( ./₋?\ᵥ/
-prefix		10	→	¬₋. ␣-₋. // ␣+₋.
-mul			9	←	.*. .\/. .%.
-add			8	←	.+. .-.
-bitwise		7	←	
-comparison	6	←	.isa. .in. .¬in.
-cmp chained	5	→	.=. .≠. .\<. .\>. .≤. .≥.
-logical		4	←	.&. .|. .&&. .||.
-?:			3	→	.?.:.
-statement	2	→	.←. .←!. .+=.
-
-statement	2	→	.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
-quote		1	→	`. ~. ~@.
-separator	0	←	, :
-
-
-
-
-
-
-
-
+// http://compilers.iecc.com/comparch/article/01-07-068
 
 parse_expression ()
     return parse_expression_1 (parse_primary (), 0)
@@ -244,10 +100,10 @@ parse_expression_1 (lhs, min_precedence)
         op := next token
         rhs := parse_primary ()
         while the next token is a binary operator whose precedence is greater
-                 than op's, or a right-associative operator
-                 whose precedence is equal to op's
+                 than op''s, or a right-associative operator
+                 whose precedence is equal to op''s
             lookahead := next token
-            rhs := parse_expression_1 (rhs, lookahead's precedence)
+            rhs := parse_expression_1 (rhs, lookahead''s precedence)
         lhs := the result of applying op with operands lhs and rhs
     return lhs
 Example execution of the algorithm[edit]
