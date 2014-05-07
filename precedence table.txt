@@ -1,19 +1,20 @@
 // && || % are probably temporary
-// add ++ -- with .−\[
-// add ↔+−. with ↔-−.
+// add ++ -- with .₋\[
+// add ␣+₋. with ␣-₋.
 // add ./\ᵛ+/ with ./₋?\ᵥ/
 // add -= *= /= &= |= with +=
+// add back .in. .¬in. with isa
 // ? bah, throw
 
 12	←	λ…*{
 
-actually might do want −+− to be higher than ↔*↔
-also −←− higher than ↔+↔
+actually might do want ₋+₋ to be higher than ␣*␣
+also ₋←₋ higher than ␣+␣
 
 \[…*\] (…*) {…*}
 /\d+/\./\d+/ λ…*<→{> new/.+/
-\[ ( { .\.. .−\[ .−(
-¬−. ↔+−.
+\[ ( { .\.. .₋\[ .₋(
+¬₋. ␣+₋.
 .+.
 .?.:.
 .←.
@@ -63,14 +64,14 @@ regime breakers:
 	\[…*\] (…*) {…*}
 	λ
 	new
-	;
+	; && ||
 
 230 231 \[…*\] (…*) {…*}
 220 220 ; λ…*<→{> new/.+/
 
-210 210 \[ ( { .\.. .−\[ .−( ./₋?\ᵥ/
+210 210 \[ ( { .\.. .₋\[ .₋( ./₋?\ᵥ/
 
-200 201 ¬−. ↔-−.
+200 201 ¬₋. ␣-₋.
 190 190 .*. .\/. .%.
 180 180 .+. .-.
 170 170 // bitwise?
@@ -87,11 +88,82 @@ regime breakers:
 
 //===--------------------------===// current //===-------------------------===//
 // okay, we've let our thoughts on this percolate for a while. let's see if we can write out the operators in a sensible way.
-// we need to take into account all four spacings, which the below does *not* yet.
 
-120 121 return.?
-110 111 `. ~. ~@.
+oh!
+eating another left-eating op (probably?) doesn''t change the number of things we''re eating, but another non-left-eating op *does*
+so the question is: what gets ops interpreted as functions and what gets ops interpreted as macros?
+
+[is a last item] [last item is full] [next item is left-wall]: recurse back up to whatever is eating many thing in sequence?
+[is a last item] [last item is full] [next item is maybe left-wall]: ??? not sure ???
+[is a last item] [last item is full] [next item is left-eaty]: recurse to next item if its left-priority is higher than our right-priority (error if they''t equal), else recurse upwards
+[is a last item] [last item is full] [next item is void]: why marvelous, just let the above level handle this end
+[is a last item] [last item is want] [next item is not-an-op]: eat it
+[is a last item] [last item is want] [next item can be left-wall and have lower priority than us]: recurse to next item!
+[is a last item] [last item is want] [next item is any other op]: error!
+[is a last item] [last item is want] [next item is void]: oh no, you don''t get your satisfaction! but this is still not a problem.
+[void last item] [next item is left-wall]: marvelous, no problem, just do whatever the thing that is eating things says
+[void last item] [next item is maybe left-wall]: next item is definitely left-wall
+[void last item] [next item is left-eaty]: oh my well you don''t get to eat anything then! this is not actually a problem. we can just pass you void/undefined.
+
+regime breakers:
+	\[…*\] (…*) {…*}
+	λ
+	new
+	; && ||
+	\[ ( {
+
+// todo:
+
+.₋\[ .₋(
+.₋/₋?\ᵥ/
+.␣\.₋. .₋\.₋.
+¬₋ ␣-₋.
+¬␣
+.₋*₋. .₋\/₋. .₋%₋.
+.␣*␣. .␣\/␣. .␣%␣.
+.₋+₋. .₋-₋.
+.␣+␣. .␣-␣.
+// bitwise?
+.₋isa₋.
+.␣isa␣.
+.₋=₋. .₋≠₋. .₋<₋. .₋>₋. .₋≤₋. .₋≥₋.
+.␣=␣. .␣≠␣. .␣<␣. .␣>␣. .␣≤␣. .␣≥␣.
+.₋&₋. .₋|₋.
+.␣&␣. .␣|␣.
+.₋\?␣.␣:␣.
+.₋\?₋.₋:₋.
+.₋←₋. .₋←!₋.
+.␣←␣. .␣←!␣.
+.␣+=␣.
+λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
+`␣. ~␣. ~@␣.
+`₋. ~₋. ~@₋.
+, :
+
+// todo:
+, : ` ~ ~@ λ if while return try += ← ←!
+?: & | && || = ≠ < > ≤ ≥ isa in ¬in + - * / % ¬ - [ ( { . [ ( ᵥ
+
+
+//===------------===// whoops. this wasn't quite perfect. //===------------===//
+
+890 891 .₋+₋.
+831 830 .₋←₋. .₋←!₋.
+820 821 return₋.?
+811 810 `₋. ~₋. ~@₋.
+
+190 191 .␣+␣.
+131 130 .␣←␣. .␣←!␣.
+120 121 return␣.?
+111 110 `␣. ~␣. ~@␣.
+
 100 100 , :
+`¬value
+`while etc
+// left undefined:
+unbalanced versions of ← ←! +
+
+λ if while try += ?: & | && || = ≠ < > ≤ ≥ isa in ¬in - * / % ¬ - [ ( { . [ ( ᵥ
 
 
 /*
@@ -126,8 +198,8 @@ Extending Haskell precedences levels you could imagine changing to a rational nu
 
 13	→ group			\[…*\] (…*) {…*} ‹…*›
 12	← lex-like		/\d+/\./\d+/ ; λ…*<→{> new/.+/
-11	← tight			\[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/ // .++ .--
-10	→ prefix		¬−. ↔-−. // ↔+−.
+11	← tight			\[ ( { ‹ .\.. .₋\[ .₋( ./₋?\ᵥ/ // .++ .--
+10	→ prefix		¬₋. ␣-₋. // ␣+₋.
 9	← mul			.*. .\/. .%. // % is temporary
 8	← add			.+. .-.
 7	← bitwise		
@@ -142,8 +214,8 @@ Extending Haskell precedences levels you could imagine changing to a rational nu
 grouping	13	→	\[…*\] (…*) {…*} ‹…*›
 lex-like	12	←	/\d+/\./\d+/ ; λ…*<→{> new/.+/
 
-tight		11	←	\[ ( { ‹ .\.. .−\[ .−( ./₋?\ᵥ/
-prefix		10	→	¬−. ↔-−. // ↔+−.
+tight		11	←	\[ ( { ‹ .\.. .₋\[ .₋( ./₋?\ᵥ/
+prefix		10	→	¬₋. ␣-₋. // ␣+₋.
 mul			9	←	.*. .\/. .%.
 add			8	←	.+. .-.
 bitwise		7	←	
@@ -156,3 +228,56 @@ statement	2	→	.←. .←!. .+=.
 statement	2	→	.←. .←!. .+=. λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?
 quote		1	→	`. ~. ~@.
 separator	0	←	, :
+
+
+
+
+
+
+
+
+
+parse_expression ()
+    return parse_expression_1 (parse_primary (), 0)
+parse_expression_1 (lhs, min_precedence)
+    while the next token is a binary operator whose precedence is >= min_precedence
+        op := next token
+        rhs := parse_primary ()
+        while the next token is a binary operator whose precedence is greater
+                 than op's, or a right-associative operator
+                 whose precedence is equal to op's
+            lookahead := next token
+            rhs := parse_expression_1 (rhs, lookahead's precedence)
+        lhs := the result of applying op with operands lhs and rhs
+    return lhs
+Example execution of the algorithm[edit]
+An example execution on the expression 2 + 3 * 4 + 5 == 19 is as follows. We give precedence 0 to equality expressions, 1 to additive expressions, 2 to multiplicative expressions.
+
+parse_expression_1 (lhs = 2, min_precedence = 0)
+
+the next token is +, with precedence 1. the while loop is entered.
+op is + (precedence 1)
+rhs is 3
+the next token is *, with precedence 2. recursive invocation.
+parse_expression_1 (rhs = 3, min_precedence = 2)
+the next token is *, with precedence 2. the while loop is entered.
+op is * (precedence 2)
+rhs is 4
+the next token is +, with precedence 1. no recursive invocation.
+lhs is assigned 3*4 = 12
+the next token is +, with precedence 1. the while loop is left.
+12 is returned.
+the next token is +, with precedence 1. no recursive invocation.
+lhs is assigned 2+12 = 14
+the next token is +, with precedence 1. the while loop is not left.
+op is + (precedence 1)
+rhs is 5
+the next token is ==, with precedence 0. no recursive invocation.
+lhs is assigned 14+5 = 19
+the next token is ==, with precedence 0. the while loop is not left.
+op is == (precedence 0)
+rhs is 19
+the next token is end-of-line, which is not an operator. no recursive invocation.
+lhs is assigned the result of evaluating 19 == 19, for example 1 (as in the C standard).
+the next token is end-of-line, which is not an operator. the while loop is left.
+1 is returned.
