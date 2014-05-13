@@ -83,7 +83,7 @@ superscript: function λ(f){return function λ(v,b,c){return seq(v).map(function
 
 
 
-var running_as = process.argv[1].match(/[^\\]*\\[^\\]*$/)[0]
+var running_as = process.argv[1].match(/[^\/]*\/[^\/]*$/)[0]
 print('--- running as:',running_as,'---')
 
 var Symbol = function λ(v,line){this.v = v; if (line) this.line = line}
@@ -120,7 +120,7 @@ var js_valid_symbol_encode = function λ(v,b,c){return own({'$args':'Array.proto
 var split_symbol = function λ(l,s){var r = [[]]; l.map(function λ(v){if (v instanceof Symbol && v.v === s) r.push([]); else r.slice(-1)[0].push(v)}); return r}
 var has_sym = function λ(v,s){return v.some(function λ(v,b,c){return v instanceof Symbol && v.v===s})}
 var split_slice = function λ(l){var r = split_symbol(l,':'); var r = [(r[0].length === 0? [S('0')] : r[0])].concat(r.slice(1)); return r[1].length === 0? r.slice(0,1) : r}
-var pr = function λ(){if (running_as === 'bin\\load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments[0]}
+var pr = function λ(){if (running_as === 'bin/load.js') print.apply(this,['##'].concat(Array.prototype.slice.apply(arguments))); return arguments[0]}
 Array.prototype.map2 = function λ(f){var r = []; if (this.length===0) return r; var i=0; while (i<this.length-1){r.push(f(this[i],this[i+1])); i++} r.push(f(this.slice(-1)[0],null)); return r}
 
 var printable = function λ(v,b,c){return (0x20<=ord(v) && ord(v)<0x7f) || js_valid_symbol.is_part(v)}
@@ -280,7 +280,7 @@ var parse = function λ(v,b,c){return v.match(/(\[.*?\])|[^[\]]+/g).map(function
 var t = parse(v); var first = t[0]==='\u2026'; var t = first?t.slice(1):t; var n = t[0]; var vs = t.slice(1)
 anyfix_macros_set(n,function λ(forms,sym,tokens){
 var buf = []
-var r = [to||symbol_set_decode_(n)]; if (first) r.push(forms.slice(-1)[0]!==undefined?forms.slice(-1)[0]:err())
+var r = [to||symbol_set_decode_(n)]; if (first) r.push(forms.slice(-1)[0]!==undefined?forms.slice(-1)[0]:err(forms,sym,tokens))
 vs.forEach(function λ(v,i){
 if (v==='\u2026'){
 var dont = vs[i+1] instanceof Array && vs[i+1][0] !== '\u2026'? vs[i+1][0] : undefined

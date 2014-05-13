@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 //"use strict"
 
-print ← console.log.bind(console)
-
 fs ← require('fs')
-//_ ← require('../lib/underscore-min')
+
+minimist ← require('minimist')
+sync ← require('sync')
+_ ← require('underscore')
 
 //__sub__ ← λ{__get__(v,b)}
 __slice__ ← λ(v,a,b){return is(b)? v.slice(a,b) : v.slice(a)}
 __sliceλ__ ← λ(a,b){return is(b)? λ{v[a:b]} : λ{v[a:]}}
 
-running_as ← process.argv₁.match(~/[^\\]*\\[^\\]*$/)₀
+print ← console.log.bind(console)
+running_as ← process.argv₁.match(~/[^\/]*\/[^\/]*$/)₀
 print('--- running as:',running_as,'---')
 
 //===---------------------------===// utils //===--------------------------===//
@@ -31,8 +33,9 @@ err ← λ(){print.apply(console, ['#error#:'].concat($args)); throw(Error())}
 extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
 delset ← λ(o,m,v){if (¬is(v)) delete(oₘ); else oₘ ←! v}
 is ← λ{v≠undefined}
-float_next_after  ← λ(v){var r = v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
-float_next_before ← λ(v){var r = v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
+i ← λ{parseInt(v)}
+float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
+float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
 String.prototype.repeat ←! λ{v≤0? '' : new Array(v+1).join(this)}
 Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
 Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
@@ -85,7 +88,7 @@ unicode ← λ(table){return {
 
 Symbol ← λ(v,line,before,after){this.v ←! v; if (line) this.line ←! line; this.space_before ←! is(before)?before:true; this.space_after ←! is(after)?after:true}
 	space_update ← λ(me){me._space ←! (me.space_before?'_':'')+'$'+(me.space_after?'_':'')}
-Object.defineProperty(Symbol.prototype,'space',{get:λ{this._space},set:λ{this._space ←! v; this._space_before ←! v₀='_'; this._space_after ←! v₋₁='_'}})
+Object.defineProperty(Symbol.prototype,'space',{get:λ{this._space},set:λ(v){this._space ←! v; this._space_before ←! v₀='_'; this._space_after ←! v₋₁='_'}})
 Object.defineProperty(Symbol.prototype,'space_before',{get:λ{this._space_before},set:λ(v){this._space_before ←! v; space_update(this)}})
 Object.defineProperty(Symbol.prototype,'space_after', {get:λ{this._space_after },set:λ(v){this._space_after  ←! v; space_update(this)}})
 Symbol.prototype.inspect ←! λ{'`'+this.v}
@@ -121,7 +124,7 @@ s_mk_float ← λ{new Symbol(v.v+'.'+b.v,v.line,v.space_before,b.space_after)} /
 split_symbol ← λ(l,s){r ← [[]]; l.map(λ(v){if (se(v,s)) r.push([]); else r₋₁.push(v)}); return r}
 has_sym ← λ(v,s){return v.some(λ{se(v,s)})}
 split_slice ← λ(l){r ← split_symbol(l,':'); r ← [[(is(r₀₀)? r₀₀ : S('0'))]].concat(r[1:]).m_concat(); return r}
-pr ← λ(){if (running_as = 'bin\\load.js') print.apply(this,['##'].concat($args)); return $args₀}
+pr ← λ(){if (running_as = 'bin/load.js') print.apply(this,['##'].concat($args)); return $args₀}
 printable ← λ{λᵥ}
 
 //===---------------------------===// repr //===---------------------------===//
@@ -179,7 +182,7 @@ subscript_ops ← [].concat(unicode.subscripts,unicode.subscripts.map(λ{'₋'+v
 
 reader_macros.set([''], λ(_,s,l){
 	first_type ← js_valid_symbol.is_part(s₀)
-	r ← ''; while (s ≠ '' && ¬reader_macros.get(s) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
+	r ← ''; while (s ≠ '' && (s.match(~/^[0-9]/) || ¬reader_macros.get(s)) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
 	return [new Symbol(r,l),s,l]})
 reader_macros.set('0123456789', λ(_,s,l){t ← s.match(~/^[0-9]*\.[0-9]*(?:[eE][+-]?[0-9]+)?/); return t? [new Symbol(_+t₀),s[t₀.length:],l] : undefined})
 reader_macros.set(['.'],λ(_,s,l){t ← s.match(~/^[0-9]+(?:[eE][+-]?[0-9]+)?/); return [new Symbol(t?_+t₀:_,l),t?s[t₀.length:]:s,l]})
@@ -195,12 +198,136 @@ reader_macros.set('\'"', λ(start,s,line){
 		}).join(''),s,line]})
 reader_macros.set(['~/'], λ(start,s,line){t ← (s.match(~/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/) || err('could not match regex: '+start+s[:10]))₁; return [eval('/'+t),s[t.length:],line]})
 
+//===----------===// special token macros (deliberate hack) //===----------===//
+
+special_expand ← λ(tokens){
+	tokens.map(λ(v){if (v isa Symbol) v.v ←! aliases[v.v] || v.v})
+	groups_expand ← λ(tokens){r ← group_expand(S('{'),tokens.concat([S('}')])); if (¬r₁.no) err(); return r₀}
+		group_expand ← λ(g,l){
+			check ← λ(){if (l.no) err('group is not closed @'+g.line)}
+			check()
+			r ← [g]; while(true){
+				if (se(l₀,groups[g.v])) return [r,l[1:]]
+				if (l₀ isa Symbol && own(groups,l₀.v)) {t ← group_expand(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
+				r.push(l₀); l ←! l[1:]; check()}}
+	tokens ←! groups_expand(tokens)
+	walk ← λ(v,f){return (λ(v,i,l,f){
+		if (v isa Array) {for (j←0;j<v.length;) j ←! (λ)(v[j],j,v,f); return i+1}
+		else return f(v,i,l) })(v,0,undefined,f)}
+	walk(tokens,λ(v,i,l){
+		if (se(v,'new') && l[i+1] isa Symbol) {l.splice(i,2,[v,[new Symbol('__QUOTE__',undefined,undefined,true),l[i+1]]]); return i+1}
+		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'(')) {l.splice(i,2,v,[new Symbol('__QUOTE__',undefined,undefined,true),l[i+1]]); return i+2}
+		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'{')) {l.splice(i,1,v,[new Symbol('__QUOTE__',undefined,undefined,true),S('v')]); return i+2}
+		else return i+1 })
+	return tokens}
+
+groups ← object(['()','[]','{}'])
+aliases ← {';':',','&&':'&','||':'|'}
+
 //===---------===// "precedence/open/anyfix/operator macros" //===---------===//
 
-operator_eval ← λ(tokens){
-
+operator_expand ← λ(tokens){
+	return tokens
 }
 
+def_operators ← λ(prec_l,prec_r,ops){
+	pr('impl:defops',prec_l,prec_r,ops)
+}
+
+;[	'400 401 .\\.₋. .₋\\ᵥ .₋\\[ .₋(',
+	'390 391 ¬₋. -₋.',
+	'380 381 .₋*₋. .₋/₋. .₋%₋.',
+	'370 371 .₋+₋. .₋-₋.',
+	'350 350 .₋=₋. .₋≠₋. .₋<₋. .₋>₋. .₋≤₋. .₋≥₋.',
+	'340 341 .₋&₋. .₋|₋.',
+	'331 330 .₋\\?₋.₋:₋.',
+	'321 322 .₋+=₋.',
+	'323 320 .₋←₋. .₋←!₋.',
+	'300 301 `₋. ~₋. ~@₋.',
+	'290 291 ¬␣.',
+	'280 281 .␣*␣. .␣/␣. .␣%␣.',
+	'270 271 .␣+␣. .␣-␣.',
+	'260 260 .␣isa␣.',
+	'250 250 .␣=␣. .␣≠␣. .␣<␣. .␣>␣. .␣≤␣. .␣≥␣.',
+	'240 241 .␣&␣. .␣|␣.',
+	'231 230 .₋\\?␣.␣:␣.',
+	'221 222 .␣+=␣.',
+	'223 220 .␣←␣. .␣←!␣.',
+	'210 211 λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?',
+	'200 201 `␣. ~␣. ~@␣.',
+	'100 100 , :'
+	].map(λ(v){t ← v.split(' '); def_operators(i(t₀),i(t₁),t[2:])})
+
+//===--------------------------===// <edge> //===--------------------------===//
+
+read ← λ(s){
+	seq(s).map(λ{printableᵥ ←! true})
+	// a bit outdated:
+	// tokenize: characters are tokenized with λ(rest_characters) → [token,rest_characters]
+	// anyfix/open macros: was // anyfix: tokens naming anyfix macros are expanded into forms with λ(previous_forms,symbol,rest_tokens) → [previous_forms,rest_tokens], but they are not allowed to eat more than the last form of previous_forms . these functions may be called multiple times, so they should be pure.
+	// ?: forms naming macros are expanded into forms
+	// ?: forms are translated into javascript
+
+	r ← operator_expand(special_expand(tokenize(s)))
+	pr(r)
+	return r}
+
+compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
+
+compile_f(process.argv₂,process.argv₃)
+
+//===---------------------------===// todo //===---------------------------===//
+
+// keep in mind that the basic idea was always just "write a really nice preprocessor" http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
+
+// void could be a macro for undefined, or it could just be another global variable . i'm not sure what to do with such things that javascript doesn't like
+
+// {expr,} = void
+// {expr} = expr
+// [1,,1] = [1 void 1]
+// [1,1] = [1 1] = [1 1,] = [1 1]
+// [1 1,,] = [1 1 void]
+// [,1 1] = [void 1 1]
+
+// try compiling an empty file
+
+// todo: [for] generator expression, non-lazy
+// todo: (for) generator expression, lazy
+// todo: {for} generator expression, set
+// todo: {: for} generator expression, object
+// todo?: v{} call
+// todo: either (replace Ca with [] and [] with [__array__]) or (replace Ca with ())
+// todo: curry can be max.(1) and indexer function can be list.[]
+
+// todo: r ← [1 2 3]; r[1:2] ←! [5 5]; r = [1 5 5 3]
+// todo: more meanings of ?
+
+// later
+// ` ~ ~@
+//	tight					…++	…--
+//	prefix					+…	bit~…
+//	bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
+//	assignment				+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
+//	statement				delete …	yield …
+
+// derp, if ~/ is regex ~" should be too
+
+// ¬in has to be a reader macro too ...
+
+// fix the shit where all the functions are named λ
+
+// actually yeah, → operator
+
+// yeah, just have a bit() or bit{} anyfix namespace that provides ~ | ^ & >>> >> << ~= |= ^= &= >>>= >>= <<=
+
+// i am starting to worry that we may have failed enormously by not studying perl
+
+// i'm waffling between operator-floats and lexer-floats
+
+// _want_ syntax log₂n
+
+//===---------------===// probably shit; try to discard //===--------------===//
+/*
 def_group ← λ(a,b){}
 def_precedence ← λ(value,associativity,name){}
 def_operators ← λ(precedence,operators){
@@ -225,7 +352,7 @@ def_operators ← λ(precedence,operators){
 	['0  ← separator	, :']
 	].map(λ(v){t ← v.split(~/\t+/); def_operators(t₀.split(/ +/),t₁.split(' '))})
 
-precedences ← {}
+precedences ← {}*/
 
 /*
 open_eval ← λ{operators_expand(open_macro_eval(groups_expand(v)))}
@@ -435,70 +562,3 @@ anyfix_macros_gen('… ← …')
 anyfix_macros_gen('… ←! …')
 anyfix_macros_gen('… += …')
 */
-//===--------------------------===// <edge> //===--------------------------===//
-
-read ← λ(s){
-	seq(s).map(λ{printableᵥ ←! true})
-	// a bit outdated:
-	// tokenize: characters are tokenized with λ(rest_characters) → [token,rest_characters]
-	// anyfix/open macros: was // anyfix: tokens naming anyfix macros are expanded into forms with λ(previous_forms,symbol,rest_tokens) → [previous_forms,rest_tokens], but they are not allowed to eat more than the last form of previous_forms . these functions may be called multiple times, so they should be pure.
-	// ?: forms naming macros are expanded into forms
-	// ?: forms are translated into javascript
-
-	r ← operator_eval(tokenize(s))
-	pr(r)
-	return r}
-
-compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
-
-compile_f(process.argv₂.replace('.a','.α'),process.argv₃)
-
-//===---------------------------===// todo //===---------------------------===//
-
-// keep in mind that the basic idea was always just "write a really nice preprocessor" http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
-
-// void could be a macro for undefined, or it could just be another global variable . i'm not sure what to do with such things that javascript doesn't like
-
-// {expr,} = void
-// {expr} = expr
-// [1,,1] = [1 void 1]
-// [1,1] = [1 1] = [1 1,] = [1 1]
-// [1 1,,] = [1 1 void]
-// [,1 1] = [void 1 1]
-
-// try compiling an empty file
-
-// todo: [for] generator expression, non-lazy
-// todo: (for) generator expression, lazy
-// todo: {for} generator expression, set
-// todo: {: for} generator expression, object
-// todo?: v{} call
-// todo: either (replace Ca with [] and [] with [__array__]) or (replace Ca with ())
-// todo: curry can be max.(1) and indexer function can be list.[]
-
-// todo: r ← [1 2 3]; r[1:2] ←! [5 5]; r = [1 5 5 3]
-// todo: more meanings of ?
-
-// later
-// ` ~ ~@
-//	tight					…++	…--
-//	prefix					+…	bit~…
-//	bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
-//	assignment				+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
-//	statement				delete …	yield …
-
-// derp, if ~/ is regex ~" should be too
-
-// ¬in has to be a reader macro too ...
-
-// fix the shit where all the functions are named λ
-
-// actually yeah, → operator
-
-// yeah, just have a bit() or bit{} anyfix namespace that provides ~ | ^ & >>> >> << ~= |= ^= &= >>>= >>= <<=
-
-// i am starting to worry that we may have failed enormously by not studying perl
-
-// i'm waffling between operator-floats and lexer-floats
-
-// _want_ syntax log₂n

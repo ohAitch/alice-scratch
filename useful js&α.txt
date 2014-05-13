@@ -15,8 +15,6 @@ possibly useful.
 //windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
 //guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
 //Array.prototype.interpose ←! λ(sep){return this.map(λ{v.concat(sep)}).m_concat()[:-1]}
-//Date.prototype.hours ←! λ(v){this.setHours(this.getHours()+v); return this}
-//Date.prototype.yyyy_mm_dd ←! λ(){m ← (this.getMonth()+1)+''; d ← this.getDate()+''; return this.getFullYear()+'-'+(m₁?m:'0'+m)+'-'+(d₁?d:'0'+d)}
 
 //===--------------------------------------------===// greenspuns //===--------------------------------------------===//
 
