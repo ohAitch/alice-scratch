@@ -2,7 +2,6 @@
 //__literal__('#!/usr/bin/env node')
 
 var fs = require('fs')
-var _ = require('../lib/underscore-min')
 
 
 var __sub__ = function λ(v,b,c){return v[b]}

@@ -95,25 +95,19 @@ Symbol.prototype.inspect ←! λ{'`'+this.v}
 Symbol.prototype.with_v ←! λ{new Symbol(v,this.line,this.space_before,this.space_after)}
 S ← λ{new Symbol(v,undefined,false,false)}
 symbol_set_decode ← λ(v){
-	n ← v; s ← ''
-	t ← v.match(~/^(([−↔±∓])\2*)(.*)$/);  s += t && t₁.length%2≠0? t₂ : '?'; v ← t? t₁[:Math.floor(t₁.length/2)]+t₃ : v
-	t ← v.match(~/^(.*?)(([−↔±∓])\3*)$/); s += t && t₂.length%2≠0? t₃ : '?'; v ← t? t₂[:Math.floor(t₂.length/2)]+t₁ : v
-	n ← v=''? n : v; s ← v=''? '??' : s
+	t ← v.match(~/^([₋␣])?(.+?)([₋␣])?$/); s ← (t₁||'?')+(t₃||'?'); n ← t₂
 	return (symbol_set_table[s]||err('bad symbol set',s)).map(λ(v){r ← new Symbol(n); r.space ←! v; return r})}
 	symbol_set_table ← {
-		'−−':['$'],
-		'−↔':['$_'],
-		'↔−':['_$'],
-		'↔↔':['_$_'],
-		'?−':['$','_$'],
-		'?↔':['$_','_$_'],
-		'−?':['$','$_'],
-		'↔?':['_$','_$_'],
-		'??':['$','$_','_$','_$_'],
-		'±±':['$','_$_'],
-		'±∓':['$_','_$']
+		'₋₋':['$'],
+		'₋␣':['$_'],
+		'␣₋':['_$'],
+		'␣␣':['_$_'],
+		'?₋':['$','_$'],
+		'?␣':['$_','_$_'],
+		'₋?':['$','$_'],
+		'␣?':['_$','_$_'],
+		'??':['$','$_','_$','_$_']
 		}
-symbol_set_decode_ ← λ{symbol_set_decode(v)₀.v}
 SP ← {}
 se ← λ{v isa Symbol && v.v=b} // hack
 s_int ← λ{v isa Symbol && v.v.match(~/^[0-9]+$/)} // hack
@@ -230,17 +224,28 @@ operator_expand ← λ(tokens){
 	return tokens
 }
 
-def_operators ← λ(prec_l,prec_r,ops){
-	pr('impl:defops',prec_l,prec_r,ops)
-}
+operators ← {}
 
-;[	'400 401 .\\.₋. .₋\\ᵥ .₋\\[ .₋(',
+def_operators ← λ(prec_l,prec_r,ops){
+	ops.map(λ(op){
+		t ← op.match(~/\[.*?\]|[^\[\]]+/g).map(λ(v){t←0; r ← ((t ←! v₀='[' && v₋₁=']')? v[1:-1] : v).match(~/\.|[^.]+/g); return t?[r]:r}).m_concat()
+		ANY ← {}
+		//! CURRENT
+		// hm. at this point we're thinking about maybe normalizing ops into all four, so .₋+₋. is [.₋+₋.] but ¬␣. is [␣¬␣. ₋¬␣.]
+		// we could also do something similar with option parsing, though that can get downright combinatorial. though worst current case is try, which fragments into 64 pieces.
+		// we could even do this with __SUBSCRIPT__ . which, just so you know, fragments into on the order of 160 pieces. which is still not very much time or space even on an old phone.
+		// yeah, i like this
+		t.map(λ(v,i,l){if (v isa Array) v.map(λ); else if (v = '.') lᵢ ←! ANY; else if })
+		pr('impl:defop',prec_l,prec_r,t)
+	}) }
+
+;[	'400 401 .__DOT__₋. .₋__SUBSCRIPT__ .₋[ .₋(',
 	'390 391 ¬₋. -₋.',
 	'380 381 .₋*₋. .₋/₋. .₋%₋.',
 	'370 371 .₋+₋. .₋-₋.',
 	'350 350 .₋=₋. .₋≠₋. .₋<₋. .₋>₋. .₋≤₋. .₋≥₋.',
 	'340 341 .₋&₋. .₋|₋.',
-	'331 330 .₋\\?₋.₋:₋.',
+	'331 330 .₋?₋.₋:₋.',
 	'321 322 .₋+=₋.',
 	'323 320 .₋←₋. .₋←!₋.',
 	'300 301 `₋. ~₋. ~@₋.',
@@ -250,10 +255,10 @@ def_operators ← λ(prec_l,prec_r,ops){
 	'260 260 .␣isa␣.',
 	'250 250 .␣=␣. .␣≠␣. .␣<␣. .␣>␣. .␣≤␣. .␣≥␣.',
 	'240 241 .␣&␣. .␣|␣.',
-	'231 230 .₋\\?␣.␣:␣.',
+	'231 230 .₋?␣.␣:␣.',
 	'221 222 .␣+=␣.',
 	'223 220 .␣←␣. .␣←!␣.',
-	'210 211 λ.. if.:?.,?[else.]? while.:?. return.? try.,?[catch.,?]?[finally.]?',
+	'210 211 λ.. if.[:].[,][else.] while.[:]. return[.] try.[,][catch.][,][finally.]',
 	'200 201 `␣. ~␣. ~@␣.',
 	'100 100 , :'
 	].map(λ(v){t ← v.split(' '); def_operators(i(t₀),i(t₁),t[2:])})
@@ -269,7 +274,7 @@ read ← λ(s){
 	// ?: forms are translated into javascript
 
 	r ← operator_expand(special_expand(tokenize(s)))
-	pr(r)
+	//pr(r)
 	return r}
 
 compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
