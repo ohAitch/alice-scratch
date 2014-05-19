@@ -34,11 +34,14 @@ extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; r
 delset ← λ(o,m,v){if (¬is(v)) delete(oₘ); else oₘ ←! v}
 is ← λ{v≠undefined}
 i ← λ{parseInt(v)}
-float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
-float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
+//float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
+//float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
 String.prototype.repeat ←! λ{v≤0? '' : new Array(v+1).join(this)}
 Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
 Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
+genex_2a ← λ(re){return _.range(2).map(λ{[128,128].slice(v).map(λ{_.range(v).map(λ{String.fromCharCode(v)})}).cartesian().map(λ{v.join('')})}).m_concat().filter(λ{v.match(re)})}
+Array.prototype.cartesian ←! λ{this.reduce(λ(a,v){r ← []; a.map(λ(a){seq(v).map(λ(b){r.push(a.concat([b]))})}); return r}, [[]])}
+oed ← λ(o,v){Object.keys(v).map(λ(k){oₖ ←! vₖ}); return o}
 
 //===-------------------------===// reader_or //===------------------------===//
 
@@ -76,28 +79,22 @@ js_valid_symbol ← new (λ(){
 	this.decode ←! memoize_o(keywords.map(λ{['ǂ'+v,v]}).object(),λ{decoder.reduce(v₀='ǂ'? v[1:] : v).join('')})
 	})
 unicode ← λ(table){return {
-	subscripts:   table.map(λ{v₀}).filter(λ{v≠'-'}),
+	subscripts:   table.map(λ{v₀}).filter(λ{v≠'_'}),
 	midscripts:   table.map(λ{v₁}),
-	superscripts: table.map(λ{v₂}).filter(λ{v≠'-'}),
-	subscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(table.map(λ{[[v₁,v₀], [v₂,v₀]]}).m_concat().object()),
-	midscript:   λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(table.map(λ{[[v₀,v₁], [v₂,v₁]]}).m_concat().object()),
-	superscript: λ(f){return λ{seq(v).map(λ{f[v]}).join('')}}(table.map(λ{[[v₀,v₂], [v₁,v₂]]}).m_concat().object())
-	}}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ -bᵇ -cᶜ -dᵈ ₑeᵉ -fᶠ -gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ -wʷ ₓxˣ -yʸ -zᶻ -Aᴬ -Bᴮ -Dᴰ -Eᴱ -Gᴳ -Hᴴ -Iᴵ -Jᴶ -Kᴷ -Lᴸ -Mᴹ -Nᴺ -Oᴼ -Pᴾ -Rᴿ -Tᵀ -Uᵁ -Vⱽ -Wᵂ'.split(' '))
+	superscripts: table.map(λ{v₂}).filter(λ{v≠'_'}),
+	subscript:   λ{table.map(λ{[[v₁,v₀], [v₂,v₀]]}).m_concat().filter(λ{v₁≠'_'}).object()[v]},
+	midscript:   λ{table.map(λ{[[v₀,v₁], [v₂,v₁]]}).m_concat().filter(λ{v₁≠'_'}).object()[v]},
+	superscript: λ{table.map(λ{[[v₀,v₂], [v₁,v₂]]}).m_concat().filter(λ{v₁≠'_'}).object()[v]}
+	}}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ _bᵇ _cᶜ _dᵈ ₑeᵉ _fᶠ _gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ _wʷ ₓxˣ _yʸ _zᶻ _Aᴬ _Bᴮ _Dᴰ _Eᴱ _Gᴳ _Hᴴ _Iᴵ _Jᴶ _Kᴷ _Lᴸ _Mᴹ _Nᴺ _Oᴼ _Pᴾ _Rᴿ _Tᵀ _Uᵁ _Vⱽ _Wᵂ'.split(' '))
 
 //===--------------------------===// Symbol //===--------------------------===//
 
-Symbol ← λ(v,line,before,after){this.v ←! v; if (line) this.line ←! line; this.space_before ←! is(before)?before:true; this.space_after ←! is(after)?after:true}
-//	space_update ← λ(me){me._space ←! (me.space_before?'_':'')+'$'+(me.space_after?'_':'')}
-//Object.defineProperty(Symbol.prototype,'space',{get:λ{this._space},set:λ(v){this._space ←! v; this._space_before ←! v₀='_'; this._space_after ←! v₋₁='_'}})
-//Object.defineProperty(Symbol.prototype,'space_before',{get:λ{this._space_before},set:λ(v){this._space_before ←! v; space_update(this)}})
-//Object.defineProperty(Symbol.prototype,'space_after', {get:λ{this._space_after },set:λ(v){this._space_after  ←! v; space_update(this)}})
-
-Object.defineProperty(Symbol.prototype,'space',{get:λ{err('a')},set:λ(v){err('b')}})
-Object.defineProperty(Symbol.prototype,'space_before',{get:λ{err('c')},set:λ(v){err('d')}})
-Object.defineProperty(Symbol.prototype,'space_after', {get:λ{err('e')},set:λ(v){err('f')}})
-Symbol.prototype.inspect ←! λ{'`'+this.v}
-Symbol.prototype.with_v ←! λ{new Symbol(v,this.line,this.space_before,this.space_after)}
-S ← λ{new Symbol(v,undefined,false,false)}
+Symbol ← λ(name,space,line){this.name ←! name; this.space ←! space; if (line) this.line ←! line}
+Object.defineProperty(Symbol.prototype,'space_before',{get:λ{this.space₀='␣'},set:λ(v){this.space ←! (v?'␣':'₋')+this.space₁}})
+Object.defineProperty(Symbol.prototype,'space_after', {get:λ{this.space₁='␣'},set:λ(v){this.space ←! this.space₀+(v?'␣':'₋')}})
+Symbol.prototype.toString ←! Symbol.prototype.inspect ←! λ{'`'+this.space₀+this.name+this.space₁}
+Symbol.prototype.with_name ←! λ{new Symbol(v,this.space,this.line)}
+S ← λ{new Symbol(v,'₋₋',b)}
 /*symbol_set_decode ← λ(v){
 	t ← v.match(~/^([₋␣])?(.+?)([₋␣])?$/); s ← (t₁||'?')+(t₃||'?'); n ← t₂
 	return (symbol_set_table[s]||err('bad symbol set',s)).map(λ(v){r ← new Symbol(n); r.space ←! v; return r})}
@@ -113,9 +110,9 @@ S ← λ{new Symbol(v,undefined,false,false)}
 		'??':['$','$_','_$','_$_']
 		}*/
 SP ← {}
-se ← λ{v isa Symbol && v.v=b} // hack
-s_int ← λ{v isa Symbol && v.v.match(~/^[0-9]+$/)} // hack
-s_mk_float ← λ{new Symbol(v.v+'.'+b.v,v.line,v.space_before,b.space_after)} // hack
+se ← λ{v isa Symbol && v.name=b} // hack
+//s_int ← λ{v isa Symbol && v.v.match(~/^[0-9]+$/)} // hack
+//s_mk_float ← λ{new Symbol(v.v+'.'+b.v,v.line,v.space)} // hack
 
 //===---------------------===// load.α hack utils //===--------------------===//
 
@@ -133,7 +130,7 @@ String.prototype.repr_js ←! λ(){v ← this.valueOf(); return (v.match(~/'/g)|
 RegExp.prototype.repr_js ←! λ{this+''}
 String.prototype.repr ←! String.prototype.repr_js
 RegExp.prototype.repr ←! λ{'~'+this+''}
-repr_js_trans_infix ← merge_o({'&':'&&','|':'||','isa':'instanceof','=':'===','≠':'!==','≤':'<=','≥':'>='},object_by('. * / % + - < > in && || +='.split(' '),λ{v}))
+/*repr_js_trans_infix ← merge_o({'&':'&&','|':'||','isa':'instanceof','=':'===','≠':'!==','≤':'<=','≥':'>='},object_by('. * / % + - < > in && || +='.split(' '),λ{v}))
 repr_js ← λ(v,line){rj ← λ{repr_js(v,line)}; mrj ← λ{v.map(rj).join(b||'')}; ln ← λ{(v && v.line && line? '\n'.repeat(λ(v){line₀ += v; return v}(Math.max(0, v.line-line₀))) : '')}
 	return ¬is(v)? pr('<gah>',line₀) :
 		v.repr_js? v.repr_js(line) :
@@ -166,25 +163,25 @@ repr_js ← λ(v,line){rj ← λ{repr_js(v,line)}; mrj ← λ{v.map(rj).join(b||
 					rj(v₀)+'('+mrj(v[1:],',')+')' :
 		typeof(v)='object'? '{'+Object.keys(v).map(λ(k){return rj(k)+':'+rj(vₖ)}).join(',')+'}' :
 			'<what:'+v+'>'}
-repr_js_file ← λ(form){return repr_js(form, [1])[1: -1].replace(~/ +/mg,' ').replace(~/^ /mg,'').replace(~/;$/m,'')}
+repr_js_file ← λ(form){return repr_js(form, [1])[1: -1].replace(~/ +/mg,' ').replace(~/^ /mg,'').replace(~/;$/m,'')}*/
 
 //===------------------===// reader macros (lexing) //===------------------===//
 
-reader_macros ← new reader_or()
 tokenize ← λ(s){
 	t←undefined; r ← [].concat([SP],((t ←! s.match(~/^#!.*/))? [S('__literal__'),S('('),t₀,S(')'),SP] : []),reader_macros.reduce_l(t? s[t₀.length:] : s),[SP])
-	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) {rᵢ.space_before ←! r[i-1]=SP; rᵢ.space_after ←! r[i+1]=SP} i+=1}
+	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) rᵢ.space ←! (r[i-1]=SP?'␣':'₋')+(r[i+1]=SP?'␣':'₋'); i+=1}
 	return r.filter(λ{v ≠ SP})}
 
-subscript_ops ← [].concat(unicode.subscripts,unicode.subscripts.map(λ{'₋'+v}))
+subscript_ops ← genex_2a(~/^-?[0-9a-z]$/).map(λ{seq(v).map(unicode.subscript)}).filter(λ{v.every(λ{v})}).map(λ{v.join('')})
 
+reader_macros ← new reader_or()
 reader_macros.set([''], λ(_,s,l){
 	first_type ← js_valid_symbol.is_part(s₀)
 	r ← ''; while (s ≠ '' && (s.match(~/^[0-9]/) || ¬reader_macros.get(s)) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
-	return [new Symbol(r,l),s,l]})
-reader_macros.set('0123456789', λ(_,s,l){t ← s.match(~/^[0-9]*\.[0-9]*(?:[eE][+-]?[0-9]+)?/); return t? [new Symbol(_+t₀),s[t₀.length:],l] : undefined})
-reader_macros.set(['.'],λ(_,s,l){t ← s.match(~/^[0-9]+(?:[eE][+-]?[0-9]+)?/); return [new Symbol(t?_+t₀:_,l),t?s[t₀.length:]:s,l]})
-reader_macros.set([].concat(seq('()[]{}‹›`~?:,;'), ['~@','¬in'],subscript_ops), λ(_,s,l){return [new Symbol(_,l),s,l]})
+	return [S(r,l),s,l]})
+reader_macros.set('0123456789', λ(_,s,l){t ← s.match(~/^[0-9]*\.[0-9]*(?:[eE][+-]?[0-9]+)?/); return t? [S(_+t₀,l),s[t₀.length:],l] : undefined})
+reader_macros.set(['.'],λ(_,s,l){t ← s.match(~/^[0-9]+(?:[eE][+-]?[0-9]+)?/); return [S(t?_+t₀:_,l),t?s[t₀.length:]:s,l]})
+reader_macros.set([].concat(seq('()[]{}‹›`~?:,;'), ['~@','¬in'],subscript_ops), λ(_,s,l){return [S(_,l),s,l]})
 reader_macros.set(' \t\x0c\x0d', λ(_,s,l){return [SP,s,l]})
 reader_macros.set('\n', λ(_,s,l){return [SP,s,l+1]})
 reader_macros.set(['//'], λ(_,s,l){return [SP,s.replace(~/^.*/,''),l]})
@@ -198,24 +195,32 @@ reader_macros.set(['~/'], λ(start,s,line){t ← (s.match(~/^((?:[^\/\\\[]|(?:\\
 
 //===----------===// special token macros (deliberate hack) //===----------===//
 
+//documentation from precedence\ table.txt
+	//regime breakers:
+	//\[…*\] (…*) {…*}
+	//λ
+	//new
+	//; && ||
+	//\[ ( {
+
 special_expand ← λ(tokens){
-	tokens.map(λ(v){if (v isa Symbol) v.v ←! aliases[v.v] || v.v})
-	groups_expand ← λ(tokens){r ← group_expand(S('{'),tokens.concat([S('}')])); if (¬r₁.no) err(); return r₀}
+	tokens.map(λ(v){if (v isa Symbol) v.name ←! aliases[v.name] || v.name})
+	groups_expand ← λ(tokens){r ← group_expand(S('{'),tokens.concat([S('}')])); if (¬r₁.no) err(r); return r₀}
 		group_expand ← λ(g,l){
 			check ← λ(){if (l.no) err('group is not closed @'+g.line)}
 			check()
 			r ← [g]; while(true){
-				if (se(l₀,groups[g.v])) return [r,l[1:]]
-				if (l₀ isa Symbol && own(groups,l₀.v)) {t ← group_expand(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
+				if (se(l₀,groups[g.name])) return [r,l[1:]]
+				if (l₀ isa Symbol && own(groups,l₀.name)) {t ← group_expand(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
 				r.push(l₀); l ←! l[1:]; check()}}
 	tokens ←! groups_expand(tokens)
 	walk ← λ(v,f){return (λ(v,i,l,f){
 		if (v isa Array) {for (j←0;j<v.length;) j ←! (λ)(v[j],j,v,f); return i+1}
 		else return f(v,i,l) })(v,0,undefined,f)}
 	walk(tokens,λ(v,i,l){
-		if (se(v,'new') && l[i+1] isa Symbol) {l.splice(i,2,[v,[new Symbol('__QUOTE__',undefined,undefined,true),l[i+1]]]); return i+1}
-		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'(')) {l.splice(i,2,v,[new Symbol('__QUOTE__',undefined,undefined,true),l[i+1]]); return i+2}
-		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'{')) {l.splice(i,1,v,[new Symbol('__QUOTE__',undefined,undefined,true),S('v')]); return i+2}
+		if (se(v,'new') && l[i+1] isa Symbol) {l.splice(i,2,[v,[new Symbol('__QUOTE__','␣␣'),l[i+1]]]); return i+1}
+		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'(')) {l.splice(i,2,v,[new Symbol('__QUOTE__','␣␣'),l[i+1]]); return i+2}
+		else if (se(v,'λ') && l[i+1] isa Array && se(l[i+1]₀,'{')) {l.splice(i,1,v,[new Symbol('__QUOTE__','␣␣'),S('v')]); return i+2}
 		else return i+1 })
 	return tokens}
 
@@ -224,45 +229,64 @@ aliases ← {';':',','&&':'&','||':'|'}
 
 //===---------===// "precedence/open/anyfix/operator macros" //===---------===//
 
-operator_expand ← λ(tokens){
-	return tokens
-}
+operator_expand ← λ(form){
+	/*r ← [form₀]
+	last ← undefined
+	rest ← form[1:]
 
-operators ← {}
+	if (rest.no) {
+		err('a')
+	} else if (¬is(last)) {
+		if (rest₀ isa Symbol && operators[rest₀]) {
+			op ← operators[rest₀]
+			if 
+		}
+	} else {
+		err('b')
+	}*/
+	// [is a last item] [last item is full] [next item is left-wall]: recurse back up to whatever is eating many thing in sequence?
+	// [is a last item] [last item is full] [next item is maybe left-wall]: ??? not sure ???
+	// [is a last item] [last item is full] [next item is left-eaty]:
+	// 	if its left-priority > our right-priority: recurse to next item
+	// 	elif its left-priority < our right-priority: recurse upwards
+	// 	else: this is that =≠<>≤≥ thingy! or something like it!
+	// [is a last item] [last item is full] [next item is void]: why marvelous, just let the above level handle this end
+	// [is a last item] [last item is want] [next item is not-an-op]: eat it
+	// [is a last item] [last item is want] [next item can be left-wall and have lower priority than us]: recurse to next item!
+	// [is a last item] [last item is want] [next item is any other op]: error!
+	// [is a last item] [last item is want] [next item is void]: oh no, you don''t get your satisfaction! but this is still not a problem.
+	// [void last item] [next item is left-wall]: marvelous, no problem, just do whatever the thing that is eating things says
+	// [void last item] [next item is maybe left-wall]: next item is definitely left-wall
+	// [void last item] [next item is left-eaty]: oh my well you don''t get to eat anything then! this is not actually a problem. we can just pass you void/undefined.
+	// i think we can figure out left-priorities by just going on ahead and recursing to the item. because all of these things are pure! recursing to the item is cheap and stuff.
+	// so it might be somewhat hard to figure out just what the priority of possibly even the last item is.
+	// yeah. we didn''t solve the "which operator am i even?" problem.
+	// alright. let''s leave that there for now and go ahead to implementing this. it looks like we have something actually solid now? i mean ... it''s still kinda just a conceptual prototype. but it looks like a _usable_ one
+	return tokens}
 
+// oh fuck we just had -₋. and .₋-₋. trample over each other
+// so op_repr includes space information but not wall/eaty information ... oh fuck ...
+//! CURRENT: redo things and fix this!
+
+operators ← {} // {op_repr:op}
+op_ANY ← {} // object, not a dictionary
 def_operators ← λ(prec_l,prec_r,ops){
-	//Array.prototype.cartesian ←! λ{this.reduce(λ(a,v){r ← []; a.map(λ(a){seq(v).map(λ(b){r.push(a.concat([b]))})}); return r}, [[]])}
 	symbol_set_split ← λ(v){
 		t ← v.match(~/^([₋␣])?(.+?)([₋␣])?$/); p ← [t₁||'?',t₃||'?']; n ← t₂
-		return [{'__DOT__':['.'], '__SUBSCRIPT__':subscript_ops}[n]||[n], λ{_.zip(p,v).every(λ{v₀='?'||v₀=v₁})}]}
-
+		return {name:n, spaces:λ{_.zip(p,v).every(λ{v₀='?'||v₀=v₁})}, symbols:λ(){me ← this; return ['₋␣','₋␣'].cartesian().map(λ{v.join('')}).filter(λ(v){return me.spaces(v)}).map(λ{new Symbol(me.name,v)})}}}
 	ops.map(λ(op){
-		t ← op.match(~/\[.*?\]|[^\[\]]+/g).map(λ(v){t←0; r ← ((t ←! v₀='[' && v₋₁=']')? v[1:-1] : v).match(~/\.|[^.]+/g); return t?[r]:r}).m_concat()
-		ANY ← {}
-		pr(t₁,typeof t₁)
-		pr('::',symbol_set_split(t₁))
-		//! CURRENT
-		// hm. at this point we're thinking about maybe normalizing ops into all four, so .₋+₋. is [.₋+₋.] but ¬␣. is [␣¬␣. ₋¬␣.]
-		// we could also do something similar with option parsing, though that can get downright combinatorial. though worst current case is try, which fragments into 64 pieces.
-		// we could even do this with __SUBSCRIPT__ . which, just so you know, fragments into on the order of 160 pieces. which is still not very much time or space even on an old phone.
-		// yeah, i like this
-		//'return[.]__SUBSCRIPT__' → ['return','[.]','__SUBSCRIPT__'] → [['return'],['.',undefined],['₁','₂',etc]]
-		//[['return'],['.',undefined],['₁','₂',etc]].cartesian() → [['return','.','₁'],['return',undefined,'₁'],etc]
-		// nope this does not work. try.[,][catch.][,][finally.] splits into 115600 pieces. gotta branch more.
-
-
-		//[ 'if', '.', [ ':' ], '.', [ ',' ], [ 'else', '.' ] ]
-		/*t.map(λ(v,i,l){
-			if (v isa Array) v.map(λ)
-			else if (v='.') lᵢ ←! ANY
-			else {
-				t ← symbol_set_split(v)
-				pr('hey',v,t)
-			}
-		})*/
-		//pr('impl:defop',prec_l,prec_r,t)
-	}) }
-
+		op ←! op.match(~/\[.*?\]|[^\[\]]+/g).map(λ(v){t←0; r ← ((t ←! v₀='[' && v₋₁=']')? v[1:-1] : v).match(~/\.|[^.]+/g); return t?[r]:r}).m_concat()
+		op ←! op.map(λ{v isa Array? v.map(λ) : v='.'? op_ANY : v})
+		left_eat ← false; if (op₀=op_ANY) {left_eat ←! true; op ←! op[1:]}
+		t ← symbol_set_split(op₀); op ←! op[1:]
+		;({'__DOT__':['.'], '__SUBSCRIPT__':subscript_ops}[t.name]||[t.name]).map(λ(n){
+			op ←! op.map(λ{v isa Array? v.map(λ) : v=op_ANY? v : symbol_set_split(v)})
+			r ← {prec_l:prec_l, prec_r:prec_r, left_eat:left_eat, op:oed(t,{name:n}), right:op}
+			r.op.symbols().map(λ(v){
+				if (operators[v]) pr('okay :c',v,operators[v],r)
+				operators[v] ←! r
+			})
+			}) }) }
 ;[	'400 401 .__DOT__₋. .₋__SUBSCRIPT__ .₋[ .₋(',
 	'390 391 ¬₋. -₋.',
 	'380 381 .₋*₋. .₋/₋. .₋%₋.',
@@ -355,6 +379,106 @@ compile_f(process.argv₂,process.argv₃)
 
 // _want_ syntax log₂n
 
+// && || % are probably temporary
+// add ++ -- with .₋\[
+// add ␣+₋. with ␣-₋.
+// add ./\ᵛ+/ with ./₋?\ᵥ/
+// add -= *= /= &= |= with +=
+// add back .in. .¬in. with isa
+// ? bah, throw
+// have a place for bitwise ops?
+// what about `₋. ? dunno how i feel about that being like it is
+
+/* PRECEDENCE_TABLE.TXT notes
+
+"is there anything i want to push out despite spacing? check from bottom up (top down)"
+
+a, b + 7, 9
+
+maybe ,
+if shouldn''t. if is a statement. if _always_ pushes out, except against ,
+v+2 * 7
+
+[] _eats_ tokens without giving them any opportunity to bind to anything
+
+// okay, we've let our thoughts on this percolate for a while. let's see if we can write out the operators in a sensible way.
+
+oh!
+eating another left-eating op (probably?) doesn''t change the number of things we''re eating, but another non-left-eating op *does*
+so the question is: what gets ops interpreted as functions and what gets ops interpreted as macros?
+
+[is a last item] [last item is full] [next item is left-wall]: recurse back up to whatever is eating many thing in sequence?
+[is a last item] [last item is full] [next item is maybe left-wall]: ??? not sure ???
+[is a last item] [last item is full] [next item is left-eaty]:
+	if its left-priority > our right-priority: recurse to next item
+	elif its left-priority < our right-priority: recurse upwards
+	else: this is that =≠<>≤≥ thingy! or something like it!
+[is a last item] [last item is full] [next item is void]: why marvelous, just let the above level handle this end
+[is a last item] [last item is want] [next item is not-an-op]: eat it
+[is a last item] [last item is want] [next item can be left-wall and have lower priority than us]: recurse to next item!
+[is a last item] [last item is want] [next item is any other op]: error!
+[is a last item] [last item is want] [next item is void]: oh no, you don''t get your satisfaction! but this is still not a problem.
+[void last item] [next item is left-wall]: marvelous, no problem, just do whatever the thing that is eating things says
+[void last item] [next item is maybe left-wall]: next item is definitely left-wall
+[void last item] [next item is left-eaty]: oh my well you don''t get to eat anything then! this is not actually a problem. we can just pass you void/undefined.
+i think we can figure out left-priorities by just going on ahead and recursing to the item. because all of these things are pure! recursing to the item is cheap and stuff.
+
+so it might be somewhat hard to figure out just what the priority of possibly even the last item is.
+yeah. we didn''t solve the "which operator am i even?" problem.
+alright. let''s leave that there for now and go ahead to implementing this. it looks like we have something actually solid now? i mean ... it''s still kinda just a conceptual prototype. but it looks like a _usable_ one
+
+// add more than minimum? alpha precedence (so, 190 195 instead of 190 191? or just allow floats.)
+
+// it might be worth considering the case of independent libraries.
+// "fail-fast" could be adequate
+
+// http://compilers.iecc.com/comparch/article/01-07-068
+
+parse_expression ()
+	return parse_expression_1 (parse_primary (), 0)
+parse_expression_1 (lhs, min_precedence)
+	while the next token is a binary operator whose precedence is >= min_precedence
+		op := next token
+		rhs := parse_primary ()
+		while the next token is a binary operator whose precedence is greater
+				 than op''s, or a right-associative operator
+				 whose precedence is equal to op''s
+			lookahead := next token
+			rhs := parse_expression_1 (rhs, lookahead''s precedence)
+		lhs := the result of applying op with operands lhs and rhs
+	return lhs
+Example execution of the algorithm[edit]
+An example execution on the expression 2 + 3 * 4 + 5 == 19 is as follows. We give precedence 0 to equality expressions, 1 to additive expressions, 2 to multiplicative expressions.
+
+parse_expression_1 (lhs = 2, min_precedence = 0)
+
+the next token is +, with precedence 1. the while loop is entered.
+op is + (precedence 1)
+rhs is 3
+the next token is *, with precedence 2. recursive invocation.
+parse_expression_1 (rhs = 3, min_precedence = 2)
+the next token is *, with precedence 2. the while loop is entered.
+op is * (precedence 2)
+rhs is 4
+the next token is +, with precedence 1. no recursive invocation.
+lhs is assigned 3*4 = 12
+the next token is +, with precedence 1. the while loop is left.
+12 is returned.
+the next token is +, with precedence 1. no recursive invocation.
+lhs is assigned 2+12 = 14
+the next token is +, with precedence 1. the while loop is not left.
+op is + (precedence 1)
+rhs is 5
+the next token is ==, with precedence 0. no recursive invocation.
+lhs is assigned 14+5 = 19
+the next token is ==, with precedence 0. the while loop is not left.
+op is == (precedence 0)
+rhs is 19
+the next token is end-of-line, which is not an operator. no recursive invocation.
+lhs is assigned the result of evaluating 19 == 19, for example 1 (as in the C standard).
+the next token is end-of-line, which is not an operator. the while loop is left.
+1 is returned.
+*/
 //===---------------===// probably shit; try to discard //===--------------===//
 /*
 def_group ← λ(a,b){}
