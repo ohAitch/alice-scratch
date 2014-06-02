@@ -15,6 +15,9 @@ possibly useful.
 //windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
 //guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
 
+//float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
+//float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
+
 //===--------------------------------------------===// greenspuns //===--------------------------------------------===//
 
 var def = function(f){this[f.name] = f}.bind(this)
