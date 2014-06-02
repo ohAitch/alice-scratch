@@ -14,25 +14,10 @@ possibly useful.
 	}*/
 //windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
 //guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
-//Array.prototype.interpose ←! λ(sep){return this.map(λ{v.concat(sep)}).m_concat()[:-1]}
 
 //===--------------------------------------------===// greenspuns //===--------------------------------------------===//
 
-function bind(root,member){return root[member].bind(root)}
-function argslice(args,i){return Array.prototype.slice.apply(args).slice(i)}
-Function.prototype.cmp = function(f){var t = this; return function(){return t.call(this,f.apply(this,arguments))}}
 var def = function(f){this[f.name] = f}.bind(this)
-function dict_by(f,sq){var r = {}; for(var i=0;i<sq.length;i++) r[f(sq[i])] = sq[i]; return r}
-var sub = overload(
-	function(v,i){return v[i<0? i+v.length : i]},
-	function(i){return function(v){return sub(v,i)}})
-
-//===--------------------------------------------===// misc utils //===--------------------------------------------===//
-
-var rand = Math.random
-function sum(v){var r = 0; for (var i=0;i<v.length;i++) r += v[i]; return r}
-function sign(v){return v? (v < 0? -1 : 1) : 0}
-function rand_nth(vs){return vs.length === 0? undefined : vs[Math.floor(rand()*vs.length)]}
 
 //===--------------------------------------------===// misc mathy utils //===--------------------------------------------===//
 
