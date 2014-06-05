@@ -1,6 +1,8 @@
-#!/usr/bin/env node
+ 	  8.2
 
-new 8(9)
+
+    .1
+/*new 8(9)
 λ(x,y){1}
 λ{1}
 (λ)('hey','nope')
@@ -10,7 +12,8 @@ if 1: 1 else 1
 if 1: 1
 while (¬true) {1}
 return 1 * 1
-return,
+return,*/
+"string"
 5
 return
 5

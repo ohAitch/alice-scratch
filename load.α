@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-//"use strict"
+//#!/usr/bin/env node
 
 fs ← require('fs')
 
@@ -55,8 +54,8 @@ reader_or.prototype.reduce   ←! λ(s){r ← [];           while (s ≠ '') {t 
 //===------------------------===// characters //===------------------------===//
 
 js_valid_symbol ← new (λ(){
-	//! _short
-	_short ← [' _'].concat("!1 #3 %5 &7 (9 )0 *8 +p ,C -m .d /s :c =E ?q @2 [L 'b ^6 `k {B |o ~t …r ←w →e ¬n ∀A ≠N ǂǂ <lt ≤le >gt ≥ge".split(' ')).map(λ{[v₀,v[1:]]})
+	//! _short should be short
+	_short ← ")0 !1 @2 #3 %5 ^6 &7 *8 (9 ∀A 'b {B ,C :c .d =E →e ≥ge >gt `k [L ≤le <lt -m ¬n ≠N |o +p ?q …r /s ~t ←w ǂǂ".split(' ').concat([' _']).map(λ{[v₀,v[1:]]})
 	encode_short ← _short.map(λ{[v₀,'ǂ'+v₁]}).object()
 	decode_short ← _short.map(λ{[v₁,v₀]}).object()
 	is_start ← memoize_o(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]}).object(),λ(v){try {eval('var '+v )} catch (e) {return false} return true})
@@ -85,17 +84,17 @@ unicode ← λ(table){return {
 
 //===--------------------------===// Symbol //===--------------------------===//
 
-Symbol ← λ(name,space,line){this.name ←! name; this.space ←! space; if (line) this.line ←! line}
-Symbol.prototype.toString ←! Symbol.prototype.inspect ←! λ{'`'+this.space₀+this.name+this.space₁}
-Symbol.prototype.with_name ←! λ{new Symbol(v,this.space,this.line)}
-S ← λ{new Symbol(v,'₋₋',b)}
+// Symbol ← λ(name,space,line){this.name ←! name; this.space ←! space; if (line) this.line ←! line}
+// Symbol.prototype.toString ←! Symbol.prototype.inspect ←! λ{'`'+this.space₀+this.name+this.space₁}
+// Symbol.prototype.with_name ←! λ{new Symbol(v,this.space,this.line)}
+// S ← λ{new Symbol(v,'₋₋',b)}
 
 //===---------------------===// load.α hack utils //===--------------------===//
 
 pr ← λ(){if (running_as = 'bin/load.js') print.apply(this,['##'].concat($args)); return $args₀}
 printable ← λ{λᵥ}
 
-se ← λ{v isa Symbol && v.name=b}
+// se ← λ{v isa Symbol && v.name=b}
 
 //===---------------------------===// repr //===---------------------------===//
 
@@ -106,39 +105,60 @@ RegExp.prototype.repr_js ←! λ{this+''}
 String.prototype.repr ←! String.prototype.repr_js
 RegExp.prototype.repr ←! λ{'~'+this+''}
 
-//===------------------===// reader macros (lexing) //===------------------===//
+//===------------------===// lexer: [char] → [token] //===-----------------===//
+
+//! list of characters → list of tokens, which are symbols, self-evals, and spaces (symbols and self-evals need to know their [line,cell,col])
 
 tokenize ← λ(s){
-	t←undefined; r ← [].concat([SPACE],((t ←! s.match(~/^#!.*/))? [S('__literal__'),S('('),t₀,S(')'),SPACE] : []),reader_macros.reduce_l(t? s[t₀.length:] : s),[SPACE])
-	i←1; while (i<r.length-1) {if (rᵢ isa Symbol) rᵢ.space ←! (r[i-1]=SPACE?'␣':'₋')+(r[i+1]=SPACE?'␣':'₋'); i+=1}
-	return r.filter(λ{v ≠ SPACE})}
+	seq(s).map(λ{printableᵥ ←! true})
+	r ← []
+	pos ← [1,1,1]; any ← undefined; first_type ← undefined
+	spos ← λ(v){if (¬is(v.SPACE)) v.pos ←! pos; return v}
+	increment_pos ← λ(s){
+		seq(s).map(λ(v){
+			if (v='\n') pos ←! [pos₀+1,1,1]
+			else if (v='\t') pos ←! [pos₀,pos₁+1,1]
+			else pos ←! [pos₀,pos₁,pos₂+1]
+			}) }
+	start_any ← λ(){any ←! s₀; s ←! s[1:]; first_type ←! js_valid_symbol.is_part(s₀)}
+	end_any ← λ(){r.push(spos(new Symbol(any))); increment_pos(any); any ←! undefined}
+	while (s≠'') {
+		t ← reader_macros.map(λ(v){t←0; return (t←!s.match(v₀))? [t,v₁(t)] : undefined}).filter(λ{v})₀
+		if (t) {m ← t₀; v ← t₁; if (is(any)) end_any(); r.push(spos(v)); s ←! s[m₀.length:]; increment_pos(m₀)}
+		else {if (is(any)) {if (js_valid_symbol.is_part(s₀) = first_type) {any += s₀; s ←! s[1:]} else {end_any(); start_any()}} else start_any()}
+	}
+	pr('tokens:',r.map(λ{(v+'')[1:]}).join(' '))
+	return r}
 
-SPACE ← {SPACE:''}
 subscript_ops ← genex_2a(~/^-?[\da-z]$/).map(λ{seq(v).map(unicode.subscript)}).filter(λ{v.every(λ{v})}).map(λ{v.join('')})
 
-reader_macros ← new reader_or()
-reader_macros.set([''], λ(_,s,l){
-	first_type ← js_valid_symbol.is_part(s₀)
-	r ← ''; while (s ≠ '' && (s.match(~/^\d/) || ¬reader_macros.get(s)) && js_valid_symbol.is_part(s₀) = first_type) {r += s₀; s ←! s[1:]}
-	return [S(r,l),s,l]})
-reader_macros.set('0123456789', λ(_,s,l){t ← s.match(~/^\d*\.\d*(?:[eE][+-]?\d+)?/); return t? [S(_+t₀,l),s[t₀.length:],l] : undefined})
-reader_macros.set(['.'],λ(_,s,l){t ← s.match(~/^\d+(?:[eE][+-]?\d+)?/); return [S(t?_+t₀:_,l),t?s[t₀.length:]:s,l]})
-reader_macros.set([].concat(seq('()[]{}‹›`~?:,;'), ['~@','¬in'],subscript_ops), λ(_,s,l){return [S(_,l),s,l]})
-reader_macros.set(' \t\x0c\x0d', λ(_,s,l){return [SPACE,s,l]})
-reader_macros.set('\n', λ(_,s,l){return [SPACE,s,l+1]})
-reader_macros.set(['//'], λ(_,s,l){return [SPACE,s.replace(~/^.*/,''),l]})
-reader_macros.set(['/*'], λ(_,s,l){t ← s.match(~/^[^]*?(\*\/|$)/)₀; return [SPACE,s[t.length:],l+(t.match(~/\n/g)||[]).length]})
-reader_macros.set('\'"', λ(start,s,line){
-	t ← s.match(start='"'? ~/^((?:(?:.*[^\\])?(?:\\\\)*)?)"/ : ~/^((?:(?:.*[^\\])?(?:\\\\)*)?)'/) || err('string is not closed @'+line); s ←! s[t₀.length:]; v ← t₁
-	return [v.match(~/\\u[\da-fA-F]{4}|\\x[\da-fA-F]{2}|\\[nt'"\\]|./g).map(λ(v){
-		if (v='\n') line += 1; return {"\\'":"'",'\\"':'"','\\\\':'\\','\\n':'\n','\\t':'\t'}ᵥ || (v.length>2? chr(parseInt(v[2:],16)) : v)
-		}).join(''),s,line]})
-reader_macros.set(['~/'], λ(start,s,line){t ← (s.match(~/^((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*\/[a-z]*)/) || err('could not match regex: '+start+s[:10]))₁; return [eval('/'+t),s[t.length:],line]})
+// give tokens nice toString and inspect properties
+SPACE ← {SPACE:''}; SPACE.toString ←! SPACE.inspect ←! λ{'`␣'}
+Symbol ← λ(name){this.name ←! name}; Symbol.prototype.toString ←! Symbol.prototype.inspect ←! λ{'`'+this.name}
+SelfEval ← λ(value){this.value ←! value}; SelfEval.prototype.toString ←! SelfEval.prototype.inspect ←! λ{'`'+this.value}
 
-//===----------===// special token macros (deliberate hack) //===----------===//
+reader_macros ← [
+[~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/, λ{SPACE}],
+[~/^(["'])((?:(?:.*[^\\])?(?:\\\\)*)?)\1/, λ{new SelfEval(v₂.match(~/\\u[\da-fA-F]{4}|\\x[\da-fA-F]{2}|\\.|./g).map(λ(v){return v.length>2? chr(parseInt(v[2:],16)) : v.length=2? v₁ : v}).join(''))}],
+[~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/, λ{new SelfEval(eval('/'+v₁+'/'+v₂))}],
+[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(~/([()\[\]{}?])/g,'\\$1')+')'), λ{new Symbol(v₁)}],
+[~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/, λ{new SelfEval(parseFloat(v₀))}]
+]
+
+//===-------===// token macros: [token] → macro-form-unresolved //===------===//
+
+//! ---[1] we group tokens, which does the transformation:
+// list of tokens → macro-form-with-unresolved-operators, which is a symbol, self-eval, space, or list of macro-form-with-unresolved-operators
+// ---[2] we walk the form-tree and alias some tokens and do the transformations for new and λ, which leaves the datatype the same
+
+//! CURRENT: implement token macros
+
+token_macro_expand ← λ(tokens){
+	err('tmx¬im')
+}
 
 // documentation from "precedence table.txt": \[…*\] (…*) {…*}        λ        new        ; && ||        \[ ( {
-
+/*
 special_expand ← λ(tokens){
 	tokens.map(λ(v){if (v isa Symbol) v.name ←! aliases[v.name] || v.name})
 	groups_expand ← λ(tokens){r ← group_expand(S('('),tokens.concat([S(')')])); if (¬r₁.no) err(r); return r₀}
@@ -162,9 +182,17 @@ special_expand ← λ(tokens){
 
 groups ← ['()','[]','{}'].object()
 aliases ← {';':',','&&':'&','||':'|'}
+*/
 
-//===---------===// "precedence/open/anyfix/operator macros" //===---------===//
+//===-------===// operators: macro-form-unresolved → macro-form //===------===//
 
+//! macro-form-with-unresolved-operators → macro-form, which is a symbol, self-eval, or list of macro-form
+
+operator_expand ← λ(form){
+	err('opx¬im')
+}
+
+/*
 operators ← {} // {op_repr:op}
 ANY_FORM ← {ANY:''} // object, not a dictionary
 def_operator ← λ(prec_l,prec_r,op){
@@ -178,20 +206,20 @@ def_operator ← λ(prec_l,prec_r,op){
 	left_eat ← 0; if (left_eat←!op₀=ANY_FORM) op ←! op[1:]
 	//op.filter(λ{typeof(v)='string'})₀
 	//print(op,left_eat)
-	/*ops.map
-	symbol_set_split ← λ(v){
-		t ← v.match(~/^([₋␣])?(.+?)([₋␣])?$/); p ← [t₁||'?',t₃||'?']; n ← t₂
-		return {name:n, spaces:λ{_.zip(p,v).every(λ{v₀='?'||v₀=v₁})}, symbols:λ(){me ← this; return ['₋␣','₋␣'].cartesian().map(λ{v.join('')}).filter(λ(v){return me.spaces(v)}).map(λ{new Symbol(me.name,v)})}}}
-	ops.map(λ(op){
-		op ←! op.match(~/\[.*?\]|..\[|[^\[\]]+/g).map(λ(v){t←0; r ← ((t ←! v₀='[' && v₋₁=']')? v[1:-1] : v).match(~/\.|[^.]+/g); return t?[r]:r}).m_concat()
-		op ←! op.map(λ{v isa Array? v.map(λ) : v='.'? op_ANY : v})
-		left_eat ← false; if (op₀=op_ANY) {left_eat ←! true; op ←! op[1:]}
-		t ← symbol_set_split(op₀); op ←! op[1:]
-		;({DOT:['.'], BACKTICK:['`'], SUBSCRIPT:subscript_ops}[t.name]||[t.name]).map(λ(n){
-			op ←! op.map(λ{v isa Array? v.map(λ) : v=op_ANY? v : symbol_set_split(v)})
-			r ← {prec_l:prec_l, prec_r:prec_r, left_eat:left_eat, op:_.defaults({name:n},t), right:op}
-			r.op.symbols().map(λ(v){operatorsᵥ ←! operatorsᵥ? (operatorsᵥ isa Array? operatorsᵥ : [operatorsᵥ]).concat([r]) : r})
-			}) }) */}
+	// ops.map
+	// symbol_set_split ← λ(v){
+	// 	t ← v.match(~/^([₋␣])?(.+?)([₋␣])?$/); p ← [t₁||'?',t₃||'?']; n ← t₂
+	// 	return {name:n, spaces:λ{_.zip(p,v).every(λ{v₀='?'||v₀=v₁})}, symbols:λ(){me ← this; return ['₋␣','₋␣'].cartesian().map(λ{v.join('')}).filter(λ(v){return me.spaces(v)}).map(λ{new Symbol(me.name,v)})}}}
+	// ops.map(λ(op){
+	// 	op ←! op.match(~/\[.*?\]|..\[|[^\[\]]+/g).map(λ(v){t←0; r ← ((t ←! v₀='[' && v₋₁=']')? v[1:-1] : v).match(~/\.|[^.]+/g); return t?[r]:r}).m_concat()
+	// 	op ←! op.map(λ{v isa Array? v.map(λ) : v='.'? op_ANY : v})
+	// 	left_eat ← false; if (op₀=op_ANY) {left_eat ←! true; op ←! op[1:]}
+	// 	t ← symbol_set_split(op₀); op ←! op[1:]
+	// 	;({DOT:['.'], BACKTICK:['`'], SUBSCRIPT:subscript_ops}[t.name]||[t.name]).map(λ(n){
+	// 		op ←! op.map(λ{v isa Array? v.map(λ) : v=op_ANY? v : symbol_set_split(v)})
+	// 		r ← {prec_l:prec_l, prec_r:prec_r, left_eat:left_eat, op:_.defaults({name:n},t), right:op}
+	// 		r.op.symbols().map(λ(v){operatorsᵥ ←! operatorsᵥ? (operatorsᵥ isa Array? operatorsᵥ : [operatorsᵥ]).concat([r]) : r})
+	// 		}) }) }
 
 ;[	'400 401 .`\\.. .\\ᵥ .\\[ .(',
 	'390 391 ¬. -.',
@@ -216,12 +244,28 @@ def_operator ← λ(prec_l,prec_r,op){
 	'200 201 \\`_. ~_. ~@_.',
 	'100 100 , :'
 	].map(λ(v){t ← v.split(' '); t[2:].map(λ(v){def_operator(i(t₀),i(t₁),v)})})
+*/
+
+//===-------------===// repr_js: macro-form → javascript //===-------------===//
+
+//! we're done with our current architecture pass, so we cut it short super quickly by just having a list of "macros" that output javascript (probably javascript, maybe another layer to make it easy to output javascript)
+// macro-form → repr_js
+
+repr_js_file ← λ(form){
+	err('rjf¬im')
+}
 
 //===--------------------------===// <edge> //===--------------------------===//
 
+read ← λ(s){return pr(operator_expand(pr(token_macro_expand(tokenize(s)))))}
+compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
+compile_f(process.argv₂,process.argv₃)
+
+//===-----------------------===// architecture //===-----------------------===//
+
 /* okay. clarification / rethinking time.
 
-[1] lexer (character macros). (lexers are nice. lexers provide a simple, consistent tokenization.)
+[1] lexer (tokenize). (lexers are nice. lexers provide a simple, consistent tokenization.)
 list of characters → list of tokens, which are symbols, self-evals, and spaces (symbols and self-evals need to know their [line,cell,col])
 
 [2] arbitrary token manipulations (token macros). (this can be part of the lexer, but it's cleaner for it not to be)
@@ -236,17 +280,6 @@ macro-form-with-unresolved-operators → macro-form, which is a symbol, self-eva
 [4] we're done with our current architecture pass, so we cut it short super quickly by just having a list of "macros" that output javascript (probably javascript, maybe another layer to make it easy to output javascript)
 macro-form → repr_js
 */
-
-read ← λ(s){
-	seq(s).map(λ{printableᵥ ←! true})
-
-	r ← operator_expand(special_expand(tokenize(s)))
-	//pr(r)
-	return r}
-
-compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
-
-compile_f(process.argv₂,process.argv₃)
 
 //===---------------------------===// todo //===---------------------------===//
 
@@ -281,6 +314,8 @@ we maybe want to get rid of the reader_or bull and just use sequential regexes
 // [,1 1] = [void 1 1]
 
 // try compiling an empty file
+
+//"use strict"
 
 // todo: [for] generator expression, non-lazy
 // todo: (for) generator expression, lazy
