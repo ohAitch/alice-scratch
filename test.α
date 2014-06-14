@@ -1,23 +1,20 @@
- 	  8.2
-
-
-    .1
-/*new 8(9)
-λ(x,y){1}
-λ{1}
+/*new 8(9.)
+λ(x, y){1}
+λ{.1}
 (λ)('hey','nope')
-(typeof 1)? 1 : {1}
-(typeof 1)? 1 [1 2 3]
-if 1: 1 else 1
-if 1: 1
-while (¬true) {1}
-return 1 * 1
-return,*/
-"string"
+	(typeof 1)? 1 : {1}
+	(typeof 1)? 1 [1.1 2 3]
+	if 1: 1 else 1
+	if 1: 1
+	while (¬true) {1}
+	return 1 * 1
+	return,
 5
 return
 5
-v ← 1 = 1 > 1 < 1 ≤ 1 ≠ 1 && 1 in {1:1} isa Array
+[v ← 1 ≤ 1 ≠ 1 && 1 in {1:1} isa Array]
 throw v()
 v ←! 1;
-try 1 catch {1}
+try 1 catch {1}*/
+
+[0]   1[2]   3[4:5]   {6:7}   (8)   9(0)   λ{1}   λ(2,3){4}   new 5()   v.v   8ᵥ   ¬9   0+1   2=3≠4   5?6:7   `8   9 + 0   if 1 : 2; else 3;   while 4:5
