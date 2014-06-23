@@ -85,13 +85,6 @@ unicode ← λ(table){return {
 	superscript: λ{table.map(λ{[[v₀,v₂], [v₁,v₂]]}).m_concat().filter(λ{v₁≠'_'}).object()ᵥ},
 	}}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ _bᵇ _cᶜ _dᵈ ₑeᵉ _fᶠ _gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ _wʷ ₓxˣ _yʸ _zᶻ _Aᴬ _Bᴮ _Dᴰ _Eᴱ _Gᴳ _Hᴴ _Iᴵ _Jᴶ _Kᴷ _Lᴸ _Mᴹ _Nᴺ _Oᴼ _Pᴾ _Rᴿ _Tᵀ _Uᵁ _Vⱽ _Wᵂ'.split(' '))
 
-//===--------------------------===// Symbol //===--------------------------===//
-
-// Symbol ← λ(name,space,line){this.name ←! name; this.space ←! space; if (line) this.line ←! line}
-// Symbol.prototype.toString ←! Symbol.prototype.inspect ←! λ{'`'+this.space₀+this.name+this.space₁}
-// Symbol.prototype.with_name ←! λ{new Symbol(v,this.space,this.line)}
-// S ← λ{new Symbol(v,'₋₋',b)}
-
 //===---------------------===// load.α hack utils //===--------------------===//
 
 pr ← λ(){if (running_as = 'bin/load.js') print.apply(this,['##'].concat($args)); return $args₀}
@@ -273,6 +266,8 @@ compile_f(process.argv₂,process.argv₃)
 
 //===-----------------------===// architecture //===-----------------------===//
 
+// OFFICIAL STATUS: this was a good attempt. It wasn't good enough. It's close enough to finish that it's probably worth finishing, but we need to start again, backwards, and more do-what-I-mean than let's-guess-at-a-slim-formalization-that-might-be-close
+
 /* okay. clarification / rethinking time.
 
 [1] lexer (tokenize). (lexers are nice. lexers provide a simple, consistent tokenization.)
@@ -314,6 +309,12 @@ macro-form: symbol | self-eval | list of macro-form
 
 eeeeep. it all goes wrong here? namely, macro-forms things like [( x y] and now we're passing them to compiler macros.
 
+( x y )   IS A sexp ‹( x y›
+[ x y ]   IS A sexp ‹[ x y›
+{ x : y } IS A sexp ‹{ x : y›
+x + y     IS A sexp ‹+ x y›
+x(y)      IS A sexp ‹‹( y› x›
+
 [5] repr_js. we're done with our current architecture pass, so we cut it short super quickly with a bunch of compiler-macros that output javascript
 macro-form → list of characters
 */
@@ -329,83 +330,7 @@ macro-form → list of characters
 */
 //===---------------------------===// todo //===---------------------------===//
 
-/* ----------------- halt and catch fire notes ----------------
-soooo i''m suddenly extremely concerned that maybe this whole ␣symbol₋ thing was a mistake. and that ".␣symbol₋." should be represented as ".␣symbol." and ".symbol." as ".␣?symbol␣?."
-
-and ... are we actually fucking reinventing BNF? i think we just reinvented BNF. this is stupid.
-
-"the role of the lexer is to take a stream of characters and generate a stream of symbols and literals and maybe spaces"
-note: in js, 3. and .3 are parsed as numeric literals
-
-prefix operator left precedence ?? should they always be at the top or something ??
-
-space normal prefix operator in the middle ??
-
-macro precedences?? thinking about numeric literals. and, um, maybe all literals. and isomorphisms. but maybe the stuff about the lexer makes this void.
-
-we maybe want to get rid of the reader_or bull and just use sequential regexes
-*/
-
-// v.split(' ') might be the same concept as v[::' ']
-
 // keep in mind that the basic idea was always just "write a really nice preprocessor" http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
-
-// void could be a macro for undefined, or it could just be another global variable . i'm not sure what to do with such things that javascript doesn't like
-// void might be too long of a word. check to see how often it's used.
-
-// {expr,} = void
-// {expr} = expr
-// [1,,1] = [1 void 1]
-// [1,1] = [1 1] = [1 1,] = [1 1]
-// [1 1,,] = [1 1 void]
-// [,1 1] = [void 1 1]
-
-// try compiling an empty file
-
-//"use strict"
-
-// todo: [for] generator expression, non-lazy
-// todo: (for) generator expression, lazy
-// todo: {for} generator expression, set
-// todo: {: for} generator expression, object
-// todo?: v{} call
-// todo: either (replace Ca with [] and [] with [__array__]) or (replace Ca with ())
-// todo: curry can be max.(1) and indexer function can be list.[]
-
-// todo: r ← [1 2 3]; r[1:2] ←! [5 5]; r = [1 5 5 3]
-// todo: more meanings of ?
-
-// later
-// ` ~ ~@
-//	tight					…++	…--
-//	prefix					+…	bit~…
-//	bitwise					bit|	bit^	bit&	bit>>>	bit>>	bit<<
-//	assignment				+=	-=	*=	/=	&=	|=	bit<<=	bit>>=	bit>>>=	bit&=	bit^=	bit|=
-//	statement				delete …	yield …
-
-// derp, if ~/ is regex ~" should be too
-
-// ¬in has to be a reader macro too ...
-
-// fix the shit where all the functions are named λ
-
-// actually yeah, → operator
-
-// yeah, just have a bit() or bit{} anyfix namespace that provides ~ | ^ & >>> >> << ~= |= ^= &= >>>= >>= <<=
-
-// i am starting to worry that we may have failed enormously by not studying perl
-
-// _want_ syntax log₂n
-
-// && || % are probably temporary
-// add ++ -- with .₋\[
-// add ␣+₋. with ␣-₋.
-// add ./\ᵛ+/ with ./₋?\ᵥ/
-// add -= *= /= &= |= with +=
-// add back .in. .¬in. with isa
-// ? bah, throw
-// have a place for bitwise ops?
-// what about `₋. ? dunno how i feel about that being like it is
 
 /* PRECEDENCE_TABLE.TXT notes
 
@@ -426,12 +351,3 @@ we maybe want to get rid of the reader_or bull and just use sequential regexes
 [last item is void] [next item is maybe left-wall]: next item is definitely left-wall
 [last item is void] [next item is left-eaty]: oh my well you don''t get to eat anything then! this is not actually a problem. we can just pass you void/undefined.
 i think we can figure out left-priorities by just going on ahead and recursing to the item. because all of these things are pure! recursing to the item is cheap and stuff.
-
-so it might be somewhat hard to figure out just what the priority of possibly even the last item is.
-yeah. we didn''t solve the "which operator am i even?" problem.
-alright. let''s leave that there for now and go ahead to implementing this. it looks like we have something actually solid now? i mean ... it''s still kinda just a conceptual prototype. but it looks like a _usable_ one
-
-// add more than minimum? alpha precedence (so, 190 195 instead of 190 191? or just allow floats.)
-
-// it might be worth considering the case of independent libraries.
-// "fail-fast" could be adequate
