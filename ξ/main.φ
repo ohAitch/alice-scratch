@@ -1,0 +1,123 @@
+(ξ/do_s
+
+(ξ/JS_VAR fs (require 'fs'))
+(ξ/JS_VAR _ (require 'underscore'))
+
+(ξ/JS_VAR seq (ξ/fn (v) (ξ/do_s (return ((. v 'split') '')))))
+(ξ/JS_VAR chr (ξ/fn (v) (ξ/do_s (return ((. String 'fromCharCode') v)))))
+(ξ/JS_VAR err (ξ/fn (v) (ξ/do_s (throw (Error v)))))
+(ξ/JS_VAR own (ξ/fn (o m) (ξ/do_s (return (ξ/if_e ((. (. (. Object 'prototype') 'hasOwnProperty') 'call') o m) (. o m) undefined)))))
+(ξ/JS_VAR is (ξ/fn (v) (ξ/do_s (return (ξ/≠ v undefined)))))
+//Array.prototype.m_concat = function(){return Array.prototype.concat.apply([],this)}
+
+(ξ/JS_VAR js_valid_symbol (ξ/object (is_part (ξ/fn (v) (ξ/do_s (return (! (! ((. v 'match') ~/[\wξηφ\/≠=+>~]/)))))))))
+
+(ξ/JS_VAR tokenize (ξ/fn (s) (ξ/do_s 
+	(ξ/JS_VAR r [])
+	//var pos = [1,1,1]
+	(ξ/JS_VAR any undefined) (ξ/JS_VAR first_type undefined)
+	//var spos = function(v){if (!v.SPACE) v.pos = pos; return v}
+	/*var increment_pos = function(s){
+		seq(s).map(function(v){
+			if (v==='\n') pos = [pos[0]+1,1,1]
+			else if (v==='\t') pos = [pos[0],pos[1]+1,1]
+			else pos = [pos[0],pos[1],pos[2]+1]
+			}) }*/
+	(ξ/JS_VAR start_any (ξ/fn () (ξ/do_s (ξ/assign any (. s 0)) (ξ/assign first_type ((. js_valid_symbol 'is_part') (. s 0))) (ξ/assign s ((. s 'slice') 1)))))
+	//var end_any = function(){r.push(spos(S(any))); increment_pos(any); any = undefined}
+	(ξ/JS_VAR end_any (ξ/fn () (ξ/do_s ((. r 'push') (S any)) (ξ/assign any undefined))))
+	(ξ/while_s (ξ/≠ s '') (ξ/do_s 
+		(ξ/JS_VAR t (. ((. ( (. reader_macros 'map') (ξ/fn (v) (ξ/do_s (ξ/JS_VAR t ((. s 'match') (. v 0))) (return (ξ/if_e t (ξ/array t ((. v 1) t)) undefined))))) 'filter') (ξ/fn (v) (ξ/do_s (return v)))) 0))
+		//if (t) {var m = t[0]; var v = t[1]; if (is(any)) end_any(); r.push(spos(v)); s = s.slice(m[0].length); increment_pos(m[0])}
+		(ξ/if_s t (ξ/do_s
+			(ξ/JS_VAR m (. t 0))
+			(ξ/JS_VAR v (. t 1))
+			(ξ/if_s (is any) (end_any) '')
+			(ξ/if_s (ξ/≠ v SPACE) ((. r 'push') v) '')
+			(ξ/assign s ((. s 'slice') (. (. m 0) 'length')))
+		) (ξ/do_s
+			(ξ/if_s (is any) (ξ/do_s
+				(ξ/if_s (ξ/= ((. js_valid_symbol 'is_part') (. s 0)) first_type) (ξ/do_s
+					(ξ/assign any (η/~ any (. s 0)))
+					(ξ/assign s ((. s 'slice') 1))
+				) (ξ/do_s
+					(end_any)
+					(start_any)
+				))
+			) (ξ/do_s
+				(start_any)
+			))
+		))
+	))
+	(return r) )))
+
+//var subscript_ops = genex_2a(~/^-?[\da-z]$/).map(function(v){return seq(v).map(unicode.subscript)}).filter(function(v){return v.every(function(v){return v})}).map(function(v){return v.join('')})
+(ξ/JS_VAR subscript_ops (ξ/array))
+
+(ξ/JS_VAR S (ξ/fn (v) (ξ/do_s (return (ξ/object (s v)))))) //new Symbol(v)}
+
+// give tokens nice properties
+(ξ/JS_VAR SPACE (ξ/object (SPACE 1)))//; set_to_s(SPACE, function(){return '␣'})
+//var Symbol = function(name){this.s = name}//; set_to_s(Symbol.prototype, function(){return '`'+this.name+'@'+this.pos})
+//var Quote = function(value){this.v = value}//; set_to_s(Quote.prototype, function(){return '`'+repr_js(this.quote)+'@'+this.pos})
+
+(ξ/JS_VAR reader_macros (ξ/array
+(ξ/array ~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/ (ξ/fn () (ξ/do_s (return SPACE))))
+//[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
+(ξ/array ~/^(['"])((.*?[^\\])?(\\\\)*)\1/ (ξ/fn (v) (ξ/do_s (return (ξ/object (v
+	((. ((. (ξ/JS_OR ((. (. v 2) 'match') ~/\\u....|\\x..|\\.|./g) (ξ/array)) 'map') (ξ/fn(v) (ξ/do_s (return (ξ/if_e (ξ/JS_> (. v 'length') 2) (chr (parseInt ((. v 'slice') 2) 16)) (ξ/if_e (ξ/= (. v 'length') 2) (. (ξ/object ('\'' '\'') ('\"' '\"') ('n' '\n') ('t' '\t'))
+					(. v 1)) v)))))) 'join') '')
+
+	))))))
+//[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/), function(v){return {v:eval('/'+v[1]+'/'+v[2])}}],
+(ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ (ξ/fn(v) (ξ/do_s (return (ξ/object (s (η/~ (η/~ (η/~ '/' (. v 1)) '/') (. v 2))))))))
+//[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(/([()\[\]{}?])/g,'\\$1')+')'), function(v){return S(v[1])}],
+(ξ/array ~/^([()?:,;])/ (ξ/fn (v) (ξ/do_s (return (S (. v 1))))))
+(ξ/array ~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/ (ξ/fn(v) (ξ/do_s (return (ξ/object (v (parseFloat (. v 0))))))))
+))
+
+(ξ/JS_VAR groups_expand (ξ/fn (tokens) (ξ/do_s 
+	(ξ/JS_VAR groups (ξ/object ('(' ')')))
+	(ξ/JS_VAR group_expand (ξ/fn (g l) (ξ/do_s
+		//var check = function(){if (l.length===0) err('group is not closed @'+g.pos)} //! this is bad at telling the user which group was unclosed
+		//check()
+		(ξ/JS_VAR r (ξ/array)) (ξ/while_s true (ξ/do_s
+			(ξ/if_s (. (. l 0) 's') (ξ/do_s
+				(ξ/if_s (ξ/= (. (. l 0) 's') (. groups (. g 's'))) (return (ξ/array r ((. l 'slice') 1))) '')
+				(ξ/if_s (own groups (. (. l 0) 's')) (ξ/do_s (ξ/JS_VAR t (group_expand (. l 0) ((. l 'slice') 1))) ((. r 'push') (. t 0)) (ξ/assign l (. t 1)) continue) '') // removed a check() before the continue
+				) '')
+			((. r 'push') (. l 0)) (ξ/assign l ((. l 'slice') 1))//; check()
+		))
+	)))
+	(ξ/JS_VAR r (group_expand (S '(') ((. tokens 'concat') (ξ/array (S ')'))))) (ξ/if_s (! (ξ/= (. (. r 1) 'length') 0)) (err r) '') (return (. r 0))
+)))
+
+(ξ/JS_VAR φ_f (ξ/fn (in_ out) (ξ/do_s ((. fs 'writeFileSync')(η/~ (η/~ (η/~ out '/') in_) 'c.η')((. JSON 'stringify') (. (groups_expand (tokenize (η/~ ((. fs 'readFileSync') in_) '//! wth'))) 0) null '\t')))))
+(φ_f (. (. process 'argv') 2) (. (. process 'argv') 3))
+
+)
+
+
+/* builtins and macros
+
+ξ/object
+ξ/array
+ξ/=
+ξ/≠
+ξ/assign
+ξ/fn
+
+ξ/do_s
+ξ/if_e
+ξ/if_s
+ξ/while_s
+
+ξ/JS_VAR
+ξ/JS_instanceof
+
+.
+η/member
+η/+
+η/~
+
+*/

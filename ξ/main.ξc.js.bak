@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 var fs = require("fs")
 var _ = require("underscore")
-"// builtins: ξ/object ξ/array ξ/member_bare ξ/member_val ξ/= ξ/≠ ξ/assign ξ/fn ξ/do_s ξ/if_e ξ/if_s ξ/while_s ξ/JS_VAR ξ/JS_+ ξ/JS_instanceof"
 var read_ξ = function(s){return(JSON.parse(s))}
 var repr_js = function(v){return(typeof(v.s)==="string"? v.s :
 		typeof(v.v)==="string"? "\""+v.v.replace("\\","\\"+"\\").replace("\"","\\\"").replace("\n","\\n")+"\"" :
-		typeof(v.v)==="number"? v.v :
+		v.v!==undefined? v.v :
 		v[0].s==="ξ/object"? "{"+v.slice(1).map(function(v){return(repr_js(v[0])+":"+repr_js(v[1]))}).join(",\n			")+"}" :
 		v[0].s==="ξ/array"? "["+v.slice(1).map(repr_js).join(",")+"]" :
 		v[0].s==="ξ/member_bare"? repr_js(v[1])+"."+repr_js(v[2]) :
 		v[0].s==="ξ/member_val"? repr_js(v[1])+"["+repr_js(v[2])+"]" :
+		v[0].s==="ξ/JS_OR"? "("+repr_js(v[1])+"||"+repr_js(v[2])+")" :
+		v[0].s==="ξ/JS_>"? repr_js(v[1])+">"+repr_js(v[2]) :
 		v[0].s==="ξ/="? repr_js(v[1])+"==="+repr_js(v[2]) :
 		v[0].s==="ξ/≠"? repr_js(v[1])+"!=="+repr_js(v[2]) :
 		v[0].s==="ξ/assign"? repr_js(v[1])+" = "+repr_js(v[2]) :

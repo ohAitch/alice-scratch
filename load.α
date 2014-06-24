@@ -10,7 +10,6 @@ _ ← require('underscore')
 __slice__ ← λ(v,a,b){return is(b)? v.slice(a,b) : v.slice(a)}
 __sliceλ__ ← λ(a,b){return is(b)? λ{v[a:b]} : λ{v[a:]}}
 
-print ← console.log.bind(console)
 running_as ← process.argv₁.match(~/[^\/]*\/[^\/]*$/)₀
 print('--- running as:',running_as,'---')
 
@@ -89,7 +88,7 @@ unicode ← λ(table){return {
 
 pr ← λ(){if (running_as = 'bin/load.js') print.apply(this,['##'].concat($args)); return $args₀}
 printable ← λ{λᵥ}
-S ← λ(v){return new Symbol(v)}
+S ← λ{new Symbol(v)}
 
 //===---------------------------===// repr //===---------------------------===//
 

@@ -3,8 +3,6 @@
 [{"s":"ξ/JS_VAR"},{"s":"fs"},[{"s":"require"},{"v":"fs"}]],
 [{"s":"ξ/JS_VAR"},{"s":"_"},[{"s":"require"},{"v":"underscore"}]],
 
-{"v":"// builtins: ξ/object ξ/array ξ/member_bare ξ/member_val ξ/= ξ/≠ ξ/assign ξ/fn ξ/do_s ξ/if_e ξ/if_s ξ/while_s ξ/JS_VAR ξ/JS_+ ξ/JS_instanceof"},
-
 [{"s":"ξ/JS_VAR"},{"s":"read_ξ"},[{"s":"ξ/fn"},[{"s":"s"}],[{"s":"ξ/do_s"},
 	[{"s":"return"},[[{"s":"ξ/member_bare"},{"s":"JSON"},{"s":"parse"}],{"s":"s"}]]
 ]]],
@@ -13,12 +11,14 @@
 	[{"s":"return"},
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"typeof"},[{"s":"ξ/member_bare"},{"s":"v"},{"s":"s"}]],{"v":"string"}], [{"s":"ξ/member_bare"},{"s":"v"},{"s":"s"}],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"typeof"},[{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}]],{"v":"string"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"v":"\""},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},[{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}],{"s":"replace"}],{"v":"\\"},[{"s":"ξ/JS_+"},{"v":"\\"},{"v":"\\"}]],{"s":"replace"}],{"v":"\""},{"v":"\\\""}],{"s":"replace"}],{"v":"\n"},{"v":"\\n"}]],{"v":"\""}],
-		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"typeof"},[{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}]],{"v":"number"}], [{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}],
+		[{"s":"ξ/if_e"}, [{"s":"ξ/≠"},[{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}],{"s":"undefined"}], [{"s":"ξ/member_bare"},{"s":"v"},{"s":"v"}],
 
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/object"}],[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"v":"{"},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},{"s":"v"},{"s":"slice"}],{"v":1}],{"s":"map"}],[{"s":"ξ/fn"},[{"s":"v"}],[{"s":"ξ/do_s"},[{"s":"return"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}]],{"v":":"}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]]]]]]],{"s":"join"}],{"v":",\n\t\t\t"}]],{"v":"}"}],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/array"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"v":"["},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},{"s":"v"},{"s":"slice"}],{"v":1}],{"s":"map"}],{"s":"repr_js"}],{"s":"join"}],{"v":","}]],{"v":"]"}],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/member_bare"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":"."}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/member_val"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":"["}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],{"v":"]"}],
+		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/JS_OR"}],[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"v":"("},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]]],{"v":"||"}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],{"v":")"}],
+		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/JS_>"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":">"}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/="}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":"==="}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/≠"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":"!=="}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/assign"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":" = "}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
@@ -32,7 +32,7 @@
 		[{"s":"ξ/if_e"}, [{"s":"ξ/="},[{"s":"ξ/member_bare"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}],{"s":"s"}],{"v":"ξ/JS_instanceof"}], [{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":1}]],{"v":" instanceof "}],[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":2}]]],
 
 		[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"repr_js"},[{"s":"ξ/member_val"},{"s":"v"},{"v":0}]],{"v":"("}],[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},[[{"s":"ξ/member_bare"},{"s":"v"},{"s":"slice"}],{"v":1}],{"s":"map"}],{"s":"repr_js"}],{"s":"join"}],{"v":","}]],{"v":")"}]
-		]]]]]]]]]]]]]]]]]]
+		]]]]]]]]]]]]]]]]]]]]
 	]
 ]]],
 
