@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 var fs = require("fs")
 var _ = require("underscore")
-"builtins: ξ/member_bare ξ/member_str ξ/= ξ/≠ ξ/fn ξ/do_s ξ/if_e ξ/JS_VAR ξ/JS_+ ξ/JS_instanceof"
 var read_ξ = function(s){return(JSON.parse(s))}
 var repr_js = function(v){return(typeof(v.s)==="string"? v.s :
 typeof(v.v)==="string"? "\""+v.v.replace("\\","\\"+"\\").replace("\"","\\\"").replace("\n","\\n")+"\"" :

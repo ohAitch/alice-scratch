@@ -2,14 +2,13 @@
 eval $mydir
 
 rm -r tmp; mkdir tmp; mkdir tmp/1; mkdir tmp/2; mkdir tmp/3
-#chmod -R 755 bin &>/dev/null
 
-exr bin/main.js main.ξ tmp/main.js
-exr tmp/main.js main.ξ tmp/1/main.js
-exr tmp/1/main.js main.ξ tmp/2/main.js
-exr tmp/2/main.js main.ξ tmp/3/main.js
-# if [ $? = 0 ]; then
-# 	echo '--- success ---'
-# 	cp bin/main.js bin/main.js.bak
-# 	cp tmp/3/main.js bin/main.js
-# fi
+exr main.ξc.js main.ξ tmp
+exr tmp/main.ξc.js main.ξ tmp/1
+exr tmp/1/main.ξc.js main.ξ tmp/2
+exr tmp/2/main.ξc.js main.ξ tmp/3
+if [ $? = 0 ]; then
+	echo '--- success ---'
+	cp main.ξc.js main.ξc.js.bak
+	cp tmp/3/main.ξc.js main.ξc.js
+fi
