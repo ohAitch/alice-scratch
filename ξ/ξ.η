@@ -1,4 +1,4 @@
-[
+[{"s":"ξ/do_s"},
 
 [{"s":"ξ/JS_VAR"},{"s":"fs"},[{"s":"require"},{"v":"fs"}]],
 [{"s":"ξ/JS_VAR"},{"s":"_"},[{"s":"require"},{"v":"underscore"}]],
@@ -41,7 +41,7 @@
 ]]],
 
 [{"s":"ξ/JS_VAR"},{"s":"ξ_f"},[{"s":"ξ/fn"},[{"s":"in_"},{"s":"out"}],[{"s":"ξ/do_s"},
-	[[{"s":"ξ/member_bare"},{"s":"fs"},{"s":"writeFileSync"}],[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"s":"out"},{"v":"/"}],{"s":"in_"}],{"v":"c.js"}],[{"s":"repr_js_file"},[{"s":"read_ξ"},[{"s":"ξ/JS_+"},[[{"s":"ξ/member_bare"},{"s":"fs"},{"s":"readFileSync"}],{"s":"in_"}],{"v":""}]]]]
+	[[{"s":"ξ/member_bare"},{"s":"fs"},{"s":"writeFileSync"}],[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},[{"s":"ξ/JS_+"},{"s":"out"},{"v":"/"}],[[{"s":"ξ/member_val"},{"s":"in_"},{"v":"slice"}],{"v":0},[{"s":"Number"},{"v":"-2"}]]],{"v":".js"}],[{"s":"repr_js_file"},[{"s":"read_ξ"},[{"s":"ξ/JS_+"},[[{"s":"ξ/member_bare"},{"s":"fs"},{"s":"readFileSync"}],{"s":"in_"}],{"v":""}]]]]
 ]]],
 [{"s":"ξ_f"},[{"s":"ξ/member_val"},[{"s":"ξ/member_bare"},{"s":"process"},{"s":"argv"}],{"v":2}],[{"s":"ξ/member_val"},[{"s":"ξ/member_bare"},{"s":"process"},{"s":"argv"}],{"v":3}]]
 

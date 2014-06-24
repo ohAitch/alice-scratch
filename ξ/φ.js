@@ -7,7 +7,7 @@ var err = function(v){throw(Error(v))}
 var own = function(o,m){return(Object["prototype"]["hasOwnProperty"]["call"](o,m)? o[m] :
 		undefined)}
 var is = function(v){return(v!==undefined)}
-var js_valid_symbol = {is_part:function(v){return(!(!(v["match"](/[\wξηφ\/≠=+>~]/))))}}
+var js_valid_symbol = {is_part:function(v){return(!(!(v["match"](/[\wξηφ\/≠=+->~]/))))}}
 var tokenize = function(s){var r = [];
 	var any = undefined;
 	var first_type = undefined;
@@ -57,5 +57,5 @@ var groups_expand = function(tokens){var groups = {"(":")"};
 	if (!(r[1]["length"]===0)) err(r)
 	else "";
 	return(r[0])}
-var φ_f = function(in_,out){fs["writeFileSync"](out+"/"+in_+"c.η",JSON["stringify"](groups_expand(tokenize(fs["readFileSync"](in_)+"//! wth"))[0],null,"	"))}
+var φ_f = function(in_,out){fs["writeFileSync"](out+"/"+in_["slice"](0,Number("-2"))+".η",JSON["stringify"](groups_expand(tokenize(fs["readFileSync"](in_)+"//! wth"))[0],null,"	"))}
 φ_f(process["argv"][2],process["argv"][3])

@@ -18,7 +18,7 @@
 ]]],
 
 [{"s":"ξ/JS_VAR"},{"s":"η_f"},[{"s":"ξ/fn"},[{"s":"in_"},{"s":"out"}],[{"s":"ξ/do_s"},
-	[[{"s":"η/member"},{"s":"fs"},{"v":"writeFileSync"}],[{"s":"η/~"},[{"s":"η/~"},[{"s":"η/~"},{"s":"out"},{"v":"/"}],{"s":"in_"}],{"v":"c.ξ"}],[[{"s":"η/member"},{"s":"JSON"},{"v":"stringify"}],[[{"s":"η/member"},[{"s":"macro_expand"},[[{"s":"η/member"},{"s":"JSON"},{"v":"parse"}],[{"s":"η/~"},[[{"s":"η/member"},{"s":"fs"},{"v":"readFileSync"}],{"s":"in_"}],{"v":""}]]],{"v":"slice"}],{"v":1}],{"s":"null"},{"v":"\t"}]]
+	[[{"s":"η/member"},{"s":"fs"},{"v":"writeFileSync"}],[{"s":"η/~"},[{"s":"η/~"},[{"s":"η/~"},{"s":"out"},{"v":"/"}],[[{"s":"η/member"},{"s":"in_"},{"v":"slice"}],{"v":0},[{"s":"Number"},{"v":"-2"}]]],{"v":".ξ"}],[[{"s":"η/member"},{"s":"JSON"},{"v":"stringify"}],[[{"s":"η/member"},[{"s":"macro_expand"},[[{"s":"η/member"},{"s":"JSON"},{"v":"parse"}],[{"s":"η/~"},[[{"s":"η/member"},{"s":"fs"},{"v":"readFileSync"}],{"s":"in_"}],{"v":""}]]],{"v":"slice"}],{"v":1}],{"s":"null"},{"v":"\t"}]]
 ]]],
 [{"s":"η_f"},[{"s":"η/member"},[{"s":"η/member"},{"s":"process"},{"v":"argv"}],{"v":2}],[{"s":"η/member"},[{"s":"η/member"},{"s":"process"},{"v":"argv"}],{"v":3}]]
 

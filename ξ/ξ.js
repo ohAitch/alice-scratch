@@ -24,5 +24,5 @@ var repr_js = function(v){return(typeof(v.s)==="string"? v.s :
 		v[0].s==="ξ/JS_instanceof"? repr_js(v[1])+" instanceof "+repr_js(v[2]) :
 		repr_js(v[0])+"("+v.slice(1).map(repr_js).join(",")+")")}
 var repr_js_file = function(v){return("#!/usr/bin/env node\n"+v.map(repr_js).join("\n"))}
-var ξ_f = function(in_,out){fs.writeFileSync(out+"/"+in_+"c.js",repr_js_file(read_ξ(fs.readFileSync(in_)+"")))}
+var ξ_f = function(in_,out){fs.writeFileSync(out+"/"+in_["slice"](0,Number("-2"))+".js",repr_js_file(read_ξ(fs.readFileSync(in_)+"")))}
 ξ_f(process.argv[2],process.argv[3])

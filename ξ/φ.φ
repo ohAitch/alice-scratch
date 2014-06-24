@@ -10,7 +10,7 @@
 (ξ/JS_VAR is (ξ/fn (v) (ξ/do_s (return (ξ/≠ v undefined)))))
 //Array.prototype.m_concat = function(){return Array.prototype.concat.apply([],this)}
 
-(ξ/JS_VAR js_valid_symbol (ξ/object (is_part (ξ/fn (v) (ξ/do_s (return (! (! ((. v 'match') ~/[\wξηφ\/≠=+>~]/)))))))))
+(ξ/JS_VAR js_valid_symbol (ξ/object (is_part (ξ/fn (v) (ξ/do_s (return (! (! ((. v 'match') ~/[\wξηφ\/≠=+->~]/)))))))))
 
 (ξ/JS_VAR tokenize (ξ/fn (s) (ξ/do_s 
 	(ξ/JS_VAR r [])
@@ -92,7 +92,7 @@
 	(ξ/JS_VAR r (group_expand (S '(') ((. tokens 'concat') (ξ/array (S ')'))))) (ξ/if_s (! (ξ/= (. (. r 1) 'length') 0)) (err r) '') (return (. r 0))
 )))
 
-(ξ/JS_VAR φ_f (ξ/fn (in_ out) (ξ/do_s ((. fs 'writeFileSync')(η/~ (η/~ (η/~ out '/') in_) 'c.η')((. JSON 'stringify') (. (groups_expand (tokenize (η/~ ((. fs 'readFileSync') in_) '//! wth'))) 0) null '\t')))))
+(ξ/JS_VAR φ_f (ξ/fn (in_ out) (ξ/do_s ((. fs 'writeFileSync')(η/~ (η/~ (η/~ out '/') ((. in_ 'slice') 0 (Number '-2'))) '.η')((. JSON 'stringify') (. (groups_expand (tokenize (η/~ ((. fs 'readFileSync') in_) '//! wth'))) 0) null '\t')))))
 (φ_f (. (. process 'argv') 2) (. (. process 'argv') 3))
 
 )
