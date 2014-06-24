@@ -64,15 +64,15 @@
 (ξ/JS_VAR reader_macros (ξ/array
 (ξ/array ~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/ (ξ/fn () (ξ/do_s (return SPACE))))
 //[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
-(ξ/array ~/^(['"])((.*?[^\\])?(\\\\)*)\1/ (ξ/fn (v) (ξ/do_s (return (ξ/object (v
-	((. ((. (ξ/JS_OR ((. (. v 2) 'match') ~/\\u....|\\x..|\\.|./g) (ξ/array)) 'map') (ξ/fn(v) (ξ/do_s (return (ξ/if_e (ξ/JS_> (. v 'length') 2) (chr (parseInt ((. v 'slice') 2) 16)) (ξ/if_e (ξ/= (. v 'length') 2) (. (ξ/object ('\'' '\'') ('\"' '\"') ('n' '\n') ('t' '\t'))
+(ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ (ξ/fn (v) (ξ/do_s (return (ξ/object (v
+	((. ((. (ξ/JS_OR ((. (. v 2) 'match') ~/\\u....|\\x..|\\.|./g) (ξ/array)) 'map') (ξ/fn(v) (ξ/do_s (return (ξ/if_e (ξ/JS_> (. v 'length') 2) (chr (parseInt ((. v 'slice') 2) 16)) (ξ/if_e (ξ/= (. v 'length') 2) (. (ξ/object ('\'' '\'') ('\"' '\"') ('\\' '\\') ('n' '\n') ('t' '\t'))
 					(. v 1)) v)))))) 'join') '')
 
 	))))))
 //[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/), function(v){return {v:eval('/'+v[1]+'/'+v[2])}}],
 (ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ (ξ/fn(v) (ξ/do_s (return (ξ/object (s (η/~ (η/~ (η/~ '/' (. v 1)) '/') (. v 2))))))))
 //[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(/([()\[\]{}?])/g,'\\$1')+')'), function(v){return S(v[1])}],
-(ξ/array ~/^([()?:,;])/ (ξ/fn (v) (ξ/do_s (return (S (. v 1))))))
+(ξ/array ~/^([\(\)\?:,;])/ (ξ/fn (v) (ξ/do_s (return (S (. v 1))))))
 (ξ/array ~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/ (ξ/fn(v) (ξ/do_s (return (ξ/object (v (parseFloat (. v 0))))))))
 ))
 

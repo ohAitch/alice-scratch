@@ -1,0 +1,25 @@
+(ξ/do_s 
+
+(ξ/JS_VAR fs (require 'fs')) 
+(ξ/JS_VAR _ (require 'underscore')) 
+
+(ξ/JS_VAR macros (ξ/object 
+	('.' (ξ/fn (o m) (ξ/do_s (return (ξ/array (ξ/object (s 'η/member')) o m))))) 
+	('η/member' (ξ/fn (o m) (ξ/do_s (return (ξ/array (ξ/object (s 'ξ/member_val')) o m))))) 
+	('η/+' (ξ/fn (a b) (ξ/do_s (return (ξ/array (ξ/object (s 'ξ/JS_+')) a b))))) 
+	('η/~' (ξ/fn (a b) (ξ/do_s (return (ξ/array (ξ/object (s 'ξ/JS_+')) a b)))))
+)) 
+
+(ξ/JS_VAR macro_expand (ξ/fn (v) (ξ/do_s 
+	(ξ/if_s (ξ/JS_instanceof v Array) (ξ/do_s 
+		(ξ/while_s (. macros (ξ/if_e (. v 0) (. (. v 0) 's') undefined)) (ξ/assign v ((. (. macros (. (. v 0) 's')) 'apply') null ((. v 'slice') 1)))) 
+		(return ((. v 'map') macro_expand))
+	) (return v))
+))) 
+
+(ξ/JS_VAR η_f (ξ/fn (in_ out) (ξ/do_s 
+	((. fs 'writeFileSync') (η/~ (η/~ (η/~ out '/') ((. in_ 'slice') 0 (Number '-2'))) '.ξ') ((. JSON 'stringify') ((. (macro_expand ((. JSON 'parse') (η/~ ((. fs 'readFileSync') in_) ' '))) 'slice') 1) null '\t'))
+))) 
+(η_f (. (. process 'argv') 2) (. (. process 'argv') 3))
+
+)

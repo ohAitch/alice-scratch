@@ -35,12 +35,13 @@ var tokenize = function(s){var r = [];
 var subscript_ops = []
 var S = function(v){return({s:v})}
 var SPACE = {SPACE:1}
-var reader_macros = [[/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/,function(){return(SPACE)}],[/^(['"])((.*?[^\\])?(\\\\)*)\1/,function(v){return({v:(v[2]["match"](/\\u....|\\x..|\\.|./g)||[])["map"](function(v){return(v["length"]>2? chr(parseInt(v["slice"](2),16)) :
+var reader_macros = [[/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/,function(){return(SPACE)}],[/^(['"])((\\.|(?!\1).)*?)\1/,function(v){return({v:(v[2]["match"](/\\u....|\\x..|\\.|./g)||[])["map"](function(v){return(v["length"]>2? chr(parseInt(v["slice"](2),16)) :
 		v["length"]===2? {"'":"'",
 			"\"":"\"",
+			"\\":"\\",
 			"n":"\n",
 			"t":"	"}[v[1]] :
-		v)})["join"]("")})}],[/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/,function(v){return({s:"/"+v[1]+"/"+v[2]})}],[/^([()?:,;])/,function(v){return(S(v[1]))}],[/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/,function(v){return({v:parseFloat(v[0])})}]]
+		v)})["join"]("")})}],[/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/,function(v){return({s:"/"+v[1]+"/"+v[2]})}],[/^([\(\)\?:,;])/,function(v){return(S(v[1]))}],[/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/,function(v){return({v:parseFloat(v[0])})}]]
 var groups_expand = function(tokens){var groups = {"(":")"};
 	var group_expand = function(g,l){var r = [];
 	while (true) {if (l[0]["s"]) {if (l[0]["s"]===groups[g["s"]]) return([r,l["slice"](1)])
