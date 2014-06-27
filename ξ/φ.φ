@@ -12,7 +12,7 @@
 
 (ξ/JS_VAR js_valid_symbol (ξ/object (is_part (ξ/fn (v) (ξ/do_s (return (! (! ((. v 'match') ~/[\wξηφ\/≠=+->~]/)))))))))
 
-(ξ/JS_VAR tokenize (ξ/fn (s) (ξ/do_s 
+(ξ/JS_VAR tokenize (ξ/fn (s) (ξ/do_s
 	(ξ/JS_VAR r [])
 	//var pos = [1,1,1]
 	(ξ/JS_VAR any undefined) (ξ/JS_VAR first_type undefined)
@@ -26,7 +26,7 @@
 	(ξ/JS_VAR start_any (ξ/fn () (ξ/do_s (ξ/assign any (. s 0)) (ξ/assign first_type ((. js_valid_symbol 'is_part') (. s 0))) (ξ/assign s ((. s 'slice') 1)))))
 	//var end_any = function(){r.push(spos(S(any))); increment_pos(any); any = undefined}
 	(ξ/JS_VAR end_any (ξ/fn () (ξ/do_s ((. r 'push') (S any)) (ξ/assign any undefined))))
-	(ξ/while_s (ξ/≠ s '') (ξ/do_s 
+	(ξ/while_s (ξ/≠ s '') (ξ/do_s
 		(ξ/JS_VAR t (. ((. ( (. reader_macros 'map') (ξ/fn (v) (ξ/do_s (ξ/JS_VAR t ((. s 'match') (. v 0))) (return (ξ/if_e t (ξ/array t ((. v 1) t)) undefined))))) 'filter') (ξ/fn (v) (ξ/do_s (return v)))) 0))
 		//if (t) {var m = t[0]; var v = t[1]; if (is(any)) end_any(); r.push(spos(v)); s = s.slice(m[0].length); increment_pos(m[0])}
 		(ξ/if_s t (ξ/do_s
@@ -76,7 +76,7 @@
 (ξ/array ~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/ (ξ/fn(v) (ξ/do_s (return (ξ/object (v (parseFloat (. v 0))))))))
 ))
 
-(ξ/JS_VAR groups_expand (ξ/fn (tokens) (ξ/do_s 
+(ξ/JS_VAR groups_expand (ξ/fn (tokens) (ξ/do_s
 	(ξ/JS_VAR groups (ξ/object ('(' ')')))
 	(ξ/JS_VAR group_expand (ξ/fn (g l) (ξ/do_s
 		//var check = function(){if (l.length===0) err('group is not closed @'+g.pos)} //! this is bad at telling the user which group was unclosed

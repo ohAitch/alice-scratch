@@ -1,5 +1,4 @@
 --- super easy, do me next ---
-eep, we forgot to parenthesize things in ξ
 oops, it's taking tmp/file tmp → tmp/tmp/file
 secret builtins return,throw,! should be made not secret.
 do turn pos back on
