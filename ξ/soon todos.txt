@@ -1,7 +1,14 @@
 --- super easy, do me next ---
 secret builtins return,throw,! should be made not secret.
-do turn pos back on
+fn do_s is silly
+if else '' is silly
+add SPACE back in
+use η/fn in more places
+
+maybe implement quoting next
 
 ---------- less easy ---------
+output js at correct positions, using pos
 this crude namespacing system _is_ silly.
 macro ~ really should be *
+implement quoting

@@ -7,10 +7,15 @@
 	‹'.' ‹ξ/fn ‹o m› ‹ξ/do_s ‹return ‹ξ/array ‹ξ/object ‹s 'η/member'›› o m›››››
 	‹'η/member' ‹ξ/fn ‹o m› ‹ξ/do_s ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/member_val'›› o m›››››
 	‹'η/+' ‹ξ/fn ‹a b› ‹ξ/do_s ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/JS_+'›› a b›››››
-	‹'η/~' ‹ξ/fn ‹a b› ‹ξ/do_s ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/JS_+'›› a b›››››
+	‹'η/~' ‹η/fn ‹a b› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/JS_+'›› a b››››
+	‹'η/fn' ‹ξ/fn ‹params› ‹ξ/do_s
+		‹ξ/JS_VAR args ‹‹. ‹η/args› 'slice'› 1››
+		‹return ‹ξ/array ‹ξ/object ‹s 'ξ/fn'›› params ‹ξ/if_e ‹ξ/= ‹. args 'length'› 1› ‹. args 0› ‹‹. ‹ξ/array ‹ξ/object ‹s 'ξ/do_s'››› 'concat'› args›››››››
+	‹'η/args' ‹ξ/fn ‹› ‹ξ/do_s ‹return ‹ξ/array ‹ξ/array ‹ξ/object ‹s '.'›› ‹ξ/array ‹ξ/object ‹s '.'›› ‹ξ/array ‹ξ/object ‹s '.'›› ‹ξ/object ‹s 'Array'›› ‹ξ/object ‹v 'prototype'››› ‹ξ/object ‹v 'slice'››› ‹ξ/object ‹v 'call'››› ‹ξ/object ‹s 'arguments'›› ‹ξ/object ‹v 0›››››››
 ››
 
 ‹ξ/JS_VAR macro_expand ‹ξ/fn ‹v› ‹ξ/do_s
+	‹η/args›
 	‹ξ/if_s ‹ξ/JS_instanceof v Array› ‹ξ/do_s
 		‹ξ/while_s ‹. macros ‹ξ/if_e ‹. v 0› ‹. ‹. v 0› 's'› undefined›› ‹ξ/assign v ‹‹. ‹. macros ‹. ‹. v 0› 's'›› 'apply'› null ‹‹. v 'slice'› 1››››
 		‹return ‹‹. v 'map'› macro_expand››
@@ -18,7 +23,7 @@
 ›››
 
 ‹ξ/JS_VAR η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1› null '\t'››
+	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1›››
 ›››
 ‹η_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
 
