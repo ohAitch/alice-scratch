@@ -41,8 +41,9 @@ var reader_macros = [[/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/,function(){
 			"\\":"\\",
 			"n":"\n",
 			"t":"	"}[v[1]] :
-		v)))})["join"]("")})}],[/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/,function(v){return({s:((("/"+v[1])+"/")+v[2])})}],[/^([\(\)\?:,;])/,function(v){return(S(v[1]))}],[/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/,function(v){return({v:parseFloat(v[0])})}]]
-var groups_expand = function(tokens){var groups = {"(":")"};
+		v)))})["join"]("")})}],[/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/,function(v){return({s:((("/"+v[1])+"/")+v[2])})}],[/^([\(\)‹›\?:,;])/,function(v){return(S(v[1]))}],[/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/,function(v){return({v:parseFloat(v[0])})}]]
+var groups_expand = function(tokens){var groups = {"(":")",
+			"‹":"›"};
 	var group_expand = function(g,l){var r = [];
 	while (true) {if (l[0]["s"]) {if ((l[0]["s"]===groups[g["s"]])) return([r,l["slice"](1)])
 	else "";
@@ -54,7 +55,7 @@ var groups_expand = function(tokens){var groups = {"(":")"};
 	else "";
 	r["push"](l[0]);
 	(l = l["slice"](1))}};
-	var r = group_expand(S("("),tokens["concat"]([S(")")]));
+	var r = group_expand(S("‹"),tokens["concat"]([S("›")]));
 	if (!((r[1]["length"]===0))) err(r)
 	else "";
 	return(r[0])}
