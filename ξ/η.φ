@@ -18,7 +18,7 @@
 ›››
 
 ‹ξ/JS_VAR η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹‹. in_ 'slice'› 0 ‹Number '-2'››› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1› null '\t'››
+	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1› null '\t'››
 ›››
 ‹η_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
 

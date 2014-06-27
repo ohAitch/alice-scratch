@@ -92,11 +92,10 @@
 	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹. tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/if_s ‹! ‹ξ/= ‹. ‹. r 1› 'length'› 0›› ‹err r› ''› ‹return ‹. r 0››
 ›››
 
-‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'›‹η/~ ‹η/~ ‹η/~ out '/'› ‹‹. in_ 'slice'› 0 ‹Number '-2'››› '.η'›‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0› null '\t'›››››
+‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0› null '\t'›››››
 ‹φ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
 
 ›
-
 
 /* builtins and macros
 

@@ -9,5 +9,5 @@ var macro_expand = function(v){if ((v instanceof Array)) {while (macros[(v[0]? v
 		undefined)]) (v = macros[v[0]["s"]]["apply"](null,v["slice"](1)));
 	return(v["map"](macro_expand))}
 	else return(v)}
-var η_f = function(in_,out){fs["writeFileSync"]((((out+"/")+in_["slice"](0,Number("-2")))+".ξ"),JSON["stringify"](macro_expand(JSON["parse"]((fs["readFileSync"](in_)+" ")))["slice"](1),null,"	"))}
+var η_f = function(in_,out){fs["writeFileSync"]((((out+"/")+in_["match"](/([^\/]+)\.[^\/]+$/)[1])+".ξ"),JSON["stringify"](macro_expand(JSON["parse"]((fs["readFileSync"](in_)+" ")))["slice"](1),null,"	"))}
 η_f(process["argv"][2],process["argv"][3])

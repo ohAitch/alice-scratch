@@ -40,7 +40,7 @@
 ›››
 
 ‹ξ/JS_VAR ξ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹‹. in_ 'slice'› 0 ‹Number '-2'››› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››
+	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››
 ›››
 ‹ξ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
 

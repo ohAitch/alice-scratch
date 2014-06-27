@@ -59,5 +59,5 @@ var groups_expand = function(tokens){var groups = {"(":")",
 	if (!((r[1]["length"]===0))) err(r)
 	else "";
 	return(r[0])}
-var φ_f = function(in_,out){fs["writeFileSync"]((((out+"/")+in_["slice"](0,Number("-2")))+".η"),JSON["stringify"](groups_expand(tokenize((fs["readFileSync"](in_)+"//! wth")))[0],null,"	"))}
+var φ_f = function(in_,out){fs["writeFileSync"]((((out+"/")+in_["match"](/([^\/]+)\.[^\/]+$/)[1])+".η"),JSON["stringify"](groups_expand(tokenize((fs["readFileSync"](in_)+"//! wth")))[0],null,"	"))}
 φ_f(process["argv"][2],process["argv"][3])
