@@ -1,12 +1,14 @@
 --- super easy, do me next ---
-η needs to preserve position information more
+η and ξ need to preserve position information more
+this ‹Number '-1'› nonsense is super silly
+rename JS_THING to JS_thing
+add new
 
-maybe implement quoting next
+maybe next do: implement quoting
 
 ---------- less easy ---------
-output js at correct positions, using pos
 this crude namespacing system _is_ silly.
-macro ~ really should be *
+η/~ really should be η/*
 implement quoting
 
 - right now not next actions -

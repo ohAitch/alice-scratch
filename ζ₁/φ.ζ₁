@@ -15,21 +15,23 @@
 
 ‹ξ/JS_VAR js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/JS_NOT ‹ξ/JS_NOT ‹‹ι v 'match'› ~/[\wξηφ\/≠=+->~]/››››››››
 
+// ---------- dup in ξ ----------
+‹ξ/JS_VAR increment_pos ‹η/fn ‹pos s›
+	‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›
+		‹ξ/JS_if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹ι pos 0› 1› 1 1››
+		‹ξ/JS_if_s ‹ξ/= v '\t'› ‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹η/+ ‹ι pos 1› 1› 1››
+			‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹ι pos 1› ‹η/+ ‹ι pos 2› 1›››
+		››
+	››
+	‹ξ/return pos› ››
+
 ‹ξ/JS_VAR tokenize ‹η/fn ‹s›
 	‹ξ/JS_VAR r ‹ξ/array››
 	‹ξ/JS_VAR pos ‹ξ/array 1 1 1››
 	‹ξ/JS_VAR any undefined› ‹ξ/JS_VAR first_type undefined›
 	‹ξ/JS_VAR spos ‹η/fn ‹v› ‹ξ/JS_if_s ‹ξ/JS_NOT ‹ι v 'SPACE'›› ‹ξ/assign ‹ι v 'pos'› pos›› ‹ξ/return v›››
-	‹ξ/JS_VAR increment_pos ‹η/fn ‹s›
-		‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›
-			‹ξ/JS_if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹ι pos 0› 1› 1 1››
-			‹ξ/JS_if_s ‹ξ/= v '\t'› ‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹η/+ ‹ι pos 1› 1› 1››
-				‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹ι pos 1› ‹η/+ ‹ι pos 2› 1›››
-			››
-		››
-	››
 	‹ξ/JS_VAR start_any ‹η/fn ‹› ‹ξ/assign any ‹ι s 0›› ‹ξ/assign first_type ‹‹ι js_valid_symbol 'is_part'› ‹ι s 0››› ‹ξ/assign s ‹‹ι s 'slice'› 1››››
-	‹ξ/JS_VAR end_any ‹η/fn ‹› ‹‹ι r 'push'› ‹spos ‹S any››› ‹increment_pos any› ‹ξ/assign any undefined›››
+	‹ξ/JS_VAR end_any ‹η/fn ‹› ‹‹ι r 'push'› ‹spos ‹S any››› ‹ξ/assign pos ‹increment_pos pos any›› ‹ξ/assign any undefined›››
 	‹ξ/JS_while_s ‹ξ/≠ s ''› ‹ξ/do_s
 		‹ξ/JS_VAR t ‹ι ‹‹ι ‹ ‹ι reader_macros 'map'› ‹η/fn ‹v› ‹ξ/JS_VAR t ‹‹ι s 'match'› ‹ι v 0››› ‹ξ/return ‹ξ/JS_if_e t ‹ξ/array t ‹‹ι v 1› t›› undefined›››› 'filter'› ‹η/fn ‹v› ‹ξ/return v››› 0››
 		‹ξ/JS_if_s t ‹ξ/do_s
@@ -38,7 +40,7 @@
 			‹ξ/JS_if_s ‹is any› ‹end_any››
 			‹ξ/JS_if_s ‹ξ/≠ v SPACE› ‹‹ι r 'push'› ‹spos v›› ›
 			‹ξ/assign s ‹‹ι s 'slice'› ‹ι ‹ι m 0› 'length'›››
-			‹increment_pos ‹ι m 0››
+			‹ξ/assign pos ‹increment_pos pos ‹ι m 0›››
 		› ‹ξ/do_s
 			‹ξ/JS_if_s ‹is any› ‹ξ/do_s
 				‹ξ/JS_if_s ‹ξ/= ‹‹ι js_valid_symbol 'is_part'› ‹ι s 0›› first_type› ‹ξ/do_s
