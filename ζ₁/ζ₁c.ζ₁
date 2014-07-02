@@ -1,0 +1,19 @@
+#!/usr/bin/env ζ₁
+
+‹ξ/do_s
+
+‹ξ/JS_VAR fs ‹require 'fs'››
+‹ξ/JS_VAR path ‹require 'path'››
+
+‹ξ/JS_VAR ξ ‹require './ξ'››
+‹ξ/JS_VAR η ‹require './η'››
+‹ξ/JS_VAR φ ‹require './φ'››
+
+
+‹ξ/if_s ‹ξ/= ‹. ‹. process 'argv'› 1› __filename› ‹ξ/do_s
+	‹ξ/JS_VAR in_ ‹‹. ‹. process 'argv'› 'slice'› 2 ‹Number '-1'›››
+	‹ξ/JS_VAR out ‹. ‹‹. ‹. process 'argv'› 'slice'› ‹Number '-1'›› 0››
+	‹‹. in_ 'map'› ‹ξ/fn ‹in_› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹. path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››››››
+› ''›
+
+›

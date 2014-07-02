@@ -1,6 +1,9 @@
+#!/usr/bin/env ζ₁
+
 ‹ξ/do_s
 
 ‹ξ/JS_VAR fs ‹require 'fs'››
+‹ξ/JS_VAR path ‹require 'path'››
 ‹ξ/JS_VAR _ ‹require 'underscore'››
 
 ‹ξ/JS_VAR macros ‹ξ/object
@@ -22,9 +25,11 @@
 	› ‹return v››
 ›››
 
-‹ξ/JS_VAR η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1›››
-›››
-‹η_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+// ‹ξ/JS_VAR η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
+// 	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹. JSON 'stringify'› ‹‹. ‹macro_expand ‹‹. JSON 'parse'› ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››› 'slice'› 1›››
+// ›››
+// ‹η_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+‹ξ/JS_VAR η_s ‹ξ/fn ‹in_› ‹ξ/do_s ‹return ‹‹. ‹macro_expand in_› 'slice'› 1›››››
+‹ξ/assign ‹. module 'exports'› η_s›
 
 ›

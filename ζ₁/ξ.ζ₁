@@ -1,11 +1,10 @@
+#!/usr/bin/env ζ₁
+
 ‹ξ/do_s
 
 ‹ξ/JS_VAR fs ‹require 'fs'››
+‹ξ/JS_VAR path ‹require 'path'››
 ‹ξ/JS_VAR _ ‹require 'underscore'››
-
-‹ξ/JS_VAR read_ξ ‹ξ/fn ‹s› ‹ξ/do_s
-	‹return ‹‹. JSON 'parse'› s››
-›››
 
 ‹ξ/JS_VAR repr_js ‹ξ/fn ‹v› ‹ξ/do_s
 	‹return
@@ -36,12 +35,14 @@
 ››››
 
 ‹ξ/JS_VAR repr_js_file ‹ξ/fn ‹v› ‹ξ/do_s
-	‹return ‹η/~ '#!/usr/bin/env node\n' ‹‹. ‹‹. v 'map'› repr_js› 'join'› '\n'›››
+	‹return ‹η/~ '#!/usr/bin/env node\n' ‹‹. ‹‹. v 'map'› repr_js› 'join'› ';\n'›››
 ›››
 
-‹ξ/JS_VAR ξ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››
-›››
-‹ξ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+// ‹ξ/JS_VAR ξ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
+// 	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››
+// ›››
+// ‹ξ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+‹ξ/JS_VAR η_s ‹ξ/fn ‹in_› ‹ξ/do_s ‹return ‹repr_js_file in_›››››
+‹ξ/assign ‹. module 'exports'› η_s›
 
 ›

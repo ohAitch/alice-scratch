@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-var fs = require("fs")
-var _ = require("underscore")
-var seq = function(v) {{return(v["split"](""))}}
-var chr = function(v) {{return(String["fromCharCode"](v))}}
-var err = function(v) {{throw(Error(v))}}
+var fs = require("fs");
+var path = require("path");
+var _ = require("underscore");
+var seq = function(v) {{return(v["split"](""))}};
+var chr = function(v) {{return(String["fromCharCode"](v))}};
+var err = function(v) {{throw(Error(v))}};
 var own = function(o,m) {{return((Object["prototype"]["hasOwnProperty"]["call"](o,m)? o[m] :
-		undefined))}}
-var is = function(v) {{return((v!==undefined))}}
-var js_valid_symbol = {is_part:function(v) {{return(!(!(v["match"]((/[\wξηφ\/≠=+->~]/)))))}}}
+		undefined))}};
+var is = function(v) {{return((v!==undefined))}};
+var js_valid_symbol = {is_part:function(v) {{return(!(!(v["match"]((/[\wξηφ\/≠=+->~]/)))))}}};
 var tokenize = function(s) {{var r = [];
 	var pos = [1,1,1];
 	var any = undefined;
@@ -40,17 +41,17 @@ var tokenize = function(s) {{var r = [];
 	else {end_any();
 	start_any()}}
 	else {start_any()}}};
-	return(r)}}
-var subscript_ops = []
-var S = function(v) {{return({s:v})}}
-var SPACE = {SPACE:1}
+	return(r)}};
+var subscript_ops = [];
+var S = function(v) {{return({s:v})}};
+var SPACE = {SPACE:1};
 var reader_macros = [[(/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/),function() {{return(SPACE)}}],[(/^(['"])((\\.|(?!\1).)*?)\1/),function(v) {{return({v:(v[2]["match"]((/\\u....|\\x..|\\.|./g))||[])["map"](function(v) {{return(((v["length"]>2)? chr(parseInt(v["slice"](2),16)) :
 		((v["length"]===2)? {"'":"'",
 			"\"":"\"",
 			"\\":"\\",
 			"n":"\n",
 			"t":"	"}[v[1]] :
-		v)))}})["join"]("")})}}],[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/),function(v) {{return({s:(((("(/"+v[1])+"/")+v[2])+")")})}}],[(/^([\(\)‹›\?:,;])/),function(v) {{return(S(v[1]))}}],[(/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/),function(v) {{return({v:parseFloat(v[0])})}}]]
+		v)))}})["join"]("")})}}],[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/),function(v) {{return({s:(((("(/"+v[1])+"/")+v[2])+")")})}}],[(/^([\(\)‹›\?:,;])/),function(v) {{return(S(v[1]))}}],[(/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/),function(v) {{return({v:parseFloat(v[0])})}}]];
 var groups_expand = function(tokens) {{var groups = {"(":")",
 			"‹":"›"};
 	var group_expand = function(g,l) {{var r = [];
@@ -67,6 +68,6 @@ var groups_expand = function(tokens) {{var groups = {"(":")",
 	var r = group_expand(S("‹"),tokens["concat"]([S("›")]));
 	if (!((r[1]["length"]===0))) err(r)
 	else "";
-	return(r[0])}}
-var φ_f = function(in_,out) {{fs["writeFileSync"]((((out+"/")+in_["match"]((/([^\/]+)\.[^\/]+$/))[1])+".η"),JSON["stringify"](groups_expand(tokenize((fs["readFileSync"](in_)+"//! wth")))[0]))}}
-φ_f(process["argv"][2],process["argv"][3])
+	return(r[0])}};
+var φ_s = function(in_) {{return(groups_expand(tokenize(in_))[0])}};
+(module["exports"] = φ_s)

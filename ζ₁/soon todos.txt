@@ -7,10 +7,10 @@ use η/fn in more places
 
 maybe implement quoting next
 
-we're a bit confused with the execution. for example, self-executing *.φ outputs itself as a *.η file, instead of running itself.
-
 ---------- less easy ---------
 output js at correct positions, using pos
 this crude namespacing system _is_ silly.
 macro ~ really should be *
 implement quoting
+
+design: φ η ξ should definitely be different programs, but they should also be designed so that we can later transpose the stack.

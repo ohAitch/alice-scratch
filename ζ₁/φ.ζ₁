@@ -1,6 +1,9 @@
+#!/usr/bin/env ζ₁
+
 ‹ξ/do_s
 
 ‹ξ/JS_VAR fs ‹require 'fs'››
+‹ξ/JS_VAR path ‹require 'path'››
 ‹ξ/JS_VAR _ ‹require 'underscore'››
 
 ‹ξ/JS_VAR seq ‹ξ/fn ‹v› ‹ξ/do_s ‹return ‹‹. v 'split'› ''›››››
@@ -63,7 +66,7 @@
 //var Quote = function‹value›{this.v = value}//; set_to_s‹Quote.prototype, function‹›{return '`'+repr_js‹this.quote›+'@'+this.pos}›
 
 ‹ξ/JS_VAR reader_macros ‹ξ/array
-‹ξ/array ~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/ ‹ξ/fn ‹› ‹ξ/do_s ‹return SPACE››››
+‹ξ/array ~/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/ ‹ξ/fn ‹› ‹ξ/do_s ‹return SPACE››››
 //[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
 ‹ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ ‹ξ/fn ‹v› ‹ξ/do_s ‹return ‹ξ/object ‹v
 	‹‹. ‹‹. ‹ξ/JS_OR ‹‹. ‹. v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹ξ/fn‹v› ‹ξ/do_s ‹return ‹ξ/if_e ‹ξ/JS_> ‹. v 'length'› 2› ‹chr ‹parseInt ‹‹. v 'slice'› 2› 16›› ‹ξ/if_e ‹ξ/= ‹. v 'length'› 2› ‹. ‹ξ/object ‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'››
@@ -93,8 +96,10 @@
 	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹. tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/if_s ‹! ‹ξ/= ‹. ‹. r 1› 'length'› 0›› ‹err r› ''› ‹return ‹. r 0››
 ›››
 
-‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0››››››
-‹φ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+// ‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0››››››
+// ‹φ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
+‹ξ/JS_VAR φ_s ‹ξ/fn ‹in_› ‹ξ/do_s ‹return ‹. ‹groups_expand ‹tokenize in_›› 0›››››
+‹ξ/assign ‹. module 'exports'› φ_s›
 
 ›
 
