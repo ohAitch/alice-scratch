@@ -44,7 +44,7 @@ var tokenize = function(s) {{var r = [];
 var subscript_ops = []
 var S = function(v) {{return({s:v})}}
 var SPACE = {SPACE:1}
-var reader_macros = [[(/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/),function() {{return(SPACE)}}],[(/^(['"])((\\.|(?!\1).)*?)\1/),function(v) {{return({v:(v[2]["match"]((/\\u....|\\x..|\\.|./g))||[])["map"](function(v) {{return(((v["length"]>2)? chr(parseInt(v["slice"](2),16)) :
+var reader_macros = [[(/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/),function() {{return(SPACE)}}],[(/^(['"])((\\.|(?!\1).)*?)\1/),function(v) {{return({v:(v[2]["match"]((/\\u....|\\x..|\\.|./g))||[])["map"](function(v) {{return(((v["length"]>2)? chr(parseInt(v["slice"](2),16)) :
 		((v["length"]===2)? {"'":"'",
 			"\"":"\"",
 			"\\":"\\",
