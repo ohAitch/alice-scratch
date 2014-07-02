@@ -19,7 +19,7 @@
 	‹ξ/JS_VAR r ‹ξ/array››
 	‹ξ/JS_VAR pos ‹ξ/array 1 1 1››
 	‹ξ/JS_VAR any undefined› ‹ξ/JS_VAR first_type undefined›
-	‹ξ/JS_VAR spos ‹η/fn ‹v› ‹ξ/if_s ‹! ‹. v 'SPACE'›› ‹ξ/assign ‹. v 'pos'› pos› ''› ‹return v›››
+	‹ξ/JS_VAR spos ‹η/fn ‹v› ‹ξ/if_s ‹! ‹. v 'SPACE'›› ‹ξ/assign ‹. v 'pos'› pos›› ‹return v›››
 	‹ξ/JS_VAR increment_pos ‹η/fn ‹s›
 		‹‹. ‹seq s› 'map'› ‹η/fn ‹v›
 			‹ξ/if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹. pos 0› 1› 1 1››
@@ -35,8 +35,8 @@
 		‹ξ/if_s t ‹ξ/do_s
 			‹ξ/JS_VAR m ‹. t 0››
 			‹ξ/JS_VAR v ‹. t 1››
-			‹ξ/if_s ‹is any› ‹end_any› ''›
-			‹ξ/if_s ‹ξ/≠ v SPACE› ‹‹. r 'push'› ‹spos v›› ''›
+			‹ξ/if_s ‹is any› ‹end_any››
+			‹ξ/if_s ‹ξ/≠ v SPACE› ‹‹. r 'push'› ‹spos v›› ›
 			‹ξ/assign s ‹‹. s 'slice'› ‹. ‹. m 0› 'length'›››
 			‹increment_pos ‹. m 0››
 		› ‹ξ/do_s
@@ -87,13 +87,13 @@
 		//check‹›
 		‹ξ/JS_VAR r ‹ξ/array›› ‹ξ/while_s true ‹ξ/do_s
 			‹ξ/if_s ‹. ‹. l 0› 's'› ‹ξ/do_s
-				‹ξ/if_s ‹ξ/= ‹. ‹. l 0› 's'› ‹. groups ‹. g 's'››› ‹return ‹ξ/array r ‹‹. l 'slice'› 1››› ''›
-				‹ξ/if_s ‹own groups ‹. ‹. l 0› 's'›› ‹ξ/do_s ‹ξ/JS_VAR t ‹group_expand ‹. l 0› ‹‹. l 'slice'› 1››› ‹‹. r 'push'› ‹. t 0›› ‹ξ/assign l ‹. t 1›› continue› ''› // removed a check‹› before the continue
-				› ''›
+				‹ξ/if_s ‹ξ/= ‹. ‹. l 0› 's'› ‹. groups ‹. g 's'››› ‹return ‹ξ/array r ‹‹. l 'slice'› 1››››
+				‹ξ/if_s ‹own groups ‹. ‹. l 0› 's'›› ‹ξ/do_s ‹ξ/JS_VAR t ‹group_expand ‹. l 0› ‹‹. l 'slice'› 1››› ‹‹. r 'push'› ‹. t 0›› ‹ξ/assign l ‹. t 1›› continue›› // removed a check‹› before the continue
+				››
 			‹‹. r 'push'› ‹. l 0›› ‹ξ/assign l ‹‹. l 'slice'› 1››//; check‹›
 		››
 	››
-	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹. tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/if_s ‹! ‹ξ/= ‹. ‹. r 1› 'length'› 0›› ‹err r› ''› ‹return ‹. r 0››
+	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹. tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/if_s ‹! ‹ξ/= ‹. ‹. r 1› 'length'› 0›› ‹err r›› ‹return ‹. r 0››
 ››
 
 // ‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0››››››

@@ -14,7 +14,7 @@
 	‹ξ/JS_VAR in_ ‹‹. ‹. process 'argv'› 'slice'› 2 ‹Number '-1'›››
 	‹ξ/JS_VAR out ‹. ‹‹. ‹. process 'argv'› 'slice'› ‹Number '-1'›› 0››
 	‹‹. in_ 'map'› ‹η/fn ‹in_› ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹. path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '›››››››
-› ''›
+››
 
 ›
 

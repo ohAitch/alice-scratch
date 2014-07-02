@@ -1,7 +1,5 @@
 --- super easy, do me next ---
 secret builtins return,throw,! should be made not secret.
-fn do_s is silly
-if else '' is silly
 add SPACE back in
 the created files aren't executable
 
