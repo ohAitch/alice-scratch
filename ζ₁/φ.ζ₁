@@ -6,44 +6,44 @@
 ‹ξ/JS_VAR path ‹require 'path'››
 ‹ξ/JS_VAR _ ‹require 'underscore'››
 
-‹ξ/JS_VAR seq ‹η/fn ‹v› ‹return ‹‹. v 'split'› ''››››
-‹ξ/JS_VAR chr ‹η/fn ‹v› ‹return ‹‹. String 'fromCharCode'› v››››
-‹ξ/JS_VAR err ‹η/fn ‹v› ‹throw ‹Error v››››
-‹ξ/JS_VAR own ‹η/fn ‹o m› ‹return ‹ξ/if_e ‹‹. ‹. ‹. Object 'prototype'› 'hasOwnProperty'› 'call'› o m› ‹. o m› undefined››››
-‹ξ/JS_VAR is ‹η/fn ‹v› ‹return ‹ξ/≠ v undefined››››
+‹ξ/JS_VAR seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
+‹ξ/JS_VAR chr ‹η/fn ‹v› ‹ξ/return ‹‹ι String 'fromCharCode'› v››››
+‹ξ/JS_VAR err ‹η/fn ‹v› ‹ξ/throw ‹Error v››››
+‹ξ/JS_VAR own ‹η/fn ‹o m› ‹ξ/return ‹ξ/JS_if_e ‹‹ι ‹ι ‹ι Object 'prototype'› 'hasOwnProperty'› 'call'› o m› ‹ι o m› undefined››››
+‹ξ/JS_VAR is ‹η/fn ‹v› ‹ξ/return ‹ξ/≠ v undefined››››
 //Array.prototype.m_concat = function‹›{return Array.prototype.concat.apply‹[],this›}
 
-‹ξ/JS_VAR js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹return ‹! ‹! ‹‹. v 'match'› ~/[\wξηφ\/≠=+->~]/››››››››
+‹ξ/JS_VAR js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/JS_NOT ‹ξ/JS_NOT ‹‹ι v 'match'› ~/[\wξηφ\/≠=+->~]/››››››››
 
 ‹ξ/JS_VAR tokenize ‹η/fn ‹s›
 	‹ξ/JS_VAR r ‹ξ/array››
 	‹ξ/JS_VAR pos ‹ξ/array 1 1 1››
 	‹ξ/JS_VAR any undefined› ‹ξ/JS_VAR first_type undefined›
-	‹ξ/JS_VAR spos ‹η/fn ‹v› ‹ξ/if_s ‹! ‹. v 'SPACE'›› ‹ξ/assign ‹. v 'pos'› pos›› ‹return v›››
+	‹ξ/JS_VAR spos ‹η/fn ‹v› ‹ξ/JS_if_s ‹ξ/JS_NOT ‹ι v 'SPACE'›› ‹ξ/assign ‹ι v 'pos'› pos›› ‹ξ/return v›››
 	‹ξ/JS_VAR increment_pos ‹η/fn ‹s›
-		‹‹. ‹seq s› 'map'› ‹η/fn ‹v›
-			‹ξ/if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹. pos 0› 1› 1 1››
-			‹ξ/if_s ‹ξ/= v '\t'› ‹ξ/assign pos ‹ξ/array ‹. pos 0› ‹η/+ ‹. pos 1› 1› 1››
-				‹ξ/assign pos ‹ξ/array ‹. pos 0› ‹. pos 1› ‹η/+ ‹. pos 2› 1›››
+		‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›
+			‹ξ/JS_if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹ι pos 0› 1› 1 1››
+			‹ξ/JS_if_s ‹ξ/= v '\t'› ‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹η/+ ‹ι pos 1› 1› 1››
+				‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹ι pos 1› ‹η/+ ‹ι pos 2› 1›››
 			››
 		››
 	››
-	‹ξ/JS_VAR start_any ‹η/fn ‹› ‹ξ/assign any ‹. s 0›› ‹ξ/assign first_type ‹‹. js_valid_symbol 'is_part'› ‹. s 0››› ‹ξ/assign s ‹‹. s 'slice'› 1››››
-	‹ξ/JS_VAR end_any ‹η/fn ‹› ‹‹. r 'push'› ‹spos ‹S any››› ‹increment_pos any› ‹ξ/assign any undefined›››
-	‹ξ/while_s ‹ξ/≠ s ''› ‹ξ/do_s
-		‹ξ/JS_VAR t ‹. ‹‹. ‹ ‹. reader_macros 'map'› ‹η/fn ‹v› ‹ξ/JS_VAR t ‹‹. s 'match'› ‹. v 0››› ‹return ‹ξ/if_e t ‹ξ/array t ‹‹. v 1› t›› undefined›››› 'filter'› ‹η/fn ‹v› ‹return v››› 0››
-		‹ξ/if_s t ‹ξ/do_s
-			‹ξ/JS_VAR m ‹. t 0››
-			‹ξ/JS_VAR v ‹. t 1››
-			‹ξ/if_s ‹is any› ‹end_any››
-			‹ξ/if_s ‹ξ/≠ v SPACE› ‹‹. r 'push'› ‹spos v›› ›
-			‹ξ/assign s ‹‹. s 'slice'› ‹. ‹. m 0› 'length'›››
-			‹increment_pos ‹. m 0››
+	‹ξ/JS_VAR start_any ‹η/fn ‹› ‹ξ/assign any ‹ι s 0›› ‹ξ/assign first_type ‹‹ι js_valid_symbol 'is_part'› ‹ι s 0››› ‹ξ/assign s ‹‹ι s 'slice'› 1››››
+	‹ξ/JS_VAR end_any ‹η/fn ‹› ‹‹ι r 'push'› ‹spos ‹S any››› ‹increment_pos any› ‹ξ/assign any undefined›››
+	‹ξ/JS_while_s ‹ξ/≠ s ''› ‹ξ/do_s
+		‹ξ/JS_VAR t ‹ι ‹‹ι ‹ ‹ι reader_macros 'map'› ‹η/fn ‹v› ‹ξ/JS_VAR t ‹‹ι s 'match'› ‹ι v 0››› ‹ξ/return ‹ξ/JS_if_e t ‹ξ/array t ‹‹ι v 1› t›› undefined›››› 'filter'› ‹η/fn ‹v› ‹ξ/return v››› 0››
+		‹ξ/JS_if_s t ‹ξ/do_s
+			‹ξ/JS_VAR m ‹ι t 0››
+			‹ξ/JS_VAR v ‹ι t 1››
+			‹ξ/JS_if_s ‹is any› ‹end_any››
+			‹ξ/JS_if_s ‹ξ/≠ v SPACE› ‹‹ι r 'push'› ‹spos v›› ›
+			‹ξ/assign s ‹‹ι s 'slice'› ‹ι ‹ι m 0› 'length'›››
+			‹increment_pos ‹ι m 0››
 		› ‹ξ/do_s
-			‹ξ/if_s ‹is any› ‹ξ/do_s
-				‹ξ/if_s ‹ξ/= ‹‹. js_valid_symbol 'is_part'› ‹. s 0›› first_type› ‹ξ/do_s
-					‹ξ/assign any ‹η/~ any ‹. s 0›››
-					‹ξ/assign s ‹‹. s 'slice'› 1››
+			‹ξ/JS_if_s ‹is any› ‹ξ/do_s
+				‹ξ/JS_if_s ‹ξ/= ‹‹ι js_valid_symbol 'is_part'› ‹ι s 0›› first_type› ‹ξ/do_s
+					‹ξ/assign any ‹η/~ any ‹ι s 0›››
+					‹ξ/assign s ‹‹ι s 'slice'› 1››
 				› ‹ξ/do_s
 					‹end_any›
 					‹start_any›
@@ -53,12 +53,12 @@
 			››
 		››
 	››
-	‹return r› ››
+	‹ξ/return r› ››
 
 //var subscript_ops = genex_2a‹~/^-?[\da-z]$/›.map‹function‹v›{return seq‹v›.map‹unicode.subscript›}›.filter‹function‹v›{return v.every‹function‹v›{return v}›}›.map‹function‹v›{return v.join‹''›}›
 ‹ξ/JS_VAR subscript_ops ‹ξ/array››
 
-‹ξ/JS_VAR S ‹η/fn ‹v› ‹return ‹ξ/object ‹s v››››› //new Symbol‹v›}
+‹ξ/JS_VAR S ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s v››››› //new Symbol‹v›}
 
 // give tokens nice properties
 ‹ξ/JS_VAR SPACE ‹ξ/object ‹SPACE 1›››//; set_to_s‹SPACE, function‹›{return '␣'}›
@@ -66,18 +66,18 @@
 //var Quote = function‹value›{this.v = value}//; set_to_s‹Quote.prototype, function‹›{return '`'+repr_js‹this.quote›+'@'+this.pos}›
 
 ‹ξ/JS_VAR reader_macros ‹ξ/array
-‹ξ/array ~/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/ ‹η/fn ‹› ‹return SPACE›››
+‹ξ/array ~/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/ ‹η/fn ‹› ‹ξ/return SPACE›››
 //[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
-‹ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ ‹η/fn ‹v› ‹return ‹ξ/object ‹v
-	‹‹. ‹‹. ‹ξ/JS_OR ‹‹. ‹. v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹return ‹ξ/if_e ‹ξ/JS_> ‹. v 'length'› 2› ‹chr ‹parseInt ‹‹. v 'slice'› 2› 16›› ‹ξ/if_e ‹ξ/= ‹. v 'length'› 2› ‹. ‹ξ/object ‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'››
-					‹. v 1›› v››››› 'join'› ''›
+‹ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹v
+	‹‹ι ‹‹ι ‹ξ/JS_OR ‹‹ι ‹ι v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/JS_if_e ‹ξ/JS_> ‹ι v 'length'› 2› ‹chr ‹parseInt ‹‹ι v 'slice'› 2› 16›› ‹ξ/JS_if_e ‹ξ/= ‹ι v 'length'› 2› ‹ι ‹ξ/object ‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'››
+					‹ι v 1›› v››››› 'join'› ''›
 
 	›››››
 //[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/), function(v){return {v:eval('/'+v[1]+'/'+v[2])}}],
-‹ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ ‹η/fn ‹v› ‹return ‹ξ/object ‹s ‹η/~ ‹η/~ ‹η/~ ‹η/~ '(/' ‹. v 1›› '/'› ‹. v 2›› ')'››››››
+‹ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s ‹η/~ ‹η/~ ‹η/~ ‹η/~ '(/' ‹ι v 1›› '/'› ‹ι v 2›› ')'››››››
 //[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(/([()\[\]{}?])/g,'\\$1')+')'), function(v){return S(v[1])}],
-‹ξ/array ~/^([\(\)‹›\?:,;])/ ‹η/fn ‹v› ‹return ‹S ‹. v 1›››››
-‹ξ/array ~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/ ‹η/fn ‹v› ‹return ‹ξ/object ‹v ‹parseFloat ‹. v 0›››››››
+‹ξ/array ~/^([\(\)‹›\?:,;])/ ‹η/fn ‹v› ‹ξ/return ‹S ‹ι v 1›››››
+‹ξ/array ~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹v ‹parseFloat ‹ι v 0›››››››
 ››
 
 ‹ξ/JS_VAR groups_expand ‹η/fn ‹tokens›
@@ -85,20 +85,20 @@
 	‹ξ/JS_VAR group_expand ‹η/fn ‹g l›
 		//var check = function‹›{if ‹l.length===0› err‹'group is not closed @'+g.pos›} //! this is bad at telling the user which group was unclosed
 		//check‹›
-		‹ξ/JS_VAR r ‹ξ/array›› ‹ξ/while_s true ‹ξ/do_s
-			‹ξ/if_s ‹. ‹. l 0› 's'› ‹ξ/do_s
-				‹ξ/if_s ‹ξ/= ‹. ‹. l 0› 's'› ‹. groups ‹. g 's'››› ‹return ‹ξ/array r ‹‹. l 'slice'› 1››››
-				‹ξ/if_s ‹own groups ‹. ‹. l 0› 's'›› ‹ξ/do_s ‹ξ/JS_VAR t ‹group_expand ‹. l 0› ‹‹. l 'slice'› 1››› ‹‹. r 'push'› ‹. t 0›› ‹ξ/assign l ‹. t 1›› continue›› // removed a check‹› before the continue
+		‹ξ/JS_VAR r ‹ξ/array›› ‹ξ/JS_while_s true ‹ξ/do_s
+			‹ξ/JS_if_s ‹ι ‹ι l 0› 's'› ‹ξ/do_s
+				‹ξ/JS_if_s ‹ξ/= ‹ι ‹ι l 0› 's'› ‹ι groups ‹ι g 's'››› ‹ξ/return ‹ξ/array r ‹‹ι l 'slice'› 1››››
+				‹ξ/JS_if_s ‹own groups ‹ι ‹ι l 0› 's'›› ‹ξ/do_s ‹ξ/JS_VAR t ‹group_expand ‹ι l 0› ‹‹ι l 'slice'› 1››› ‹‹ι r 'push'› ‹ι t 0›› ‹ξ/assign l ‹ι t 1›› continue›› // removed a check‹› before the continue
 				››
-			‹‹. r 'push'› ‹. l 0›› ‹ξ/assign l ‹‹. l 'slice'› 1››//; check‹›
+			‹‹ι r 'push'› ‹ι l 0›› ‹ξ/assign l ‹‹ι l 'slice'› 1››//; check‹›
 		››
 	››
-	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹. tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/if_s ‹! ‹ξ/= ‹. ‹. r 1› 'length'› 0›› ‹err r›› ‹return ‹. r 0››
+	‹ξ/JS_VAR r ‹group_expand ‹S '‹'› ‹‹ι tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/JS_if_s ‹ξ/JS_NOT ‹ξ/= ‹ι ‹ι r 1› 'length'› 0›› ‹err r›› ‹ξ/return ‹ι r 0››
 ››
 
-// ‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹. JSON 'stringify'› ‹. ‹groups_expand ‹tokenize ‹η/~ ‹‹. fs 'readFileSync'› in_› '//! wth'››› 0››››››
-// ‹φ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
-‹ξ/JS_VAR φ_s ‹η/fn ‹in_› ‹return ‹. ‹groups_expand ‹tokenize in_›› 0››››
-‹ξ/assign ‹. module 'exports'› φ_s›
+// ‹ξ/JS_VAR φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹ι ‹‹ι in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹ι JSON 'stringify'› ‹ι ‹groups_expand ‹tokenize ‹η/~ ‹‹ι fs 'readFileSync'› in_› '//! wth'››› 0››››››
+// ‹φ_f ‹ι ‹ι process 'argv'› 2› ‹ι ‹ι process 'argv'› 3››
+‹ξ/JS_VAR φ_s ‹η/fn ‹in_› ‹ξ/return ‹ι ‹groups_expand ‹tokenize in_›› 0››››
+‹ξ/assign ‹ι module 'exports'› φ_s›
 
 ›

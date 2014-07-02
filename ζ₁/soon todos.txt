@@ -1,7 +1,5 @@
 --- super easy, do me next ---
-secret builtins return,throw,! should be made not secret.
-add SPACE back in
-the created files aren't executable
+η needs to preserve position information more
 
 maybe implement quoting next
 
@@ -11,4 +9,7 @@ this crude namespacing system _is_ silly.
 macro ~ really should be *
 implement quoting
 
+- right now not next actions -
+add SPACE back in
+the created files aren't executable
 design: φ η ξ should definitely be different programs, but they should also be designed so that we can later transpose the stack.
