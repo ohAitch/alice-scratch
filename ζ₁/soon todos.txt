@@ -1,7 +1,6 @@
 --- super easy, do me next ---
 η and ξ need to preserve position information more
 this ‹Number '-1'› nonsense is super silly
-rename JS_THING to JS_thing
 add new
 
 maybe next do: implement quoting

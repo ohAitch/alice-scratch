@@ -19,25 +19,25 @@ var
 	                      v[0].s==="ξ/array")?  cat( cat("[",            v.slice(1).map(      repr_js).v_join(",")),"]") : ((
 	                      v[0].s==="ξ/member_bare")?  cat( cat( repr_js(   v[1]),"."), repr_js(   v[2])) : ((
 	                      v[0].s==="ξ/member_val")?  cat( cat( cat( repr_js(   v[1]),"["), repr_js(   v[2])),"]") : ((
-	                      v[0].s==="ξ/JS_typeof")?  cat("typeof ", repr_js(   v[1])) : ((
+	                      v[0].s==="ξ/js_typeof")?  cat("typeof ", repr_js(   v[1])) : ((
 	                      v[0].s==="ξ/return")?  cat( cat("return(", repr_js(   v[1])),")") : ((
 	                      v[0].s==="ξ/throw")?  cat( cat("throw(", repr_js(   v[1])),")") : ((
-	                      v[0].s==="ξ/JS_NOT")?  cat("!", repr_js(   v[1])) : ((
-	                      v[0].s==="ξ/JS_AND")?  cat( cat( cat( cat("(", repr_js(   v[1])),"&&"), repr_js(   v[2])),")") : ((
-	                      v[0].s==="ξ/JS_OR")?  cat( cat( cat( cat("(", repr_js(   v[1])),"||"), repr_js(   v[2])),")") : ((
-	                      v[0].s==="ξ/JS_>")?  cat( cat( cat( cat("(", repr_js(   v[1])),">"), repr_js(   v[2])),")") : ((
+	                      v[0].s==="ξ/js_not")?  cat("!", repr_js(   v[1])) : ((
+	                      v[0].s==="ξ/js_and")?  cat( cat( cat( cat("(", repr_js(   v[1])),"&&"), repr_js(   v[2])),")") : ((
+	                      v[0].s==="ξ/js_or")?  cat( cat( cat( cat("(", repr_js(   v[1])),"||"), repr_js(   v[2])),")") : ((
+	                      v[0].s==="ξ/js_>")?  cat( cat( cat( cat("(", repr_js(   v[1])),">"), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/-")?  cat( cat( cat( cat("(", repr_js(   v[1])),"-"), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/=")?  cat( cat( cat( cat("(", repr_js(   v[1])),"==="), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/≠")?  cat( cat( cat( cat("(", repr_js(   v[1])),"!=="), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/assign")?  cat( cat( cat( cat("(", repr_js(   v[1]))," = "), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/fn")?  cat( cat( cat( cat("function(",           v[1].map(   repr_js).v_join(",")),"){"),    repr_js(   v[2])),"}") : ((
 	                      v[0].s==="ξ/do_s")?  cat( cat("{",            v.slice(1).map(      repr_js).v_join(";")),"}") : ((
-	                      v[0].s==="ξ/JS_if_e")?  cat( cat( cat( cat( cat( cat("(", repr_js(   v[1])),"? "), repr_js(   v[2]))," : "), repr_js(   v[3])),")") : ((
-	                      v[0].s==="ξ/JS_if_s")?  cat( cat( cat( cat("if (", repr_js(   v[1])),") "),(         t = repr_js(  v[2]))),((                 v.length===3)? "" : cat((((                               t.slice(    Number("-1"))[0].slice(    Number("-1"))[0]==="}")? "" : ";")+" else "),repr_js(v[3])))) : ((
-	                      v[0].s==="ξ/JS_while_s")?  cat( cat( cat("while (", repr_js(   v[1])),") "), repr_js(   v[2])) : ((
-	                      v[0].s==="ξ/JS_VAR")?  cat( cat( cat("var ", repr_js(   v[1]))," = "), repr_js(   v[2])) : ((
-	                      v[0].s==="ξ/JS_+")?  cat( cat( cat( cat("(", repr_js(   v[1])),"+"), repr_js(   v[2])),")") : ((
-	                      v[0].s==="ξ/JS_instanceof")?  cat( cat( cat( cat("(", repr_js(   v[1]))," instanceof "), repr_js(   v[2])),")") : 
+	                      v[0].s==="ξ/js_if_e")?  cat( cat( cat( cat( cat( cat("(", repr_js(   v[1])),"? "), repr_js(   v[2]))," : "), repr_js(   v[3])),")") : ((
+	                      v[0].s==="ξ/js_if_s")?  cat( cat( cat( cat("if (", repr_js(   v[1])),") "),(         t = repr_js(  v[2]))),((                 v.length===3)? "" : cat((((                               t.slice(    Number("-1"))[0].slice(    Number("-1"))[0]==="}")? "" : ";")+" else "),repr_js(v[3])))) : ((
+	                      v[0].s==="ξ/js_while_s")?  cat( cat( cat("while (", repr_js(   v[1])),") "), repr_js(   v[2])) : ((
+	                      v[0].s==="ξ/js_var")?  cat( cat( cat("var ", repr_js(   v[1]))," = "), repr_js(   v[2])) : ((
+	                      v[0].s==="ξ/js_+")?  cat( cat( cat( cat("(", repr_js(   v[1])),"+"), repr_js(   v[2])),")") : ((
+	                      v[0].s==="ξ/js_instanceof")?  cat( cat( cat( cat("(", repr_js(   v[1]))," instanceof "), repr_js(   v[2])),")") : 
 		 cat( cat( cat( repr_js(   v[0]),"("),            v.slice(1).map(      repr_js).v_join(",")),")"))))))))))))))))))))))))))))}};(
 
 

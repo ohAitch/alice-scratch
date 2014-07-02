@@ -2,39 +2,39 @@
 
 ‹ξ/do_s
 
-‹ξ/JS_VAR fs ‹require 'fs'››
-‹ξ/JS_VAR path ‹require 'path'››
-‹ξ/JS_VAR _ ‹require 'underscore'››
+‹ξ/js_var fs ‹require 'fs'››
+‹ξ/js_var path ‹require 'path'››
+‹ξ/js_var _ ‹require 'underscore'››
 
-‹ξ/JS_VAR macros ‹ξ/object
-	‹'η/typeof_object'   ‹η/fn ‹v› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/JS_typeof'›› v› ‹ξ/object ‹v 'object'  ››››››
-	‹'η/typeof_boolean'  ‹η/fn ‹v› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/JS_typeof'›› v› ‹ξ/object ‹v 'boolean' ››››››
-	‹'η/typeof_number'   ‹η/fn ‹v› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/JS_typeof'›› v› ‹ξ/object ‹v 'number'  ››››››
-	‹'η/typeof_string'   ‹η/fn ‹v› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/JS_typeof'›› v› ‹ξ/object ‹v 'string'  ››››››
-	‹'η/typeof_function' ‹η/fn ‹v› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/JS_typeof'›› v› ‹ξ/object ‹v 'function'››››››
-	‹'η/member' ‹η/fn ‹o m› ‹ξ/return ‹ξ/JS_if_e ‹ξ/JS_AND ‹η/typeof_string ‹ι m 'v'›› ‹‹ι ‹ι m 'v'› 'match'› ~/^\w+$/›› ‹ξ/array ‹ξ/object ‹s 'ξ/member_bare'›› o ‹ξ/object ‹s ‹ι m 'v'›››› ‹ξ/array ‹ξ/object ‹s 'ξ/member_val'›› o m›››››
-	‹'η/+' ‹η/fn ‹a b› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/JS_+'›› a b››››
-	‹'η/~' ‹η/fn ‹a b› ‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/JS_+'›› a b››››
+‹ξ/js_var macros ‹ξ/object
+	‹'η/typeof_object'   ‹η/fn ‹v› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/js_typeof'›› v› ‹ξ/object ‹v 'object'  ››››››
+	‹'η/typeof_boolean'  ‹η/fn ‹v› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/js_typeof'›› v› ‹ξ/object ‹v 'boolean' ››››››
+	‹'η/typeof_number'   ‹η/fn ‹v› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/js_typeof'›› v› ‹ξ/object ‹v 'number'  ››››››
+	‹'η/typeof_string'   ‹η/fn ‹v› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/js_typeof'›› v› ‹ξ/object ‹v 'string'  ››››››
+	‹'η/typeof_function' ‹η/fn ‹v› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/='›› ‹ξ/array ‹ξ/object ‹s 'ξ/js_typeof'›› v› ‹ξ/object ‹v 'function'››››››
+	‹'η/member' ‹η/fn ‹o m› ‹return ‹ξ/js_if_e ‹ξ/js_and ‹η/typeof_string ‹ι m 'v'›› ‹‹ι ‹ι m 'v'› 'match'› ~/^\w+$/›› ‹ξ/array ‹ξ/object ‹s 'ξ/member_bare'›› o ‹ξ/object ‹s ‹ι m 'v'›››› ‹ξ/array ‹ξ/object ‹s 'ξ/member_val'›› o m›››››
+	‹'η/+' ‹η/fn ‹a b› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/js_+'›› a b››››
+	‹'η/~' ‹η/fn ‹a b› ‹return ‹ξ/array ‹ξ/object ‹s 'ξ/js_+'›› a b››››
 	‹'η/fn' ‹η/fn ‹params›
-		‹ξ/JS_VAR args ‹‹ι ‹η/args› 'slice'› 1››
-		‹ξ/return ‹ξ/array ‹ξ/object ‹s 'ξ/fn'›› params ‹ξ/JS_if_e ‹ξ/= ‹ι args 'length'› 1› ‹ι args 0› ‹‹ι ‹ξ/array ‹ξ/object ‹s 'ξ/do_s'››› 'concat'› args››››››
-	‹'η/args' ‹η/fn ‹› ‹ξ/return ‹ξ/array ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/object ‹s 'Array'›› ‹ξ/object ‹v 'prototype'››› ‹ξ/object ‹v 'slice'››› ‹ξ/object ‹v 'call'››› ‹ξ/object ‹s 'arguments'›› ‹ξ/object ‹v 0››››››
+		‹ξ/js_var args ‹‹ι ‹η/args› 'slice'› 1››
+		‹return ‹ξ/array ‹ξ/object ‹s 'ξ/fn'›› params ‹ξ/js_if_e ‹ξ/= ‹ι args 'length'› 1› ‹ι args 0› ‹‹ι ‹ξ/array ‹ξ/object ‹s 'ξ/do_s'››› 'concat'› args››››››
+	‹'η/args' ‹η/fn ‹› ‹return ‹ξ/array ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/array ‹ξ/object ‹s 'ι'›› ‹ξ/object ‹s 'Array'›› ‹ξ/object ‹v 'prototype'››› ‹ξ/object ‹v 'slice'››› ‹ξ/object ‹v 'call'››› ‹ξ/object ‹s 'arguments'›› ‹ξ/object ‹v 0››››››
 ››
 ‹ξ/assign ‹ι macros 'ι'› ‹ι macros 'η/member'››
 
-‹ξ/JS_VAR macro_expand ‹η/fn ‹v›
+‹ξ/js_var macro_expand ‹η/fn ‹v›
 	‹η/args›
-	‹ξ/JS_if_s ‹ξ/JS_instanceof v Array› ‹ξ/do_s
-		‹ξ/JS_while_s ‹ι macros ‹ξ/JS_if_e ‹ι v 0› ‹ι ‹ι v 0› 's'› undefined›› ‹ξ/assign v ‹‹ι ‹ι macros ‹ι ‹ι v 0› 's'›› 'apply'› null ‹‹ι v 'slice'› 1››››
-		‹ξ/return ‹‹ι v 'map'› macro_expand››
-	› ‹ξ/return v››
+	‹ξ/js_if_s ‹ξ/js_instanceof v Array› ‹ξ/do_s
+		‹ξ/js_while_s ‹ι macros ‹ξ/js_if_e ‹ι v 0› ‹ι ‹ι v 0› 's'› undefined›› ‹ξ/assign v ‹‹ι ‹ι macros ‹ι ‹ι v 0› 's'›› 'apply'› null ‹‹ι v 'slice'› 1››››
+		‹return ‹‹ι v 'map'› macro_expand››
+	› ‹return v››
 ››
 
-// ‹ξ/JS_VAR η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
+// ‹ξ/js_var η_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
 // 	‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹ι ‹‹ι in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.ξ'› ‹‹ι JSON 'stringify'› ‹‹ι ‹macro_expand ‹‹ι JSON 'parse'› ‹η/~ ‹‹ι fs 'readFileSync'› in_› ' '››› 'slice'› 1›››
 // ›››
 // ‹η_f ‹ι ‹ι process 'argv'› 2› ‹ι ‹ι process 'argv'› 3››
-‹ξ/JS_VAR η_s ‹η/fn ‹in_› ‹ξ/return ‹‹ι ‹macro_expand in_› 'slice'› 1››››
+‹ξ/js_var η_s ‹η/fn ‹in_› ‹return ‹‹ι ‹macro_expand in_› 'slice'› 1››››
 ‹ξ/assign ‹ι module 'exports'› η_s›
 
 ›

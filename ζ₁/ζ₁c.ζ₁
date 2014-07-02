@@ -2,16 +2,16 @@
 
 ‹ξ/do_s
 
-‹ξ/JS_VAR fs ‹require 'fs'››
-‹ξ/JS_VAR path ‹require 'path'››
+‹ξ/js_var fs ‹require 'fs'››
+‹ξ/js_var path ‹require 'path'››
 
-‹ξ/JS_VAR ξ ‹require './ξ'››
-‹ξ/JS_VAR η ‹require './η'››
-‹ξ/JS_VAR φ ‹require './φ'››
+‹ξ/js_var ξ ‹require './ξ'››
+‹ξ/js_var η ‹require './η'››
+‹ξ/js_var φ ‹require './φ'››
 
-‹ξ/JS_if_s ‹ξ/= ‹ι ‹ι process 'argv'› 1› __filename› ‹ξ/do_s
-	‹ξ/JS_VAR in_ ‹‹ι ‹ι process 'argv'› 'slice'› 2 ‹Number '-1'›››
-	‹ξ/JS_VAR out ‹ι ‹‹ι ‹ι process 'argv'› 'slice'› ‹Number '-1'›› 0››
+‹ξ/js_if_s ‹ξ/= ‹ι ‹ι process 'argv'› 1› __filename› ‹ξ/do_s
+	‹ξ/js_var in_ ‹‹ι ‹ι process 'argv'› 'slice'› 2 ‹Number '-1'›››
+	‹ξ/js_var out ‹ι ‹‹ι ‹ι process 'argv'› 'slice'› ‹Number '-1'›› 0››
 	‹‹ι in_ 'map'› ‹η/fn ‹in_› ‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹ι path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹ι fs 'readFileSync'› in_› ' '›››››››
 ››
 
@@ -25,20 +25,20 @@
 
 ξ/=
 ξ/≠
-ξ/JS_NOT
-ξ/JS_AND
-ξ/JS_OR
-ξ/JS_>
+ξ/js_not
+ξ/js_and
+ξ/js_or
+ξ/js_>
 
 ξ/do_s
-ξ/JS_if_e
-ξ/JS_if_s
-ξ/JS_while_s
+ξ/js_if_e
+ξ/js_if_s
+ξ/js_while_s
 ξ/return
 ξ/throw
 
-ξ/JS_VAR
-ξ/JS_instanceof
+ξ/js_var
+ξ/js_instanceof
 
 η/member aka ι
 η/+
