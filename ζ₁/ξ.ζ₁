@@ -30,7 +30,7 @@
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/='› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '==='› ‹repr_js ‹ι v 2››› ')'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/≠'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '!=='› ‹repr_js ‹ι v 2››› ')'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/assign'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› ' = '› ‹repr_js ‹ι v 2››› ')'›
-	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/fn'› ‹cat ‹cat ‹cat ‹cat 'function(' ‹‹ι ‹‹ι ‹ι v 1› 'map'› repr_js› 'v_join'› ','›› '){'› ‹repr_js ‹ι v 2››› '}'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/fn'› ‹cat ‹cat ‹cat ‹cat 'function ξ_λ(' ‹‹ι ‹‹ι ‹ι v 1› 'map'› repr_js› 'v_join'› ','›› '){'› ‹repr_js ‹ι v 2››› '}'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/do_s'› ‹cat ‹cat '{' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ';'›› '}'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_e'› ‹cat ‹cat ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '? '› ‹repr_js ‹ι v 2››› ' : '› ‹repr_js ‹ι v 3››› ')'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_s'› ‹cat ‹cat ‹cat ‹cat 'if (' ‹repr_js ‹ι v 1››› ') '› ‹ξ/assign t ‹repr_js ‹ι v 2›››› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 3› '' ‹cat ‹η/~ ‹ξ/js_if_e ‹ξ/= ‹ι ‹‹ι ‹ι ‹‹ι t 'slice'› ‹Number '-1'›› 0› 'slice'› ‹Number '-1'›› 0› '}'› '' ';'› ' else '› ‹repr_js ‹ι v 3›››››

@@ -2,13 +2,13 @@
 η and ξ need to preserve position information more
 this ‹Number '-1'› nonsense is super silly
 add new
-
-maybe next do: implement quoting
+the thing where value objects have to be in like {v:} is causing problems with quoting.
+implement ~@ quoting
 
 ---------- less easy ---------
 this crude namespacing system _is_ silly.
 η/~ really should be η/*
-implement quoting
+let's add operators, oh gosh!
 
 - right now not next actions -
 add SPACE back in

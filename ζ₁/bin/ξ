@@ -6,16 +6,16 @@ var
           path = require("path");var 
           _ = require("underscore");var 
 
-          seq = function(v){return(   v.split(""))};var 
+          seq = function ξ_λ(v){return(v.split(""))};var 
 
-          cat = function(a,b){return(((                             a instanceof Array)? a : [a]).concat(((                       b instanceof Array)? b : [b])))};(
-                Array.prototype.v_join = function(  v){return(                 Array.prototype.concat.apply([],                    this.map(function( t){return(((                                 t instanceof Array)? t : [t]).concat([     v]))})).slice(0,    Number("-1")))});var 
+          cat = function ξ_λ(a,b){return(((                         a instanceof Array)? a : [a]).concat(((                       b instanceof Array)? b : [b])))};(
+                Array.prototype.v_join = function ξ_λ(v){return(               Array.prototype.concat.apply([],                    this.map(function ξ_λ(t){return(((                              t instanceof Array)? t : [t]).concat([     v]))})).slice(0,    Number("-1")))});var 
 
-          repr_js = function(v){{var  t = 0;return(((typeof 
+          repr_js = function ξ_λ(v){{var t = 0;return(((typeof 
 	                               v.s==="string")? (    v.pos? [{                    v:   v.pos},       v.s] :     v.s) : ((typeof 
 	                               v.v==="string")? cat(cat("\"",       v.v.replace("\\",("\\"+"\\")).replace("\"","\\\"").replace("\n","\\n")),"\"") : ((
 	                   v.v!== undefined)? (      v.v+"") : ((
-	                      v[0].s==="ξ/object")?  cat( cat("{",            v.slice(1).map(function(    v){return(    cat( cat( repr_js(   v[0]),":"), repr_js(   v[1])))}).v_join(",")),"}") : ((
+	                      v[0].s==="ξ/object")?  cat( cat("{",            v.slice(1).map(function ξ_λ(v){return(    cat( cat( repr_js(   v[0]),":"), repr_js(   v[1])))}).v_join(",")),"}") : ((
 	                      v[0].s==="ξ/array")?  cat( cat("[",            v.slice(1).map(      repr_js).v_join(",")),"]") : ((
 	                      v[0].s==="ξ/member_bare")?  cat( cat( repr_js(   v[1]),"."), repr_js(   v[2])) : ((
 	                      v[0].s==="ξ/member_val")?  cat( cat( cat( repr_js(   v[1]),"["), repr_js(   v[2])),"]") : ((
@@ -30,7 +30,7 @@ var
 	                      v[0].s==="ξ/=")?  cat( cat( cat( cat("(", repr_js(   v[1])),"==="), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/≠")?  cat( cat( cat( cat("(", repr_js(   v[1])),"!=="), repr_js(   v[2])),")") : ((
 	                      v[0].s==="ξ/assign")?  cat( cat( cat( cat("(", repr_js(   v[1]))," = "), repr_js(   v[2])),")") : ((
-	                      v[0].s==="ξ/fn")?  cat( cat( cat( cat("function(",           v[1].map(   repr_js).v_join(",")),"){"),    repr_js(   v[2])),"}") : ((
+	                      v[0].s==="ξ/fn")?  cat( cat( cat( cat("function ξ_λ(",           v[1].map(   repr_js).v_join(",")),"){"),    repr_js(   v[2])),"}") : ((
 	                      v[0].s==="ξ/do_s")?  cat( cat("{",            v.slice(1).map(      repr_js).v_join(";")),"}") : ((
 	                      v[0].s==="ξ/js_if_e")?  cat( cat( cat( cat( cat( cat("(", repr_js(   v[1])),"? "), repr_js(   v[2]))," : "), repr_js(   v[3])),")") : ((
 	                      v[0].s==="ξ/js_if_s")?  cat( cat( cat( cat("if (", repr_js(   v[1])),") "),(         t = repr_js(  v[2]))),((                 v.length===3)? "" : cat((((                               t.slice(    Number("-1"))[0].slice(    Number("-1"))[0]==="}")? "" : ";")+" else "),repr_js(v[3])))) : ((
@@ -42,10 +42,10 @@ var
 
 
 
-                String.prototype.repeat = function(  v){return(         new(Array)((    v+1)).join(   this))});var 
+                String.prototype.repeat = function ξ_λ(v){return(       new(Array)((    v+1)).join(   this))});var 
 
-          increment_pos = function(pos,s){{
-	     seq(s).map(function( v){if ((
+          increment_pos = function ξ_λ(pos,s){{
+	     seq(s).map(function ξ_λ(v){if ((
 		                v==="\n")) (      pos = [(             pos[0]+1),1,1]); else if ((
 		                v==="	")) (pos = [pos[0],(pos[1]+1),1]); else (
 			          pos = [         pos[0],   pos[1],(       pos[2]+1)])});return(
@@ -53,13 +53,13 @@ var
 
 	          pos)}};var 
 
-          pos_positive_diff = function(a,b){return(((                a[0]=== b[0])? ((                a[1]=== b[1])? ((                a[2]=== b[2])? [0,0,0] : ((                         a[2]>   b[2])? [0,0,(              a[2]-   b[2])] : [0,0,0])) : ((                        a[1]>   b[1])? [0,(              a[1]-   b[1]),(       a[2]-1)] : [0,0,0])) : ((                        a[0]>   b[0])? [(              a[0]-   b[0]),(       a[1]-1),(       a[2]-1)] : [0,0,0])))};var 
+          pos_positive_diff = function ξ_λ(a,b){return(((            a[0]=== b[0])? ((                a[1]=== b[1])? ((                a[2]=== b[2])? [0,0,0] : ((                         a[2]>   b[2])? [0,0,(              a[2]-   b[2])] : [0,0,0])) : ((                        a[1]>   b[1])? [0,(              a[1]-   b[1]),(       a[2]-1)] : [0,0,0])) : ((                        a[0]>   b[0])? [(              a[0]-   b[0]),(       a[1]-1),(       a[2]-1)] : [0,0,0])))};var 
 
-          pos_max = function(a,b){return(((                a[0]=== b[0])? ((                a[1]=== b[1])? ((                a[2]=== b[2])? a : ((                 a[2]>   b[2])? a : b)) : ((               a[1]>   b[1])? a : b)) : ((               a[0]>   b[0])? a : b)))};var 
+          pos_max = function ξ_λ(a,b){return(((            a[0]=== b[0])? ((                a[1]=== b[1])? ((                a[2]=== b[2])? a : ((                 a[2]>   b[2])? a : b)) : ((               a[1]>   b[1])? a : b)) : ((               a[0]>   b[0])? a : b)))};var 
 
-          expand_pos = function(v){{var 
+          expand_pos = function ξ_λ(v){{var 
 	          pos = [1,1,1];return(
-	                  v.map(function( v){if ((typeof 
+	                  v.map(function ξ_λ(v){if ((typeof 
 		                            v==="string")) {(
 			          pos = increment_pos(pos,v));return(
 			          v)} else {(
@@ -72,11 +72,11 @@ var
 
 
 
-          repr_js_file = function(v){return(expand_pos( cat("#!/usr/bin/env node\n",        v.map(   repr_js).v_join(";"))))};var 
+          repr_js_file = function ξ_λ(v){return(expand_pos(cat("#!/usr/bin/env node\n",     v.map(   repr_js).v_join(";"))))};var 
 
 
 
 
 
-          η_s = function(in_){return(repr_js_file(in_))};(
+          η_s = function ξ_λ(in_){return(repr_js_file(in_))};(
              module.exports =  η_s)

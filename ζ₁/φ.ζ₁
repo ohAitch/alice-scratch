@@ -13,7 +13,7 @@
 ‹ξ/js_var is ‹η/fn ‹v› ‹ξ/return ‹ξ/≠ v undefined››››
 //Array.prototype.m_concat = function‹›{return Array.prototype.concat.apply‹[],this›}
 
-‹ξ/js_var js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/js_not ‹ξ/js_not ‹‹ι v 'match'› ~/[\wξηφ\/≠=+->~]/››››››››
+‹ξ/js_var js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/js_not ‹ξ/js_not ‹‹ι v 'match'› ~/[\wξηφλ\/≠=+->~]/››››››››
 
 // ---------- dup in ξ ----------
 ‹ξ/js_var increment_pos ‹η/fn ‹pos s›
