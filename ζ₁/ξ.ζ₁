@@ -6,14 +6,14 @@
 ‹ξ/JS_VAR path ‹require 'path'››
 ‹ξ/JS_VAR _ ‹require 'underscore'››
 
-‹ξ/JS_VAR repr_js ‹ξ/fn ‹v› ‹ξ/do_s
+‹ξ/JS_VAR repr_js ‹η/fn ‹v›
 	‹return
 		‹ξ/if_e ‹ξ/= ‹typeof ‹. v 's'›› 'string'› ‹. v 's'›
 		‹ξ/if_e ‹ξ/= ‹typeof ‹. v 'v'›› 'string'› ‹η/~ ‹η/~ '"' ‹‹. ‹‹. ‹‹. ‹. v 'v'› 'replace'› '\\'
 							‹η/~ '\\' '\\'›
 							› 'replace'› '"' '\\"'› 'replace'› '\n' '\\n'›› '"'›
 		‹ξ/if_e ‹ξ/≠ ‹. v 'v'› undefined› ‹. v 'v'›
-		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/object'› ‹η/~ ‹η/~ '{' ‹‹. ‹‹. ‹‹. v 'slice'› 1› 'map'› ‹ξ/fn ‹v› ‹ξ/do_s ‹return ‹η/~ ‹η/~ ‹repr_js ‹. v 0›› ':'› ‹repr_js ‹. v 1››››››› 'join'› ',\n\t\t\t'›› '}'›
+		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/object'› ‹η/~ ‹η/~ '{' ‹‹. ‹‹. ‹‹. v 'slice'› 1› 'map'› ‹η/fn ‹v› ‹return ‹η/~ ‹η/~ ‹repr_js ‹. v 0›› ':'› ‹repr_js ‹. v 1›››››› 'join'› ',\n\t\t\t'›› '}'›
 		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/array'› ‹η/~ ‹η/~ '[' ‹‹. ‹‹. ‹‹. v 'slice'› 1› 'map'› repr_js› 'join'› ','›› ']'›
 		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/member_bare'› ‹η/~ ‹η/~ ‹repr_js ‹. v 1›› '.'› ‹repr_js ‹. v 2›››
 		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/member_val'› ‹η/~ ‹η/~ ‹η/~ ‹repr_js ‹. v 1›› '['› ‹repr_js ‹. v 2››› ']'›
@@ -32,17 +32,17 @@
 		‹ξ/if_e ‹ξ/= ‹. ‹. v 0› 's'› 'ξ/JS_instanceof'› ‹η/~ ‹η/~ ‹η/~ ‹η/~ '(' ‹repr_js ‹. v 1››› ' instanceof '› ‹repr_js ‹. v 2››› ')'›
 			‹η/~ ‹η/~ ‹η/~ ‹repr_js ‹. v 0›› '('› ‹‹. ‹‹. ‹‹. v 'slice'› 1› 'map'› repr_js› 'join'› ','›› ')'›
 		››››››››››››››››››››
-››››
-
-‹ξ/JS_VAR repr_js_file ‹ξ/fn ‹v› ‹ξ/do_s
-	‹return ‹η/~ '#!/usr/bin/env node\n' ‹‹. ‹‹. v 'map'› repr_js› 'join'› ';\n'›››
 ›››
+
+‹ξ/JS_VAR repr_js_file ‹η/fn ‹v›
+	‹return ‹η/~ '#!/usr/bin/env node\n' ‹‹. ‹‹. v 'map'› repr_js› 'join'› ';\n'›››
+››
 
 // ‹ξ/JS_VAR ξ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
 // 	‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹. ‹‹. in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››
 // ›››
 // ‹ξ_f ‹. ‹. process 'argv'› 2› ‹. ‹. process 'argv'› 3››
-‹ξ/JS_VAR η_s ‹ξ/fn ‹in_› ‹ξ/do_s ‹return ‹repr_js_file in_›››››
+‹ξ/JS_VAR η_s ‹η/fn ‹in_› ‹return ‹repr_js_file in_››››
 ‹ξ/assign ‹. module 'exports'› η_s›
 
 ›

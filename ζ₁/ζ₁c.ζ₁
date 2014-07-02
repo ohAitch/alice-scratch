@@ -13,7 +13,31 @@
 ‹ξ/if_s ‹ξ/= ‹. ‹. process 'argv'› 1› __filename› ‹ξ/do_s
 	‹ξ/JS_VAR in_ ‹‹. ‹. process 'argv'› 'slice'› 2 ‹Number '-1'›››
 	‹ξ/JS_VAR out ‹. ‹‹. ‹. process 'argv'› 'slice'› ‹Number '-1'›› 0››
-	‹‹. in_ 'map'› ‹ξ/fn ‹in_› ‹ξ/do_s ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹. path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '››››››››
+	‹‹. in_ 'map'› ‹η/fn ‹in_› ‹‹. fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹. path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹. fs 'readFileSync'› in_› ' '›››››››
 › ''›
 
 ›
+
+/* builtins and macros
+
+ξ/object
+ξ/array
+ξ/=
+ξ/≠
+ξ/assign
+
+ξ/do_s
+ξ/if_e
+ξ/if_s
+ξ/while_s
+
+ξ/JS_VAR
+ξ/JS_instanceof
+
+.
+η/member
+η/+
+η/~
+η/fn
+
+*/

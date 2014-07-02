@@ -3,7 +3,7 @@ secret builtins return,throw,! should be made not secret.
 fn do_s is silly
 if else '' is silly
 add SPACE back in
-use η/fn in more places
+the created files aren't executable
 
 maybe implement quoting next
 
