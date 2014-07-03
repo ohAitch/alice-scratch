@@ -9,7 +9,7 @@
 ‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
 
 ‹ξ/js_var cat ‹η/fn ‹a b› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof a Array› a ‹ξ/array a›› 'concat'› ‹ξ/js_if_e ‹ξ/js_instanceof b Array› b ‹ξ/array b››››››
-‹ξ/assign ‹ι ‹ι Array 'prototype'› 'v_join'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹ι ‹ι ‹ι Array 'prototype'› 'concat'› 'apply'› ‹ξ/array› ‹‹ι this 'map'› ‹η/fn ‹t› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof t Array› t ‹ξ/array t›› 'concat'› ‹ξ/array v›››››› 'slice'› 0 ‹Number '-1'›››››
+‹ξ/assign ‹ι ‹ι Array 'prototype'› 'v_join'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹ι ‹ι ‹ι Array 'prototype'› 'concat'› 'apply'› ‹ξ/array› ‹‹ι this 'map'› ‹η/fn ‹t› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof t Array› t ‹ξ/array t›› 'concat'› ‹ξ/array v›››››› 'slice'› 0 ‹ξ/- 0 1›››››
 
 ‹ξ/js_var repr_js ‹η/fn ‹v› ‹ξ/js_var t 0› ‹ξ/return
 	‹ξ/js_if_e ‹η/typeof_string ‹ι v 's'›› ‹ξ/js_if_e ‹ι v 'pos'› ‹ξ/array ‹ξ/object ‹v ‹ι v 'pos'››› ‹ι v 's'›› ‹ι v 's'››
@@ -33,7 +33,7 @@
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/fn'› ‹cat ‹cat ‹cat ‹cat 'function ξ_λ(' ‹‹ι ‹‹ι ‹ι v 1› 'map'› repr_js› 'v_join'› ','›› '){'› ‹repr_js ‹ι v 2››› '}'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/do_s'› ‹cat ‹cat '{' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ';'›› '}'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_e'› ‹cat ‹cat ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '? '› ‹repr_js ‹ι v 2››› ' : '› ‹repr_js ‹ι v 3››› ')'›
-	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_s'› ‹cat ‹cat ‹cat ‹cat 'if (' ‹repr_js ‹ι v 1››› ') '› ‹ξ/assign t ‹repr_js ‹ι v 2›››› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 3› '' ‹cat ‹η/~ ‹ξ/js_if_e ‹ξ/= ‹ι ‹‹ι ‹ι ‹‹ι t 'slice'› ‹Number '-1'›› 0› 'slice'› ‹Number '-1'›› 0› '}'› '' ';'› ' else '› ‹repr_js ‹ι v 3›››››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_s'› ‹cat ‹cat ‹cat ‹cat 'if (' ‹repr_js ‹ι v 1››› ') '› ‹ξ/assign t ‹repr_js ‹ι v 2›››› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 3› '' ‹cat ‹η/~ ‹ξ/js_if_e ‹ξ/= ‹ι ‹‹ι ‹ι ‹‹ι t 'slice'› ‹ξ/- 0 1›› 0› 'slice'› ‹ξ/- 0 1›› 0› '}'› '' ';'› ' else '› ‹repr_js ‹ι v 3›››››
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_while_s'› ‹cat ‹cat ‹cat 'while (' ‹repr_js ‹ι v 1››› ') '› ‹repr_js ‹ι v 2›››
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_var'› ‹cat ‹cat ‹cat 'var ' ‹repr_js ‹ι v 1››› ' = '› ‹repr_js ‹ι v 2›››
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_+'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '+'› ‹repr_js ‹ι v 2››› ')'›

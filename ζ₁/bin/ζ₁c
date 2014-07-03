@@ -10,6 +10,6 @@ var
           φ = require("./φ");if ((
 
                       process.argv[1]=== __filename)) {var 
-	          in_ =      process.argv.slice(2,       Number("-1"));var 
-	          out =         process.argv.slice(       Number("-1"))[0];
+	          in_ =      process.argv.slice(2,(0-1));var 
+	          out =         process.argv.slice((0-1))[0];
 	    in_.map(function ξ_λ(in_){ fs.writeFileSync(((           out+"/")+    path.basename(   in_,".ζ₁")), ξ( η( φ((        fs.readFileSync(   in_)+" ")))))})}

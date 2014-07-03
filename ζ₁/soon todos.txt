@@ -1,6 +1,5 @@
 --- super easy, do me next ---
 η and ξ need to preserve position information more
-this ‹Number '-1'› nonsense is super silly
 add new
 the thing where value objects have to be in like {v:} is causing problems with quoting.
 implement ~@ quoting

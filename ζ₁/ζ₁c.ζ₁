@@ -10,8 +10,8 @@
 ‹ξ/js_var φ ‹require './φ'››
 
 ‹ξ/js_if_s ‹ξ/= ‹ι ‹ι process 'argv'› 1› __filename› ‹ξ/do_s
-	‹ξ/js_var in_ ‹‹ι ‹ι process 'argv'› 'slice'› 2 ‹Number '-1'›››
-	‹ξ/js_var out ‹ι ‹‹ι ‹ι process 'argv'› 'slice'› ‹Number '-1'›› 0››
+	‹ξ/js_var in_ ‹‹ι ‹ι process 'argv'› 'slice'› 2 ‹ξ/- 0 1›››
+	‹ξ/js_var out ‹ι ‹‹ι ‹ι process 'argv'› 'slice'› ‹ξ/- 0 1›› 0››
 	‹‹ι in_ 'map'› ‹η/fn ‹in_› ‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ out '/'› ‹‹ι path 'basename'› in_ '.ζ₁'›› ‹ξ ‹η ‹φ ‹η/~ ‹‹ι fs 'readFileSync'› in_› ' '›››››››
 ››
 
