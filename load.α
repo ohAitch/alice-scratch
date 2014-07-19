@@ -36,7 +36,7 @@ String.prototype.repeat ←! λ{v≤0? '' : new Array(v+1).join(this)}
 Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
 Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
 Array.prototype.cartesian ←! λ{this.reduce(λ(a,v){r ← []; a.map(λ(a){seq(v).map(λ(b){r.push(a.concat([b]))})}); return r}, [[]])}
-genex_2a ← λ(re){return _.range(2).map(λ{[128,128].slice(v).map(λ{_.range(v).map(λ{String.fromCharCode(v)})}).cartesian().map(λ{v.join('')})}).m_concat().filter(λ{v.match(re)})}
+genex_2a ← λ(re){return _.range(2).map(λ{[128,128].slice(v).map(λ{_.range(v).map(λ{String.fromCharCode(v)})}).cartesian().map(λ{v.join('')})}).m_concat().filter(λ{v.match(re)})} // this of course is "constraint programming"
 set_to_s ← λ(o,f){o.toString ←! o.inspect ←! f}
 EQ ← _.isEqual
 
