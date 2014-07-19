@@ -62,18 +62,19 @@
 
 ‹ξ/js_var S ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s v››››› //new Symbol‹v›}
 
-// give tokens nice properties
-‹ξ/js_var SPACE ‹ξ/object ‹SPACE 1›››//; set_to_s‹SPACE, function‹›{return '␣'}›
-//var Symbol = function‹name›{this.s = name}//; set_to_s‹Symbol.prototype, function‹›{return '`'+this.name+'@'+this.pos}›
-//var Quote = function‹value›{this.v = value}//; set_to_s‹Quote.prototype, function‹›{return '`'+repr_js‹this.quote›+'@'+this.pos}›
+‹ξ/js_var SPACE ‹ξ/object ‹SPACE 1›››
 
 ‹ξ/js_var reader_macros ‹ξ/array
 ‹ξ/array ~/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/ ‹η/fn ‹› ‹ξ/return SPACE›››
 //[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
 ‹ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹v
-	‹‹ι ‹‹ι ‹ξ/js_or ‹‹ι ‹ι v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/js_if_e ‹ξ/js_> ‹ι v 'length'› 2› ‹chr ‹parseInt ‹‹ι v 'slice'› 2› 16›› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 2› ‹ι ‹ξ/object ‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'››
-					‹ι v 1›› v››››› 'join'› ''›
+	‹‹ι ‹‹ι ‹ξ/js_or ‹‹ι ‹ι v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/js_if_e ‹ξ/js_> ‹ι v 'length'› 2› ‹chr ‹parseInt ‹‹ι v 'slice'› 2› 16›› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 2› ‹ξ/js_or ‹ι ‹ξ/object
 
+	//‹'\'''\''›‹'\"''\"'›‹'\\''\\'›‹'b''\x08'›‹'t''\x09'›‹'n''\x0a'›‹'v''\x0b'›‹'f''\x0c'›‹'r''\x0d'›
+	‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'›
+
+	›
+					‹ι v 1›› ‹err ‹η/~ 'bad escape: 'v››› v››››› 'join'› ''›
 	›››››
 //[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/), function(v){return {v:eval('/'+v[1]+'/'+v[2])}}],
 ‹ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s ‹η/~ ‹η/~ ‹η/~ ‹η/~ '(/' ‹ι v 1›› '/'› ‹ι v 2›› ')'››››››

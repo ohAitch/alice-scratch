@@ -11,6 +11,12 @@
 ‹ξ/js_var cat ‹η/fn ‹a b› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof a Array› a ‹ξ/array a›› 'concat'› ‹ξ/js_if_e ‹ξ/js_instanceof b Array› b ‹ξ/array b››››››
 ‹ξ/assign ‹ι ‹ι Array 'prototype'› 'v_join'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹ι ‹ι ‹ι Array 'prototype'› 'concat'› 'apply'› ‹ξ/array› ‹‹ι this 'map'› ‹η/fn ‹t› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof t Array› t ‹ξ/array t›› 'concat'› ‹ξ/array v›››››› 'slice'› 0 ‹ξ/- 0 1›››››
 
+/*‹ξ/assign ‹ι ‹ι String 'prototype'› 'repr_js'› ‹η/fn ‹› ‹ξ/js_var v ‹η/~ this ''››
+q ← (v.match(~/'/g)||[]).length ≤ (v.match(~/"/g)||[]).length? '\'' : '"'
+a ← {'\n':'\\n','\t':'\\t','\\':'\\\\'}; a.q = '\\'+q
+return q+seq(v).map(function(v){return a[v] || (printable(v)? v : (v=ord(v))≤0xff? '\\x'+hex(v,2) : '\\u'+hex(v,4))}).join('')+q
+››*/
+
 ‹ξ/js_var repr_js ‹η/fn ‹v› ‹ξ/js_var t 0› ‹ξ/return
 	‹ξ/js_if_e ‹η/typeof_string ‹ι v 's'›› ‹ξ/js_if_e ‹ι v 'pos'› ‹ξ/array ‹ξ/object ‹v ‹ι v 'pos'››› ‹ι v 's'›› ‹ι v 's'››
 	‹ξ/js_if_e ‹η/typeof_string ‹ι v 'v'›› ‹cat ‹cat '"' ‹‹ι ‹‹ι ‹‹ι ‹ι v 'v'› 'replace'› '\\' ‹η/~ '\\' '\\'›› 'replace'› '"' '\\"'› 'replace'› '\n' '\\n'›› '"'›

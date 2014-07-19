@@ -62,18 +62,19 @@ var
 
           S = function ξ_λ(v){return({     s:v})};var 
 
-
           SPACE = {        SPACE:1};var 
-
-
 
           reader_macros = [[
          (/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/),function ξ_λ(){return(SPACE)}],[
 
          (/^(['"])((\\.|(?!\1).)*?)\1/),function ξ_λ(v){return({      v:(
-	                        v[2].match(   (/\\u....|\\x..|\\.|./g))||[]).map(function ξ_λ(  v){return(((                       v.length>2)?    chr( parseInt(    v.slice(2),16)) : ((                  v.length===2)? {"'":"'","\"":"\"","\\":"\\","n":"\n","t":"	"}[
-					   v[1]] : v)))}).join("")})}],[
+	                        v[2].match(   (/\\u....|\\x..|\\.|./g))||[]).map(function ξ_λ(  v){return(((                       v.length>2)?    chr( parseInt(    v.slice(2),16)) : ((                  v.length===2)? ({"'":"'","\"":"\"","\\":"\\","n":"\n","t":"	"}[
 
+
+
+
+
+					   v[1]]||err(("bad escape: "+   v))) : v)))}).join("")})}],[
 
 
          (/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/),function ξ_λ(v){return({      s:(((("(/"+                   v[1])+"/")+   v[2])+")")})}],[
