@@ -2,14 +2,14 @@
 var 
 
 
-          fs = require("fs");var 
-          path = require("path");var 
+          fs = require('fs');var 
+          path = require('path');var 
 
-          ξ = require("./ξ");var 
-          η = require("./η");var 
-          φ = require("./φ");if ((
+          ξ = require('./ξ');var 
+          η = require('./η');var 
+          φ = require('./φ');if ((
 
                       process.argv[1]=== __filename)) {var 
 	          in_ =      process.argv.slice(2,(0-1));var 
 	          out =         process.argv.slice((0-1))[0];
-	    in_.map(function ξ_λ(in_){ fs.writeFileSync(((           out+"/")+    path.basename(   in_,".ζ₁")), ξ( η( φ((        fs.readFileSync(   in_)+" ")))),{          mode:493})})}
+	    in_.map(function ξ_λ(in_){ fs.writeFileSync(((           out+'/')+    path.basename(   in_,'.\u03b6\u2081')),ξ(η(φ(( fs.readFileSync(   in_)+' ')))),{          mode:493})})}

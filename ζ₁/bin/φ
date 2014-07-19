@@ -2,24 +2,23 @@
 var 
 
 
-          fs = require("fs");var 
-          path = require("path");var 
-          _ = require("underscore");var 
+          fs = require('fs');var 
+          path = require('path');var 
+          _ = require('underscore');var 
 
-          seq = function ξ_λ(v){return(v.split(""))};var 
+          seq = function ξ_λ(v){return(v.split(''))};var 
           chr = function ξ_λ(v){return(String.fromCharCode(  v))};var 
           err = function ξ_λ(v){throw(Error(v))};var 
           own = function ξ_λ(o,m){return((               Object.prototype.hasOwnProperty.call(         o,m)?   o[m] : undefined))};var 
           is = function ξ_λ(v){return((v!==undefined))};var 
 
 
-          js_valid_symbol = {        is_part:function ξ_λ(v){return(!!                   v.match(   (/[\wξηφλ\/≠=+->~]/)))}};var 
 
-
+          js_valid_symbol = {        is_part:function ξ_λ(v){return(!!                   v.match(   (/[ -~ξηφλ≠]/)))}};var 
           increment_pos = function ξ_λ(pos,s){{
 	     seq(s).map(function ξ_λ(v){if ((
-		                v==="\n")) (      pos = [(             pos[0]+1),1,1]); else if ((
-		                v==="	")) (pos = [pos[0],(pos[1]+1),1]); else (
+		                v==='\n')) (      pos = [(             pos[0]+1),1,1]); else if ((
+		                v==='\t')) (      pos = [         pos[0],(       pos[1]+1),1]); else (
 			          pos = [         pos[0],   pos[1],(       pos[2]+1)])});return(
 
 
@@ -32,7 +31,7 @@ var
 	          spos = function ξ_λ(v){{if (!          v.SPACE) (               v.pos =  pos);return(    v)}};var 
 	          start_any = function ξ_λ(){{(any =  s[0]);(         first_type =   js_valid_symbol.is_part(      s[0]));(         s =   s.slice(1))}};var 
 	          end_any = function ξ_λ(){{r.push(spos(S(any)));(         pos = increment_pos(pos,any));(        any = undefined)}};while ((
-	                   s!=="")) {var 
+	                   s!=='')) {var 
 		          t =           reader_macros.map(function ξ_λ(v){{var   t =   s.match(      v[0]);return((              t? [       t,    v[1](t)] : undefined))}}).filter(function ξ_λ(v){return(v)})[0];if (
 		           t) {var 
 			          m =  t[0];var 
@@ -68,23 +67,23 @@ var
          (/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/),function ξ_λ(){return(SPACE)}],[
 
          (/^(['"])((\\.|(?!\1).)*?)\1/),function ξ_λ(v){return({      v:(
-	                        v[2].match(   (/\\u....|\\x..|\\.|./g))||[]).map(function ξ_λ(  v){return(((                       v.length>2)?    chr( parseInt(    v.slice(2),16)) : ((                  v.length===2)? ({"'":"'","\"":"\"","\\":"\\","n":"\n","t":"	"}[
+	                        v[2].match(   (/\\u....|\\x..|\\.|./g))||[]).map(function ξ_λ(  v){return(((                       v.length>2)?    chr( parseInt(    v.slice(2),16)) : ((                  v.length===2)? ({"'":"'",'"':'"','\\':'\\','n':'\n','t':'\t'}[
 
 
 
 
 
-					   v[1]]||err(("bad escape: "+   v))) : v)))}).join("")})}],[
+					   v[1]]||err(('bad escape: '+   v))) : v)))}).join('')})}],[
 
 
-         (/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/),function ξ_λ(v){return({      s:(((("(/"+                   v[1])+"/")+   v[2])+")")})}],[
+         (/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/),function ξ_λ(v){return({      s:(((('(/'+                   v[1])+'/')+   v[2])+')')})}],[
 
          (/^([\(\)‹›\?:,;])/),function ξ_λ(v){return(S(v[1]))}],[
          (/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/),function ξ_λ(v){return({      v: parseFloat(   v[0])})}]];var 
 
 
           groups_expand = function ξ_λ(tokens){{var 
-	          groups = {"(":")","‹":"›"};var 
+	          groups = {'(':')','\u2039':'\u203a'};var 
 	          group_expand = function ξ_λ(g,l){{var 
 
 
@@ -96,7 +95,7 @@ var
 			    r.push(      l[0]);(         l =   l.slice(1))}}};var 
 
 
-	          r = group_expand(S("‹"),    tokens.concat([            S("›")]));if (!(                           r[1].length===0))   err(r);return(       r[0])}};var 
+	          r = group_expand(S('\u2039'),tokens.concat([           S('\u203a')]));if (!(                      r[1].length===0))   err(r);return(       r[0])}};var 
 
 
 

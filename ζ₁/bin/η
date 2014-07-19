@@ -2,32 +2,32 @@
 var 
 
 
-          fs = require("fs");var 
-          path = require("path");var 
-          _ = require("underscore");var 
+          fs = require('fs');var 
+          path = require('path');var 
+          _ = require('underscore');var 
 
-          macros = {"η/typeof_object":function ξ_λ(
-	                            v){return([{s:"ξ/="},[{s:"ξ/js_typeof"},v],{v:"object"}])},"η/typeof_boolean":function ξ_λ(
-	                            v){return([{s:"ξ/="},[{s:"ξ/js_typeof"},v],{v:"boolean"}])},"η/typeof_number":function ξ_λ(
-	                            v){return([{s:"ξ/="},[{s:"ξ/js_typeof"},v],{v:"number"}])},"η/typeof_string":function ξ_λ(
-	                            v){return([{s:"ξ/="},[{s:"ξ/js_typeof"},v],{v:"string"}])},"η/typeof_function":function ξ_λ(
-	                            v){return([{s:"ξ/="},[{s:"ξ/js_typeof"},v],{v:"function"}])},"η/member":function ξ_λ(
-	                   o,m){return((((typeof                                   m.v==="string")&&m.v.match(    (/^\w+$/)))? [{s:"ξ/member_bare"},o,{             s:   m.v}] : [{s:"ξ/member_val"},     o,    m]))},"η/+":function ξ_λ(
-	              a,b){return([{s:"ξ/js_+"},    a,    b])},"η/~":function ξ_λ(
-	              a,b){return([{s:"ξ/js_+"},    a,    b])},"η/fn":function ξ_λ(
+          macros = {'η/typeof_object':function ξ_λ(
+	                            v){return([{s:'ξ/='},[{s:'ξ/js_typeof'},v],{v:'object'}])},'η/typeof_boolean':function ξ_λ(
+	                            v){return([{s:'ξ/='},[{s:'ξ/js_typeof'},v],{v:'boolean'}])},'η/typeof_number':function ξ_λ(
+	                            v){return([{s:'ξ/='},[{s:'ξ/js_typeof'},v],{v:'number'}])},'η/typeof_string':function ξ_λ(
+	                            v){return([{s:'ξ/='},[{s:'ξ/js_typeof'},v],{v:'string'}])},'η/typeof_function':function ξ_λ(
+	                            v){return([{s:'ξ/='},[{s:'ξ/js_typeof'},v],{v:'function'}])},'η/member':function ξ_λ(
+	                   o,m){return((((typeof                                   m.v==='string')&&m.v.match(    (/^\w+$/)))? [{s:'ξ/member_bare'},o,{             s:   m.v}] : [{s:'ξ/member_val'},     o,    m]))},'η/+':function ξ_λ(
+	              a,b){return([{s:'ξ/js_+'},    a,    b])},'η/~':function ξ_λ(
+	              a,b){return([{s:'ξ/js_+'},    a,    b])},'η/fn':function ξ_λ(
 	               params){{var 
-		          args = Array.prototype.slice.call(arguments,0).slice(1);return([{s:"ξ/fn"},
-		                       params,((                     args.length===1)?    args[0] : [{s:"ξ/do_s"}].concat(            args))])}},"η/args":function ξ_λ(){return([[{s:"ι"},[{s:"ι"},[{s:"ι"},{s:"Array"},{v:"prototype"}],{v:"slice"}],{v:"call"}],{s:"arguments"},{v:0}])},"``":function ξ_λ(
+		          args = Array.prototype.slice.call(arguments,0).slice(1);return([{s:'ξ/fn'},
+		                       params,((                     args.length===1)?    args[0] : [{s:'ξ/do_s'}].concat(            args))])}},'η/args':function ξ_λ(){return([[{s:'\u03b9'},[{s:'\u03b9'},[{s:'\u03b9'},{s:'Array'},{v:'prototype'}],{v:'slice'}],{v:'call'}],{s:'arguments'},{v:0}])},'``':function ξ_λ(
 
 	             v){return(((
 			                            v instanceof Array)? (((
-				                             v[0]!==undefined)&&(       v[0].s==="~"))?    v[1] : [{s:"ξ/array"}].concat(                v.map(   ξ_λ))) : (
-			              v.s? [{s:"ξ/object"},[{s:"s"},{
-				                               v:   v.s}]] : [{s:"ξ/object"},[{s:"v"},
+				                             v[0]!==undefined)&&(       v[0].s==='~'))?    v[1] : [{s:'ξ/array'}].concat(                v.map(   ξ_λ))) : (
+			              v.s? [{s:'ξ/object'},[{s:'s'},{
+				                               v:   v.s}]] : [{s:'ξ/object'},[{s:'v'},
 				                    v]])))}};(
 
 
-             macros["ι"] =  macros["η/member"]);var 
+             macros['\u03b9'] = macros['η/member']);var 
 
           macro_expand = function ξ_λ(v){{Array.prototype.slice.call(arguments,0);if ((
 
