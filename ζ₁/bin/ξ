@@ -6,13 +6,12 @@ var
           path = require('path');var 
           _ = require('underscore');var 
 
-          seq = function ξ_λ(v){return(v.split(''))};var 
-
           cat = function ξ_λ(a,b){return(((                         a instanceof Array)? a : [a]).concat(((                       b instanceof Array)? b : [b])))};(
                 Array.prototype.v_join = function ξ_λ(v){return(               Array.prototype.concat.apply([],                    this.map(function ξ_λ(t){return(((                              t instanceof Array)? t : [t]).concat([     v]))})).slice(0,(0-1)))});(
                 String.prototype.repeat = function ξ_λ(v){return(       new(Array)((    v+1)).join(   this))});var 
 
 
+          seq = function ξ_λ(v){return(v.split(''))};var 
           js_valid_symbol = {        is_part:function ξ_λ(v){return(!!                   v.match(   (/[ -~ξηφλ≠]/)))}};var 
           increment_pos = function ξ_λ(pos,s){{
 	     seq(s).map(function ξ_λ(v){if ((

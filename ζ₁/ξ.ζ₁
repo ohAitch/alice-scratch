@@ -6,13 +6,12 @@
 ‹ξ/js_var path ‹require 'path'››
 ‹ξ/js_var _ ‹require 'underscore'››
 
-‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
-
 ‹ξ/js_var cat ‹η/fn ‹a b› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof a Array› a ‹ξ/array a›› 'concat'› ‹ξ/js_if_e ‹ξ/js_instanceof b Array› b ‹ξ/array b››››››
 ‹ξ/assign ‹ι ‹ι Array 'prototype'› 'v_join'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹ι ‹ι ‹ι Array 'prototype'› 'concat'› 'apply'› ‹ξ/array› ‹‹ι this 'map'› ‹η/fn ‹t› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof t Array› t ‹ξ/array t›› 'concat'› ‹ξ/array v›››››› 'slice'› 0 ‹ξ/- 0 1›››››
 ‹ξ/assign ‹ι ‹ι String 'prototype'› 'repeat'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹new Array› ‹η/+ v 1›› 'join'› this››››
 
 // ---------- dup in φ ----------
+‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
 ‹ξ/js_var js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/js_not ‹ξ/js_not ‹‹ι v 'match'› ~/[ -~ξηφλ≠]/››››››››
 ‹ξ/js_var increment_pos ‹η/fn ‹pos s›
 	‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›

@@ -6,7 +6,6 @@ var
           path = require('path');var 
           _ = require('underscore');var 
 
-          seq = function ξ_λ(v){return(v.split(''))};var 
           chr = function ξ_λ(v){return(String.fromCharCode(  v))};var 
           err = function ξ_λ(v){throw(Error(v))};var 
           own = function ξ_λ(o,m){return((               Object.prototype.hasOwnProperty.call(         o,m)?   o[m] : undefined))};var 
@@ -14,6 +13,7 @@ var
 
 
 
+          seq = function ξ_λ(v){return(v.split(''))};var 
           js_valid_symbol = {        is_part:function ξ_λ(v){return(!!                   v.match(   (/[ -~ξηφλ≠]/)))}};var 
           increment_pos = function ξ_λ(pos,s){{
 	     seq(s).map(function ξ_λ(v){if ((

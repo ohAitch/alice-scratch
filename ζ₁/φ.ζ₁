@@ -6,7 +6,6 @@
 ‹ξ/js_var path ‹require 'path'››
 ‹ξ/js_var _ ‹require 'underscore'››
 
-‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
 ‹ξ/js_var chr ‹η/fn ‹v› ‹ξ/return ‹‹ι String 'fromCharCode'› v››››
 ‹ξ/js_var err ‹η/fn ‹v› ‹ξ/throw ‹Error v››››
 ‹ξ/js_var own ‹η/fn ‹o m› ‹ξ/return ‹ξ/js_if_e ‹‹ι ‹ι ‹ι Object 'prototype'› 'hasOwnProperty'› 'call'› o m› ‹ι o m› undefined››››
@@ -14,6 +13,7 @@
 //Array.prototype.m_concat = function‹›{return Array.prototype.concat.apply‹[],this›}
 
 // ---------- dup in ξ ----------
+‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
 ‹ξ/js_var js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/js_not ‹ξ/js_not ‹‹ι v 'match'› ~/[ -~ξηφλ≠]/››››››››
 ‹ξ/js_var increment_pos ‹η/fn ‹pos s›
 	‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›
