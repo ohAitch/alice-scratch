@@ -16,6 +16,7 @@ takeaway from ζ₁:
 add new
 the thing where value objects have to be in like {v:} is causing problems with quoting.
 implement ~@ quoting
+turn create_sexp into as_sexp
 
 ---------- less easy ---------
 this crude namespacing system _is_ silly.
