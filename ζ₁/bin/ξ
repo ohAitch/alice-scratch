@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_create_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
+var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_as_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_as_sexp = function(v){v.__proto__ = sexp_32075946; return v}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
 var 
 
           fs = require('fs');var 
@@ -38,7 +38,7 @@ var
 	                               v.v==='string')? v.v.repr_js() : ((
 	                   v.v!== undefined)? (      v.v+'') : ((
 	                      v[0].s==='ξ/create_symbol')?  cat( cat('ξ_create_symbol(', repr_js(   v[1])),')') : ((
-	                      v[0].s==='ξ/create_sexp')?    cat( cat('ξ_create_sexp(',   repr_js(   v[1])),')') : ((
+	                      v[0].s==='ξ/as_sexp')?        cat( cat('ξ_as_sexp(',       repr_js(   v[1])),')') : ((
 	                      v[0].s==='ξ/isa_symbol')?     cat( cat('ξ_isa_symbol(',    repr_js(   v[1])),')') : ((
 	                      v[0].s==='ξ/isa_sexp')?       cat( cat('ξ_isa_sexp(',      repr_js(   v[1])),')') : ((
 	                      v[0].s==='ξ/object')?  cat( cat('{',            v.slice(1).map(function ξ_λ(v){return(    cat( cat( repr_js(   v[0]),':'), repr_js(   v[1])))}).v_join(',')),'}') : ((
@@ -87,6 +87,6 @@ var
 
 
 
-          repr_js_file = function ξ_λ(v){return(expand_pos(cat("#!/usr/bin/env node\nvar symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_create_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}\n",     v.map(   repr_js).v_join(';'))))};var 
+          repr_js_file = function ξ_λ(v){return(expand_pos(cat("#!/usr/bin/env node\nvar symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_as_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_as_sexp = function(v){v.__proto__ = sexp_32075946; return v}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}\n",     v.map(   repr_js).v_join(';'))))};var 
           η_s = function ξ_λ(in_){return(repr_js_file(in_))};(
              module.exports =  η_s)

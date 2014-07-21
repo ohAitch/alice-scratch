@@ -55,7 +55,7 @@
 `` and ~
 
 ξ/create_symbol
-ξ/create_sexp
+ξ/as_sexp
 ξ/isa_symbol
 ξ/isa_sexp
 
