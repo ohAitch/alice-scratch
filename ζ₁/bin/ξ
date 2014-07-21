@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
 var 
-
 
           fs = require('fs');var 
           path = require('path');var 
@@ -37,6 +37,10 @@ var
 	                               v.s==='string')? (    v.pos? [{                    v:   v.pos},       v.s] :     v.s) : ((typeof 
 	                               v.v==='string')? v.v.repr_js() : ((
 	                   v.v!== undefined)? (      v.v+'') : ((
+	                      v[0].s==='ξ/create_symbol')?  cat( cat('ξ_create_symbol(', repr_js(   v[1])),')') : ((
+	                      v[0].s==='ξ/create_sexp')?    cat( cat('ξ_create_sexp(',   repr_js(   v[1])),')') : ((
+	                      v[0].s==='ξ/isa_symbol')?     cat( cat('ξ_isa_symbol(',    repr_js(   v[1])),')') : ((
+	                      v[0].s==='ξ/isa_sexp')?       cat( cat('ξ_isa_sexp(',      repr_js(   v[1])),')') : ((
 	                      v[0].s==='ξ/object')?  cat( cat('{',            v.slice(1).map(function ξ_λ(v){return(    cat( cat( repr_js(   v[0]),':'), repr_js(   v[1])))}).v_join(',')),'}') : ((
 	                      v[0].s==='ξ/array')?  cat( cat('[',            v.slice(1).map(      repr_js).v_join(',')),']') : ((
 	                      v[0].s==='ξ/member_bare')?  cat( cat( repr_js(   v[1]),'.'), repr_js(   v[2])) : ((
@@ -60,7 +64,7 @@ var
 	                      v[0].s==='ξ/js_var')?  cat( cat( cat('var ', repr_js(   v[1])),' = '), repr_js(   v[2])) : ((
 	                      v[0].s==='ξ/js_+')?  cat( cat( cat( cat('(', repr_js(   v[1])),'+'), repr_js(   v[2])),')') : ((
 	                      v[0].s==='ξ/js_instanceof')?  cat( cat( cat( cat('(', repr_js(   v[1])),' instanceof '), repr_js(   v[2])),')') : 
-		 cat( cat( cat( repr_js(   v[0]),'('),            v.slice(1).map(      repr_js).v_join(',')),')'))))))))))))))))))))))))))))}};var 
+		 cat( cat( cat( repr_js(   v[0]),'('),            v.slice(1).map(      repr_js).v_join(',')),')'))))))))))))))))))))))))))))))))}};var 
 
 
 
@@ -83,11 +87,7 @@ var
 
 
 
-          repr_js_file = function ξ_λ(v){return(expand_pos(cat('#!/usr/bin/env node\n',     v.map(   repr_js).v_join(';'))))};var 
-
-
-
-
+          repr_js_file = function ξ_λ(v){return(expand_pos(cat('#!/usr/bin/env node\nvar symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}\n',     v.map(   repr_js).v_join(';'))))};var 
 
           η_s = function ξ_λ(in_){return(repr_js_file(in_))};(
              module.exports =  η_s)

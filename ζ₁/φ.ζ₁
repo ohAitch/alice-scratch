@@ -57,7 +57,7 @@
 	‹ξ/return r› ››
 
 //var subscript_ops = genex_2a‹~/^-?[\da-z]$/›.map‹function‹v›{return seq‹v›.map‹unicode.subscript›}›.filter‹function‹v›{return v.every‹function‹v›{return v}›}›.map‹function‹v›{return v.join‹''›}›
-‹ξ/js_var subscript_ops ‹ξ/array››
+// ‹ξ/js_var subscript_ops ‹ξ/array››
 
 ‹ξ/js_var S ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s v››››› //new Symbol‹v›}
 
@@ -65,15 +65,8 @@
 
 ‹ξ/js_var reader_macros ‹ξ/array
 ‹ξ/array ~/^([ \t\n\x0c\x0d]|\/\/.*|\/\*[^]*?(\*\/|$)|#!\/.*)+/ ‹η/fn ‹› ‹ξ/return SPACE›››
-//[(/^(['"])((.*?[^\\])?(\\\\)*)\1/), function(v){return {v:(v[2].match(/\\u....|\\x..|\\.|./g)||[]).map(function(v){return v.length>2? chr(parseInt(v.slice(2),16)) : v.length===2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v[1]] || err('bad escape: '+v) : v}).join('')}}],
 ‹ξ/array ~/^(['"])((\\.|(?!\1).)*?)\1/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹v
-	‹‹ι ‹‹ι ‹ξ/js_or ‹‹ι ‹ι v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/js_if_e ‹ξ/js_> ‹ι v 'length'› 2› ‹chr ‹parseInt ‹‹ι v 'slice'› 2› 16›› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 2› ‹ξ/js_or ‹ι ‹ξ/object
-
-	//‹'\'''\''›‹'\"''\"'›‹'\\''\\'›‹'b''\x08'›‹'t''\x09'›‹'n''\x0a'›‹'v''\x0b'›‹'f''\x0c'›‹'r''\x0d'›
-	‹'\'' '\''› ‹'\"' '\"'› ‹'\\' '\\'› ‹'n' '\n'› ‹'t' '\t'›
-
-	›
-					‹ι v 1›› ‹err ‹η/~ 'bad escape: 'v››› v››››› 'join'› ''›
+	‹‹ι ‹‹ι ‹ξ/js_or ‹‹ι ‹ι v 2› 'match'› ~/\\u....|\\x..|\\.|./g› ‹ξ/array›› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/js_if_e ‹ξ/js_> ‹ι v 'length'› 2› ‹chr ‹parseInt ‹‹ι v 'slice'› 2› 16›› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 2› ‹ξ/js_or ‹ι ‹ξ/object ‹'\'''\''›‹'\"''\"'›‹'\\''\\'›‹'b''\x08'›‹'t''\x09'›‹'n''\x0a'›‹'v''\x0b'›‹'f''\x0c'›‹'r''\x0d'›› ‹ι v 1›› ‹err ‹η/~ 'bad escape: 'v››› v››››› 'join'› ''›
 	›››››
 //[(/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/), function(v){return {v:eval('/'+v[1]+'/'+v[2])}}],
 ‹ξ/array ~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/ ‹η/fn ‹v› ‹ξ/return ‹ξ/object ‹s ‹η/~ ‹η/~ ‹η/~ ‹η/~ '(/' ‹ι v 1›› '/'› ‹ι v 2›› ')'››››››
@@ -83,21 +76,22 @@
 ››
 
 ‹ξ/js_var groups_expand ‹η/fn ‹tokens›
-	‹ξ/js_var groups ‹ξ/object ‹'(' ')'› ‹'‹' '›'›››
+	‹ξ/js_var groups ‹ξ/object ‹'('')'›‹'‹''›'›››
 	‹ξ/js_var group_expand ‹η/fn ‹g l›
 		//var check = function‹›{if ‹l.length===0› err‹'group is not closed @'+g.pos›} //! this is bad at telling the user which group was unclosed
-		//check‹›
+		//check()
 		‹ξ/js_var r ‹ξ/array›› ‹ξ/js_while_s true ‹ξ/do_s
 			‹ξ/js_if_s ‹ι ‹ι l 0› 's'› ‹ξ/do_s
 				‹ξ/js_if_s ‹ξ/= ‹ι ‹ι l 0› 's'› ‹ι groups ‹ι g 's'››› ‹ξ/return ‹ξ/array r ‹‹ι l 'slice'› 1››››
-				‹ξ/js_if_s ‹own groups ‹ι ‹ι l 0› 's'›› ‹ξ/do_s ‹ξ/js_var t ‹group_expand ‹ι l 0› ‹‹ι l 'slice'› 1››› ‹‹ι r 'push'› ‹ι t 0›› ‹ξ/assign l ‹ι t 1›› continue›› // removed a check‹› before the continue
+				‹ξ/js_if_s ‹own groups ‹ι ‹ι l 0› 's'›› ‹ξ/do_s ‹ξ/js_var t ‹group_expand ‹ι l 0› ‹‹ι l 'slice'› 1››› ‹‹ι r 'push'› ‹ι t 0›› ‹ξ/assign l ‹ι t 1›› continue›› // removed a check() before the continue
 				››
-			‹‹ι r 'push'› ‹ι l 0›› ‹ξ/assign l ‹‹ι l 'slice'› 1››//; check‹›
+			‹‹ι r 'push'› ‹ι l 0›› ‹ξ/assign l ‹‹ι l 'slice'› 1››//; check()
 		››
 	››
 	‹ξ/js_var r ‹group_expand ‹S '‹'› ‹‹ι tokens 'concat'› ‹ξ/array ‹S '›'››››› ‹ξ/js_if_s ‹ξ/js_not ‹ξ/= ‹ι ‹ι r 1› 'length'› 0›› ‹err r›› ‹ξ/return ‹ι r 0››
 ››
 
+//! ξ η and φ should maybe be executable
 // ‹ξ/js_var φ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s ‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹ι ‹‹ι in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.η'› ‹‹ι JSON 'stringify'› ‹ι ‹groups_expand ‹tokenize ‹η/~ ‹‹ι fs 'readFileSync'› in_› '//! wth'››› 0››››››
 // ‹φ_f ‹ι ‹ι process 'argv'› 2› ‹ι ‹ι process 'argv'› 3››
 ‹ξ/js_var φ_s ‹η/fn ‹in_› ‹ξ/return ‹ι ‹groups_expand ‹tokenize in_›› 0››››

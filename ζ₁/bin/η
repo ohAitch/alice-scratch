@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
 var 
-
 
           fs = require('fs');var 
           path = require('path');var 
@@ -37,9 +37,20 @@ var
 	            v)}};var 
 
 
+          sym_convert = function ξ_λ(v){{var t = ξ_create_symbol(v.s);(               t.pos =     v.pos);return(      t)}};var 
+          sym_convert_back = function ξ_λ(v){{var t = {     s:   v.s};(                 t.pos =     v.pos);return(      t)}};var 
+          val_to_more = function ξ_λ(v){return(
 
 
 
+		    v)};var 
 
-          η_s = function ξ_λ(in_){return(macro_expand(in_).slice(1))};(
+          more_to_val = function ξ_λ(v){return(
+
+
+
+		    v)};var 
+
+
+          η_s = function ξ_λ(in_){return(more_to_val( macro_expand( val_to_more(in_))).slice(1))};(
              module.exports =  η_s)

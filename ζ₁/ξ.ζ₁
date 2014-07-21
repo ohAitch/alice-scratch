@@ -37,6 +37,10 @@
 	‹ξ/js_if_e ‹η/typeof_string ‹ι v 's'›› ‹ξ/js_if_e ‹ι v 'pos'› ‹ξ/array ‹ξ/object ‹v ‹ι v 'pos'››› ‹ι v 's'›› ‹ι v 's'››
 	‹ξ/js_if_e ‹η/typeof_string ‹ι v 'v'›› ‹‹ι ‹ι v 'v'› 'repr_js'››
 	‹ξ/js_if_e ‹ξ/≠ ‹ι v 'v'› undefined› ‹η/~ ‹ι v 'v'› ''›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/create_symbol'› ‹cat ‹cat 'ξ_create_symbol(' ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/create_sexp'  › ‹cat ‹cat 'ξ_create_sexp('   ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/isa_symbol'   › ‹cat ‹cat 'ξ_isa_symbol('    ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/isa_sexp'     › ‹cat ‹cat 'ξ_isa_sexp('      ‹repr_js ‹ι v 1››› ')'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/object'› ‹cat ‹cat '{' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› ‹η/fn ‹v› ‹ξ/return ‹cat ‹cat ‹repr_js ‹ι v 0›› ':'› ‹repr_js ‹ι v 1›››››› 'v_join'› ','›› '}'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/array'› ‹cat ‹cat '[' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ','›› ']'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/member_bare'› ‹cat ‹cat ‹repr_js ‹ι v 1›› '.'› ‹repr_js ‹ι v 2›››
@@ -61,7 +65,7 @@
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_+'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '+'› ‹repr_js ‹ι v 2››› ')'›
 	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_instanceof'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› ' instanceof '› ‹repr_js ‹ι v 2››› ')'›
 		‹cat ‹cat ‹cat ‹repr_js ‹ι v 0›› '('› ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ','›› ')'›
-	››››››››››››››››››››››››››
+	››››››››››››››››››››››››››››››
 ›››
 
 ‹ξ/js_var pos_positive_diff ‹η/fn ‹a b› ‹ξ/return ‹ξ/js_if_e ‹ξ/= ‹ι a 0› ‹ι b 0›› ‹ξ/js_if_e ‹ξ/= ‹ι a 1› ‹ι b 1›› ‹ξ/js_if_e ‹ξ/= ‹ι a 2› ‹ι b 2›› ‹ξ/array 0 0 0› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 2› ‹ι b 2›› ‹ξ/array 0 0 ‹ξ/- ‹ι a 2› ‹ι b 2››› ‹ξ/array 0 0 0››› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 1› ‹ι b 1›› ‹ξ/array 0 ‹ξ/- ‹ι a 1› ‹ι b 1›› ‹ξ/- ‹ι a 2› 1›› ‹ξ/array 0 0 0››› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 0› ‹ι b 0›› ‹ξ/array ‹ξ/- ‹ι a 0› ‹ι b 0›› ‹ξ/- ‹ι a 1› 1› ‹ξ/- ‹ι a 2› 1›› ‹ξ/array 0 0 0››››››
@@ -83,12 +87,8 @@
 	›› 'join'› ''››
 ››
 
-‹ξ/js_var repr_js_file ‹η/fn ‹v› ‹ξ/return ‹expand_pos ‹cat '#!/usr/bin/env node\n' ‹‹ι ‹‹ι v 'map'› repr_js› 'v_join'› ';'››››››
+‹ξ/js_var repr_js_file ‹η/fn ‹v› ‹ξ/return ‹expand_pos ‹cat '#!/usr/bin/env node\nvar symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}\n' ‹‹ι ‹‹ι v 'map'› repr_js› 'v_join'› ';'››››››
 
-// ‹ξ/js_var ξ_f ‹ξ/fn ‹in_ out› ‹ξ/do_s
-// 	‹‹ι fs 'writeFileSync'› ‹η/~ ‹η/~ ‹η/~ out '/'› ‹ι ‹‹ι in_ 'match'› ~/([^\/]+)\.[^\/]+$/› 1›› '.js'› ‹repr_js_file ‹read_ξ ‹η/~ ‹‹ι fs 'readFileSync'› in_› ' '››››
-// ›››
-// ‹ξ_f ‹ι ‹ι process 'argv'› 2› ‹ι ‹ι process 'argv'› 3››
 ‹ξ/js_var η_s ‹η/fn ‹in_› ‹ξ/return ‹repr_js_file in_››››
 ‹ξ/assign ‹ι module 'exports'› η_s›
 
