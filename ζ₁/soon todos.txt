@@ -25,3 +25,4 @@ let's add operators, oh gosh!
 - right now not next actions -
 add SPACE back in
 design: φ η ξ should definitely be different programs, but they should also be designed so that we can later transpose the stack.
+prolog might be inspiring for operators

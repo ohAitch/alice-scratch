@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
+var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map','reduce','reduceRight'].map(function(v){sexp_32075946[v] = function(){return ξ_create_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.s = v; return t}; var ξ_create_sexp = function(v){var t = v || []; t.__proto__ = sexp_32075946; return t}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
 var 
 
           fs = require('fs');var 
@@ -29,28 +29,28 @@ var
 
              macros['\u03b9'] = macros['η/member']);var 
 
-          macro_expand = function ξ_λ(v){{Array.prototype.slice.call(arguments,0);if ((
-
+          macro_expandb = function ξ_λ(v){return(val_to_more(macro_expand(more_to_val(v))))};var 
+          macro_expand = function ξ_λ(v){if ((
 	                            v instanceof Array)) {while (
 		                 macros[(             v[0]?      v[0].s :  undefined)]) (        v =      macros[      v[0].s].apply(      null,    v.slice(1)));return(
 		              v.map(   macro_expand))} else return(
-	            v)}};var 
+	            v)};var 
 
+
+          pr = function ξ_λ(v){{console.log(v);return( v)}};var 
 
           sym_convert = function ξ_λ(v){{var t = ξ_create_symbol(v.s);(               t.pos =     v.pos);return(      t)}};var 
           sym_convert_back = function ξ_λ(v){{var t = {     s:   v.s};(                 t.pos =     v.pos);return(      t)}};var 
-          val_to_more = function ξ_λ(v){return(
+          val_to_more = function ξ_λ(v){return((
+	              v.s?    sym_convert(v) : ((
+	                            v instanceof Array)? ξ_create_sexp(v.map(val_to_more)) : 
+		   v.v)))};var 
+
+          more_to_val = function ξ_λ(v){return((ξ_isa_symbol(
+	                         v)? sym_convert_back(v) : (ξ_isa_sexp(
+	                       v)?          Array.prototype.map.call(         v,more_to_val) : {
+		           v:v})))};var 
 
 
-
-		    v)};var 
-
-          more_to_val = function ξ_λ(v){return(
-
-
-
-		    v)};var 
-
-
-          η_s = function ξ_λ(in_){return(more_to_val( macro_expand( val_to_more(in_))).slice(1))};(
+          η_s = function ξ_λ(in_){return(more_to_val( macro_expandb( val_to_more(in_))).slice(1))};(
              module.exports =  η_s)

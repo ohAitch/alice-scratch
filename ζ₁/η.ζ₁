@@ -29,30 +29,30 @@
 ››
 ‹ξ/assign ‹ι macros 'ι'› ‹ι macros 'η/member'››
 
+‹ξ/js_var macro_expandb ‹η/fn ‹v› ‹ξ/return ‹val_to_more ‹macro_expand ‹more_to_val v››››››
 ‹ξ/js_var macro_expand ‹η/fn ‹v›
-	‹η/args›
 	‹ξ/js_if_s ‹ξ/js_instanceof v Array› ‹ξ/do_s
 		‹ξ/js_while_s ‹ι macros ‹ξ/js_if_e ‹ι v 0› ‹ι ‹ι v 0› 's'› undefined›› ‹ξ/assign v ‹‹ι ‹ι macros ‹ι ‹ι v 0› 's'›› 'apply'› null ‹‹ι v 'slice'› 1››››
 		‹ξ/return ‹‹ι v 'map'› macro_expand››
 	› ‹ξ/return v››
 ››
 
+‹ξ/js_var pr ‹η/fn ‹v› ‹‹ι console 'log'› v› ‹ξ/return v›››
+
 ‹ξ/js_var sym_convert ‹η/fn ‹v› ‹ξ/js_var t ‹ξ/create_symbol ‹ι v 's'››› ‹ξ/assign ‹ι t 'pos'› ‹ι v 'pos'›› ‹ξ/return t›››
 ‹ξ/js_var sym_convert_back ‹η/fn ‹v› ‹ξ/js_var t ‹ξ/object ‹s ‹ι v 's'›››› ‹ξ/assign ‹ι t 'pos'› ‹ι v 'pos'›› ‹ξ/return t›››
 ‹ξ/js_var val_to_more ‹η/fn ‹v› ‹ξ/return
-	/*‹ξ/js_if_e ‹ι v 's'› ‹sym_convert v›
-	‹ξ/js_if_e ‹ι v 'v'› ‹ι v 'v'› 
-		‹ξ/create_sexp ‹‹ι v 'map'› val_to_more››
-		››*/v
-		›››
+	‹ξ/js_if_e ‹ι v 's'› ‹sym_convert v›
+	‹ξ/js_if_e ‹ξ/js_instanceof v Array› ‹ξ/create_sexp ‹‹ι v 'map'› val_to_more››
+		‹ι v 'v'›
+		›››››
 ‹ξ/js_var more_to_val ‹η/fn ‹v› ‹ξ/return
-	/*‹ξ/js_if_e ‹ξ/isa_symbol v› ‹sym_convert_back v›
-	‹ξ/js_if_e ‹ξ/isa_sexp v› v
+	‹ξ/js_if_e ‹ξ/isa_symbol v› ‹sym_convert_back v›
+	‹ξ/js_if_e ‹ξ/isa_sexp v› ‹‹ι ‹ι ‹ι Array 'prototype'› 'map'› 'call'› v more_to_val›
 		‹ξ/object ‹v v››
-		››*/v
-		›››
+		›››››
 
-‹ξ/js_var η_s ‹η/fn ‹in_› ‹ξ/return ‹‹ι ‹more_to_val ‹macro_expand ‹val_to_more in_››› 'slice'› 1››››
+‹ξ/js_var η_s ‹η/fn ‹in_› ‹ξ/return ‹‹ι ‹more_to_val ‹macro_expandb ‹val_to_more in_››› 'slice'› 1››››
 ‹ξ/assign ‹ι module 'exports'› η_s›
 
 ›
