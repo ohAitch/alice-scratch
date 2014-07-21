@@ -20,8 +20,13 @@ var
 		                       params,((                     args.length===1)?    args[0] : ξ_as_sexp([ξ_create_symbol('ξ/do_s')]).concat(args))]))}},'η/args':function ξ_λ(){return(ξ_as_sexp([ξ_as_sexp([ξ_create_symbol('\u03b9'),ξ_as_sexp([ξ_create_symbol('\u03b9'),ξ_as_sexp([ξ_create_symbol('\u03b9'),ξ_create_symbol('Array'),'prototype']),'slice']),'call']),ξ_create_symbol('arguments'),0]))},'``':function ξ_λ(
 
 	             v){return((ξ_isa_sexp(
-			                       v)? (((
-				                             v[0]!==undefined)&&(       v[0].name==='~'))?    v[1] : ξ_as_sexp([ξ_create_symbol('ξ/as_sexp'),ξ_as_sexp([ξ_create_symbol('ξ/array')]).concat(v.map(  ξ_λ))])) : (ξ_isa_symbol(
+			                       v)? ((
+				                        v[0]&&(         v[0].name==='~'))? 
+					   v[1] : ξ_as_sexp([ξ_create_symbol('ξ/as_sexp'),ξ_as_sexp([ξ_create_symbol('ξ/array')]).concat(
+
+
+					                                                                                        v.map(   ξ_λ))])) : (ξ_isa_symbol(
+
 			                         v)? ξ_as_sexp([ξ_create_symbol('ξ/create_symbol'),
 				                           v.name]) : 
 				v)))}};(

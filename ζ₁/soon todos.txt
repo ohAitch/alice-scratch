@@ -1,20 +1,6 @@
-okay!
-that was extremely interesting.
-I really wish we could create interesting things without so much effort.
-
-takeaway from ζ₁:
-	we're working with trickier things than json. representing them as json inherently requires additional information.
-
-!! this might not be a dealbreaker
-
-
-
-
-
 --- super easy, do me next ---
 η and ξ need to preserve position information more
 add new
-the thing where value objects have to be in like {v:} is causing problems with quoting.
 implement ~@ quoting
 
 ---------- less easy ---------
