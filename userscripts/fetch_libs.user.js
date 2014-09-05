@@ -7,7 +7,7 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
 // ==/UserScript==
 
-$.css = function(v){$('head').append('<style media="screen" type="text/css">'+v+'</style>')}
+$.css = function(v){$('head').append('<style>'+v+'</style>')}
 
 unsafeWindow.$ = $
 unsafeWindow._ = _
