@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        padm tweaks
 // @namespace   comely-naiad
-// @version     1.0.5
+// @version     1.0.6
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/padm_tweaks.user.js
 // @match       http://*.padm.us/*
 // @require     https://code.jquery.com/jquery-latest.js
@@ -21,6 +21,7 @@ $.css(
 
 var t
 if (location.href.match(/expost.padm.us/)) {
+	if ($(window).width() < 1250) $('body').prepend('<div style="padding:3px">')
 	$('body').append('<a class="floaty_btn" href="'+location.href.replace('expost.padm.us','padm.us')+'">edit</a>')
 } else {
 	if (t=location.href.match(/^(.+)\?useMonospaceFont=true$/)) window.location = t[1]
