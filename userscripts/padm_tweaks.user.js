@@ -32,5 +32,6 @@ if (location.href.match(/expost.padm.us/)) {
         else $('body').append('<a class="floaty_btn" style="left:220px;" href="'+location.href+'-old">old</a>')
 		$('.acl-write.separator').first().after('<li class="acl-write separator"></li>'.repeat(12))
 		_.range(50).map(function(v){setTimeout(function(){unsafeWindow.pad.changeViewOption('useMonospaceFont',true)},(0.8+v*0.2)*1000)})
+		var confirm_ = unsafeWindow.confirm; unsafeWindow.confirm = function(v){return v==='Clear authorship colors on entire document?' || confirm_(v)}
 	}
 }
