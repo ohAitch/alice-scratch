@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        padm tweaks
 // @namespace   comely-naiad
-// @version     1.0.9
+// @version     1.0.10
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/padm_tweaks.user.js
-// @match       *//*.padm.us/*
-// @match		*//pad.beeminder.com/*
+// @match       http*://*.padm.us/*
+// @match		http*://pad.beeminder.com/*
 // @require     https://code.jquery.com/jquery-latest.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
 // ==/UserScript==
