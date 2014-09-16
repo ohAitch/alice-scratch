@@ -267,6 +267,12 @@ compile_f(process.argv₂,process.argv₃)
 
 // OFFICIAL STATUS: this was a good attempt. It wasn't good enough. It's close enough to finish that it's probably worth finishing, but we need to start again, backwards, and more do-what-I-mean than let's-guess-at-a-slim-formalization-that-might-be-close
 
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+/////  THE FOLLOWING IS TOTALLY EATEN          /////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
 /* okay. clarification / rethinking time.
 
 [1] lexer (tokenize). (lexers are nice. lexers provide a simple, consistent tokenization.)
