@@ -22,4 +22,8 @@ ls -AloR ~/Downloads   > ~/"ali/history/auto/ls/$(date_i) ~:Downloads.txt"
 
 rm ~/ali/**/.DS_STORE
 
-cd ~/ali; git commit -a -m "automated"
+cp ~/.gitconfig ~/ali/misc/data
+cp ~/.meteorsession ~/ali/misc/data
+cp ~/.npmrc ~/ali/misc/data
+
+cd ~/ali; git commit -a -m "automated"; true
