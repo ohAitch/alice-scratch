@@ -28,6 +28,7 @@ contents:
 	mcode
 	mirror-space
 	misc
+	misc notes and stuff
 	rhinnen
 	rugged
 	runesmith
