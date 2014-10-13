@@ -32,6 +32,7 @@ var playlists = function(){
 	login()
 	var r = spotify.playlistContainer.getPlaylists().filter(function(v){return !v.type})
 	poll.sync(null,function(){return r.every(function(v){return v.isLoaded})})
+	r = r.filter(function(v){return v.link.match(/^spotify:user:1233009329/)})
 	var t; if (t=seq(_.groupBy(r,'name')).map(function(v){return v[1].length===1? undefined : v[1][0].name}).filter(function(v){return v})[0]) err('oh no! duplicate playlist! '+t)
 	print('playlists loaded!',timer()); return (playlists = C(r))()}
 var tracks = function(){

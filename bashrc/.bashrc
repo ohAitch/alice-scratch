@@ -11,17 +11,18 @@ exr() { ex "$1"; "$@"; }; export -f exr
 mk() { cat >"$1"; chmod -R 755 "$1" &>/dev/null; }; export -f mk
 npmi() { mkdir npm_inc_tmp; mv package.json npm_inc_tmp; cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }; export -f npmi
 
-short_pwd() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }; export -f short_pwd
+this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }; export -f this
 export red="$(tput setaf 1)"; export green="$(tput setaf 2)"; export reset="$(tput sgr0)"
-export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(short_pwd) \[$reset\]'
+export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
 
 f() { open "${1:-.}"; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
 sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
-ar() { tar -cf "$1.tar" "$1"; xz "$1.tar"; }
+ar() { tar -cf "${1%/}.tar" "$@"; xz "${1%/}.tar"; }
 T() { tagtime "$@"; }
 rmds() { rm ~/ali/**/.DS_STORE; }
+beeg() { curl -X "$1" -g "https://www.beeminder.com/api/v1/users/me/goals/$2.json?auth_token=$(cat ~/.beeauth)$3"; }
 alias c=pbcopy
 alias p=pbpaste
 alias 64e='base64'
