@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        padm tweaks
 // @namespace   comely-naiad
-// @version     1.0.10
+// @version     1.0.11
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/padm_tweaks.user.js
 // @match       http*://*.padm.us/*
 // @match		http*://pad.beeminder.com/*
@@ -32,7 +32,8 @@ if (location.href.match(/expost.padm.us/)) {
 		if (t=location.href.match(/^(.+)-old$/)) $('body').append('<a class="floaty_btn" style="left:220px;" href="'+t[1]+'">main</a>')
         else $('body').append('<a class="floaty_btn" style="left:220px;" href="'+location.href+'-old">old</a>')
 		$('.acl-write.separator').first().after('<li class="acl-write separator"></li>'.repeat(12))
-		_.range(50).map(function(v){setTimeout(function(){unsafeWindow.pad.changeViewOption('useMonospaceFont',true)},(0.8+v*0.2)*1000)})
+
+		;[0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4,2.6,2.8,3,3.5,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,55,60].map(function(v){setTimeout(function(){unsafeWindow.pad.changeViewOption('useMonospaceFont',true)},v*1000)})
 		var confirm_ = unsafeWindow.confirm; unsafeWindow.confirm = function(v){return v==='Clear authorship colors on entire document?' || confirm_(v)}
 	}
 }
