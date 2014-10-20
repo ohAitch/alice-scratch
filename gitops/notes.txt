@@ -1,5 +1,0 @@
-next time we merge or split git repos, let's document the steps here and maybe possibly make scripts!
-
-convert hg repo to git: http://hivelogic.com/articles/converting-from-mercurial-to-git/
-
-my .git folder is too big: http://stackoverflow.com/questions/6884331/git-repo-still-huge-after-large-files-removed-from-repository-history/15176071#15176071
