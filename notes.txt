@@ -1,0 +1,275 @@
+http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
+
+---------------------------------------  ---------------------------------------
+----------------------------- ==> clrs misc.txt <== ----------------------------
+---------------------------------------  ---------------------------------------
+
+----- list comp syntaxes -----
+
+[for <n> in <c> [while <t>] [if <t>]]
+
+F# [for x in collection do ... yield expr] !!
+
+!!
+JavaScript 1.7 has array comprehensions. The JavaScript engine of the popular Firefox browser from Mozilla Foundation---SpiderMonkey---supports them,[3] for example,
+js> [2*x for each (x in [0,1,2,3,4,5,6,7]) if (x*x<5)]
+[0, 2, 4]
+The sequence of integers can be obtained by prototyping the Number object,
+Number.prototype.__iterator__=function(){for (var i=0; i<this; i++) yield i}
+var s = [2*x for (x in 100) if (x*x<5)]
+Or introducing a range function,
+var range = function(start,end){for (var i=start; i<=end; i++) yield i}
+var s = [2*x for (x in range(0,100)) if (x*x<5)]
+
+Perl 6 provides more than one way to implement list comprehensions.
+my @s = ($_ * 2 if $_ ** 2 > 3 for ^100);
+Or, using gather:
+my @s = gather { for ^100 { take 2 * $_ if $_ ** 2 > 3 } };
+
+0..100 | Where {$_ * $_ -gt 3} | ForEach {$_ * 2}
+var s = from x in Enumerable.Range(0, 100) where x*x > 3 select x*2;
+
+The Python programming language has a corresponding syntax for expressing list comprehensions. The near-equivalent in Python to the example above is as follows:
+S = [2 * x for x in range(101) if x ** 2 > 3]
+List comprehensions were introduced in Python version 2.0.[4]
+A generator expression may be used in Python versions 2.4 and above[5] to achieve functional equivalence with S using a generator to iterate a (finite or infinite) sequence:
+from itertools import count
+S = (2 * x for x in count() if x ** 2 > 3)
+
+scala
+Using a for-expression:
+val s = for (x <- Stream.from(0) if x*x > 3) yield 2*x
+
+Version 3.x and 2.7 of the Python language introduces syntax for set comprehensions. Similar in form to list comprehensions, set comprehensions generate Python sets instead of lists.
+>>> s = {v for v in 'ABCDABCD' if v not in 'CB'}
+>>> print(s)
+{'A', 'D'}
+>>> type(s)
+<class 'set'>
+
+Version 3.x and 2.7 of the Python language introduced a new syntax for dictionary comprehensions, similar in form to list comprehensions but which generate Python dicts instead of lists.
+>>> s = {key: val for key, val in enumerate('ABCD') if val not in 'CB'}
+>>> s
+{0: 'A', 3: 'D'}
+
+Monad comprehension[edit]
+In Haskell, a monad comprehension is a generalization of the list comprehension to other monads in functional programming.
+
+do have zip function . else, list comprehensions are sadder
+tho in clojure map autozips, kinda?
+
+---------------------------------------  ---------------------------------------
+---------------------------- ==> lang_wishes.txt <== ---------------------------
+---------------------------------------  ---------------------------------------
+
+¢ comments (algol does this)
+i want the word "clique" to be a meaningful macro or smth
+copy python-style print sometime: print([object, ...], *, sep=' ', end='\n', file=sys.stdout)
+JSON.parse,stringify really should be read,show? only if we're living in a world where everything is text?
+:keywords slash interned-strings are best enum. but they *need* better typo/wrongness detection (for the sake of fail-fast)
+we could add an it pronoun (in addition to the traditional "this") (we have been using "v"). but most of our use of "v" is due to other fixable things.
+
+---------------------------------------  ---------------------------------------
+-------------------- ==> thoughts on elastic tabstops.α <== --------------------
+---------------------------------------  ---------------------------------------
+
+// 2014-05-23
+
+// units are css units
+tab_raster ← '1px'
+indent_minimum ← '4em'
+tab_minimum ← '1px'
+tab_padding ← '0.5em'
+
+// whenever the document is altered, call stretchTabstops
+
+// todo: needs optimising - a lot of this should be cached if possible
+void stretchTabstops(StyledDocument doc)
+{
+	Element section = doc.getDefaultRootElement()
+
+	int maxTabstops = 32 // todo: magic number hardcoded
+	int lineCount = section.getElementCount()
+	ETLine lines[] = new ETLine[lineCount]
+	ETTabstop grid[][] = new ETTabstop[lineCount][maxTabstops]
+
+	// initialise array
+	for (int l = 0; l < lineCount; l++) // for each line
+	{
+		lines[l] = new ETLine()
+		for (int t = 0; t < maxTabstops; t++) // for each column
+		{
+			grid[l][t] = new ETTabstop()
+		}
+	}
+
+	// get width of text in cells
+	for (int l = 0; l < lineCount; l++) // for each line
+	{
+		Element line = section.getElement(l)
+		int lineStart = line.getStartOffset()
+		int lineEnd = line.getEndOffset()
+		lines[l].startPos = lineStart
+		lines[l].endPos = lineEnd
+		try
+		{
+			String lineText = doc.getText(lineStart, lineEnd - lineStart)
+			int textWidthInTab = 0
+			int currentTabNum = 0
+			int lineLength = lineText.length()
+			for (int c = 0; c < lineLength; c++) // for each char in current line
+			{
+				char currentChar = lineText.charAt(c)
+				if (currentChar == '\n')
+				{
+					grid[l][currentTabNum].endsInTab = false
+					grid[l][currentTabNum].endPos = lineStart + c
+					textWidthInTab = 0
+				}
+				else if (currentChar == '\t')
+				{
+					grid[l][currentTabNum].endsInTab = true
+					grid[l][currentTabNum].endPos = lineStart + c
+					grid[l][currentTabNum].textWidthPix = calcTabWidth(textWidthInTab,?)
+					currentTabNum++
+					grid[l][currentTabNum].startPos = lineStart + c + 1
+					lines[l].numTabs++
+					textWidthInTab = 0
+				}
+				else
+				{
+					textWidthInTab += magic.charWidth(currentChar)
+				}
+			}
+		}
+		catch (BadLocationException ex)
+		{
+		}
+	}
+
+	// find columns blocks and stretch to fit the widest cell
+	for (int t = 0; t < maxTabstops; t++) // for each column
+	{
+		// all tabstops in column block point to same number
+		theWidestWidthPix ← {v:0} // reference
+		int maxWidth = 0
+		for (int l = 0; l < lineCount; l++) // for each line
+		{
+			if (grid[l][t].endsInTab)
+			{
+				grid[l][t].widestWidthPix = theWidestWidthPix // copy ref
+				if (grid[l][t].textWidthPix < maxWidth)
+				{
+					grid[l][t].textWidthPix = maxWidth
+				}
+				else
+				{
+					maxWidth = grid[l][t].textWidthPix
+					theWidestWidthPix.v = maxWidth
+				}
+			}
+			else // end column block
+			{
+				theWidestWidthPix = {v:0} // reference
+				maxWidth = 0
+			}
+		}
+	}
+
+	// apply tabstop sizes to the text
+	for (int l = 0; l < lineCount; l++) // for each line
+	{
+		// accumulate tabstop widths
+		int accTabstop = 0
+		for (int t = 0; t < lines[l].numTabs; t++) {
+			accTabstop += grid[l][t].widestWidthPix.v
+			grid[l][t].textWidthPix = accTabstop
+		}
+
+		Element line = section.getElement(l)
+		int lineStart = line.getStartOffset()
+		int lineEnd = line.getEndOffset()
+		setBlocksTabstops(doc, lineStart, lineEnd, grid[l], lines[l].numTabs)
+	}
+}
+
+int calcTabWidth(int textWidthInTab){
+	t ← tab_raster='0'? textWidthInTab :
+		err('tab_raster not implemented') // (((int)(textWidthInTab / tab_raster)) + 1) * tab_raster
+	return Math.max(t + tab_padding, textWidthInTab=0? indent_minimum : tab_minimum)}
+
+void setBlocksTabstops(StyledDocument doc, int start, int length, ETTabstop[] tabstopPositions, int tabstopCount)
+{
+	TabStop[] tabs = new TabStop[tabstopCount]
+
+	for (int j = 0; j < tabstopCount; j++)
+		tabs[j] = new TabStop(tabstopPositions[j].textWidthPix)
+
+	TabSet tabSet = new TabSet(tabs)
+	SimpleAttributeSet attributes = new SimpleAttributeSet()
+	StyleConstants.setTabSet(attributes, tabSet)
+
+	doc.setParagraphAttributes(start, length, attributes, false)
+}
+
+package com.nickgravgaard.elastictabstops;
+
+public class ETLine
+{
+	int startPos = 0;
+	int endPos = 0;
+	int numTabs = 0;
+}
+
+package com.nickgravgaard.elastictabstops;
+
+public class ETTabstop
+{
+	int textWidthPix;
+	MutableInteger widestWidthPix = null; // object so we can use refs
+	int startPos = 0;
+	int endPos = 0;
+	boolean endsInTab = false;
+
+	public ETTabstop()
+	{
+	}
+}
+
+---------------------------------------  ---------------------------------------
+----------------------------- ==> weather.kxlq <== -----------------------------
+---------------------------------------  ---------------------------------------
+
+; syntax: `name(args) = blah` == `name = fn(args) blah`
+; fn syntax unknown, was `args -> body` now is `fn(args) body`
+
+slurpi = fn(f) javax.imageio.ImageIO.read(java.net.URL(f))
+spiti = fn(f bi) javax.imageio.ImageIO.write(bi "png" file(f))
+is_grey = fn(c) c.r == c.g == c.b
+merge_weather_images = fn(imgs) (
+  greys  = imgs * * (||is_grey   0x00000000)
+  colors = imgs * * (||!&is_grey 0x00000000)
+  avg(greys) + avg(colors))
+image = fn(method imgs) (
+  GRID_VERTICAL = new object()
+  GRID_HORIZONTAL = new object()
+  )
+
+PMCD = new fn() (
+    this.TEMPERATURE =     "100000000000000000000000000000000000000000000000000000000"
+    this.FEELS_LIKE = [    "001000000000000000000000000000000000000000000000000000000"
+                           "000100000000000000000000000000000000000000000000000000000" ]
+    this.PRECIPITATION = [ "000000000100000000000000000000000000000000000000000000000"
+                           "000000000010000000000000000000000000000000000000000000000"
+                           "000000000001000000000000000000000000000000000000000000000"
+                           "000000000000100000000000000000000000000000000000000000000" ]
+    )
+
+weather_img = fn(ahour ^PMCD. pcmd) slurpi(str("http://forecast.weather.gov/wtf/meteograms/Plotter.php?lat=43.08544&lon=-77.67506&wfo=BUF&zcode=NYZ003&gset=20&gdiff=10&unit=0&tinfo=EY5&ahour="ahour"&pcmd="pcmd"&lg=en&indu=1!1!1&dd=0&bw=0&hrspan=48&pqpfhr=6&psnwhr=6"))
+
+build_chart = fn() new image(.GRID_VERTICAL [
+  new image(.GRID_HORIZONTAL [for [0 48] merge_weather_images([weather_img(it .TEMPERATURE)]+[for pmcd in .FEELS_LIKE weather_img(it pmcd)])])
+  new image(.GRID_HORIZONTAL [for [0 48] merge_weather_images([for pmcd in .PRECIPITATION weather_img(it pmcd)])])
+  ])
+
+spiti("test.png" build_chart())
