@@ -1,5 +1,7 @@
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM
-export PATH="/usr/local/bin:$PATH:.:./node_modules/.bin"
+export PATH="/usr/local/bin:$PATH:/Users/ali/go/bin:.:./node_modules/.bin"
+export GOPATH=~/go
+export GITHUB_TOKEN=$(cat ~/.auth/github)
 
 shopt -s globstar
 
@@ -19,10 +21,10 @@ f() { open "${1:-.}"; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
 sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
-ar() { tar -cf "${1%/}.tar" "$@"; xz "${1%/}.tar"; }
+ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 T() { tagtime "$@"; }
 rmds() { rm ~/ali/**/.DS_STORE; }
-beeg() { curl -X "$1" -g "https://www.beeminder.com/api/v1/users/me/goals/$2.json?auth_token=$(cat ~/.beeauth)$3"; }
+beeg() { curl -X "$1" -g "https://www.beeminder.com/api/v1/users/me/goals/$2.json?auth_token=$(cat ~/.auth/beeminder)$3"; }
 alias c='pbcopy'
 alias p='pbpaste'
 alias 64e='base64'
