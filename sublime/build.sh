@@ -8,7 +8,7 @@ cp -R "$Pack/User/Package Control.ca-list"   tmp/User &>/dev/null
 cp -R "$Pack/User/Package Control.last-run"  tmp/User &>/dev/null
 cp -R "$Pack/User/Package Control.cache"     tmp/User &>/dev/null
 
-rm -R "$Pack/Alpha"
+rm -R "$Pack/JavaScript"
 rm -R "$Pack/User"
 
 cp -R Packages/ "$Pack"

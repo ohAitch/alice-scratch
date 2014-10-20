@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>name</key>
-	<string>Alpha Indent</string>
+	<string>JavaScript Indent</string>
 	<key>scope</key>
-	<string>source.a</string>
+	<string>source.js</string>
 	<key>settings</key>
 	<dict>
 		<key>decreaseIndentPattern</key>

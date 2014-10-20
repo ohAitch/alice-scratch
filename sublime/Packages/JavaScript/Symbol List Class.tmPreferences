@@ -3,15 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>name</key>
-	<string>Symbol List Banned</string>
+	<string>Symbol List Class</string>
 	<key>scope</key>
-	<string>source.a meta.property.function entity.name.function</string>
+	<string>source.js entity.name.type.class</string>
 	<key>settings</key>
 	<dict>
 		<key>showInSymbolList</key>
-		<string>0</string>
+		<string>1</string>
+		<key>symbolTransformation</key>
+		<string>
+		s/^/• /g;
+		</string>
 	</dict>
 	<key>uuid</key>
-	<string>834BC727-6B31-4073-A161-4823227219EF</string>
+	<string>3CEA49B2-A5C5-405C-82E2-B8B668877C37</string>
 </dict>
 </plist>

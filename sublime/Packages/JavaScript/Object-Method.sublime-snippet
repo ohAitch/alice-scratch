@@ -3,6 +3,6 @@
 	$0
 }${10:,}]]></content>
     <tabTrigger>:f</tabTrigger>
-    <scope>source.a</scope>
+    <scope>source.js</scope>
     <description>Object Method</description>
 </snippet>
