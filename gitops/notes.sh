@@ -10,6 +10,8 @@ git gc --prune=now --aggressive
 
 ------------------------------ split out subfolder -----------------------------
 
+this ... breaks on unicode :(
+
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 
 big_repo=~/ali/github/scratch
