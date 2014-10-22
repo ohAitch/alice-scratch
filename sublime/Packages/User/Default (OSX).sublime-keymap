@@ -22,8 +22,8 @@
 	{ "keys": ["super+alt+up"], "command": "swap_line_up" },
 	{ "keys": ["super+alt+down"], "command": "swap_line_down" },
 
-	{ "keys": ["super+shift+minus"], "command": "divider", "args": {"style": "small", "length": 30}},
-	{ "keys": ["super+shift+equals"], "command": "divider", "args": {"style": "big", "length": 80}},
+	{ "keys": ["super+shift+minus"], "command": "divider", "args": {"length": 30}},
+	{ "keys": ["super+shift+equals"], "command": "divider", "args": {"length": 80}},
 
 	{ "keys": ["super+f"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
 
