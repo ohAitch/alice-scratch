@@ -22,6 +22,8 @@
 	{ "keys": ["super+alt+up"], "command": "swap_line_up" },
 	{ "keys": ["super+alt+down"], "command": "swap_line_down" },
 
+	{ "keys": ["super+shift+g"], "command": "open_github"},
+
 	{ "keys": ["super+shift+minus"], "command": "make_divider", "args": {"length": 30}},
 	{ "keys": ["super+shift+equals"], "command": "make_divider", "args": {"length": 80}},
 
