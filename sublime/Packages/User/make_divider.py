@@ -5,7 +5,7 @@ import re
 # this file is mostly hacked together when we needed the functionality but also needed to get back to something else
 # i guess it's a bit better now though :)
 
-class DividerCommand(sublime_plugin.TextCommand):
+class MakeDividerCommand(sublime_plugin.TextCommand):
 	def run(self,edit,length):
 		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/'}
 		def e_table(v): return e_table_[v] if v in e_table_ else '-'
