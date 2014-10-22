@@ -29,6 +29,7 @@ alias c='pbcopy'
 alias p='pbpaste'
 alias 64e='base64'
 alias 64d='base64 --decode'
+alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
 
 # todo: ignore extensions entirely (with preference for sh?), and look for more names
 command_not_found_handle() {
