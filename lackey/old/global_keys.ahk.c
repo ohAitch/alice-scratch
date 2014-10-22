@@ -5,19 +5,6 @@
 // todo: ≡/ should also work with text already on the clipboard, if copy copies nothing
 
 // sound and music controls
-AppsKey & Right::; if GetKeyState("shift") {MouseMove  1,  0, 0, R} else {Send ‹Volume_Up›  } return
-AppsKey & Left::;  if GetKeyState("shift") {MouseMove -1,  0, 0, R} else {Send ‹Volume_Down›} return
-AppsKey & Up::;    if GetKeyState("shift") {MouseMove  0, -1, 0, R} else {
-	if WinExist(vlc) {WinActivate}
-	else if (is_mute() and WinTitle(spotify) = "Spotify") {Send ‹Volume_Mute›}
-	Send ‹Media_Play_Pause›} return
-AppsKey & Down::;  if GetKeyState("shift") {MouseMove  0,  1, 0, R} else {
-	if (!is_mute() and WinTitle(spotify) != "Spotify") {Send ‹Media_Play_Pause›}
-	Send ‹Volume_Mute›} return
-AppsKey & ,::; if WinExist(vlc) {WinActivate}; Send ‹Media_Prev›; return
-AppsKey & .::; if WinExist(vlc) {WinActivate}; Send ‹Media_Next›; return
-AppsKey &  RCtrl::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
-~RCtrl & AppsKey::; if WinExist(vlc) {WinActivate} else {Send ‹Launch_Media›} return
 AppsKey & Numpad1::feeling_lucky(SubStr(WinTitle(spotify), StrLen("Spotify - ")+1) . " lyrics")
 
 // run apps

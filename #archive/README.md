@@ -8,6 +8,7 @@ contents:
 	bullet
 	classviewer
 	clrs
+	cmp-version
 	council
 	cute-gen
 	dict
