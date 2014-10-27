@@ -15,3 +15,5 @@ cp -R Packages/ "$Pack"
 
 cp -R tmp/User "$Pack"
 rm -R tmp
+
+rm Packages/User/*.sublime-snippet

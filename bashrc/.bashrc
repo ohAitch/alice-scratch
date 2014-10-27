@@ -29,7 +29,7 @@ export GOPATH=~/go
 export GITHUB_TOKEN=$(cat ~/.auth/github)
 
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
-export PS1='$()\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
+export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
 PROMPT_COMMAND='update_terminal_cwd; [ -s /tmp/cnfhcd ] && { cd $(cat /tmp/cnfhcd); rm /tmp/cnfhcd; } || true'
 
 command_not_found_handle() {
