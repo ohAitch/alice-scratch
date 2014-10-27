@@ -22,7 +22,8 @@
 	{ "keys": ["super+alt+up"], "command": "swap_line_up" },
 	{ "keys": ["super+alt+down"], "command": "swap_line_down" },
 
-	{ "keys": ["super+shift+g"], "command": "open_github"},
+	{ "keys": ["super+shift+;"], "command": "open_context", "args": {"context": "github"}},
+	{ "keys": ["super+;"], "command": "open_context", "args": {"context": "terminal"}},
 
 	{ "keys": ["super+shift+minus"], "command": "make_divider", "args": {"length": 30}},
 	{ "keys": ["super+shift+equals"], "command": "make_divider", "args": {"length": 80}},
@@ -30,6 +31,9 @@
 	{ "keys": ["super+f"], "command": "show_panel", "args": {"panel": "replace", "reverse": false} },
 
 	{ "keys": ["super+9"], "command": "goto_tab", "args": {"tab":"last"} },
+
+	{ "keys": ["ctrl+left"], "command": "bh_key", "args": { "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "left"} } } },
+	{ "keys": ["ctrl+right"], "command": "bh_key", "args": { "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "right"} } } },
 
 	null
 ]
