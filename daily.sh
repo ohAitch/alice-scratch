@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-source ~/.bashrc
-#eval $mydir
+. ~/.bashrc
+shopt -s globstar
+rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
 
 #-------- history/auto --------
 
@@ -17,13 +18,9 @@ ls -AloR ~/ali         > ~/"ali/history/auto/ls/$(date_i) ~:ali.txt"
 
 #------------ other -----------
 
-shopt -s globstar
-rm ~/ali/**/.DS_STORE
-
 t=~/ali/misc/"non - ~:ali mirroring"
-cp ~/.gitconfig "$t"
-cp ~/.meteorsession "$t"
-cp ~/.npmrc "$t"
 cp -r ~/.ssh "$t"
 cp ~/"Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session" "$t"
 cp ~/"Library/Application Support/Sublime Text 3/Local/Session.sublime_session" "$t"
+
+rmds

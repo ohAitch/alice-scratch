@@ -4,26 +4,33 @@ shopt -s no_empty_cmd_completion
 
 pause() { read -p 'Press [Enter] to continue . . .'; }; export -f pause
 export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
+# export mydir='t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")"'
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }; export -f date_i
 ex() { chmod -R 755 "$1" &>/dev/null; }; export -f ex
 exr() { ex "$1"; "$@"; }; export -f exr
 mk() { cat >"$1"; chmod -R 755 "$1" &>/dev/null; }; export -f mk
 this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }; export -f this
+D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
+# RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
+# exists() { type "$1" &>/dev/null; }
 
 f() { open "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
-rmds() { rm ~/ali/**/.DS_STORE; }
+# ar_zip() { ditto -ckv --keepParent "$1" "${2%/}.zip"; }
+rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
 beeg() { curl -X "$1" -g "https://www.beeminder.com/api/v1/users/me/goals/$2.json?auth_token=$(cat ~/.auth/beeminder)$3"; }
-npmi() { mkdir npm_inc_tmp; mv package.json npm_inc_tmp; cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
+npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 alias E='echo'
 alias c='pbcopy'
 alias p='pbpaste'
 alias 64e='base64'
 alias 64d='base64 --decode'
 alias sb='"/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"'
+alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
 
+# export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM
 export PATH="/usr/local/bin:$PATH:$(E ~/go/bin):$(E ~/Library/Haskell/bin):.:./node_modules/.bin"
 export GOPATH=~/go
 export GITHUB_TOKEN=$(cat ~/.auth/github)
@@ -46,6 +53,3 @@ command_not_found_handle() {
 		fi
 	break; done
 	}
-
-# alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
-# export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM
