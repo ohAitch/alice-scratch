@@ -1,0 +1,103 @@
+require_if ← λ(v){try {↩ require(v)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e}}
+
+node_path ← require('path')
+util ← require('util')
+PQueue ← require_if('priorityqueuejs')
+RWLock ← require_if('rwlock')
+
+global.child_process = require('child_process')
+global._ = global.u = global._ || require_if('underscore')
+global.async = require_if('async')
+
+escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
+sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
+
+global.ζ2_def = λ(o,m,get,set){Object.defineProperty(o,m,{configurable:true, enumerable:false, get:get, set:set}); ↩ o}
+global.ζ2_now = λ(){↩ Date.now() / 1000}
+global.ζ2_lazy = λ(o,m,f){ζ2_def(o,m,λ(){delete(o[m]); ↩ o[m] = f()},λ(v){delete(o[m]); ↩ o[m] = v})}
+global.ζ2_i = λ(v){↩ parseInt(v)}
+global.ζ2_bit_reverse_i = λ(length,v){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (v & 1); v = v >> 1}; ↩ r}
+global.ζ2_jclone = λ(v){↩ v===undefined? v : JSON.parse(JSON.stringify(v))}
+global.ζ2_A = λ(v){↩ Array.prototype.slice.call(v)}
+
+global.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a,{colors:true,depth:2})+'\n'); ↩ a[-1]}
+global.err = λ(v){print.apply(null,['ζ2_err'].concat(A(arguments))); throw Error(v)}
+;['PI','random','abs','ceil','exp','floor','log','round','pow','max','min'].map(λ(v){global[v] = Math[v]})
+
+global.Function.prototype.partial = λ(){if (arguments.length === 0) ↩ @; a ← ζ2_A(arguments); θ←@; ↩ λ(){↩ θ.apply(null,arguments.length === 0? a : a.concat(ζ2_A(arguments)))}}
+global.Function.prototype.def = λ(m,get,set){ζ2_def(@.prototype,m,get,set); ↩ @}
+if (_) ;[global.Array,global.String].forEach(λ(Class){_.range(0,5).forEach(λ(i){Class.def('-'+i,λ(){↩ @.length<i? undefined : @[@.length-i]},λ(v){↩ @.length<i? v : (@[@.length-i] = v)})})})
+global.String.prototype.repeat = λ(v){↩ new global.Array(v+1).join(@)}
+global.Array.def('_',λ(){↩ u(@)})
+global.Array.prototype.ζ2_frequencies = λ(){↩ @.reduce(λ(r,v){r[v] = v in r? r[v]+1 : 1; ↩ r},{})}
+global.Function.prototype.every = λ(time){args ← ζ2_A(arguments).slice(1); ↩ setInterval.apply(null,[@,time*1000].concat(args))}
+global.Function.prototype.in = λ(time){args ← ζ2_A(arguments).slice(1); ↩ !time || time <= 0? setImmediate.apply(null,[@].concat(args)) : setTimeout.apply(null,[@,time*1000].concat(args))}
+
+if (PQueue && RWLock) {
+λs ← new PQueue(λ(a,b){↩ b.time-a.time}); lock ← new RWLock(); p←;
+enq ← λ(v){lock.writeLock(λ(R){λs.enq(v); R(); if (!P){P = true; (λ poll(){lock.writeLock(λ λ(R){
+	t←; λs.size() === 0? (P = false) : !(λs.peek().time < now())? poll.in(0.1) : (t=λs.deq(), t.canceled || t.f.in(), λ()); R&&R()
+	}) })() } })}
+global.Function.prototype.at = λ(time){θ←@; args ← ζ2_A(arguments).slice(1)
+	t ← {time:time, f:θ.partial(args)}
+	if (time < now()) {t.f.in(); ↩ {clear:λ(){}}}
+	else {enq(t); ↩ {clear:λ(){t.canceled = true}}} }
+}
+
+if (global.$) {
+keyinfo ← λ(key){
+	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
+	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+$.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
+	t ← key.split(/(?=\.\w)/); key = t[0]; ns ← t.slice(1).join('')
+	t ← keyinfo(key); @.on(t.$onfn+ns,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
+$.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
+}
+
+if (global.moment) {moment_ ← global.moment
+global.moment = λ(i){↩ typeof(i)==='number' && arguments.length===1? moment_(i*1000) : moment_.apply(@,arguments)}
+global.moment.__proto__ = moment_
+global.moment.fn.valueOf = λ(){↩ +@._d/1000 + (@._offset||0)*60}
+global.moment.fn.toString = λ(){↩ @.utc().format('YYYY-MM-DD[T]HH:mm:ss[Z]')}
+global.moment.fn.inspect = λ(){↩ '\x1b[35m'+@.toString()+'\x1b[39m'}
+}
+
+global.fs = (λ(){t ← λ(path){↩ new Path(path)}; t.__proto__ = require('fs'); ↩ t})()
+mkdir_p ← λ(v) {
+	v = node_path.resolve(v)
+	try {fs.mkdirSync(v)} catch (e) {
+		if (e.code === 'ENOENT') {mkdir_p(node_path.dirname(v)); mkdir_p(v)}
+		else {try {if (!fs.statSync(v).isDirectory()) throw e} catch (e2) {throw e}}
+		} }
+// a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
+// it has properties path and $/val/value/deref
+Path ← λ Path(path){@.path = node_path.normalize(path.replace(/^~(?=\/)/,process.env.HOME)+'/.')}
+	.def('$',
+		λ(){t ← @.path; ↩ @.stat().isDirectory()? fs.readdirSync(t).map(λ(v){↩ t+'/'+v}) : fs.readFileSync(t)+''},
+		λ(v){
+			if (@.exists() && @.stat().isDirectory()) throw Error('writing to directories not implemented')
+			// if (v instanceof Array) {
+				// if (v instanceof PathValue) fs.createReadStream(v.path).pipe(fs.createWriteStream(@.path))
+			// } else {
+				mkdir_p(@.parent().resolve())
+				fs.writeFileSync(@.path,v,{mode:493})
+			// }
+			})
+Path.prototype.parent = λ(){↩ fs(node_path.dirname(@.path))}
+Path.prototype.join = λ(){↩ fs(node_path.join.apply(node_path,[@.path].concat(ζ2_A(arguments).map(λ(v){↩ v+''}))))}
+Path.prototype.stat = λ(){↩ fs.statSync(@.path)}
+Path.prototype.resolve = λ(){↩ node_path.resolve(@.path)}
+Path.prototype.exists = λ(){↩ fs.existsSync(@.path)}
+Path.prototype.append = λ(v){fs.appendFileSync(@.path,v)}
+Path.prototype.name = λ(ext){↩ node_path.basename(@.path,ext)}
+Path.prototype.toString = λ(){↩ @.resolve().replace(new RegExp('^'+escape_regex(process.env.HOME)+'(?=/)'),'~')}
+
+// discarded bits:
+// chokidar ← require_if('chokidar')
+// minimist ← require_if('minimist')
+// global.poll = λ(f,cb){t←; (t=f())? cb.in(0,null,t) : poll.in(0.02,f,cb)}
+// global.ζ2_memb_Emod_obj = λ(o,m,f){o[m] = f(o[m]); ↩ o}
+// global.pad = λ(v,s){↩ v+s.slice(v.length)}
+// global.Array.prototype.zipmap = λ(f,ctx){↩ _.zip.apply(_,@).map(λ(v){↩ f.apply(ctx,v)})}
+// String.prototype.replace_all = λ(find,replace){↩ @.replace(new RegExp(escape_regex(find),'g'),replace)}
+// Path.prototype.realpath = λ(){↩ fs.realpathSync(@.path)}
