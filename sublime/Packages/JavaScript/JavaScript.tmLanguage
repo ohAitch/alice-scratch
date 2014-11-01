@@ -52,7 +52,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype = { … } when extending an object</string>
 			<key>match</key>
-			<string>([a-zA-Z_?.$][\w?.$]*)\.(prototype)\s*(=|←)\s*</string>
+			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\s*(=|←)\s*</string>
 			<key>name</key>
 			<string>meta.class.js</string>
 		</dict>
@@ -103,7 +103,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_?.$][\w?.$]*)\s*(=|←)\s*(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*(function|λ)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.prototype.js</string>
 		</dict>
@@ -134,7 +134,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype.play = myfunc</string>
 			<key>match</key>
-			<string>([a-zA-Z_?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_?.$][\w?.$]*)\s*(=|←)\s*</string>
+			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -180,7 +180,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_?.$][\w?.$]*)\.([a-zA-Z_?.$][\w?.$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -221,7 +221,7 @@
 			<key>comment</key>
 			<string>match stuff like: play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_?$][\w?$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_ζ?$][\w?$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -257,7 +257,7 @@
 			<key>comment</key>
 			<string>match regular function like: function myFunc(arg) { … }</string>
 			<key>match</key>
-			<string>\b(function|λ)\s+([a-zA-Z_$]\w*)?\s*(\()(.*?)(\))</string>
+			<string>\b(function|λ)\s+([a-zA-Z_ζ$]\w*)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -293,7 +293,7 @@
 			<key>comment</key>
 			<string>match stuff like: foobar: function() { … }</string>
 			<key>match</key>
-			<string>\b([a-zA-Z_?.$][\w?.$]*)\s*:\s*\b(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>\b([a-zA-Z_ζ?.$][\w?.$]*)\s*:\s*\b(function|λ)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.json.js</string>
 		</dict>
@@ -551,7 +551,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(break|case|catch|continue|default|do|else|finally|for|goto|if|import|package|return|↩|switch|throw|try|while)\b</string>
+			<string>\b(break|case|catch|continue|default|do|else|finally|for|goto|if|import|package|return|switch|throw|try|while)\b</string>
 			<key>name</key>
 			<string>keyword.control.js</string>
 		</dict>
@@ -635,9 +635,15 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>!|\$|%|&amp;|\*|\-\-|\-|\+\+|\+|~|↩|===|==|=|←|≤|≥|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\|\||\?\:|\?|:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|instanceof|new|delete|typeof|void)\b</string>
+			<string>!|\$|%|&amp;|\*|\-\-|\-|\+\+|\+|~|===|==|=|←|@|≤|≥|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\|\||\?\:|\?|:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|instanceof|new|delete|typeof|void)\b</string>
 			<key>name</key>
 			<string>keyword.operator.js</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>↩</string>
+			<key>name</key>
+			<string>magic.more.js</string>
 		</dict>
 		<dict>
 			<key>match</key>

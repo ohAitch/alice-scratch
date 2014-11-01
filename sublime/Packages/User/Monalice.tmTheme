@@ -124,6 +124,19 @@
 		</dict>
 		<dict>
 			<key>name</key>
+			<string>Magic</string>
+			<key>scope</key>
+			<string>magic</string>
+			<key>settings</key>
+			<dict>
+				<key>fontStyle</key>
+				<string>bold</string>
+				<key>foreground</key>
+				<string>#FD9726</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
 			<string>Storage</string>
 			<key>scope</key>
 			<string>storage</string>
