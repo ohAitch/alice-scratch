@@ -1,20 +1,18 @@
 import sublime, sublime_plugin
 import re
 
-# oh god
-# this file is mostly hacked together when we needed the functionality but also needed to get back to something else
-# i guess it's a bit better now though :)
+# i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change
 
 class MakeDividerCommand(sublime_plugin.TextCommand):
 	def run(self,edit,length):
-		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/'}
+		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/', 'ζ₂':'/'}
 		def e_table(v): return e_table_[v] if v in e_table_ else '-'
 		s_table = {
 			'#': ["^#+.*#+$","^#+\s*(.+?)\s*#+$",['',''],'#'],
 			'-': ["^-+.*-+$","^-+\s*(.+?)\s*-+$",['',''],'-'],
 			'/': ["^//=+-+.*-+=+//$","^//=+-+=+//\s*(.+?)\s*//=+-+=+//$",['//===','===//'],'-']
 			}
-		ext = '' if self.view.file_name() is None else re.sub("^.*?(?:\.([^.]*))?$","\\1",self.view.file_name())
+		ext = '' if self.view.file_name() is None else re.match("^.*?(?:\.([^.]*))?$",self.view.file_name()).group(1) or ''
 		data = s_table[e_table(ext)]
 		for region in reversed([s for s in self.view.sel()]):
 			line = self.view.line(region)
@@ -23,7 +21,12 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 				s = re.match(data[1],s).group(1)
 			else:
 				s = s.strip()
-			t = sum([len(v) for v in data[2]])
-			begin =     data[2][0]      +(data[3]*((length-len(s)-2 + 1)//2 - t))+data[2][1]      +' '
-			end   = ' '+data[2][1][::-1]+(data[3]*((length-len(s)-2    )//2 - t))+data[2][0][::-1]
-			self.view.replace(edit,line,begin+s+end)
+			if s == '':
+				r = data[2][0] + (data[3]*(length - len(data[2][0])*2)) + data[2][0][::-1]
+			else:
+				t = len(data[2][0]) + len(data[2][1])
+				r = \
+					data[2][0]      +(data[3]*((length-len(s)+2+1)//2 - t))+data[2][1]+ \
+					' '+s+' '+ \
+					data[2][1][::-1]+(data[3]*((length-len(s)+2  )//2 - t))+data[2][0][::-1]
+			self.view.replace(edit,line,r)
