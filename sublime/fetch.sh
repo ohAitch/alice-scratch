@@ -3,7 +3,8 @@ Pack=~/"Library/Application Support/Sublime Text 3/Packages"
 rm -R Packages; mkdir Packages
 
 cp -R "$Pack/JavaScript" "Packages/JavaScript"
-cp -R "$Pack/User"  "Packages/User"
+cp -R "$Pack/Text" "Packages/Text"
+cp -R "$Pack/User" "Packages/User"
 
 rm -R "Packages/User/Package Control.ca-bundle" &>/dev/null
 rm -R "Packages/User/Package Control.ca-list"   &>/dev/null

@@ -10,6 +10,7 @@ cp -R "$Pack/User/Package Control.cache"     tmp/User &>/dev/null
 
 rm -R "$Pack/JavaScript"
 rm -R "$Pack/User"
+rm -R "$Pack/Text"
 
 cp -R Packages/ "$Pack"
 

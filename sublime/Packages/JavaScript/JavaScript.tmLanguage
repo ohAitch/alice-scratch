@@ -13,7 +13,7 @@
 	<key>firstLineMatch</key>
 	<string>^#!/.*</string>
 	<key>foldingStartMarker</key>
-	<string>^.*\b(function|λ)\s*(\w+\s*)?\([^\)]*\)(\s*\{[^\}]*)?\s*$</string>
+	<string>^.*\b(function|λ)\s*([\wαβγδεζηθικλμνξπρστυφχψω]+\s*)?\([^\)]*\)(\s*\{[^\}]*)?\s*$</string>
 	<key>foldingStopMarker</key>
 	<string>^\s*\}</string>
 	<key>keyEquivalent</key>
@@ -52,7 +52,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype = { … } when extending an object</string>
 			<key>match</key>
-			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\s*(=|←)\s*</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.(prototype)\s*(=|←)\s*</string>
 			<key>name</key>
 			<string>meta.class.js</string>
 		</dict>
@@ -103,7 +103,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.(prototype)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.prototype.js</string>
 		</dict>
@@ -134,7 +134,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype.play = myfunc</string>
 			<key>match</key>
-			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.(prototype)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.(prototype)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -180,7 +180,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_ζ?.$][\w?.$]*)\.([a-zA-Z_ζ?.$][\w?.$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -221,7 +221,7 @@
 			<key>comment</key>
 			<string>match stuff like: play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_ζ?$][\w?$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\wαβγδεζηθικλμνξπρστυφχψω?$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -257,7 +257,7 @@
 			<key>comment</key>
 			<string>match regular function like: function myFunc(arg) { … }</string>
 			<key>match</key>
-			<string>\b(function|λ)\s+([a-zA-Z_ζ$]\w*)?\s*(\()(.*?)(\))</string>
+			<string>\b(function|λ)\s+([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω$][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -293,7 +293,7 @@
 			<key>comment</key>
 			<string>match stuff like: foobar: function() { … }</string>
 			<key>match</key>
-			<string>\b([a-zA-Z_ζ?.$][\w?.$]*)\s*:\s*\b(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*:\s*\b(function|λ)?\s*(\()(.*?)(\))</string>
 			<key>name</key>
 			<string>meta.function.json.js</string>
 		</dict>
@@ -384,7 +384,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(new)\s+(\w+(?:\.\w*)?)</string>
+			<string>(new)\s+([\wαβγδεζηθικλμνξπρστυφχψω]+(?:\.[\wαβγδεζηθικλμνξπρστυφχψω]*)?)</string>
 			<key>name</key>
 			<string>meta.class.instance.constructor</string>
 		</dict>
