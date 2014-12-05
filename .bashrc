@@ -13,6 +13,7 @@ this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ]
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
+clear() { /usr/bin/clear && printf '\e[3J'; }
 
 f() { open "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 x() { [[ $? = 0 ]] && exit; }
@@ -27,7 +28,7 @@ alias c='pbcopy'
 alias p='pbpaste'
 alias 64e='base64'
 alias 64d='base64 --decode'
-alias sb='"/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"'
+sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
 alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
 
 # export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM
