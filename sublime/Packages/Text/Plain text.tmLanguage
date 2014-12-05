@@ -6,7 +6,7 @@
 	<key>name</key><string>Plain Text</string>
 	<key>patterns</key><array>
 		<dict>
-			<key>match</key><string>\bhttps?://\S*[^\s)]</string>
+			<key>match</key><string>\bhttps?://\S*([.)](?=.)|"(?!\s)|[^\s)."])</string>
 			<key>name</key><string>link</string>
 		</dict>
 		<dict>

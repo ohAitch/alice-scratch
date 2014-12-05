@@ -14,7 +14,7 @@ class OpenContextCommand(sublime_plugin.TextCommand):
 				t = re.match("/Users/ali/ali/github/(\w+)/(.+)",fl)
 				if not t: context = "terminal"; continue
 				user = 'dreeves' if t.group(1) == 'beeminder' else 'alice0meta'
-				chrome('https://github.com/'+user+'/'+t.group(1)+'/blob/master/'+t.group(2))
+				browser('https://github.com/'+user+'/'+t.group(1)+'/blob/master/'+t.group(2))
 			elif context == "terminal":
 				terminal('/Users/ali' if fl is None else os.path.dirname(fl))
 			break

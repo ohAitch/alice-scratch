@@ -6,10 +6,8 @@ class OpenSelectionCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		sel = self.view.sel()[0]
 		if sel.empty():
-			t = re.match("\\S*[^\\s)]",self.view.substr(sublime.Region(sel.a,sel.b+300)))
-			if t:
-				if not re.match("\\bhttps?://\\S*[^\\s)]",t.group()):
-					t = re.match("[^\\s)]\\S*//:s?ptth\\b",(self.view.substr(sublime.Region(sel.a-300,sel.b))+t.group())[::-1])
-					if t:
-						t = t.group()[::-1]
-						webbrowser.open(t, autoraise=True)
+			begin = 0 if sel.a < 300 else sel.a - 300
+			for v in re.finditer(r'\bhttps?://\S*([.)](?=.)|"(?!\s)|[^\s)."])',self.view.substr(sublime.Region(begin,sel.a+300))):
+				if v.start() < sel.a - begin < v.end():
+					webbrowser.open(v.group(), autoraise=True)
+					break
