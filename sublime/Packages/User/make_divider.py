@@ -25,8 +25,9 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 				r = data[2][0] + (data[3]*(length - len(data[2][0])*2)) + data[2][0][::-1]
 			else:
 				t = len(data[2][0]) + len(data[2][1])
+				s = ' '+s+' '
 				r = \
-					data[2][0]      +(data[3]*((length-len(s)+2+1)//2 - t))+data[2][1]+ \
-					' '+s+' '+ \
-					data[2][1][::-1]+(data[3]*((length-len(s)+2  )//2 - t))+data[2][0][::-1]
+					data[2][0]      +(data[3]*((length-len(s)+1)//2 - t))+data[2][1]+ \
+					s+ \
+					data[2][1][::-1]+(data[3]*((length-len(s)  )//2 - t))+data[2][0][::-1]
 			self.view.replace(edit,line,r)

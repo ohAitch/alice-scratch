@@ -1,8 +1,9 @@
 import sublime, sublime_plugin
 import os
 import re
+import webbrowser
 
-def chrome(v): print("OPENCTX chrome",v); os.system("'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' '"+v+"'; osascript -e 'tell application \"Chrome\" to activate'")
+def browser(v): print("OPENCTX browser",v); webbrowser.open(v, autoraise=True)
 def terminal(v): print("OPENCTX terminal",v); os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+v+"\"' -e 'end tell'; osascript -e 'tell application \"terminal\" to activate'" if v == "/tmp" else "open -a Terminal '"+v+"'")
 
 class OpenContextCommand(sublime_plugin.TextCommand):

@@ -47,6 +47,9 @@
 			<key>name</key><string>Magic</string><key>scope</key><string>magic</string>
 			<key>settings</key><dict><key>fontStyle</key><string>bold</string><key>foreground</key><string>#FD9726</string></dict>
 		</dict><dict>
+			<key>name</key><string>Link</string><key>scope</key><string>link</string>
+			<key>settings</key><dict><key>foreground</key><string>#73ACE6</string></dict>
+		</dict><dict>
 			<key>name</key><string>Storage</string><key>scope</key><string>storage</string>
 			<key>settings</key><dict><key>fontStyle</key><string></string><key>foreground</key><string>#F92672</string></dict>
 		</dict><dict>
