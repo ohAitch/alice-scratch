@@ -32,6 +32,9 @@
 			<key>name</key><string>Number</string><key>scope</key><string>constant.numeric</string>
 			<key>settings</key><dict><key>foreground</key><string>#AE81FF</string></dict>
 		</dict><dict>
+			<key>name</key><string>Number</string><key>scope</key><string>constant.date</string>
+			<key>settings</key><dict><key>foreground</key><string>#D343D0</string></dict>
+		</dict><dict>
 			<key>name</key><string>Built-in constant</string><key>scope</key><string>constant.language</string>
 			<key>settings</key><dict><key>foreground</key><string>#AE81FF</string></dict>
 		</dict><dict>
@@ -46,6 +49,9 @@
 		</dict><dict>
 			<key>name</key><string>Magic</string><key>scope</key><string>magic</string>
 			<key>settings</key><dict><key>fontStyle</key><string>bold</string><key>foreground</key><string>#FD9726</string></dict>
+		</dict><dict>
+			<key>name</key><string>Magic</string><key>scope</key><string>smallmagic</string>
+			<key>settings</key><dict><key>foreground</key><string>#FD9726</string></dict>
 		</dict><dict>
 			<key>name</key><string>Link</string><key>scope</key><string>link</string>
 			<key>settings</key><dict><key>foreground</key><string>#73ACE6</string></dict>
@@ -106,12 +112,34 @@
 		</dict><dict>
 			<key>name</key><string>diff.changed</string><key>scope</key><string>markup.changed</string>
 			<key>settings</key><dict><key>foreground</key><string>#E6DB74</string></dict>
-		</dict><dict><key>scope</key><string>constant.numeric.line-number.find-in-files - match</string>
+		</dict><dict>
+			<key>scope</key><string>constant.numeric.line-number.find-in-files - match</string>
 			<key>settings</key><dict><key>foreground</key><string>#AE81FFA0</string></dict>
-		</dict><dict><key>scope</key><string>entity.name.filename</string>
+		</dict><dict>
+			<key>scope</key><string>entity.name.filename</string>
 			<key>settings</key><dict><key>foreground</key><string>#E6DB74</string></dict>
-		</dict><dict><key>scope</key><string>message.error</string>
+		</dict><dict>
+			<key>scope</key><string>message.error</string>
 			<key>settings</key><dict><key>foreground</key><string>#F83333</string></dict>
+
+		</dict><dict>
+			<key>scope</key><string>blue</string>
+			<key>settings</key><dict><key>foreground</key><string>#6060FF</string></dict>
+		</dict><dict>
+			<key>scope</key><string>red</string>
+			<key>settings</key><dict><key>foreground</key><string>#D80000</string></dict>
+		</dict><dict>
+			<key>scope</key><string>green</string>
+			<key>settings</key><dict><key>foreground</key><string>#00D000</string></dict>
+		</dict><dict>
+			<key>scope</key><string>purple</string>
+			<key>settings</key><dict><key>foreground</key><string>#D050D0</string></dict>
+		</dict><dict>
+			<key>scope</key><string>yellow</string>
+			<key>settings</key><dict><key>foreground</key><string>#E0D000</string></dict>
+		</dict><dict>
+			<key>scope</key><string>bold</string>
+			<key>settings</key><dict><key>foreground</key><string>#000000</string><key>background</key><string>#DDDDDD</string><key>fontStyle</key><string>bold</string></dict>
 		</dict>
 	</array>
 	<key>uuid</key><string>D8D5E82E-3D5B-46B5-B38E-8C841C21347D</string>
