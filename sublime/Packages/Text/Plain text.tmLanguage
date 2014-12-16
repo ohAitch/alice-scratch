@@ -6,7 +6,7 @@
 	<key>name</key><string>Plain Text</string>
 	<key>patterns</key><array>
 		<dict>
-			<key>match</key><string>\bhttps?://\S*([.)](?=.)|"(?!\s)|[^\s)."])</string>
+			<key>match</key><string><![CDATA[\b(https?|file)://\S+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))]]></string>
 			<key>name</key><string>link</string>
 		</dict><dict>
 			<key>match</key><string><![CDATA[(?<=\d\d\d\d)-W(?=\d\d(-\d)?)|(?<=\d\d\d\d-W\d\d)-(?=\d)|(?<=\d\d\d\d)-(?=\d\d-\d\d([T/]\d\d:\d\d(:\d\d(\.\d\d\d)?)?Z?)?)|(?<=\d\d\d\d-\d\d)-(?=\d\d([T/]\d\d:\d\d(:\d\d(\.\d\d\d)?)?Z?)?)|(?<=\d\d\d\d-\d\d-\d\d)[T/](?=\d\d:\d\d(:\d\d(\.\d\d\d)?)?Z?)|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d):(?=\d\d(:\d\d(\.\d\d\d)?)?Z?)|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d:\d\d):(?=\d\d(\.\d\d\d)?Z?)|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d:\d\d:\d\d)\.(?=\d\d\dZ?)|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d:\d\d)Z|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d:\d\d:\d\d)Z|(?<=\d\d\d\d-\d\d-\d\d[T/]\d\d:\d\d:\d\d\.\d\d\d)Z]]></string>

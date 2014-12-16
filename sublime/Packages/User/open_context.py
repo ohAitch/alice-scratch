@@ -1,17 +1,16 @@
 import sublime, sublime_plugin
-import os
+import os, subprocess
 import re
-import subprocess
 
-def browser(v,raise_=True):
-	if not re.match("^https?://",v): v = "https://www.google.com/search?q="+v
-	print("OPEN browser",v)
-	if raise_: subprocess.call(["open",v])
-	else: os.system("'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' '"+v+"'")
-def terminal(v,raise_=True):
-	print("OPEN terminal",v)
-	if raise_: os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+v+"\"' -e 'end tell'; osascript -e 'tell application \"terminal\" to activate'" if v == "/tmp" else "open -a Terminal '"+v+"'")
-	else: os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+v+"\"' -e 'end tell'")
+URL_REGEX = r'\b(https?|file)://\S+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))'
+IS_URL_REGEX = r'^(https?|file)://'
+
+# the github/google search text combo is weird. work on improving that?
+
+def open(v,app=None,focus=True):
+	print("OPEN",v)
+	# if app is "Path Finder" or (re.match(r'^file://(.*)',v) and blah blah then we should execute os.system("osascript -e 'tell application \""+"Path Finder"+"\" to activate'")
+	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 
 def github_url_of_file_in_repo(fl):
 	if not fl: return None
@@ -20,23 +19,27 @@ def github_url_of_file_in_repo(fl):
 	user = 'dreeves' if t.group(1) == 'beeminder' else 'alice0meta'
 	return 'https://github.com/'+user+'/'+t.group(1)+'/blob/master/'+t.group(2)
 
+def omnibox(v): return v if re.match(IS_URL_REGEX,v) else "https://www.google.com/search?q="+v
+
 class OpenContextCommand(sublime_plugin.TextCommand):
-	def run(self,edit,type,autoraise=True):
+	def run(self,edit,type,focus=True):
+		view = self.view
 		if type == "browser":
-			t = [v for v in [self.view.substr(v) for v in self.view.sel()] if v != ""]
+			t = [v for v in [view.substr(v) for v in view.sel()] if v != ""]
 			if len(t) > 0:
-				[browser(v,autoraise) for v in t]
+				[open(omnibox(v),focus=focus) for v in t]
 			else:
-				t = github_url_of_file_in_repo(self.view.file_name())
-				if t: browser(t,autoraise)
+				t = github_url_of_file_in_repo(view.file_name())
+				line = view.rowcol(view.sel()[0].begin())[0] + 1
+				if t: open(t+'#L'+str(line),focus=focus)
 		elif type == "terminal":
-			fl = self.view.file_name()
-			terminal(os.getenv("HOME") if fl is None else os.path.dirname(fl),autoraise)
+			fl = view.file_name()
+			open(os.getenv("HOME") if fl is None else os.path.dirname(fl),focus=focus,app="Terminal")
 		elif type == "link":
-			sel = self.view.sel()[0]
+			sel = view.sel()[0]
 			if sel.empty():
 				begin = 0 if sel.a < 300 else sel.a - 300
-				for v in re.finditer(r'\bhttps?://\S*([.)](?=.)|"(?!\s)|[^\s)."])',self.view.substr(sublime.Region(begin,sel.a+300))):
+				for v in re.finditer(URL_REGEX,view.substr(sublime.Region(begin,sel.a+300))):
 					if v.start() < sel.a - begin < v.end():
-						browser(v.group(),autoraise)
+						open(v.group(),focus=focus)
 						break
