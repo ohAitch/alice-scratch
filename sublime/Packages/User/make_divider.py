@@ -2,6 +2,7 @@ import sublime, sublime_plugin
 import re
 
 # i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change
+# and maybe if you hit the command again it should unmake the divider?
 
 class MakeDividerCommand(sublime_plugin.TextCommand):
 	def run(self,edit,length):

@@ -13,7 +13,7 @@ class _(sublime_plugin.EventListener):
 		u = datetime.utcnow()
 		l = datetime.now()
 		return ([
-			['now', u.strftime('%Y-%m-%d/%H:%MZ')],
+			['now', u.strftime('%Y-%m-%dT%H:%MZ')],
 			['now', u.strftime('%Y-%m-%dT%H:%M:%SZ')],
 			['now', u.strftime('%Y-%m-%dT%H:%M:%S.')+u.strftime('%f')[:3]+'Z'],
 			['lnow', l.strftime('%Y-%m-%d/%H:%M')],
