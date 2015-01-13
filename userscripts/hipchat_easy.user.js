@@ -1,9 +1,12 @@
+// (retired! probably still works. though you'll need to tweak some constants.)
+
 // ==UserScript==
 // @name        Hipchat Tweaks
 // @namespace   comely-naiad
-// @version     1.0.1
+// @version     1.0.2
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/hipchat_easy.user.js
-// @match       https://beeminder.hipchat.com/chat
+// @match       http*://*.hipchat.com/chat
+// @grant       none
 // ==/UserScript==
 
 //===--------------------------===// copied //===--------------------------===//

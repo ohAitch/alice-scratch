@@ -1,16 +1,19 @@
 // ==UserScript==
 // @name        fetch libs
 // @namespace   comely-naiad
-// @version     1.0.0
-// @match       http://transparent-favicon.info/favicon.ico
+// @version     1.0.1
+// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/attention_thedailywtf.user.js
+// @match       http*://transparent-favicon.info/favicon.ico
 // @require     https://code.jquery.com/jquery-latest.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
+// @grant       none
 // ==/UserScript==
+// what is this even
 
 $.css = function(v){$('head').append('<style>'+v+'</style>')}
 
-unsafeWindow.$ = $
-unsafeWindow._ = _
+// unsafeWindow.$ = $
+// unsafeWindow._ = _
 
 var beep = function(){new Audio('https://raw.githubusercontent.com/dreeves/TagTime/master/sound/loud-ding.wav').play()}
 

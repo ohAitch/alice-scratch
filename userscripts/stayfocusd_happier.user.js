@@ -1,10 +1,13 @@
+// (retired! probably still works though.)
+
 // ==UserScript==
 // @name        stayfocusd: happier
 // @namespace   comely-naiad
-// @version     1.0.0
+// @version     1.0.1
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/stayfocusd_happier.user.js
-// @match       http://www.stayfocusd.com/?background
+// @match       http*://www.stayfocusd.com/?background
 // @require     https://code.jquery.com/jquery-latest.js
+// @grant       none
 // ==/UserScript==
 
 document.open()
