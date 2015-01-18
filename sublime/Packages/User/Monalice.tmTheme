@@ -26,6 +26,9 @@
 			<key>name</key><string>Comment</string><key>scope</key><string>comment</string>
 			<key>settings</key><dict><key>foreground</key><string>#75715E</string></dict>
 		</dict><dict>
+			<key>name</key><string>Block</string><key>scope</key><string>block</string>
+			<key>settings</key><dict><key>foreground</key><string>#9C987F</string></dict>
+		</dict><dict>
 			<key>name</key><string>String</string><key>scope</key><string>string</string>
 			<key>settings</key><dict><key>foreground</key><string>#049B0A</string></dict>
 		</dict><dict>

@@ -3,6 +3,8 @@ import re
 from datetime import datetime
 # from datetime import timedelta
 
+# maybe this really should do that reverse generation (aka: parsing) we tried having it do
+
 # def round_time(dt, round_to):
 # 	seconds = (dt - dt.min).seconds
 # 	rounding = (seconds+round_to/2) // round_to * round_to

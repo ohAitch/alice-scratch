@@ -6,7 +6,7 @@ import re
 
 class MakeDividerCommand(sublime_plugin.TextCommand):
 	def run(self,edit,length):
-		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/', 'ζ₂':'/'}
+		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/', 'ζ₂':'/', 'bashrc':'#'}
 		def e_table(v): return e_table_[v] if v in e_table_ else '-'
 		s_table = {
 			'#': ["^#+.*#+$","^#+\s*(.+?)\s*#+$",['',''],'#'],

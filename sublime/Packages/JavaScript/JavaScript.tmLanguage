@@ -23,6 +23,12 @@
 	<key>patterns</key>
 	<array>
 		<dict>
+			<key>match</key>
+			<string>[{}]</string>
+			<key>name</key>
+			<string>block.js</string>
+		</dict>
+		<dict>
 			<key>comment</key>
 			<string>node.js shebang</string>
 			<key>match</key>
@@ -87,14 +93,19 @@
 				<key>6</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.parameters.begin.js</string>
+					<string>entity.name.function.js</string>
 				</dict>
 				<key>7</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.js</string>
+					<string>punctuation.definition.parameters.begin.js</string>
 				</dict>
 				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.js</string>
+				</dict>
+				<key>9</key>
 				<dict>
 					<key>name</key>
 					<string>punctuation.definition.parameters.end.js</string>
@@ -103,7 +114,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.prototype.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.(prototype)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.(prototype)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)?\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))(?=\s*\{)</string>
 			<key>name</key>
 			<string>meta.function.prototype.js</string>
 		</dict>
@@ -164,14 +175,19 @@
 				<key>5</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.parameters.begin.js</string>
+					<string>entity.name.function.js</string>
 				</dict>
 				<key>6</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.js</string>
+					<string>punctuation.definition.parameters.begin.js</string>
 				</dict>
 				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.js</string>
+				</dict>
+				<key>8</key>
 				<dict>
 					<key>name</key>
 					<string>punctuation.definition.parameters.end.js</string>
@@ -180,7 +196,7 @@
 			<key>comment</key>
 			<string>match stuff like: Sound.play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*(=|←)\s*(function|λ)\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))(?=\s*\{)</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -205,14 +221,19 @@
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.parameters.begin.js</string>
+					<string>entity.name.function.js</string>
 				</dict>
 				<key>5</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.js</string>
+					<string>punctuation.definition.parameters.begin.js</string>
 				</dict>
 				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.js</string>
+				</dict>
+				<key>7</key>
 				<dict>
 					<key>name</key>
 					<string>punctuation.definition.parameters.end.js</string>
@@ -221,7 +242,7 @@
 			<key>comment</key>
 			<string>match stuff like: play = function() { … }</string>
 			<key>match</key>
-			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\wαβγδεζηθικλμνξπρστυφχψω?$]*)\s*(=|←)\s*(function|λ)\s*(\()(.*?)(\))</string>
+			<string>([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\wαβγδεζηθικλμνξπρστυφχψω?$]*)\s*(=|←)\s*(function|λ)\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))(?=\s*\{)</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -257,7 +278,7 @@
 			<key>comment</key>
 			<string>match regular function like: function myFunc(arg) { … }</string>
 			<key>match</key>
-			<string>\b(function|λ)\s+([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω$][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))</string>
+			<string>\b(function|λ)\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))(?=\s*\{)</string>
 			<key>name</key>
 			<string>meta.function.js</string>
 		</dict>
@@ -277,14 +298,19 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.parameters.begin.js</string>
+					<string>entity.name.function.js</string>
 				</dict>
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.js</string>
+					<string>punctuation.definition.parameters.begin.js</string>
 				</dict>
 				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.js</string>
+				</dict>
+				<key>6</key>
 				<dict>
 					<key>name</key>
 					<string>punctuation.definition.parameters.end.js</string>
@@ -293,7 +319,7 @@
 			<key>comment</key>
 			<string>match stuff like: foobar: function() { … }</string>
 			<key>match</key>
-			<string>\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*:\s*\b(function|λ)?\s*(\()(.*?)(\))</string>
+			<string>\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\s*:\s*\b(function|λ)?\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()(.*?)(\))(?=\s*\{)</string>
 			<key>name</key>
 			<string>meta.function.json.js</string>
 		</dict>
@@ -308,14 +334,19 @@
 				<key>10</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.parameters.begin.js</string>
+					<string>entity.name.function.js</string>
 				</dict>
 				<key>11</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.js</string>
+					<string>punctuation.definition.parameters.begin.js</string>
 				</dict>
 				<key>12</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter.function.js</string>
+				</dict>
+				<key>13</key>
 				<dict>
 					<key>name</key>
 					<string>punctuation.definition.parameters.end.js</string>
@@ -364,7 +395,7 @@
 			<key>comment</key>
 			<string>Attempt to match "foo": function</string>
 			<key>match</key>
-			<string>(?:((')([^']*)('))|((")([^"]*)(")))\s*:\s*\b(function|λ)?\s*(\()([^)]*)(\))</string>
+			<string>(?:((')([^']*)('))|((")([^"]*)(")))\s*:\s*\b(function|λ)?\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\wαβγδεζηθικλμνξπρστυφχψω]*)?\s*(\()([^)]*)(\))(?=\s*\{)</string>
 			<!-- <string>(?:((')(.*?)('))|((")(.*?)(")))\s*:\s*\b(function)?\s*(\()(.*?)(\))</string> -->
 			<key>name</key>
 			<string>meta.function.json.js</string>
@@ -396,7 +427,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\.(warn|info|log|error|time|timeEnd|assert)\b</string>
+			<string>\.(warn|info|log|error|time|timeEnd|assert)\b|\bcb\b</string>
 			<key>name</key>
 			<string>support.function.js.firebug</string>
 		</dict>
