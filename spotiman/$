@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+ζ₂ -c main.ζ₂ .
+exr ./main.js
+rm main.js

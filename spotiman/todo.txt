@@ -1,0 +1,53 @@
+redo spotiman (make tags/lists of "these songs went together well once!" etc)
+	bookantt-like chart for tracking music one listens to (this would need to be automated)
+
+✓ first, get ζ₂ and the latest version of node-spotify
+✓ next, do some other stuff
+✓ stack: figure out how to represent a track with its playlists and createTime
+✓ stack: figure out how to implement get_databaseoid The Right Way
+✓ stack: implement those
+✓ but wait, first, handle that bullshit inspect thing
+✓ now, figure out what remains in old main
+implement backups
+implement track adding and removing
+implement easy tag querying (e621.net? sql? ask google about this)
+	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})
+
+
+
+
+var main = function(){
+	var add_tracks = function(p,ts){
+		print('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
+		p.addTracks(ts.slice(0,500).map(function(v){return v.original}),0)
+		}
+	var pl = _.indexBy(playlists(),'name')
+	var tr = _.indexBy(tracks(),'link')
+	var get_tracks = function(p){return p.getTracks().map(function(v){return tr[v.link]})}
+
+	var t = tracks().filter(function(v){return is(v.playlists['meh pile']) && Object.keys(v.playlists).length>=2})
+	
+	//t = _.sortBy(t.map(function(v){return Object.keys(v.playlists).length>=2}))
+	//print(pl.clbuttic.removeTracks(t))
+	//t = t.filter(function(v){return Object.keys(v.playlists).length>=2})
+	t.map(function(v,i){print(i,v.unique_name)})
+	//print(get_tracks(pl['don\'t want to hear again']))
+	//add_tracks(pl['meh pile'],tracks().filter(function(v){return v.playlists.length===1 && v.playlists[0]==='mehp'}))
+	}
+var backup = function(){
+	var tr = tracks()
+	tr.map(function(v){
+		delete(v.original)
+		//v.tracks = Object.keys(v.tracks)
+	})
+	fs('~/ali/history/auto/spotify/'+moment().toISOString()+'.json').$ = JSON.stringify(tr,null,'\t')
+	print('backup saved!',timer()) }
+
+track: ?name? [
+	α:<artist>
+	ρ:<album>
+	τ:<track>
+	λ:<length>
+	μ:local
+	[playlist]
+	]

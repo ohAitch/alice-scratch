@@ -1,8 +1,7 @@
 {
   "dependencies": {
-    "minimist": "^1.1.0",
-    "node-spotify": "^0.5.4",
-    "sync": "^0.2.3",
-    "underscore": "^1.7.0"
+    "node-spotify": "^0.7.0",
+    "rimraf": "^2.2.8",
+    "zeta-two": "^0.3.12"
   }
 }
