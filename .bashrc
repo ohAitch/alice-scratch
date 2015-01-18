@@ -41,7 +41,7 @@ export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
 PROMPT_COMMAND='update_terminal_cwd; [ -s /tmp/cnfhcd ] && { cd $(cat /tmp/cnfhcd); rm /tmp/cnfhcd; } || true'
 
 command_not_found_handle() {
-	if [ "$1" = $ ]; then try=("$1" run main build deploy publish); else try=("$1"); fi
+	if [ "$1" = $ ]; then try=("$1" \$ run main build deploy publish); else try=("$1"); fi
 	while true; do
 		t=($(for t in "${try[@]}"; do echo "$t $t.sh $t.*"; done))
 		t=($(for t in "${t[@]}"; do [ -f "$t" ] && echo "$t"; done))
