@@ -21,7 +21,8 @@ b() { say -v Zarvox "beep"; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 # ar_zip() { ditto -ckv --keepParent "$1" "${2%/}.zip"; }
 rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
-beeg() { curl -X "$1" -g "https://www.beeminder.com/api/v1/users/me/goals/$2.json?auth_token=$(cat ~/.auth/beeminder)$3"; }
+beeg() { curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)$2"; }
+beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)$2"; }
 npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 alias E='echo'
 alias c='pbcopy'
