@@ -1,0 +1,13 @@
+I ← require('./index')
+
+if (process.argv.length === 2) {
+	ζ2_repl_start()
+} else if (process.argv[2] === '-c') {
+	out ← fs(process.argv[-1])
+	process.argv.slice(3,-1).map(fs).map(λ(fl){
+		if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
+		else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = I.compile_file(fl.$)
+		})
+} else {
+	eval(I.compile(fs(process.argv.splice(2,1)[0]).$).replace(/^#!.*/,''))
+}

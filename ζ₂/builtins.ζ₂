@@ -1,0 +1,154 @@
+require_if ← λ(v){try {↩ require(v)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e}}
+
+node_path ← require('path')
+util ← require('util')
+repl ← require('repl')
+vm ← require('vm')
+
+PQueue ← require_if('priorityqueuejs')
+RWLock ← require_if('rwlock')
+
+_ ← global._ = global.__ = require_if('underscore')
+global.moment = require_if('moment')
+
+I ← require('./index')
+
+// really should only be added to a repl's global
+require('copy-paste').global()
+
+escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
+sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
+mkdir_p ← λ λ(v) {if (!fs.statSync(v).isDirectory()) {try {fs.mkdirSync(v)} catch (e) {if (!e.code === 'ENOENT') throw e; λ(node_path.dirname(v)); fs.mkdirSync(v)}}}
+
+global.ζ2_now = λ(){↩ Date.now() / 1000}
+global.ζ2_i = λ(v){↩ parseInt(v)}
+global.ζ2_bit_reverse_i = λ(length,v){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (v & 1); v = v >> 1}; ↩ r}
+global.ζ2_A = λ(v){↩ Array.prototype.slice.call(v)}
+Function.prototype.P = λ(){if (arguments.length === 0) ↩ @; a ← ζ2_A(arguments); θ←@; ↩ λ(){↩ θ.apply(null,arguments.length === 0? a : a.concat(ζ2_A(arguments)))}}
+Array.prototype.ζ2_frequencies = λ(){↩ @.reduce(λ(r,v){r[v] = v in r? r[v]+1 : 1; ↩ r},{})}
+Array.prototype.ζ2_take_while = λ(f){r ← []; _.any(@,λ(v,i){t ← f(v,i); t && r.push(v); ↩ !t}); ↩ r}
+global.ζ2_repl_start = λ(opts){
+	wrap ← λ(v){t ← v.replace(/\x1b\[.*?m/g,''); ↩ {$:v, split:λ(){↩ [t]}, valueOf:λ(){↩ v}}}
+	t ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:wrap('\x1b[32mζ₂\x1b[39m '),
+		eval:λ(code,ctx,fl,cb){try {
+			t ← vm.createScript(I.compile(code), {filename:fl, displayErrors:false})
+			cb(undefined, this.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(ctx,{displayErrors:false}))
+			} catch (e) {cb(e,undefined)} },
+		}).extend(opts))
+	O(global).def('prompt',λ(){↩ t.prompt.$},λ(v){t.prompt = wrap(v)})
+	↩ t}
+
+global.O = λ(v){↩ new _O(v)}; _O ← λ(v){@.$ = v}
+_O.prototype.set = λ(n,f){@.$[n] = f(@.$[n]); ↩ @.$}
+_O.prototype.def = λ(m,get,set){Object.defineProperty(@.$,m,{configurable:true, enumerable:true, get:get, set:set}); ↩ @.$}
+_O.prototype.replace = λ(o){θ ← @.$; _.pairs(o).map(λ(kv){θ[kv[1]] = θ[kv[0]]; delete(θ[kv[0]])}); ↩ @.$}
+global.ζ2_bind = λ(o,v){↩ o[v].bind(o)}
+global.ζ2_jsonclone = λ(v){↩ v===undefined? v : JSON.parse(JSON.stringify(v))}
+
+global.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a,{colors:true,depth:2})+'\n'); ↩ a[-1]}
+global.err = λ(v){print.apply(null,['ζ2_err'].concat(ζ2_A(arguments))); throw Error(v)}
+;['abs','ceil','floor','log','round','pow','max','min'].map(λ(v){global[v] = Math[v]})
+
+Function.prototype.def = λ(m,get,set){O(@.prototype).def(m,get,set); ↩ @}
+if (_) ;[Array,String].forEach(λ(Class){_.range(0,5).forEach(λ(i){Class.def('-'+i,λ(){↩ @.length<i? undefined : @[@.length-i]},λ(v){↩ @.length<i? v : (@[@.length-i] = v)})})})
+String.prototype.repeat = λ(v){↩ new Array(v+1).join(@)}
+Array.def('_',λ(){↩ _(@)})
+Function.prototype.every = λ(time){args ← ζ2_A(arguments).slice(1); ↩ setInterval.apply(null,[@,time*1000].concat(args))}
+Function.prototype.in = λ(time){args ← ζ2_A(arguments).slice(1); ↩ !time || time <= 0? setImmediate.apply(null,[@].concat(args)) : setTimeout.apply(null,[@,time*1000].concat(args))}
+
+if (PQueue && RWLock) {
+// robust to setTimeout taking extra time
+λs ← new PQueue(λ(a,b){↩ b.time-a.time}); lock ← new RWLock(); p←;
+enq ← λ(v){lock.writeLock(λ(R){λs.enq(v); R(); if (!P){P = true; (λ poll(){lock.writeLock(λ λ(R){
+	t←; λs.size() === 0? (P = false) : !(λs.peek().time < now())? poll.in(0.1) : (t=λs.deq(), t.canceled || t.f.in(), λ()); R&&R()
+	}) })() } })}
+Function.prototype.at = λ(time){args ← ζ2_A(arguments).slice(1)
+	t ← {time:time, f:@.P.apply(@,args)}
+	if (time < now()) {t.f.in(); ↩ {clear:λ(){}}}
+	else {enq(t); ↩ {clear:λ(){t.canceled = true}}} }
+}
+
+if (global.$) {
+keyinfo ← λ(key){
+	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
+	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+$.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
+	// t ← key.split(/(?=\.\w)/); key = t[0]; ns ← t.slice(1).join('')
+	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
+$.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
+}
+
+if (global.moment) {moment_ ← moment
+global.moment = λ(i){↩ typeof(i)==='number' && arguments.length===1? moment_(i*1000) : moment_.apply(@,arguments)}
+moment.__proto__ = moment_
+moment.fn.valueOf = λ(){↩ +@._d/1000 + (@._offset||0)*60}
+moment.fn.toString = λ(){↩ @.utc().format('YYYY-MM-DD[T]HH:mm:ss[Z]')}
+moment.fn.inspect = λ(x,opts){t ← @.toString(); ↩ true/*opts.colors*/? '\x1b[35m'+t+'\x1b[39m' : t}
+}
+
+//===----------------------------===// fs/Path //===---------------------------===//
+
+fs ← global.fs = global.fs_ = (λ(){t ← λ(path){↩ new Path(path)}; t.__proto__ = require('fs'); ↩ t})()
+// a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
+// represented as a Path, it has properties path and $/val/value/deref
+// a Path is normally just a fluent wrapper but can become a file descriptor holder or an event manager
+// maybe we can also pass it a type/format/view/mixin! eesh, maybe we need to fit it into the prototype system instead of just using a mixin...
+Path ← λ Path(path){@.path = path instanceof Path? path.path : node_path.normalize(path.replace(/^~(?=\/)/,process.env.HOME)+'/.')}
+.def('$', λ(){↩ @._$()}, λ(v){↩ @['='](v)})
+// path manipulation
+Path.prototype.parent = λ(){↩ fs(node_path.dirname(@.path))}
+Path.prototype.join = λ(){↩ fs(node_path.join.apply(node_path,[@.path].concat(ζ2_A(arguments).map(λ(v){↩ v instanceof Path? v.path : v}))))}
+Path.prototype.stat = λ(){↩ fs.statSync(@.path)}
+Path.prototype.resolve = λ(){↩ node_path.resolve(@.path)}
+Path.prototype.exists = λ(){↩ fs.existsSync(@.path)}
+Path.prototype.name = λ(ext){↩ node_path.basename(@.path,ext)}
+// misc
+Path.prototype.as_type = λ(View){_(@).extend(O(View).replace({'$':'_$'})); ↩ @}
+// Path.prototype.cached = λ(){_$ ← @._$(); @._$ = λ(){↩ _$}; t ← @['=']; @['='] = λ(v){_$ = v; t(v)}}
+Path.prototype.toString = λ(){↩ @.resolve().replace(new RegExp('^'+escape_regex(process.env.HOME)+'(?=/)'),'~')}
+// content manipulation
+Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.stat().isDirectory()? fs.readdirSync(t).map(λ(v){↩ t+'/'+v}) : fs.readFileSync(t)+''}
+Path.prototype['='] = λ(v){
+	// string: text file, Array: directory, etc
+	// async should use like fs.createReadStream(v.path).pipe(fs.createWriteStream(@.path))
+	if (@.exists() && @.stat().isDirectory()) throw Error('writing to directories not implemented')
+	mkdir_p(@.parent().resolve())
+	fs.writeFileSync(@.path,v)
+	}
+Path.prototype.lines = λ(){t ← fs(@).$.split('\n'); ↩ t[-1]===''? t.slice(0,-1) : t}
+Path.prototype.open = λ(f){fd ← fs.openSync(@.path,'r+'); f.call(@,fd); fs.closeSync(fd)}
+// i think slice maybe should actually replace splice?
+// Path.prototype.slice = λ(i){↩ ζ2_def({},'$',λ(){},λ(v){@.open(λ(){t ← new Buffer(v); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(v))})})}
+Path.prototype.append = λ(v){fs.appendFileSync(@.path,v)}
+Path.prototype.ensure_eof_nl = λ(){@.open(λ(fd){
+	size ← @.stat().size
+	t ← new Buffer(1); fs.readSync(fd,t,0,t.length,size - 1)
+	if (t+'' !== '\n') {t ← new Buffer('\n'); fs.writeSync(fd,t,0,t.length,size)}
+	}); ↩ @}
+Path.prototype.splice = λ(idx,rm,v){@.open(λ(fd){t←;
+	v = new Buffer(v)
+	rm === v.length || (t = new Buffer(@.stat().size - (idx+rm)), fs.readSync(fd,t,0,t.length,idx+rm))
+	fs.writeSync(fd,v,0,v.length,idx)
+	rm === v.length || fs.writeSync(fd,t,0,t.length,idx+v.length)
+	rm > v.length && fs.ftruncateSync(fd,idx+v.length+t.length)
+	})}
+
+//===------------------------===// discarded bits //===------------------------===//
+
+// minimist ← require_if('minimist')
+// global.async = require_if('async')
+// global.poll = λ(f,cb){t←; (t=f())? cb.in(0,null,t) : poll.in(0.02,f,cb)}
+// global.ζ2_memb_Emod_obj = λ(o,m,f){o[m] = f(o[m]); ↩ o}
+// global.pad = λ(v,s){↩ v+s.slice(v.length)}
+// Array.prototype.zipmap = λ(f,ctx){↩ _.zip.apply(_,@).map(λ(v){↩ f.apply(ctx,v)})}
+// String.prototype.replace_all = λ(find,replace){↩ @.replace(new RegExp(escape_regex(find),'g'),replace)}
+// Path.prototype.realpath = λ(){↩ fs.realpathSync(@.path)}
+// global.ζ2_lazy = λ(o,m,f){ζ2_def(o,m,_.once(λ(){delete(o[m]); ↩ o[m] = f()}),λ(v){delete(o[m]); ↩ o[m] = v})}
+// Function.prototype.inherits = λ(super_){t ← λ(){}; t.prototype = super_.prototype; @.prototype = new t(); @.prototype.constructor = @; ↩ @}
+
+// create_getattr ← (λ(){
+// 	proxy_boiler ← {getOwnPropertyDescriptor:λ(){}, getPropertyDescriptor:λ(){}, getOwnPropertyNames:λ(){↩[]}, getPropertyNames:λ(){↩[]}, defineProperty:λ(){}, delete:λ(){↩false}, fix:λ(){}, inspect:λ(){↩'[MAGIC-GET-ATTR]'}}
+// 	↩ λ(get,set){↩ Proxy.create({get:λ(self,name){↩ proxy_boiler[name] || get(name)}, set:λ(self,name,v){set(name,v)}})} })()
+// create_getattr(λ(n){@.$[n]},λ(n,v){
+// 			magic magic
+// 			}),

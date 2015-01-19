@@ -1,0 +1,14 @@
+#!/usr/bin/env ζ₂
+
+stream ← require('stream')
+
+stream.Readable.prototype.read_all = λ(cb){t ← []; @.resume(); @.setEncoding('utf8'); @.on('data',λ(v){t.push(v)}); @.on('end',λ(){cb(null,t.join(''))})}
+
+process.stdin.read_all(λ(e,v){
+	process.stdout.write(v.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g,
+		λ(v,name,s,eq){switch(v){
+			case 'function': ↩ 'λ'
+			case 'return': ↩ '↩'
+			case 'this': ↩ '@'
+			default: ↩ eq==='='? name+s+'←' : name+s+'←;'
+		}})) })
