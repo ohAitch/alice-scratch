@@ -7,14 +7,12 @@ vm ← require('vm')
 
 PQueue ← require_if('priorityqueuejs')
 RWLock ← require_if('rwlock')
+copypaste ← require('copy-paste')
 
 _ ← global._ = global.__ = require_if('underscore')
 global.moment = require_if('moment')
 
 I ← require('./index')
-
-// really should only be added to a repl's global
-require('copy-paste').global()
 
 escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
 sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
@@ -28,6 +26,7 @@ Function.prototype.P = λ(){if (arguments.length === 0) ↩ @; a ← ζ2_A(argum
 Array.prototype.ζ2_frequencies = λ(){↩ @.reduce(λ(r,v){r[v] = v in r? r[v]+1 : 1; ↩ r},{})}
 Array.prototype.ζ2_take_while = λ(f){r ← []; _.any(@,λ(v,i){t ← f(v,i); t && r.push(v); ↩ !t}); ↩ r}
 global.ζ2_repl_start = λ(opts){
+	copypaste.global() // really should only be added to a repl's global
 	wrap ← λ(v){t ← v.replace(/\x1b\[.*?m/g,''); ↩ {$:v, split:λ(){↩ [t]}, valueOf:λ(){↩ v}}}
 	t ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:wrap('\x1b[32mζ₂\x1b[39m '),
 		eval:λ(code,ctx,fl,cb){try {
@@ -135,14 +134,11 @@ Path.prototype.splice = λ(idx,rm,v){@.open(λ(fd){t←;
 
 //===------------------------===// discarded bits //===------------------------===//
 
-// minimist ← require_if('minimist')
-// global.async = require_if('async')
 // global.poll = λ(f,cb){t←; (t=f())? cb.in(0,null,t) : poll.in(0.02,f,cb)}
 // global.ζ2_memb_Emod_obj = λ(o,m,f){o[m] = f(o[m]); ↩ o}
 // global.pad = λ(v,s){↩ v+s.slice(v.length)}
 // Array.prototype.zipmap = λ(f,ctx){↩ _.zip.apply(_,@).map(λ(v){↩ f.apply(ctx,v)})}
 // String.prototype.replace_all = λ(find,replace){↩ @.replace(new RegExp(escape_regex(find),'g'),replace)}
-// Path.prototype.realpath = λ(){↩ fs.realpathSync(@.path)}
 // global.ζ2_lazy = λ(o,m,f){ζ2_def(o,m,_.once(λ(){delete(o[m]); ↩ o[m] = f()}),λ(v){delete(o[m]); ↩ o[m] = v})}
 // Function.prototype.inherits = λ(super_){t ← λ(){}; t.prototype = super_.prototype; @.prototype = new t(); @.prototype.constructor = @; ↩ @}
 
