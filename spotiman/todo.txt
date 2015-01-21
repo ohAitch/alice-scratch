@@ -9,9 +9,14 @@ redo spotiman (make tags/lists of "these songs went together well once!" etc)
 ✓ but wait, first, handle that bullshit inspect thing
 ✓ now, figure out what remains in old main
 implement backups
-implement track adding and removing
-implement easy tag querying (e621.net? sql? ask google about this)
-	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})
+	undo createTime removal
+think about the prompt at the beginning and figure out what we want to do with this
+	> implement track adding and removing
+	> implement tags
+	> implement easy tag querying (e621.net? sql? ask google about this)
+	> 	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})
+	> 	i want to say:
+	> 		# god i don't know. i'm sad.
 
 
 
@@ -51,3 +56,5 @@ track: ?name? [
 	μ:local
 	[playlist]
 	]
+
+http://www.node-spotify.com/api.html#playlist

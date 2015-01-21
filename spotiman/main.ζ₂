@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
 
 util ← require('util')
 
@@ -11,7 +11,6 @@ _ ← __
 // use the node audio handler for Fun Stuff
 // timer() is probably incorrect for its few uses. progress bar would be wonderful.
 // fix the problem where a global repl tramples over _
-// undo createTime removal
 
 timer ← λ λ(){t ← Date.now()/1000; r ← t - λ.now; λ.now = t; ↩ Math.round(r*100)/100+'s'}; timer()
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
