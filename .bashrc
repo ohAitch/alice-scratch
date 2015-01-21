@@ -15,6 +15,13 @@ D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
 
+alias E='echo'
+alias c='pbcopy'
+alias p='pbpaste'
+alias 64e='base64'
+alias 64d='base64 --decode'
+sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
+alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
 f() { open "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
@@ -24,13 +31,7 @@ rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
 beeg() { curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)$2"; }
 beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)$2"; }
 npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
-alias E='echo'
-alias c='pbcopy'
-alias p='pbpaste'
-alias 64e='base64'
-alias 64d='base64 --decode'
-sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
-alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
+jz() { p | jsζ₂ | c; x; }
 
 # export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM
 export PATH="/usr/local/bin:$PATH:$(E ~/go/bin):$(E ~/Library/Haskell/bin):.:./node_modules/.bin"
