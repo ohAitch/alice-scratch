@@ -1,0 +1,6 @@
+{
+  "name": "Symbol List Banned",
+  "scope": "source.js meta.property.function entity.name.function",
+  "settings": {"showInSymbolList": "0"},
+  "uuid": "834BC727-6B31-4073-A161-4823227219EF"
+}

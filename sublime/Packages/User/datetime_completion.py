@@ -4,6 +4,7 @@ from datetime import datetime
 # from datetime import timedelta
 
 # maybe this really should do that reverse generation (aka: parsing) we tried having it do
+# maybe this should merge with our snippets file
 
 # def round_time(dt, round_to):
 # 	seconds = (dt - dt.min).seconds

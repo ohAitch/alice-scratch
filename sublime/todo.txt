@@ -1,3 +1,0 @@
-snippets → more appropriate directory
-in divider, the command should remove a divider if it wouldn't change its length
-merge datetime_creation and snippets?

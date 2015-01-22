@@ -1,0 +1,6 @@
+{
+  "name": "Symbol List Class",
+  "scope": "source.js entity.name.type.class",
+  "settings": {"showInSymbolList": "1", "symbolTransformation": "\n\t\ts/^/• /g;\n\t\t"},
+  "uuid": "3CEA49B2-A5C5-405C-82E2-B8B668877C37"
+}

@@ -1,20 +1,8 @@
-Pack=~/"Library/Application Support/Sublime Text 3/Packages"
+#!/usr/bin/env bash
 
-generate.js
+in="Packages"
+out=~/"Library/Application Support/Sublime Text 3/Packages"
 
-mkdir -p tmp/User
-cp -R "$Pack/User/Package Control.ca-bundle" tmp/User &>/dev/null
-cp -R "$Pack/User/Package Control.ca-list"   tmp/User &>/dev/null
-cp -R "$Pack/User/Package Control.last-run"  tmp/User &>/dev/null
-cp -R "$Pack/User/Package Control.cache"     tmp/User &>/dev/null
-
-rm -R "$Pack/JavaScript"
-rm -R "$Pack/User"
-rm -R "$Pack/Text"
-
-cp -R Packages/ "$Pack"
-
-cp -R tmp/User "$Pack"
-rm -R tmp
-
-rm Packages/User/*.sublime-snippet
+# translate sane stuff into weird sublime formats and put it in the sublime places
+# then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
+transform/index.sh to "../$in" "$out"

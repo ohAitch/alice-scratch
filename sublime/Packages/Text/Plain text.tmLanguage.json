@@ -1,0 +1,25 @@
+{
+  "fileTypes": ["txt"],
+  "name": "Plain Text",
+  "patterns": [
+    {"name": "link", "match": "\\b(https?|file)://\\S+([.,)\\]}](?=\\.)|(?<![\".,)\\]}])(?<!\"[\".,)\\]}]))"},
+    {
+      "name": "smallmagic",
+      "match": "(?<=\\d\\d\\d\\d)-W(?=\\d\\d(-\\d)?)|(?<=\\d\\d\\d\\d-W\\d\\d)-(?=\\d)|(?<=\\d\\d\\d\\d)-(?=\\d\\d-\\d\\d([T/]\\d\\d:\\d\\d(:\\d\\d(\\.\\d\\d\\d)?)?Z?)?)|(?<=\\d\\d\\d\\d-\\d\\d)-(?=\\d\\d([T/]\\d\\d:\\d\\d(:\\d\\d(\\.\\d\\d\\d)?)?Z?)?)|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d)[T/](?=\\d\\d:\\d\\d(:\\d\\d(\\.\\d\\d\\d)?)?Z?)|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d):(?=\\d\\d(:\\d\\d(\\.\\d\\d\\d)?)?Z?)|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d:\\d\\d):(?=\\d\\d(\\.\\d\\d\\d)?Z?)|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d:\\d\\d:\\d\\d)\\.(?=\\d\\d\\dZ?)|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d:\\d\\d)Z|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d:\\d\\d:\\d\\d)Z|(?<=\\d\\d\\d\\d-\\d\\d-\\d\\d[T/]\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d)Z"
+    },
+    {"name": "comment", "match": "-{3,}"},
+    {"name": "comment", "match": "(//|(?<![fFcC\\\\])#(?!\\d)).*"},
+    {"name": "blue", "match": "\\B~(?=[\\w\".])[^~\\n]+?(?<=[\\w\".])~\\B"},
+    {"name": "red", "match": "\\B!(?=[\\w\".])[^!\\n]+?(?<=[\\w\".])!\\B"},
+    {"name": "green", "match": "\\B\\.\\b[^.\\n]+?\\b\\.\\B"},
+    {"name": "purple", "match": "\\B↔(?=[\\w\".])[^↔\\n]+?(?<=[\\w\".])↔\\B"},
+    {"name": "yellow", "match": "\\B←(?=[\\w\".])[^←\\n]+?(?<=[\\w\".])←\\B"},
+    {"name": "bold", "match": "\\B\\*\\b[^*\\n]+?\\b\\*\\B"},
+    {"name": "magic", "match": "[!?&,:;.…@$✓]"},
+    {"name": "red", "match": "(?<=\\s|^)X\\b"},
+    {"name": "markup.changed", "match": "[()\\[\\]{}<>]"},
+    {"name": "string", "match": "[\"“”]"},
+    {"name": "constant.numeric", "match": "\\d"}
+  ],
+  "scopeName": "text.plain"
+}

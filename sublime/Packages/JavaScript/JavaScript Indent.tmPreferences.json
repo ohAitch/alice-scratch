@@ -1,0 +1,10 @@
+{
+  "name": "JavaScript Indent",
+  "scope": "source.js",
+  "settings": {
+    "decreaseIndentPattern": "^(.*\\*/)?\\s*\\}.*$",
+    "increaseIndentPattern": "^.*\\{[^}\"']*$",
+    "bracketIndentNextLinePattern": "(?x)\n\t\t^ \\s* \\b(if|while|else)\\b [^;]* $\n\t\t| ^ \\s* \\b(for)\\b .* $\n\t\t"
+  },
+  "uuid": "BC062860-3346-4D3B-8421-C5543F83D11F"
+}
