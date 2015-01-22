@@ -37,6 +37,9 @@
 	{ "keys": ["ctrl+left"], "command": "bh_key", "args": { "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "left"} } } },
 	{ "keys": ["ctrl+right"], "command": "bh_key", "args": { "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "right"} } } },
 
+	{ "keys": ["super+shift+["], "command": "fold" },   // overwrites { "keys": ["super+shift+["], "command": "prev_view" },
+	{ "keys": ["super+shift+]"], "command": "unfold" }, // overwrites { "keys": ["super+shift+]"], "command": "next_view" },
+
 	// { "keys": ["tab"], "command": "insert_best_completion", "args": {"default": "\t", "exact": false} },
 	// { "keys": ["tab"], "command": "indent" },
 

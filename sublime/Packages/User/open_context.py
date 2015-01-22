@@ -9,8 +9,15 @@ IS_URL_REGEX = r'^(https?|file)://'
 
 def open(v,app=None,focus=True):
 	print("OPEN",v)
-	# if app is "Path Finder" or (re.match(r'^file://(.*)',v) and blah blah then we should execute os.system("osascript -e 'tell application \""+"Path Finder"+"\" to activate'")
+	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
+	
+	# predict when path finder got used
+	fv = re.match(r'^file://(.*)',v)
+	if not app and fv and os.path.isdir(fv.group(1)):
+		app = "Path Finder"
+
+	if app is "Path Finder": os.system("osascript -e 'tell application \""+"Path Finder"+"\" to activate'")
 
 def github_url_of_file_in_repo(fl):
 	if not fl: return None
