@@ -1,4 +1,4 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env ζ₂
 
 util ← require('util')
 
@@ -28,6 +28,19 @@ get_databaseoid ← λ(cb){
 		spotify.on({ready:λ(e){cb(e,spotify)}})
 		auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
 		}
+	// so this should really be split into maybe like intern_track and tag_track
+	// something like this, except with memo accessible:
+		// intern_track ← (λ(){memo ← {}; ↩ λ(v){↩ memo[v.link] || (memo[v.link] = new Native(v,{
+		// 	name: v.name,
+		// 	link: v.link,
+		// 	artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
+		// 	album: (λ(v){↩ {name: v.name, link: v.link}})(v.album),
+		// 	tags: [],
+		// 	}) ) } })()
+		// tag_track ← λ(v,tag){
+		// 	// v.tags.push([tag.name, moment(v.createTime)])
+		// 	v.tags.push(tag.name)
+		// 	↩ v }
 	intern_track ← λ λ(v,tag){
 		λ.all[v.link] || (λ.all[v.link] = new Native(v,{
 			name: v.name,

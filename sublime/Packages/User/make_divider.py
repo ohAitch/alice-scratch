@@ -11,7 +11,7 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 		s_table = {
 			'#': ["^#+.*#+$","^#+\s*(.+?)\s*#+$",['',''],'#'],
 			'-': ["^-+.*-+$","^-+\s*(.+?)\s*-+$",['',''],'-'],
-			'/': ["^//=+-+.*-+=+//$","^//=+-+=+//\s*(.+?)\s*//=+-+=+//$",['//===','===//'],'-']
+			'/': ["^//-+.*-+//$","^//-+//\s*(.+?)\s*//-+//$",['//','//'],'-']
 			}
 		ext = '' if self.view.file_name() is None else re.match("^.*?(?:\.([^.]*))?$",self.view.file_name()).group(1) or ''
 		data = s_table[e_table(ext)]
@@ -28,7 +28,7 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 			else:
 				t = len(data[2][0]) + len(data[2][1])
 				s = ' '+s+' '
-				while len_ - len(s) < 6: len_ += 10
+				while len_ - len(s) < 6 + t: len_ += 10
 				r = \
 					data[2][0]      +(data[3]*((len_-len(s)+1)//2 - t))+data[2][1]+ \
 					s+ \

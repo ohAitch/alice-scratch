@@ -1,4 +1,4 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env ζ₂
 
 plist ← require('plist')
 arg ← {
@@ -11,33 +11,33 @@ arg ← {
 // i do not think it will be my last.
 json_pretty_stringify ← λ(v){
 	seen ← []
-	T ← '  '
+	T ← '  ' // tab
 	wrap_width ← 150
 	join_collection ← λ(v,a,b){
 		if (v.length === 0) ↩ a+b
 		len ← a.length + b.length
 			+ (v.length-1) * ', '.length
 			+ v.map(λ(v){↩ v.length}).reduce(λ(a,b){↩ a+b})
+		// assert( len === (a+v.join(', ')+b).length )
 		↩ len <= wrap_width?
 			a+v.join(', ')+b :
 			a+'\n'+T+v.join(',\n'+T)+'\n'+b }
-	magicprop ← λ(v){
-		if (seen.indexOf(v) !== -1)
-			throw TypeError('Converting circular structure to JSON')
-		↩ stringify(v).replace(/\n/g,'\n'+T) }
 	stringify_object ← λ(v){
 		seen.push(v)
-		t ← _.pairs(v).filter(λ(v){↩ v[1] != null && typeof(v[1])!=='function'})
-			.map(λ(v){↩ JSON.stringify(v[0])+': '+magicprop(v[1])})
+		t ← _.pairs(v).filter(λ(v){↩ v[1]!==undefined && typeof(v[1])!=='function'})
+			.map(λ(v){↩ JSON.stringify(v[0])+': '+stringify_indent(v[1])})
 		seen.pop()
 		↩ join_collection(t,'{','}') }
 	stringify_array ← λ(v){
 		seen.push(v)
-		t ← v.map(magicprop)
+		t ← v.map(stringify_indent)
 		for (i←0;i<t.length;i++) t[i]===undefined && (t[i] = 'null')
 		seen.pop()
 		↩ join_collection(t,'[',']') }
+	stringify_indent ← λ(v){↩ stringify(v).replace(/\n/g,'\n'+T) }
 	stringify ← λ(v){
+		if (seen.indexOf(v) !== -1)
+			throw TypeError('Converting circular structure to JSON')
 		if (v == null) ↩ 'null'
 		switch (typeof(v)==='object'? Object.prototype.toString.call(v) : typeof(v)) {
 			case 'string': case '[object String]': ↩ JSON.stringify(v)
@@ -71,7 +71,7 @@ main ← λ(){
 		})
 	roots ← fs(arg.in).find('>')
 	out ← fs(arg.out).find('*').filter(λ(v){↩ roots.some(λ(r){↩ v.indexOf(r) === 0})}).filter(λ(v){↩ !fs(arg.out+'/'+v).dir()})
-	q ← _.difference(out,written)
+	_.difference(out,written)
 		.filter(λ(v){ ↩ !/Package Control\./.test(v) })
 		.map(λ(v){ fs(arg.out+'/'+v).unlink() })
 	}

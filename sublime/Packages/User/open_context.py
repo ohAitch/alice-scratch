@@ -2,10 +2,11 @@ import sublime, sublime_plugin
 import os, subprocess
 import re
 
-FIND_URL_REGEX = r'\b(https?|file)://\S+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))'
+FIND_URL_REGEX = r'\b(https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))'
 IS_URL_REGEX = r'^(https?|file)://'
 
 # the github/google search text combo is weird. work on improving that?
+# should replace "\ " with " " (and "\\" with "\") in file urls
 
 def open(v,app=None,focus=True):
 	print("OPEN",v)
