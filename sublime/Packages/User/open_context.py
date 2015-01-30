@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import os, subprocess
 import re
+import urllib
 
 FIND_URL_REGEX = r'\b(https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))'
 IS_URL_REGEX = r'^(https?|file)://'
@@ -22,10 +23,10 @@ def open(v,app=None,focus=True):
 
 def github_url_of_file_in_repo(fl):
 	if not fl: return None
-	t = re.match("/Users/ali/ali/github/(\w+)/(.+)",fl)
+	t = re.match(r'/Users/ali/ali/github/([^/]+)/(.+)',fl)
 	if not t: return None
 	user = 'dreeves' if t.group(1) == 'beeminder' else 'alice0meta'
-	return 'https://github.com/'+user+'/'+t.group(1)+'/blob/master/'+t.group(2)
+	return 'https://github.com/'+urllib.parse.quote(user+'/'+t.group(1)+'/blob/master/'+t.group(2))
 
 def omnibox(v): return v if re.match(IS_URL_REGEX,v) else "https://www.google.com/search?q="+v
 
