@@ -1,3 +1,5 @@
+!these really all are minor notes!
+
 http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
 
 ---------------------------------------  ---------------------------------------
@@ -62,12 +64,9 @@ tho in clojure map autozips, kinda?
 ---------------------------- ==> lang_wishes.txt <== ---------------------------
 ---------------------------------------  ---------------------------------------
 
-¢ comments (algol does this)
 i want the word "clique" to be a meaningful macro or smth
 copy python-style print sometime: print([object, ...], *, sep=' ', end='\n', file=sys.stdout)
-JSON.parse,stringify really should be read,show? only if we're living in a world where everything is text?
 :keywords slash interned-strings are best enum. but they *need* better typo/wrongness detection (for the sake of fail-fast)
-we could add an it pronoun (in addition to the traditional "this") (we have been using "v"). but most of our use of "v" is due to other fixable things.
 
 ---------------------------------------  ---------------------------------------
 -------------------- ==> thoughts on elastic tabstops.α <== --------------------

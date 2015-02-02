@@ -1,28 +1,10 @@
 possibly useful.
 
-//frequencies ← λ{v.reduce(λ(r,v){rᵥ ←! (own(r,v)||0)+1; return r},{})}
-/*run ← {
-	in:   λ(s,f){return {id:setTimeout( f,s*1000), cancel:λ{cancelTimeout( this.id)}}},
-	every:λ(s,f){return {id:setInterval(f,s*1000), cancel:λ{cancelInterval(this.id)}}},
-	tomorrow:λ(f){
-		//! this logic is quite excessive. we should just run it tomorrow.
-		start ← new Date()
-		cancel ← false
-		r ← run.in(new Date(start).setHours(24,0,0,0)/1000 - start/1000,
-			λ(){if (new Date().getDate() = start.getDate()) run.in(1,λ); else {if (¬cancel) f()}})
-		return {cancel:λ(){cancel ←! true; r.cancel()}}}
-	}*/
-//windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
-//guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
+windows ← λ(n,l){r ← []; while (l.length ≥ n) {r.push(l[:n]); l ←! l[1:]} return r}
+guid ← λ{'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, λ(v){r ← Math.random()*16|0; return (v='x' ? r : (r&0x3|0x8)).toString(16)})}
 
-//float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
-//float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
-
-//===--------------------------------------------===// greenspuns //===--------------------------------------------===//
-
-var def = function(f){this[f.name] = f}.bind(this)
-
-//===--------------------------------------------===// misc mathy utils //===--------------------------------------------===//
+float_next_after  ← λ(v){r ← v=0?  1e-300 : v<0? v*0.9999999999999995 : v*1.0000000000000005; if (r=v) err(v); return r} // hack
+float_next_before ← λ(v){r ← v=0? -1e-300 : v<0? v*1.0000000000000005 : v*0.9999999999999995; if (r=v) err(v); return r} // hack
 
 function coercing_arith_v(f){return function(v){
 	if (v instanceof Array) {var r = []; for (var i=0;i<this.length;i++) r.push(f(this[i],v[i])); return r}
