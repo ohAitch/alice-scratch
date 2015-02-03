@@ -1,10 +1,19 @@
-!these really all are minor notes!
-
-http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
+i have always wished there was some good way of doing units, like `16 newtons` or `6 meters` (could not super-smart primitive wrappers do the trick?)
+consider aliasing :: to prototype
+fat arrow => binds the function to the current value of this #notes-from-coffeescript
+[don't forget] chained comparisons (e.g. a == b == c)
+ruby &:symbol is super cute
+[don't forget] nullsafing
+[don't forget] destructuring includes `[open, contents..., close] =` and `[first, ..., last] =` and you've even got `{name, age, height} =` and also stuff in function calls like `a.b(c...)` <-> `a.b.apply(a,c)`
+[don't forget] it looks like both alignment and indentation are totally redundant
+generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
+concatenation oughta be * but that is hard because reasons. what about ~ ?
 
 ---------------------------------------  ---------------------------------------
 ----------------------------- ==> clrs misc.txt <== ----------------------------
 ---------------------------------------  ---------------------------------------
+
+http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
 
 ----- list comp syntaxes -----
 
