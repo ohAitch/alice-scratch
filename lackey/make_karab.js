@@ -85,7 +85,7 @@ function make_xml(lackey){
 	lackey = parse_lackey(lackey)
 	function keycode(v){return lackey.osx_keycode[v]}
 	function KeyCode(v){return v.match(/\d/)? 'KEY_'+v : v.match(/[a-z]/)? v.toUpperCase() : 'RawValue::0x'+keycode(v).toString(16)}
-	function kc_hex(v){return seq(v).map(function(v){return hex(v.charCodeAt(0),4).split('').map(function(v){return 'KeyCode::'+KeyCode(v)+',ModifierFlag::OPTION_L,'}).join('')}).join('')}
+	function kc_hex(v){return seq(v).map(function(v){var t = v.charCodeAt(0); return hex(t, t <= 0xffff? 4 : 5).split('').map(function(v){return 'KeyCode::'+KeyCode(v)+',ModifierFlag::OPTION_L,'}).join('')}).join('')}
 	var autogens = [
 	    '__KeyToKey__ KeyCode::PC_APPLICATION, VK_CONTROL, KeyCode::TAB,ModifierFlag::CONTROL_L|ModifierFlag::SHIFT_L',
 	    '__KeyToKey__ KeyCode::PC_APPLICATION, ModifierFlag::NONE, KeyCode::RawValue::0x82',
