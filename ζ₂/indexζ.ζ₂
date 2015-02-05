@@ -1,0 +1,23 @@
+I ← require('./index')
+
+argv ← process.argv.slice(2)
+
+if (argv.length === 0) {
+	ζ2_repl_start()
+} else switch (argv[0]) {
+	default:
+		// this is lame.
+		// we looked at https://github.com/jashkenas/coffeescript/blob/master/bin/coffee
+		// and https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee
+		// and http://nodejs.org/api/process.html
+		// for a better thing to do, but then we gave up.
+		eval(I.compile(fs(argv.splice(0,1)[0]).$).replace(/^#!.*/,''))
+	break; case '-c':
+		out ← fs(argv[-1])
+		argv.slice(1,-1).map(fs).map(λ(fl){
+			if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
+			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = I.compile_file(fl.$)
+			})
+	break; case '--version':
+		print('v'+JSON.parse(fs('package.json').$).version)
+}

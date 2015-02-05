@@ -12,7 +12,9 @@ var compile = module.exports.compile = function(v){
 			case '@': return 'this'
 			default: return semi===';'? 'var '+name+s+';' : 'var '+name+s+'='
 			}})}
-var compile_file = module.exports.compile_file = function(v){return compile(v).replace(/^(#!.*\n)?/,'$1require("zeta-two");')}
+var compile_file = module.exports.compile_file = function(v){return compile(v)
+	.replace(/^(#!.*\n)?/,'$1require("zeta-two");')
+	.replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony') }
 
 var requireζ2 = function(name,path){
 	try {return require(name)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e
@@ -20,4 +22,4 @@ var requireζ2 = function(name,path){
 		return require(name) } }
 
 requireζ2('./builtins',__dirname+'/builtins')
-if (!module.parent) requireζ2('./ζ₂',__dirname+'/ζ₂')
+if (!module.parent) requireζ2('./indexζ',__dirname+'/indexζ')

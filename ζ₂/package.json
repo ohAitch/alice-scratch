@@ -2,7 +2,7 @@
   "name": "zeta-two",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "description": "js plus batteries",
-  "version": "0.4.0",
+  "version": "0.4.15",
   "repository": {
     "type": "git",
     "url": "https://github.com/alice0meta/lang-alpha.git"
@@ -11,6 +11,7 @@
     "copy-paste": "^1.0.1",
     "moment": "^2.8.3",
     "priorityqueuejs": "^0.2.0",
+    "rimraf": "^2.2.8",
     "rwlock": "^4.0.0",
     "underscore": "^1.7.0"
   },
