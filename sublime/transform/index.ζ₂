@@ -7,6 +7,8 @@ arg ← {
 	out: process.argv[4],
 	}
 
+// json ← {read:JSON.parse, show:JSON.stringify} // these names should be used, i think, unless they have text connotations
+
 // this is my first attempt at stringifying json nicely.
 // i do not think it will be my last.
 json_pretty_stringify ← λ(v){

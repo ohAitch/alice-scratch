@@ -59,7 +59,8 @@
     {"scope": "green", "settings": {"foreground": "#00D000"}},
     {"scope": "purple", "settings": {"foreground": "#D050D0"}},
     {"scope": "yellow", "settings": {"foreground": "#E0D000"}},
-    {"scope": "bold", "settings": {"foreground": "#000000", "background": "#DDDDDD", "fontStyle": "bold"}}
+    {"scope": "bold", "settings": {"foreground": "#000000", "background": "#DDDDDD", "fontStyle": "bold"}},
+    {"scope": "italic", "settings": {"foreground":"#D8D8D3", "fontStyle": "italic"}}
   ],
   "uuid": "D8D5E82E-3D5B-46B5-B38E-8C841C21347D"
 }
