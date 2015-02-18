@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "chokidar": "*",
+    "minimist": "*",
+    "mkdirp": "*",
+    "moment": "*",
+    "underscore": "^1.6.0"
+  }
+}

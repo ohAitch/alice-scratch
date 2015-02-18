@@ -18,7 +18,8 @@ think about the prompt at the beginning and figure out what we want to do with t
 	> 	i want to say:
 	> 		# god i don't know. i'm sad.
 
-
+----------------------------- oop, we aborted this! ----------------------------
+and now we're moving to node 0.12 and that may break this entirely for a short time.
 
 
 var main = function(){

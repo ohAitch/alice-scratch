@@ -57,3 +57,5 @@ command_not_found_handle() {
 		fi
 	break; done
 	}
+
+# export NVM_DIR="/Users/ali/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
