@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-//---------------------------------// ζ₀.js //--------------------------------//
+// ---------------------------------- ζ₀.js --------------------------------- //
 
 global.fs = require('fs')
 global.path = require('path')
@@ -16,7 +16,7 @@ var mkdirp = require('mkdirp')
 	// { "bin" : { "npm" : "./cli.js" } }
 	// So, when you install npm, it'll create a symlink from the cli.js script to /usr/local/bin/npm.
 
-// ------------ utils ----------- //
+// --------- utils -------- //
 
 global.ζ0_def = function(o,m,get,set){Object.defineProperty(o,m,{configurable:true, enumerable:false, get:get, set:set}); return o}
 Function.prototype.def = function(m,get,set){Object.defineProperty(this.prototype,m,{configurable:true, enumerable:false, get:get, set:set}); return this}
@@ -28,7 +28,7 @@ _.range(0,5).forEach(function(i){Array.def('-'+i,function(){return this.length<i
 
 global.argv = {_:process.argv.slice(2)}
 
-// ------------ Path ------------ //
+// --------- Path --------- //
 
 // a file is a key-value pair in a sort of fuzzy-keyed dictionary with many types, but primarily "key array" and "byte array, usually interpreted as string"
 // it should have properties 0/key/path and 1/value/$
@@ -49,7 +49,7 @@ PathValue.prototype.toString = function(){return fs.readFileSync(this._path)+''}
 PathValue.prototype.split = function(v){return (this+'').split(v)}
 // PathValue.prototype.map = function(f){var t = this._path; return fs.readdirSync(t).map(function(v){return t+'/'+v}).map(f)}
 
-// ---- explictly hacky utils --- //
+// ------ explictly hacky utils ----- //
 
 PathValue.prototype.ζ0_SUB_BYs = function(b){return this.split(b)}
 global.ζ0_SUB_Fs = function(s,f){return s.split(f).slice(1).join(f)}
