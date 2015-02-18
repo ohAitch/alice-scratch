@@ -4,10 +4,10 @@ node_path ← require('path')
 util ← require('util')
 repl ← require('repl')
 vm ← require('vm')
+child_process ← require('child_process')
 
 PQueue ← require_if('priorityqueuejs')
 RWLock ← require_if('rwlock')
-copypaste ← require('copy-paste') // shit, this uses native shit; we should redo this in an osx-specific way
 rimraf ← require('rimraf')
 
 _ ← global._ = global.__ = require_if('underscore')
@@ -18,6 +18,19 @@ I ← require('./index')
 escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
 sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
 mkdir_p ← λ λ(v){try {fs.statSync(v).isDirectory() || fs.mkdirSync(v)} catch (e) {if(!e.code==='ENOENT')throw e; λ(node_path.dirname(v)); fs.mkdirSync(v)}}
+copypaste ← {
+	copy: λ(v){
+		t ← child_process.spawn('pbcopy')
+		t.stdin.setEncoding('utf8')
+		if (v.pipe) v.pipe(t.stdin)
+		else t.stdin.end(
+			Object.prototype.toString.call(v) === '[object Object]'? util.inspect(v, {depth:null}) :
+			Object.prototype.toString.call(v) === '[object Array]'? v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v, {depth:null})}).join('\n') :
+			Object.prototype.toString.call(v) === '[object String]'? v :
+				v.toString() )
+		},
+	paste: λ(){↩ child_process.execSync('pbpaste').toString()},
+	}
 
 global.ζ2_now = λ(){↩ Date.now() / 1000}
 global.ζ2_i = λ(v){↩ parseInt(v)}
@@ -26,14 +39,11 @@ global.ζ2_A = λ(v){↩ Array.prototype.slice.call(v)}
 Function.prototype.P = λ(){if (arguments.length === 0) ↩ @; a ← ζ2_A(arguments); θ←@; ↩ λ(){↩ θ.apply(null,arguments.length === 0? a : a.concat(ζ2_A(arguments)))}}
 Array.prototype.ζ2_take_while = λ(f){r ← []; _.any(@,λ(v,i){t ← f(v,i); t && r.push(v); ↩ !t}); ↩ r}
 global.ζ2_repl_start = λ(opts){
-	// really should only be added to a repl's global
-	global.copy = λ(v,cb){copypaste.copy(
-		v instanceof Array? v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,{depth:null})}).join('\n')
-			: v, cb)}
-	global.paste = copypaste.paste
+	_(global).extend(copypaste) // really should only be added to a repl's global
 	wrap ← λ(v){t ← v.replace(/\x1b\[.*?m/g,''); ↩ {$:v, split:λ(){↩ [t]}, valueOf:λ(){↩ v}}}
 	t ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:wrap('\x1b[32mζ₂\x1b[39m '),
-		eval:λ(code,ctx,fl,cb){try {
+		eval:λ(code,ctx,fl,cb){t←; try {
+			// if (t=code.match(/^(.*);↯$/)) {code = t[1]; } // etc. analogue of bashrc ;x
 			t ← vm.createScript(I.compile(code), {filename:fl, displayErrors:false})
 			cb(undefined, this.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(ctx,{displayErrors:false}))
 			} catch (e) {cb(e,undefined)} },
