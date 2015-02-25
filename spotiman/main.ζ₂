@@ -12,6 +12,8 @@ _ ← __
 // timer() is probably incorrect for its few uses. progress bar would be wonderful.
 // fix the problem where a global repl tramples over _
 
+// ----------------------------------- aux ---------------------------------- //
+
 timer ← λ λ(){t ← Date.now()/1000; r ← t - λ.now; λ.now = t; ↩ Math.round(r*100)/100+'s'}; timer()
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
 is_playlist ← λ(v){↩ v.type === undefined || v.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
@@ -22,61 +24,63 @@ Native ← λ(v,body){@.native = v; _(@).extend(body)}
 		λ(){↩ util.inspect(_(_(@).clone()).extend({native: magic_native}), {colors:true})}
 		})
 
-get_databaseoid ← λ(cb){
-	login ← λ(cb){
-		spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
-		spotify.on({ready:λ(e){cb(e,spotify)}})
-		auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
-		}
-	// so this should really be split into maybe like intern_track and tag_track
-	// something like this, except with memo accessible:
-		// intern_track ← (λ(){memo ← {}; ↩ λ(v){↩ memo[v.link] || (memo[v.link] = new Native(v,{
-		// 	name: v.name,
-		// 	link: v.link,
-		// 	artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
-		// 	album: (λ(v){↩ {name: v.name, link: v.link}})(v.album),
-		// 	tags: [],
-		// 	}) ) } })()
-		// tag_track ← λ(v,tag){
-		// 	// v.tags.push([tag.name, moment(v.createTime)])
-		// 	v.tags.push(tag.name)
-		// 	↩ v }
-	intern_track ← λ λ(v,tag){
-		λ.all[v.link] || (λ.all[v.link] = new Native(v,{
-			name: v.name,
-			link: v.link,
-			artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
-			album: (λ(v){↩ {name: v.name, link: v.link}})(v.album),
-			tags: [],
-			}) )
-		// λ.all[v.link].tags.push([tag.name, moment(v.createTime)])
-		λ.all[v.link].tags.push(tag.name)
-		↩ λ.all[v.link] }
-	intern_track.all = {}
-	waitForAllLoaded ← λ(spotify,cb){
-		t ← spotify.playlistContainer.getPlaylists()
-		poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
-			t = _(t.filter(is_playlist).map(λ(v){↩ v.getTracks()})).flatten(true)
-			poll(λ(){↩ t.every(λ(v){↩ v.isLoaded})},cb)
-			}) }
-	login(λ(e,spotify){
-	waitForAllLoaded(spotify,λ(){
-	t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
-	d ← _(_(t).countBy('name')).pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]})
-	if (d.length) print('[spotiman] oh no! duplicate tags!',d)
-	if (d.length) t = t.filter(λ(v){↩ d.indexOf(v.name) === -1})
-	t = t.filter(λ(v){↩ v.owner.canonicalName === spotify.sessionUser.canonicalName}) // it's unclean and hacky to do this
-	tags ← t.map(λ(v){
-		r ← new Native(v, {name: v.name})
-		r.tracks = v.getTracks().map(λ(t){↩ intern_track(t,r)})
-		↩ r})
-	tracks ← _(intern_track.all).values()
-	cb(null,[tags,tracks]) }) }) }
+// ----------------------------- getDatabaseoid ----------------------------- //
 
-get_databaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
+getDatabaseoid ← λ(cb){
+	loginAndWaitForAllLoaded ← (λ(){
+		login ← λ(cb){
+			spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
+			spotify.on({ready:λ(e){cb(e,spotify)}})
+			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
+			}
+		waitForAllLoaded ← λ(spotify,cb){
+			t ← spotify.playlistContainer.getPlaylists()
+			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
+				t = _(t.filter(is_playlist).map(λ(v){↩ v.getTracks()})).flatten(true)
+				poll(λ(){↩ t.every(λ(v){↩ v.isLoaded})},cb)
+				}) }
+		↩ λ(cb){login(λ(e,spotify){waitForAllLoaded(spotify,λ(){cb(e,spotify)})})}
+		})()
+
+	all_interned_tracks ← {}
+	intern_track ← (λ(){memo ← all_interned_tracks; ↩ λ(v){↩ memo[v.link] || (memo[v.link] = new Native(v,{
+		name: v.name,
+		link: v.link,
+		artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
+		album: (λ(v){↩ {name: v.name, link: v.link}})(v.album),
+		tags: [],
+		createTime: [],
+		}) ) } })()
+	tag_track ← λ(tag,v,native){
+		v.tags.push(tag.name)
+		v.createTime.push([tag.name, moment(native.createTime)])
+		↩ v }
+
+	loginAndWaitForAllLoaded(λ(e,spotify){
+		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
+		d ← _(_(t).countBy('name')).pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]})
+		if (d.length) print('[spotiman] oh no! duplicate tags!',d)
+		if (d.length) t = t.filter(λ(v){↩ d.indexOf(v.name) === -1})
+		t = t.filter(λ(v){↩ v.owner.canonicalName === spotify.sessionUser.canonicalName}) // it's unclean and hacky to do this
+		tags ← t.map(λ(v){ ↩ new Native(v, { name: v.name, tracks: v.getTracks().map(λ(t){↩ tag_track(v, intern_track(t), t)}) }) })
+		tracks ← _(all_interned_tracks).values()
+		cb(null,[tags,tracks]) }) }
+
+// ---------------------------------- main ---------------------------------- //
+
+switch (process.argv[2]) {
+default: print('invalid args')
+break; case undefined:
+getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
 	print('[spotiman] loaded db in',timer())
 
 	global.tags = tags; global.tracks = tracks; ζ2_repl_start()
 
 	// spotify.logout(λ(){rimraf('cache'); rimraf('settings'); exit maybe}) // will log you out
 })
+break; case 'backup': // terrible name, really
+getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
+	print(JSON.stringify(tracks,null,'\t'))
+	process.exit() //! augh
+})
+}
