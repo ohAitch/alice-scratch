@@ -6,4 +6,4 @@
 
 notes files: notes
 
-<other>: eh, nothing much
+<other>: eh, nothing important
