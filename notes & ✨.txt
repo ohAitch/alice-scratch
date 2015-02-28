@@ -1,5 +1,41 @@
-people tell me i should make ✨ available for people
------------------------------ we shall describe it -----------------------------
+----------------------- what are the big questions left? -----------------------
+
+so what *is* up with static typing?
+	well, it's a type of static annotation so that you can do static analysis
+	also it's a way of writing programs so that they're extra amenable to static analysis
+	and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
+
+do we have experience writing non-toy programs?
+	tagtime
+	ukuku
+	atcmit
+	some beeminder shit
+
+does this truly strike at the goal?
+	the official goal is: to create a new way of interacting with the javascript that exists in the world, so that we may program and collaborate with others (in this domain) much more cleanly and effectively
+	the failure goal is to gain the experience which would be gained by attempting the official goal.
+	is that really the goal? why does the goal specify "javascript"?
+
+the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
+	think about how this is relevant to ✨
+
+-------------------- for the stated goal, the big things are -------------------
+
+is a view of js
+reduced visual and/or semantic noise - e.g.:
+	[es6 arrows (only some?)] `λ(v){↩ ...}` versus `λ v:` or something else (end/fi/od/esac?)
+	`foo(bar)` versus `foo bar`
+	semicolons
+	[es6 some] bulky apis (e.g. prototype, arguments, length, slicing, ===, apply, bind, typeof)
+	[es6 some] destructuring (e.g. slicing, ranges)
+	separators: atomically-delimited -> separatorless. but: humans text redundant and fuzzy and trip over each other and so needs delimiting? or PEG magic?
+	partial application
+	pronoun syntax
+	statements
+	macros / whichever part it is of macros that is actually really useful (operators? hm. maybe _yes_)
+	[es6 most] cps / yield / generators
+
+-------------------------------- what is a view? -------------------------------
 
 degrees of "a view"
 	✨ :: ✨ -> logically equivalent js
@@ -14,55 +50,23 @@ degrees of "a view"
 but we might want to do magical transformations
 	to do magical transformations reversibly, we'd have to keep track of all steps and record this in the result
 
-what are the big things for ✨?
-	is a view of js
-	reduced visual and/or semantic noise - e.g.:
-		[es6 arrows (only some?)] `λ(v){↩ ...}` versus `λ v:` or something else (end/fi/od/esac?)
-		`foo(bar)` versus `foo bar`
-		semicolons
-		[es6 some] bulky apis (e.g. prototype, arguments, length, slicing, ===, apply, bind, typeof)
-		[es6 most] destructuring (e.g. slicing, ranges)
-		partial application
-		pronoun syntax
-		statements
-		macros / whichever part it is of macros that is actually really useful (operators? hm. maybe _yes_)
-		[es6 most] cps / yield / generators
+proposal: ⎋tag system wherein /⎋[^\s⎋]+/ forms a postfix annotation to record information that would have been lost in a transformation
 
-what are the big questions left unanswered?
-	so what *is* up with static typing?
-		well, it's a type of static annotation so that you can do static analysis
-		also it's a way of writing programs so that they're extra amenable to static analysis
-		and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
-	do we have experience writing non-toy programs?
-		tagtime
-		ukuku
-		atcmit
-		some beeminder shit
-	& more?
+js_rewrite: _x == (null|true|false) <-> _x ∈ \1 ⎋=
+js_rewrite: _x == undefined <-> _x == null ⎋u
+js_rewrite: _x === null || _x === undefined || _x === false <-> !_x
+js_rewrite: _x === null || _x === undefined <-> _x ∈ null
+js_rewrite: !_x <-> !_x ⎋f
+js_rewrite: void 0 <-> undefined ⎋v
+js_rewrite: void _x <-> (_x,undefined)⎋v
 
-but perhaps es6 has features that would take care of most of these big things [2015-02-22 some but not enough]
----------- so here are the notes remaining which we have not yet eaten ---------
+-> _x != null && _x !== false <-> !!_x ⎋=
+-> _x !== null && _x !== undefined <-> _x ∉ null
+-> _x != void 0 <-> _x ∉ null ⎋=uv
+-> _x != void 5 <-> _x ∉ (5,null) ⎋=uv
 
-separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?
+------------------------ important implementation notes ------------------------
 
-haskell magic
-algebraic datatypes (ocaml?)
-pattern matching (ocaml?)
-	what are the patterns that can be matched?
-		are they just json&spreads?
-		this would go quite nicely with algebraic datatypes, wouldn't it
-			wow, javascript is so imperative
-	how can they be matched?
-		is it just ordered-choice?
-			with ordered-choice, there are also "when" clauses to allow arbitrary logic matches
-		also has [a-z]
-	http://en.wikipedia.org/wiki/Perl_6_rules (? http://pegjs.org/ https://github.com/ingydotnet/pegex-js)
-http://elm-lang.org/ http://elm-lang.org/blog/Introducing-Elm-Reactor.elm
-powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
 we look at control flow, and we see "!= null" and "!== false" as the two fundamental things (but with a blurred "!= null && !== false")
-the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
-
-we could write a program by telling it to a human and having them execute it and/or tell me why it doesn't compile. or switch me and the human.
-
 js parser http://marijnhaverbeke.nl/acorn/ (https://babeljs.io/ ?) (see also http://git.io/es6features)
-useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
+we could write a program by telling it to a human and having them execute it and/or tell me why it doesn't compile. or switch me and the human.

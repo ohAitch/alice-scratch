@@ -10,6 +10,25 @@ generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).str
 concatenation oughta be * but that is hard because reasons. what about ~ ?
 custom numerical types are awesome. e.g. efficient computation with units, working conveniently with image data in hardware-friendly formats (see: julia)
 play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
+[old version - don't forget if it has anything important] "separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?"
+useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
+
+------- important but probably not in the scope of ✨ -------
+
+powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
+pattern matching (ocaml?)
+	what are the patterns that can be matched?
+		are they just json&spreads?
+		this would go quite nicely with algebraic datatypes, wouldn't it
+			wow, javascript is so imperative
+	how can they be matched?
+		is it just ordered-choice?
+			with ordered-choice, there are also "when" clauses to allow arbitrary logic matches
+		also has [a-z]
+	http://en.wikipedia.org/wiki/Perl_6_rules (? http://pegjs.org/ https://github.com/ingydotnet/pegex-js)
+haskell magic
+algebraic datatypes (ocaml?)
+http://elm-lang.org/ http://elm-lang.org/blog/Introducing-Elm-Reactor.elm
 
 ----- eh - not ready for these yet -----
 
