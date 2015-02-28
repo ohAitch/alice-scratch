@@ -8,6 +8,13 @@ ruby &:symbol is super cute
 [don't forget] it looks like both alignment and indentation are totally redundant
 generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
 concatenation oughta be * but that is hard because reasons. what about ~ ?
+custom numerical types are awesome. e.g. efficient computation with units, working conveniently with image data in hardware-friendly formats (see: julia)
+play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
+
+----- eh - not ready for these yet -----
+
+async: now investigating F# and Haskell! see http://wiki.haskell.org/MonadPlus_reform_proposal http://reddit.com/r/haskell/comments/1q6o2a/the_f_computation_expression_zoo_why_computation/ http://stackoverflow.com/questions/19586825/computation-expressions-for-a-haskell-programmer http://stackoverflow.com/questions/5996239/is-fs-implementation-of-monads-unique-with-respect-to-the-amount-of-keywords-a http://en.wikibooks.org/wiki/F_Sharp_Programming/Computation_Expressions#Monad_Primer http://github.com/visionmedia/co http://tomasp.net/academic/papers/async/async.pdf http://learnyouahaskell.com/functors-applicative-functors-and-monoids#functors-redux http://en.wikibooks.org/wiki/Haskell/Practical_monads http://wiki.haskell.org/How_to_write_a_Haskell_program http://mrob.com/pub/comp/hypercalc/hypercalc-javascript.html . (also, c# await is nice)
+haskell lens
 
 ---------------------------------------  ---------------------------------------
 ----------------------------- ==> clrs misc.txt <== ----------------------------
