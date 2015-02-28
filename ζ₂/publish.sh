@@ -10,5 +10,7 @@
 # 	}) }
 # then increment patch by 1
 
+[[ $1 ]] || { . ~/.bashrc; npmi; }
 npm publish .
+sleep 0.05
 npm install zeta-two -g

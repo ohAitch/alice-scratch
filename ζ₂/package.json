@@ -2,7 +2,7 @@
   "name": "zeta-two",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "description": "js plus batteries",
-  "version": "0.4.17",
+  "version": "0.4.24",
   "repository": {
     "type": "git",
     "url": "https://github.com/alice0meta/lang-alpha.git"

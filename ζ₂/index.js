@@ -5,7 +5,7 @@
 // requireζ2 is maybe actually quite bad since it doesn't handle changes to the source ??
 
 var compile = module.exports.compile = function(v){
-	return v.replace(/(?:λ(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)←(;?)|@)(?!['"])/g,
+	return v.replace(/(?:λ(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?)|@)(?!['"])/g,
 		function(v,name,s,semi){switch(v){
 			case 'λ': return 'function'; case 'λ λ': return 'function λ'
 			case '↩': case '↩ ': return 'return '

@@ -30,6 +30,12 @@ copypaste ← {
 				v.toString() )
 		},
 	paste: λ(){↩ child_process.execSync('pbpaste').toString()},
+	// this sucks. the name is so not intuitive.
+	clip: λ(v){switch (arguments.length) {default: throw '↯'
+		// this sucks. it really shouldn't just blindly eval the text.
+		break; case 0: t ← copypaste.paste().trim().split('\n').map(λ(v){↩ eval(v)}); ↩ t.length === 1? t[0] : t
+		break; case 1: copypaste.copy(v)
+		}},
 	}
 
 global.ζ2_now = λ(){↩ Date.now() / 1000}
