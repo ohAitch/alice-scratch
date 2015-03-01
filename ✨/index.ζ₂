@@ -1,0 +1,9 @@
+#!/usr/bin/env ζ₂
+
+// js parsers http://marijnhaverbeke.nl/acorn/ https://babeljs.io/
+
+babel ← require('babel')
+
+// fs('corpus2/underscore.js').$ = babel.transform(fs('corpus/underscore.js').$, {})
+global.q = babel.transform(fs('corpus/underscore.js').$, {})
+ζ2_repl_start()
