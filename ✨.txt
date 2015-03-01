@@ -1,23 +1,4 @@
------------------------ what are the big questions left? -----------------------
-
-so what *is* up with static typing?
-	well, it's a type of static annotation so that you can do static analysis
-	also it's a way of writing programs so that they're extra amenable to static analysis
-	and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
-
-do we have experience writing non-toy programs?
-	tagtime
-	ukuku
-	atcmit
-	some beeminder shit
-
-does this truly strike at the goal?
-	the official goal is: to create a new way of interacting with the javascript that exists in the world, so that we may program and collaborate with others (in this domain) much more cleanly and effectively
-	the failure goal is to gain the experience which would be gained by attempting the official goal.
-	is that really the goal? why does the goal specify "javascript"?
-
-the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
-	think about how this is relevant to ✨
+goal: to create a new way of interacting with existing javascript and humans much more painlessly and effectively (in this domain of javascript) - and regardless of whether we realize that, to gain the experience which is gained by attempting it
 
 -------------------- for the stated goal, the big things are -------------------
 
@@ -28,12 +9,14 @@ reduced visual and/or semantic noise - e.g.:
 	semicolons
 	[es6 some] bulky apis (e.g. prototype, arguments, length, slicing, ===, apply, bind, typeof)
 	[es6 some] destructuring (e.g. slicing, ranges)
+		https://stackoverflow.com/questions/24330902/how-does-term-rewriting-based-evaluation-work/24776426#24776426
 	separators: atomically-delimited -> separatorless. but: humans text redundant and fuzzy and trip over each other and so needs delimiting? or PEG magic?
 	partial application
 	pronoun syntax
 	statements
 	macros / whichever part it is of macros that is actually really useful (operators? hm. maybe _yes_)
 	[es6 most] cps / yield / generators
+	& more?
 
 -------------------------------- what is a view? -------------------------------
 
@@ -45,7 +28,7 @@ degrees of "a view"
 	logic is kept on the same line
 	outputs are readable in the target
 	outputs are idiomatic in the target
-	→ now ✨ is truely a view of js, and vice-versa
+	-> now ✨ is truely a view of js, and vice-versa
 
 but we might want to do magical transformations
 	to do magical transformations reversibly, we'd have to keep track of all steps and record this in the result
@@ -68,5 +51,14 @@ js_rewrite: void _x <-> (_x,undefined)⎋v
 ------------------------ important implementation notes ------------------------
 
 we look at control flow, and we see "!= null" and "!== false" as the two fundamental things (but with a blurred "!= null && !== false")
-js parser http://marijnhaverbeke.nl/acorn/ (https://babeljs.io/ ?) (see also http://git.io/es6features)
+js parser http://marijnhaverbeke.nl/acorn/ (https://babeljs.io/ ?)
+now that es6 is existing, we need to account for http://git.io/es6features
 we could write a program by telling it to a human and having them execute it and/or tell me why it doesn't compile. or switch me and the human.
+corpus stuff https://github.com/jashkenas/underscore/blob/master/underscore.js https://github.com/caolan/async/blob/master/lib/async.js
+
+------------------------------------ <edge> ------------------------------------
+
+since it's a view - can we *actually* define the language incrementally this time?
+a set of rewrite rules might just do it
+
+we could test this idea without thinking about it any further by writing a ✨ that just does one or a few simple rules and then applying it to some javascript corpuses

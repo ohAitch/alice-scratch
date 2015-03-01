@@ -12,6 +12,7 @@ custom numerical types are awesome. e.g. efficient computation with units, worki
 play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
 [old version - don't forget if it has anything important] "separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?"
 useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
+the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
 
 ------- important but probably not in the scope of ✨ -------
 
@@ -29,6 +30,12 @@ pattern matching (ocaml?)
 haskell magic
 algebraic datatypes (ocaml?)
 http://elm-lang.org/ http://elm-lang.org/blog/Introducing-Elm-Reactor.elm
+so what *is* up with static typing?
+	* well, it's a type of static annotation so that you can do static analysis
+	* also it's a way of writing programs so that they're extra amenable to static analysis
+	-> but we are guessing that those two things should be replaced with hints and questions
+	* and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
+	-> now that is an interesting idea. but i think we need experience implementing ✨ before we're ready to implement ✨ with this feature.
 
 ----- eh - not ready for these yet -----
 
