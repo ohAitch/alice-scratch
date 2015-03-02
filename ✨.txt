@@ -63,3 +63,9 @@ a set of rewrite rules might just do it
 we could test this idea without thinking about it any further by writing a ✨ that just does one or a few simple rules and then applying it to some javascript corpuses
 
 initial testing result: existing parsers are shitty. ✨ probably depends entirely on having a very good parser - should we start working on that?
+
+aaaa making this truly invertible is going to be annoying. i'm going to have to handle all weird whitespace characters perfectly and stuff. :(
+
+alright - @2015-03-01 we're excited about this but we don't have time for it now.
+acorn looks like a good parser to base things off. (do look at the branches and see if there's some useful magical code not in master)
+	es6 grammar https://people.mozilla.org/~jorendorff/es6-draft.html#sec-lexical-grammar
