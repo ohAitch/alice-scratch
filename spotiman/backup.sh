@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 . ~/.bashrc
 
-./main.sh backup > ~/ali/history/auto/spotify/$(date_i).json
+out=~/ali/history/auto/spotify/$(date_i).json
+./main.sh backup > "$out"
+echo "$out"

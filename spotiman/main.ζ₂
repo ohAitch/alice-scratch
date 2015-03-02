@@ -52,7 +52,7 @@ getDatabaseoid ← λ(cb){
 		createTime: [],
 		}) ) } })()
 	tag_track ← λ(tag,v,native){
-		v.tags.push(tag.name)
+		!_(v.tags).contains(tag.name) && v.tags.push(tag.name)
 		v.createTime.push([tag.name, moment(native.createTime)])
 		↩ v }
 

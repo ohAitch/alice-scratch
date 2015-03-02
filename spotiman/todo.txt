@@ -12,42 +12,36 @@ redo spotiman (make tags/lists of "these songs went together well once!" etc)
 ✓ implement backups
 think about the prompt at the beginning and figure out what we want to do with this
 	> implement track adding and removing
+		http://www.node-spotify.com/api.html#playlist
+		var main = function(){
+			var add_tracks = function(p,ts){
+				print('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
+				p.addTracks(ts.slice(0,500).map(function(v){return v.original}),0)
+				}
+			var pl = _.indexBy(playlists(),'name')
+			var tr = _.indexBy(tracks(),'link')
+			var get_tracks = function(p){return p.getTracks().map(function(v){return tr[v.link]})}
+
+			var t = tracks().filter(function(v){return is(v.playlists['meh pile']) && Object.keys(v.playlists).length>=2})
+			
+			//t = _.sortBy(t.map(function(v){return Object.keys(v.playlists).length>=2}))
+			//print(pl.clbuttic.removeTracks(t))
+			//t = t.filter(function(v){return Object.keys(v.playlists).length>=2})
+			t.map(function(v,i){print(i,v.unique_name)})
+			//print(get_tracks(pl['don\'t want to hear again']))
+			//add_tracks(pl['meh pile'],tracks().filter(function(v){return v.playlists.length===1 && v.playlists[0]==='mehp'}))
+			}
 	> implement tags
 	> implement easy tag querying (e621.net? sql? ask google about this)
+		track: ?name? [
+			α:<artist>
+			ρ:<album>
+			τ:<track>
+			λ:<length>
+			μ:local
+			[playlist]
+			]
 	> 	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})
 	> 	i want to say:
 	> 		# god i don't know. i'm sad.
-
------------------------------ oop, we aborted this! ----------------------------
-and now we're moving to node 0.12 and that may break this entirely for a short time.
-
-
-var main = function(){
-	var add_tracks = function(p,ts){
-		print('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
-		p.addTracks(ts.slice(0,500).map(function(v){return v.original}),0)
-		}
-	var pl = _.indexBy(playlists(),'name')
-	var tr = _.indexBy(tracks(),'link')
-	var get_tracks = function(p){return p.getTracks().map(function(v){return tr[v.link]})}
-
-	var t = tracks().filter(function(v){return is(v.playlists['meh pile']) && Object.keys(v.playlists).length>=2})
-	
-	//t = _.sortBy(t.map(function(v){return Object.keys(v.playlists).length>=2}))
-	//print(pl.clbuttic.removeTracks(t))
-	//t = t.filter(function(v){return Object.keys(v.playlists).length>=2})
-	t.map(function(v,i){print(i,v.unique_name)})
-	//print(get_tracks(pl['don\'t want to hear again']))
-	//add_tracks(pl['meh pile'],tracks().filter(function(v){return v.playlists.length===1 && v.playlists[0]==='mehp'}))
-	}
-
-track: ?name? [
-	α:<artist>
-	ρ:<album>
-	τ:<track>
-	λ:<length>
-	μ:local
-	[playlist]
-	]
-
-http://www.node-spotify.com/api.html#playlist
+	> 		tracks where createTime * 0 group max size > 1
