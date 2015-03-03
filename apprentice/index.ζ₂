@@ -1,0 +1,57 @@
+#!/usr/bin/env ζ₂
+
+child_process ← require('child_process')
+
+fs ← fs_; _ ← __
+
+sublime_open ← λ(v){child_process.exec('"'+'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'+'" "'+v+'"')}
+sublime_eval ← λ(v){↩ JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 -d @-', {input: v}))}
+sublime_view ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||0)+','+(b||1000000)+')))')}
+
+global.__SPECIAL__ = λ(v){
+	v = v.slice(1).trim()
+	t ← [
+		[(/^hi$/), λ(){print("hi <3")}],
+		[(/^don't worry, i'm gonna make you better :\)$/), λ(){print(":D")}],
+		[(/^i (want to|wanna) refactor (a standalone (javascript|js) file|some (javascript|js)|(javascript|js))$/), λ(){
+			t ← fs('.').find('> .js')
+			u ← _(t).indexBy()['index.js'] || _(t).indexBy()['main.js'] || t[0]
+			u?
+				print(u,"?") :
+				print("okay. which?")
+			}],
+		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨
+		[(/^nah. (\S+) (?:over )?\(?in (\S+?)\)?$/), λ(m,file,place){
+			print(place,"?")
+			// should: print("oh,",fs(process.env.HOME+'/ali').findˢ('#'+place).next().value,"?")
+			}],
+		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine
+		[(/^that's a project of mine$/), λ(){
+			thing ← '✨'
+			t ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
+			print("at",t,"?")
+			}],
+		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine -> at /Users/ali/ali/github/lang-alpha/✨ ? -> yep
+		[(/^yep$/), λ(){
+			name ← 'acorn.js'
+			thing ← '✨'
+			place ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
+			file ← place+'/'+name
+			if (!fs(file).exists()) {
+				print("er, sorry, i don't see anything at",file)
+			} else {
+				print("here, let's open it")
+				sublime_open(file)
+			}
+			}],
+		[(/^(hm. )?can you talk to sublime text\?$/), λ(){
+			print("a little bit! look, here's the top of your current view:")
+			print(sublime_view(0,100).replace(/\n$/,'').split('\n').map(λ(v){↩ '> '+v}).join('\n'))
+			}],
+		]
+	t.some(λ(t){u←;
+		↩ (u=v.match(t[0]))? (t[1].apply(null,u), true) : false
+		}) || print("i am sorry")
+	}
+
+ζ2_repl_start()
