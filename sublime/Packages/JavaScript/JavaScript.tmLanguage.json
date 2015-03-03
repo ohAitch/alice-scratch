@@ -2,7 +2,7 @@
   "comment": "JavaScript Syntax: version 2.0",
   "fileTypes": ["js", "htc", "jsx"],
   "firstLineMatch": "^#!/.*",
-  "foldingStartMarker": "^.*\\b(function|λ)\\s*([\\wαβγδεζηθικλμνξπρστυφχψω]+\\s*)?\\([^\\)]*\\)(\\s*\\{[^\\}]*)?\\s*$",
+  "foldingStartMarker": "^.*\\b(function|λ)\\s*(\\*)?\\s*([\\wαβγδεζηθικλμνξπρστυφχψω]+\\s*)?\\([^\\)]*\\)(\\s*\\{[^\\}]*)?\\s*$",
   "foldingStopMarker": "^\\s*\\}",
   "keyEquivalent": "^~J",
   "name": "JavaScript",
@@ -22,13 +22,14 @@
         "3": {"name": "entity.name.function.js"},
         "4": {"name": "keyword.operator.js"},
         "5": {"name": "storage.type.function.js"},
-        "6": {"name": "entity.name.function.js"},
-        "7": {"name": "punctuation.definition.parameters.begin.js"},
-        "8": {"name": "variable.parameter.function.js"},
-        "9": {"name": "punctuation.definition.parameters.end.js"}
+        "6": {"name": "keyword.operator.js"},
+        "7": {"name": "entity.name.function.js"},
+        "8": {"name": "punctuation.definition.parameters.begin.js"},
+        "9": {"name": "variable.parameter.function.js"},
+        "10": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: Sound.prototype.play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.(prototype)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.(prototype)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.prototype.js"
     },
     {
@@ -48,13 +49,14 @@
         "2": {"name": "entity.name.function.js"},
         "3": {"name": "keyword.operator.js"},
         "4": {"name": "storage.type.function.js"},
-        "5": {"name": "entity.name.function.js"},
-        "6": {"name": "punctuation.definition.parameters.begin.js"},
-        "7": {"name": "variable.parameter.function.js"},
-        "8": {"name": "punctuation.definition.parameters.end.js"}
+        "5": {"name": "keyword.operator.js"},
+        "6": {"name": "entity.name.function.js"},
+        "7": {"name": "punctuation.definition.parameters.begin.js"},
+        "8": {"name": "variable.parameter.function.js"},
+        "9": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: Sound.play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
@@ -62,38 +64,41 @@
         "1": {"name": "entity.name.function.js"},
         "2": {"name": "keyword.operator.js"},
         "3": {"name": "storage.type.function.js"},
-        "4": {"name": "entity.name.function.js"},
-        "5": {"name": "punctuation.definition.parameters.begin.js"},
-        "6": {"name": "variable.parameter.function.js"},
-        "7": {"name": "punctuation.definition.parameters.end.js"}
+        "4": {"name": "keyword.operator.js"},
+        "5": {"name": "entity.name.function.js"},
+        "6": {"name": "punctuation.definition.parameters.begin.js"},
+        "7": {"name": "variable.parameter.function.js"},
+        "8": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\\wαβγδεζηθικλμνξπρστυφχψω?$]*)\\s*(=|←)\\s*(function|λ)\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\\wαβγδεζηθικλμνξπρστυφχψω?$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
       "captures": {
         "1": {"name": "storage.type.function.js"},
-        "2": {"name": "entity.name.function.js"},
-        "3": {"name": "punctuation.definition.parameters.begin.js"},
-        "4": {"name": "variable.parameter.function.js"},
-        "5": {"name": "punctuation.definition.parameters.end.js"}
+        "2": {"name": "keyword.operator.js"},
+        "3": {"name": "entity.name.function.js"},
+        "4": {"name": "punctuation.definition.parameters.begin.js"},
+        "5": {"name": "variable.parameter.function.js"},
+        "6": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match regular function like: function myFunc(arg) { … }",
-      "match": "\\b(function|λ)\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
+      "match": "\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
       "captures": {
         "1": {"name": "entity.name.function.js"},
         "2": {"name": "storage.type.function.js"},
-        "3": {"name": "entity.name.function.js"},
-        "4": {"name": "punctuation.definition.parameters.begin.js"},
-        "5": {"name": "variable.parameter.function.js"},
-        "6": {"name": "punctuation.definition.parameters.end.js"}
+        "3": {"name": "keyword.operator.js"},
+        "4": {"name": "entity.name.function.js"},
+        "5": {"name": "punctuation.definition.parameters.begin.js"},
+        "6": {"name": "variable.parameter.function.js"},
+        "7": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: foobar: function() { … }",
-      "match": "\\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*:\\s*\\b(function|λ)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
+      "match": "\\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()(.*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.json.js"
     },
     {
@@ -106,14 +111,15 @@
         "6": {"name": "punctuation.definition.string.begin.js"},
         "7": {"name": "entity.name.function.js"},
         "8": {"name": "punctuation.definition.string.end.js"},
-        "9": {"name": "entity.name.function.js"},
-        "10": {"name": "entity.name.function.js"},
-        "11": {"name": "punctuation.definition.parameters.begin.js"},
-        "12": {"name": "variable.parameter.function.js"},
-        "13": {"name": "punctuation.definition.parameters.end.js"}
+        "9": {"name": "storage.type.function.js"},
+        "10": {"name": "keyword.operator.js"},
+        "11": {"name": "entity.name.function.js"},
+        "12": {"name": "punctuation.definition.parameters.begin.js"},
+        "13": {"name": "variable.parameter.function.js"},
+        "14": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "Attempt to match \"foo\": function",
-      "match": "(?:((')([^']*)('))|((\")([^\"]*)(\")))\\s*:\\s*\\b(function|λ)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*)(\\))(?=\\s*\\{)",
+      "match": "(?:((')([^']*)('))|((\")([^\"]*)(\")))\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*)(\\))(?=\\s*\\{)",
       "name": "meta.function.json.js"
     },
     {
@@ -154,7 +160,7 @@
       "name": "storage.modifier.js"
     },
     {
-      "match": "\\b(break|case|catch|continue|default|do|else|finally|for|goto|if|import|package|return|switch|throw|try|while)\\b",
+      "match": "\\b(break|case|catch|continue|default|do|else|finally|for|goto|if|import|package|return|yield|switch|throw|try|while)\\b|\\byield\\*",
       "name": "keyword.control.js"
     },
     {"match": "\\b(delete|instanceof|new|typeof|with)\\b", "name": "keyword.operator.js"},
@@ -198,7 +204,7 @@
     {"match": "↩", "name": "magic.more.js"},
     {"match": "\\b(Infinity|NaN|undefined)\\b", "name": "constant.language.js"},
     {
-      "begin": "(?<=[=(:]|^|return|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
+      "begin": "(?<=[=(:]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
       "beginCaptures": {"1": {"name": "punctuation.definition.string.begin.js"}},
       "end": "(/)[igm]*",
       "endCaptures": {"1": {"name": "punctuation.definition.string.end.js"}},
