@@ -43,5 +43,7 @@
 	// { "keys": ["tab"], "command": "insert_best_completion", "args": {"default": "\t", "exact": false} },
 	// { "keys": ["tab"], "command": "indent" },
 
+	{ "keys": ["ctrl+enter"], "command": "open_context", "args": {"type": "link"} },
+
 	null
 ]

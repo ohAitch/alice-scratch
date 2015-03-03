@@ -10,7 +10,7 @@ IS_URL_REGEX = r'^(https?|file)://'
 # should replace "\ " with " " (and "\\" with "\") in file urls
 
 def open(v,app=None,focus=True):
-	print("OPEN",v)
+	print("[OPEN]",v)
 	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 	

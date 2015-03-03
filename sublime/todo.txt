@@ -1,1 +1,12 @@
 elastic tabstops would be wonderful
+
+wtf is up with dictionaries like
+      "captures": {
+        "1": {"name": "storage.type.function.js"},
+        "2": {"name": "keyword.operator.js"},
+        "3": {"name": "entity.name.function.js"},
+        "4": {"name": "punctuation.definition.parameters.begin.js"},
+        "5": {"name": "variable.parameter.function.js"},
+        "6": {"name": "punctuation.definition.parameters.end.js"}
+      },
+that should really be an array
