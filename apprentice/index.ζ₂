@@ -1,57 +1,178 @@
 #!/usr/bin/env ζ₂
 
 child_process ← require('child_process')
+path ← require('path')
 
 fs ← fs_; _ ← __
 
-sublime_open ← λ(v){child_process.exec('"'+'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'+'" "'+v+'"')}
-sublime_eval ← λ(v){↩ JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 -d @-', {input: v}))}
-sublime_view ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||0)+','+(b||1000000)+')))')}
+aif ← λ(v){↩ v instanceof Array? v : [v]}
 
-global.__SPECIAL__ = λ(v){
-	v = v.slice(1).trim()
-	t ← [
-		[(/^hi$/), λ(){print("hi <3")}],
-		[(/^don't worry, i'm gonna make you better :\)$/), λ(){print(":D")}],
-		[(/^i (want to|wanna) refactor (a standalone (javascript|js) file|some (javascript|js)|(javascript|js))$/), λ(){
-			t ← fs('.').find('> .js')
-			u ← _(t).indexBy()['index.js'] || _(t).indexBy()['main.js'] || t[0]
-			u?
-				print(u,"?") :
-				print("okay. which?")
-			}],
-		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨
-		[(/^nah. (\S+) (?:over )?\(?in (\S+?)\)?$/), λ(m,file,place){
-			print(place,"?")
-			// should: print("oh,",fs(process.env.HOME+'/ali').findˢ('#'+place).next().value,"?")
-			}],
-		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine
-		[(/^that's a project of mine$/), λ(){
-			thing ← '✨'
-			t ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
-			print("at",t,"?")
-			}],
-		// wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine -> at /Users/ali/ali/github/lang-alpha/✨ ? -> yep
-		[(/^yep$/), λ(){
-			name ← 'acorn.js'
-			thing ← '✨'
-			place ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
-			file ← place+'/'+name
-			if (!fs(file).exists()) {
-				print("er, sorry, i don't see anything at",file)
-			} else {
-				print("here, let's open it")
-				sublime_open(file)
-			}
-			}],
-		[(/^(hm. )?can you talk to sublime text\?$/), λ(){
-			print("a little bit! look, here's the top of your current view:")
-			print(sublime_view(0,100).replace(/\n$/,'').split('\n').map(λ(v){↩ '> '+v}).join('\n'))
-			}],
-		]
-	t.some(λ(t){u←;
-		↩ (u=v.match(t[0]))? (t[1].apply(null,u), true) : false
-		}) || print("i am sorry")
+sublime_open ← λ(v){child_process.exec('"'+'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'+'" "'+v+'"')}
+sublime_eval ← λ(v){t ← JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 --data-binary @-', {input: v})); ↩ t === null? undefined : t}
+// sublime_view ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||0)+','+(b||1000000)+')))')}
+
+parse ← [
+	[(/^(hi!?|don't worry, i'm gonna make you better :\)|wow, this is a mess|thanks <3|yay)$/), ['small talk']],
+	[(/^(yep|yeah|yes)$/), ['yes']],
+	[(/^(nah|nope|no)$/), ['no']],
+	[(/^((?:like[,.] )?(\S+) (?:over )?\(?in (\S+?)\)?\.?)$/), ['noun: $thing in $place']],
+	[(/^((?:nah|nope|no)[.,]) ((\S+) (?:over )?\(?in (\S+?)\)?\.?)$/), ['no','noun: $thing in $place']],
+	[(/^(i (?:want to|wanna) refactor (.+))$/), ['wants to refactor $thing']],
+	[(/^(that's a project of mine)$/), ['it is a project of mine']],
+	[(/^((hm[.,] )?can you talk to sublime( text)?\?)$/), ['inquiry: you can talk to sublime text']],
+	[(/^(help me do a morning update)$/), ['help me do a morning update']],
+	// [(/^(belay that)$/), ['↯']],
+	]
+parse_sentences ← λ(v){
+	t ← parse.map(λ(p){t←; ↩ (t=v.match(p[0]))? [p[1], t.slice(1)] : null}).filter(λ(v){↩ v})[0]
+	↩ !t? [{meaning: '↯', source: v, args: []}] :
+		t[0].map(λ(v){↩ {
+			meaning: v,
+			source: t[1].splice(0,1)[0],
+			args: t[1].splice(0,(v.match(/\$/g)||[]).length),
+			} })
 	}
 
+context ← []
+ctx_print ← false
+ctx_push ← λ(v){ctx_print && print('# ctx-push:'+Array(context.length+1).join('*'),'*',_(v).pick('type','v')); context.push(v)}
+ctx_pop ← λ(){t ← context.pop(); ctx_print && print('# ctx-pop:'+Array(context.length+1).join('*'),'*'); ↩ t}
+sen←;
+
+inquire ← λ(cb,this_sen,inquiry,msg){
+	ctx_push({type:'my_inquiry', replying_to:this_sen, v:inquiry, goto_:cb})
+	print.apply(null,aif(msg))
+	}
+
+mega_table ← {
+	'↯': λ(){print("sorry, i'm totally at a loss to parse that")},
+	'small talk': λ(){print("small talk acknowledged :P")},
+	'yes': λ(){t←;
+		if (context.length === 1 && context[0].type === 'my_inquiry' && (t=context[0].v.match(/^noun: (.*)$/))) {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:t[1]}); sen = v.replying_to; v.goto_()
+		} else if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'proposed: go to sleep log') {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:true}); sen = v.replying_to; v.goto_()
+		} else if (context.length === 2 && context[1].type === 'my_inquiry' && (t=context[1].v.match(/^inquiry: (.+?) is a project of yours at (.+?)$/))) {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:t[2]}); sen = v.replying_to; v.goto_()
+		} else {
+			print("..."); throw Error('↯')
+		}
+		},
+	'no': λ(){t←;
+		if (context.length === 1 && context[0].type === 'my_inquiry' && (t=context[0].v.match(/^noun: (.*)$/))) {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:null}); sen = v.replying_to; v.goto_()
+		} else if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'proposed: go to sleep log') {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:false}); sen = v.replying_to; v.goto_()
+		} else {
+			print("..."); throw Error('↯')
+		}
+		},
+	'noun: $thing in $place': λ(){t←sen.args; thing ← t[0]; place ← t[1]
+		if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'noun') {
+			v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:['noun: $thing in $place',thing,place]}); sen = v.replying_to; v.goto_()
+		} else {
+			print("..."); throw Error('↯')
+		}
+		},
+	'wants to refactor $thing': λ(){t←sen.args; thing ← t[0]
+		if (thing.match(/^(a standalone (javascript|js) file|some (javascript|js)|(javascript|js))$/)) {
+			// know no way in which this is a sequitur
+			if (context.length) {context = []; print("(assuming non-sequitur)")}
+			// look for js files in schelling places
+			schelling_places ← ['.']
+			l ← _(schelling_places.map(λ(v){↩ fs(v).find('> .js')})).flatten(false).map(λ(v){↩ _(path.parse(v)).extend({v:v})})
+			// prioritize schelling filenames
+			li ← _(l).groupBy('name'); t = li['index'].concat(li['main']||[]); l = t.length? t : l.slice(0,1)
+			l = _(l).map('v')
+			// ask about them
+			l.length===0? inquire(mega_table.INQ_0,sen, 'noun', "okay. i didn't find any in the schelling places. point me to it?") :
+			l.length===1? inquire(mega_table.INQ_1,sen, 'noun: '+l[0], ["?:",l[0]]) :
+				inquire(null,sen, 'noun:*\n'+l.join('\n'), "which? i found\n"+l.join('\n'))
+		} else {
+			// know no way in which this is a sequitur
+			if (context.length) {context = []; print("(assuming non-sequitur)")}
+			// is that a file in a schelling place?
+			schelling_places ← ['.']
+			l ← _(schelling_places.map(λ(v){↩ fs(v).find('> #'+thing)[0]})).filter(λ(v){↩ v})[0]
+			// if so, tell her my guess and open it
+			if (l) {
+				print("(assuming you mean "+l+")")
+				print("okay, let's open it!")
+				sublime_open(l)
+			// else, ask for more information
+			} else {
+				inquire(mega_table.INQ_0,sen, 'noun', "eep. i didn't find it in any of the schelling places. also i don't think i can remember it. can you point me to it again, in more detail?")
+			}
+		}
+		},
+	'INQ_0': λ(){
+		if (context.length === 1 && context[0].type === 'ur_answer' && context[0].v[0] === 'noun: $thing in $place') {
+			v ← context[0]; thing ← v.v[1]; place ← v.v[2]
+			guess ← fs(process.env.HOME+'/ali').findˢ('#'+place).next().value
+			inquire(mega_table.INQ_2,sen,'inquiry: '+place+' is a project of yours at '+guess,["is",place,"a project of yours at",guess,"?"])
+			// also reasonable: print(place,"?")
+		} else {
+			print("..."); throw Error('↯')
+		}
+		},
+	'INQ_1': λ(){
+		if (context.length === 1 && context[0].type === 'ur_answer' && context[0].v) {
+			v ← ctx_pop()
+			print("here, let's open it")
+			sublime_open(v.v)
+		} else {
+			v ← ctx_pop()
+			inquire(mega_table.INQ_0,sen, 'noun', "okay. point me to it?")
+		}
+		},
+	'INQ_2': λ(){
+		if (context.length === 2 && context[1].type === 'ur_answer' && fs(context[1].v+'/'+context[0].v[1]).exists()) {
+			// 		if (!fs(file).exists()) {
+			// 			print("er, sorry, i don't see anything at",file)
+			file ← context[1].v+'/'+context[0].v[1]
+			ctx_pop(); ctx_pop()
+			print("here, let's open it")
+			sublime_open(file)
+		} else {
+			print("..."); throw Error('↯')
+		}
+		},
+	'it is a project of mine': λ(){
+		print("..."); throw Error('↯')
+		// 	// // wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine
+		// 	// [(/^that's a project of mine$/), λ(){
+		// 	// 	thing ← '✨'
+		// 	// 	t ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
+		// 	// 	print("at",t,"?")
+		// 	// 	}],
+		},
+	'inquiry: you can talk to sublime text': λ(){print("a little bit! i can read text and write text and open files.")},
+	'help me do a morning update': λ(){
+		// know no way in which this is a sequitur
+		if (context.length) {context = []; print("(assuming non-sequitur)")}
+
+		sublime_open(fs('~/ali/scratch/planspad').path)
+		setTimeout(λ(){ sublime_eval("import re\nt = view.substr(sublime.Region(0,view.size()))\nt = re.search(r'---+ percolation ---+[\\s\\S]*?---+ ready ---+[\\s\\S]*?(\\n)\\n*---+ queue ---+[\\s\\S]*?(\\n[ \\t]+)(.+)',t)\nview.run_command('exec_edit',{'v':'view.erase(edit,sublime.Region('+repr(t.start(2))+','+repr(t.end(3))+'))\\nview.insert(edit,'+repr(t.end(1))+','+repr(t.group(3)+'\\n')+')'})") },300)
+		print("i've updated your queue.")
+
+		inquire(mega_table.INQ_3,sen,'proposed: go to sleep log',"-> sleep log now?")
+		},
+	'INQ_3': λ(){
+		if (context.length !== 1) {print("..."); throw Error('↯')}
+		v ← ctx_pop()
+		if (v.v) {
+			sublime_open(fs('~/ali/scratch/records.txt').path)
+			setTimeout(λ(){ sublime_eval('view.show(view.size())\nview.sel().clear()\nview.sel().add(sublime.Region(view.size()))') },300)
+			print('done :)')
+		} else {
+			print('alright. do it sometime today, though!')
+		}
+		},
+	}
+
+global.__SPECIAL__ = λ(v){parse_sentences(v.slice(1).trim()).map(λ(sen_){sen = sen_
+	;(mega_table[sen.meaning]||λ(){throw '↯'})()
+	}) }
+
+// global.e = λ(v){↩ eval(v)}
 ζ2_repl_start()
