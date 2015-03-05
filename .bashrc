@@ -33,8 +33,9 @@ beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json
 npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 jz() { p | jsζ₂ | c; x; }
 
+#! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place
-export PATH="./node_modules/.bin:/usr/local/bin:$PATH:$(echo ~/go/bin):$(echo ~/Library/Haskell/bin):."
+export PATH="./node_modules/.bin:/usr/local/bin:$PATH:$(echo ~/go/bin):$(echo ~/Library/Haskell/bin):/Applications/Racket v6.1.1/bin:."
 export GOPATH=~/go #! terrible place
 export GITHUB_TOKEN=$(cat ~/.auth/github)
 
