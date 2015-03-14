@@ -204,7 +204,7 @@
     {"match": "↩", "name": "magic.more.js"},
     {"match": "\\b(Infinity|NaN|undefined)\\b", "name": "constant.language.js"},
     {
-      "begin": "(?<=[=(:]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
+      "begin": "(?<=[=(:\\[]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
       "beginCaptures": {"1": {"name": "punctuation.definition.string.begin.js"}},
       "end": "(/)[igm]*",
       "endCaptures": {"1": {"name": "punctuation.definition.string.end.js"}},

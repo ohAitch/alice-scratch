@@ -40,9 +40,9 @@
     {"name": "yellow", "match": "\\B←(?=[\\w\".])[^←\\n]+?(?<=[\\w\".])←\\B"},
     {"name": "italic", "match": "\\b_\\B[^_\\n]+?\\B_\\b"},
     {"name": "bold", "match": "\\B\\*\\b[^*\\n]+?\\b\\*\\B"},
-    {"name": "magic", "match": "[!$&+,\\-.:;=?@`|…‽⁺⁻₊₋←→↔∈∉≠⎋✓]"},
+    {"name": "magic", "match": "[!$&+,\\-.:;=?@`|/↯…‽⁺⁻₊₋←→↔∈∉≠⎋✓¬*↩]"},
     {"name": "red", "match": "(?<=\\s|^)X\\b"},
-    {"name": "markup.changed", "match": "[()\\[\\]{}<>‹›]"},
+    {"name": "markup.changed", "match": "[()\\[\\]{}<>‹›⟨⟩]"},
     {"name": "string", "match": "[\"“”]"},
     {"name": "constant.numeric", "match": "[\\d₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰]"}
   ],

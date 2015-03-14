@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+. ~/.bashrc
 eval $mydir
+
+nvm use 0.10
 
 cp lackey.icns ~/"Library/Keyboard Layouts/"
 make_keylayout.js

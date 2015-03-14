@@ -45,5 +45,7 @@
 
 	{ "keys": ["ctrl+enter"], "command": "open_context", "args": {"type": "link"} },
 
+	{ "keys": ["ctrl+t"], "command": "clone_file" },
+
 	null
 ]
