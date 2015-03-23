@@ -3,9 +3,10 @@
 shopt -s globstar
 rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
 
-#-------- history/auto --------
+######## history/auto ########
 
 cp ~/"Library/Application Support/Google/Chrome/Default/Bookmarks" ~/ali/history/auto/bookmarks/$(date_i).json
+# make nice pretty bookmarks listing: copy((λ λ(v){↩ v instanceof Array? v.map(λ).join('\n') : v.children? (v.name+'\n'+v.children.map(λ).join('\n')).replace(/\n/g,'\n  ') : v.url === 'http://transparent-favicon.info/favicon.ico'? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+' ≫ '+v.url) : JSON.stringify(v)})(JSON.parse(fs_('~/Library/Application Support/Google/Chrome/Default/Bookmarks').$).roots.bookmark_bar.children))
 
 cp ~/Library/Spelling/LocalDictionary ~/ali/history/auto/dictionary/$(date_i).txt
 
@@ -16,7 +17,7 @@ ls -AloR ~/ali         > ~/"ali/history/auto/ls/$(date_i) ~:ali.txt"
 
 # cd ~/ali/github/scratch/spotiman; main.sh backup
 
-#------------ other -----------
+############ other ###########
 
 t=~/ali/misc/"non - ~:ali mirroring"
 cp -r ~/.ssh "$t"

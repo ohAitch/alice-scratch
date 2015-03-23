@@ -45,3 +45,4 @@ think about the prompt at the beginning and figure out what we want to do with t
 	> 	i want to say:
 	> 		# god i don't know. i'm sad.
 	> 		tracks where createTime * 0 group max size > 1
+	> 		tracks in some backup and not in latest backup

@@ -6,18 +6,15 @@ HISTCONTROL=ignoredups
 HISTSIZE=1000
 HISTFILESIZE=2000
 
-pause() { read -p 'Press [Enter] to continue . . .'; }; export -f pause
 export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
 # export mydir='t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")"'
-date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }; export -f date_i
-ex() { chmod -R 755 "$1" &>/dev/null; }; export -f ex
-exr() { ex "$1"; "$@"; }; export -f exr
-mk() { cat >"$1"; chmod -R 755 "$1" &>/dev/null; }; export -f mk
-this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }; export -f this
-D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
-# RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
-# exists() { type "$1" &>/dev/null; }
-clear() { /usr/bin/clear && printf '\e[3J'; }
+pause() { read -p 'Press [Enter] to continue . . .'; }
+date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+ex() { chmod -R 755 "$1" &>/dev/null; }
+exr() { ex "$1"; "$@"; }
+mk() { cat >"$1"; chmod -R 755 "$1" &>/dev/null; }
+this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }
+export -f pause; export -f date_i; export -f ex; export -f exr; export -f mk; export -f this
 
 alias c='pbcopy'
 alias p='pbpaste'
@@ -36,6 +33,11 @@ beeg() { t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.
 beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
 npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 jz() { p | jsζ₂ | c; x; }
+ζr() { ζ₂ -c "$1" .; exr "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
+clear() { /usr/bin/clear && printf '\e[3J'; }
+D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
+# RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
+# exists() { type "$1" &>/dev/null; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

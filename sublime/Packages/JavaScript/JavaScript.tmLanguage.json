@@ -198,13 +198,13 @@
       "name": "support.function.event-handler.js"
     },
     {
-      "match": "!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|@|≤|≥|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
+      "match": "!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|@|≤|≥|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\||\\\\|\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
       "name": "keyword.operator.js"
     },
     {"match": "↩", "name": "magic.more.js"},
     {"match": "\\b(Infinity|NaN|undefined)\\b", "name": "constant.language.js"},
     {
-      "begin": "(?<=[=(:\\[]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
+      "begin": "(?<=[=(,:\\[]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
       "beginCaptures": {"1": {"name": "punctuation.definition.string.begin.js"}},
       "end": "(/)[igm]*",
       "endCaptures": {"1": {"name": "punctuation.definition.string.end.js"}},
@@ -216,7 +216,9 @@
     {"match": "\\.", "name": "meta.delimiter.method.period.js"},
     {"match": "\\{|\\}", "name": "meta.brace.curly.js"},
     {"match": "\\(|\\)", "name": "meta.brace.round.js"},
-    {"match": "\\[|\\]", "name": "meta.brace.square.js"}
+    {"match": "\\[|\\]", "name": "meta.brace.square.js"},
+    {"match": "(?!\\b_\\b)_", "name": "quiet.js"},
+    {"match": "\\b_\\b", "name": "support.function.js"}
   ],
   "scopeName": "source.js",
   "uuid": "93E017CC-6F27-11D9-90EB-000D93589AF6"

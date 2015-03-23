@@ -21,6 +21,7 @@
       }
     },
     {"name": "Comment", "scope": "comment", "settings": {"foreground": "#75715E"}},
+    {"name": "quiet", "scope": "quiet", "settings": {"foreground": "#75715E"}},
     {"name": "Block", "scope": "block", "settings": {"foreground": "#9C987F"}},
     {"name": "String", "scope": "string", "settings": {"foreground": "#049B0A"}},
     {"name": "Number", "scope": "constant.numeric", "settings": {"foreground": "#AE81FF"}},
@@ -56,6 +57,7 @@
     {"scope": "message.error", "settings": {"foreground": "#F83333"}},
     {"scope": "blue", "settings": {"foreground": "#6060FF"}},
     {"scope": "red", "settings": {"foreground": "#D80000"}},
+    {"scope": "bright_red", "settings": {"foreground": "#FF0000", "fontStyle": "bold"}},
     {"scope": "green", "settings": {"foreground": "#00D000"}},
     {"scope": "purple", "settings": {"foreground": "#D050D0"}},
     {"scope": "yellow", "settings": {"foreground": "#E0D000"}},
