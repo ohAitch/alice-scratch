@@ -1,0 +1,61 @@
+#!/usr/bin/env ζ₂
+
+builder ← require('xmlbuilder')
+arg ← {
+	lackey: process.argv[2],
+	out: process.argv[3],
+	}
+
+//! right command is maybe problematic
+//! need to enable multi-modifier chords. maybe do this by changing the keylayout so that the hex codes are hidden away?
+
+hex ← λ(v,l){r ← v.toString(16); while (r.length < l) r = '0'+r; ↩ r}
+
+parse_lackey ← λ(src){
+	chords ← []
+	t ← (src+'\n').replace(/(^|\n)#.*/g,'').replace(/\n+/g,'\n')
+		.replace(/(?:^|\n)(\S+) : (\S+)(?=\n)/g,λ(m,a,b){chords.push([b,a]); ↩ ''})
+		.match(/(---+.*---+).*\n((?:\|.+\|\n)+)(---+.*)\n/g).ζ2_mapcat(λ(v){
+			// 2d regexes would be wonderful here
+			transpose_str ← λ(v){↩ _.zip.apply(_,v.map(λ(v){↩ v.split('')})).map(λ(v){↩ v.join('')})}
+			v = v.split('\n').slice(0,-1)
+			t ← transpose_str(v)
+			↩ v[-1].match(/---+/g).map(λ(v){↩ v.length}).map(λ(len){r ← t.splice(0,len); t.splice(0,2); ↩ r}).map(transpose_str) })
+		.map(λ(board_str){↩ {
+			hots: (board_str[0].match(/^-+ (\S+) -+$/)||[,''])[1],
+			keys: board_str.slice(1,-1).map(λ(v){↩ v.match(/^\|(.+)\|$/)[1].match(/\S\S?/g)}),
+			} })
+	t = _(_(_(t).indexBy('hots')).omit('','⇧')).values()
+	h ← _(t).indexBy('hots')['homoiconic']
+	h_keys ← _.clone(h.keys)
+	t.map(λ(v){if (v.keys.length < h_keys.length) v.keys = [].concat([h_keys[0].map(λ(){↩ '_'})],v.keys,[h_keys[-1].map(λ(){↩ '_'})]); v.keys = _(v.keys).flatten(true)})
+	t = _(t).without(h)
+	t.map(λ(v){v.keys = _.zip(h.keys,v.keys).filter(λ(v){↩ v[1] !== '_'})})
+	kc ← _(t).indexBy('hots')['keycode']
+	t = _(t).without(kc).ζ2_mapcat(λ(v){↩ v.keys.map(λ(k){↩ [v.hots+k[0],k[1]]})})
+	↩ {keycodes: _.object(kc.keys), chords: chords.concat(t)} }
+
+make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
+	KeyCode ← λ(v){↩ v.match(/\d/)? 'KEY_'+v : v.match(/[a-z]/)? v.toUpperCase() : 'RawValue::0x'+keycodes[v]}
+	kc_hex ← λ(v){↩ v.split('').map(λ(v){t ← v.charCodeAt(0); ↩ hex(t, t <= 0xffff? 4 : 5).split('').map(λ(v){↩ 'KeyCode::'+KeyCode(v)+',ModifierFlag::OPTION_L,'}).join('')}).join('')}
+	shells ← [['dummy','echo dummy']]
+	shell ← λ(v){id ← (Math.random()*Math.pow(2,50)).toString(36); shells.push([id,v]); ↩ id}
+	autogens ← [
+		'__KeyToKey__ KeyCode::PC_APPLICATION, VK_CONTROL, KeyCode::TAB,ModifierFlag::CONTROL_L|ModifierFlag::SHIFT_L',
+		'__KeyToKey__ KeyCode::PC_APPLICATION, ModifierFlag::NONE, KeyCode::RawValue::0x82',
+	].concat(chords.map(λ(v){hots ← v[0].split(''); out ← v[1]
+		if (hots.length===3) ↩ null
+		↩ (
+			hots[0]==='⌥'? '__KeyToKey__ KeyCode::'+KeyCode(hots[1])+', VK_OPTION|ModifierFlag::NONE,' :
+			//hots[0]==='R⌘'? '__KeyToKey__ KeyCode::'+KeyCode(keys[1])+', ModifierFlag::COMMAND_R,' :
+				'__SimultaneousKeyPresses__ KeyCode::'+KeyCode(hots[0])+', KeyCode::'+KeyCode(hots[1])+','
+			)+(
+			typeof(out)==='string'? kc_hex(out) : 'KeyCode::VK_OPEN_URL_'+shell(out[0])+','
+			) })).filter(λ(v){↩ v})
+	↩ builder.create({root: {
+		'#list': shells.map(λ(v){↩ {vkopenurldef: {name:'KeyCode::VK_OPEN_URL_'+v[0], url:{'@type':'shell', '#cdata':v[1]}}}}),
+		item: {name:'lackey', identifier:'lackey', '#list':autogens.map(λ(v){↩ {autogen:v}}) }
+		}}).end({pretty:true}) }
+
+// --------- main --------- //
+fs(arg.out).$ = make_xml(parse_lackey(fs(arg.lackey).$))

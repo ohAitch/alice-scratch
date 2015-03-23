@@ -1,6 +1,6 @@
 {
-	"dependencies": {
-		"underscore": "*",
-		"xmlbuilder": "*"
-	}
+  "dependencies": {
+    "xmlbuilder": "*",
+    "zeta-two": "^0.4.45"
+  }
 }
