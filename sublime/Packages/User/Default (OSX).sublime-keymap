@@ -47,5 +47,7 @@
 
 	{ "keys": ["ctrl+t"], "command": "clone_file" },
 
+	{ "keys": ["super+alt+;"], "command": "js_eval"},
+
 	null
 ]
