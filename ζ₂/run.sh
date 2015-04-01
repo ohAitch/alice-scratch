@@ -12,5 +12,5 @@
 
 [[ $1 ]] || { . ~/.bashrc; npmi; }
 npm publish .
-sleep 0.05
+sleep 0.1
 npm install zeta-two -g

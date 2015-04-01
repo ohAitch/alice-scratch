@@ -2,7 +2,7 @@
 
 ζ₂: practical util lib
 
-α: parser stuff
+α: parser stuff and some interesting utils
 
 notes files: notes
 

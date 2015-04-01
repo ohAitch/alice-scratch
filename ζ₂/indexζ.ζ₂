@@ -18,6 +18,8 @@ if (argv.length === 0) {
 			if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
 			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = I.compile_file(fl.$)
 			})
+	break; case '-e':
+		print(eval(I.compile(argv[1])))
 	break; case '--version':
-		print('v'+JSON.parse(fs('package.json').$).version)
+		print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
 }

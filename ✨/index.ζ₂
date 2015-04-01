@@ -2,9 +2,9 @@
 
 acorn = require('./acorn') // https://github.com/marijnh/acorn
 
-// q = acorn.parse(fs('corpus/underscore.js').$)
-
 corpus = fs('corpus/all').find('>').map(λ(v){↩ 'corpus/all/'+v})
 corpus = corpus.map(λ(v){↩ [v, _.memoize(λ(){↩ fs_(v).$})]})
+
+q = acorn.parse(fs('corpus/underscore.js').$)
 
 ζ2_repl_start()
