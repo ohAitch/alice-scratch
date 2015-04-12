@@ -16,12 +16,15 @@ global.moment = require_if('moment')
 I ← require('./index')
 
 // todo: probably correct to move all globals into exports and have the standard "require("zeta-two");" be instead "require("zeta-two").global(this);"
+// todo: probably correct to lazy-load everything that's possible to
+
+// Algebraic JavaScript Specification https://github.com/fantasyland/fantasy-land is cute and might be relevant to furthur builtin design
 
 escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
 sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
 mkdir_p ← λ λ(v){try {fs.statSync(v).isDirectory() || fs.mkdirSync(v)} catch (e) {if(!e.code==='ENOENT')throw e; λ(node_path.dirname(v)); fs.mkdirSync(v)}}
-copypaste ← {
-	copy: λ(v){
+// copypaste ← {
+	global.copy = λ(v){
 		t ← child_process.spawn('pbcopy')
 		t.stdin.setEncoding('utf8')
 		if (v.pipe) v.pipe(t.stdin)
@@ -30,9 +33,9 @@ copypaste ← {
 			Object.prototype.toString.call(v) === '[object Array]'? v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v, {depth:null})}).join('\n') :
 			Object.prototype.toString.call(v) === '[object String]'? v :
 				v.toString() )
-		},
-	paste: λ(){↩ child_process.execSync('pbpaste').toString()},
-	}
+		}
+	global.paste = λ(){↩ child_process.execSync('pbpaste').toString()}
+	// }
 seq ← λ*(v){for (i←0;i<v.length;i++) yield v[i]}
 
 // polyfill
@@ -51,16 +54,16 @@ global.ζ2_repl_start = λ(opts){
 		eval:λ(code,ctx,fl,cb){t←;
 			ctx.__ = ctx._; ctx._ = _
 			// if (t=code.match(/^(.*);↯\n$/)) {code = t[1]; } // etc. analogue of bashrc ;x
-			if (code.match(/^>/)) code = '__SPECIAL__('+util.inspect(code.slice(1).trim())+')' // hack for apprentice
+			if (t=code.match(/^>(.*)/)) code = '__SPECIAL__('+util.inspect(t[1].trim())+')' // hack for apprentice
 			try {t = vm.createScript(I.compile(code), {filename:fl, displayErrors:false})}
 			catch (e) {typeof(e.stack)==='string' && (e.stack = e.stack.replace(/(\n    at )[\s\S]*/,'$1<repl>')); cb(e,undefined); return}
-			try {cb(undefined, this.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(ctx,{displayErrors:false}))}
+			try {cb(undefined, @.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(ctx,{displayErrors:false}))}
 			catch (e) {typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([\s\S]*)at repl:(.*)[\s\S]*?$/,'$1at <repl:$2>')); cb(e,undefined); return}
 			},
 		}).extend(opts))
 	ctx ← t.context
 	ctx !== global && _(ctx).extend(global)
-	_(ctx).extend(copypaste)
+	// _(ctx).extend(copypaste)
 	// O(t).def('prompt',λ(){↩ t.prompt.$},λ(v){t.prompt = wrap(v)})
 	↩ t}
 

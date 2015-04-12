@@ -37,3 +37,5 @@ Last login: Tue Mar 17 17:41:22 on ttys003
 SyntaxError: Unexpected token >
     at <repl>
 ζ₂ 
+
+i turned my head sideways and that looked even more interesting

@@ -59,7 +59,6 @@ js_rewrite: void _x <-> (_x,undefined)⎋v
 we look at control flow, and we see "!= null" and "!== false" as the two fundamental things (but with a blurred "!= null && !== false")
 now that es6 is existing, we need to account for http://git.io/es6features
 we could write a program by telling it to a human and having them execute it and/or tell me why it doesn't compile. or switch me and the human.
-corpus stuff https://github.com/jashkenas/underscore/blob/master/underscore.js https://github.com/caolan/async/blob/master/lib/async.js
 
 ------------------------------------ <edge> ------------------------------------
 
