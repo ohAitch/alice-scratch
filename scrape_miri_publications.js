@@ -6,14 +6,14 @@ $ = jQuery; copy($('#articles section > .row-fluid').toArray().map(function(v){
 	var t = $(v).children().eq(0)
 	return [
 		t.find('a').attr('href').replace(/^(https:\/\/intelligence.org)?\/?files\//g,"file:///~/papers/"),
-		t.hasClass('technical-report')? '[techre]' : null,
-		t.hasClass('conference-paper')? '[paper]' : null,
-		t.hasClass('journal-article')? '[article]' : null,
-		t.hasClass('book-chapter')? '[chapter]' : null,
-		$(v).find('.HRAD-click').length? '[HRAD]' : null,
-		$(v).find('.ETAD-click').length? '[ETAD]' : null,
-		$(v).find('.VL-click').length? '[VL]' : null,
-		$(v).find('.FC-click').length? '[FC]' : null,
+		t.hasClass('technical-report')? '#techre' : null,
+		t.hasClass('conference-paper')? '#paper' : null,
+		t.hasClass('journal-article')? '#article' : null,
+		t.hasClass('book-chapter')? '#chapter' : null,
+		$(v).find('.HRAD-click').length? '#HRAD' : null,
+		$(v).find('.ETAD-click').length? '#ETAD' : null,
+		$(v).find('.VL-click').length? '#VL' : null,
+		$(v).find('.FC-click').length? '#FC' : null,
 		t.text()
 			.replace(/\s\s+/g, ' ')
 			.replace(/(Berkeley, CA: )?Machine Intelligence Research Institute.{0,8}$/g, '')

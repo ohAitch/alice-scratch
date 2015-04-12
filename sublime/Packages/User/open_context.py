@@ -11,6 +11,10 @@ IS_URL_REGEX = r'^(https?|file)://'
 
 def open(v,app=None,focus=True):
 	print("[OPEN]",v)
+
+	# replace "\ " in filenames with " "
+	fv = re.match(r'^file://(.*)',v)
+	if fv: v = re.sub(r'\\ ',' ',v)
 	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 	
@@ -31,7 +35,7 @@ def github_url_of_file_in_repo(fl):
 def omnibox(v): return v if re.match(IS_URL_REGEX,v) else "https://www.google.com/search?q="+v
 
 class OpenContextCommand(sublime_plugin.TextCommand):
-	def run(self,edit,type,focus=True):
+	def run(self,edit,type,focus=True,edges=True):
 		view = self.view
 		if type == "browser":
 			t = [view.substr(v) for v in view.sel() if not v.empty()]
@@ -50,6 +54,9 @@ class OpenContextCommand(sublime_plugin.TextCommand):
 				for sel in view.sel():
 					begin = 0 if sel.a < 300 else sel.a - 300
 					for v in re.finditer(FIND_URL_REGEX,view.substr(sublime.Region(begin,sel.a+300))):
-						if v.start() < sel.a - begin < v.end():
+						s = v.start(); e = v.end()
+						if not edges: s += 1
+						if not edges: e -= 1
+						if s <= sel.a - begin <= e:
 							open(v.group(),focus=focus)
 							break

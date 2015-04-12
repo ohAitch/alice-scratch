@@ -13,7 +13,7 @@ date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 ex() { chmod -R 755 "$1" &>/dev/null; }
 exr() { ex "$1"; "$@"; }
 this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }
-export -f pause; export -f date_i; export -f ex; export -f exr; export -f this
+export -f pause; export -f date_i; export -f ex; export -f exr; export -f this # should be deprecated
 
 alias c='pbcopy'
 alias p='pbpaste'
@@ -22,14 +22,16 @@ alias 64d='base64 --decode'
 sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
 alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
 alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
+alias killcp='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist'
+alias opencp='sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan &'
 f() { open "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 # ar_zip() { ditto -ckv --keepParent "$1" "${2%/}.zip"; }
 rmds() { rm -f ~/.DS_STORE ~/ali/**/.DS_STORE; }
-beeg() { t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)"); echo "$t" | jq .roadall | sb & }
-beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
+# beeg() { t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)"); echo "$t" | jq .roadall | sb & }
+# beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
 npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 jz() { p | jsζ₂ | c; x; }
 ζr() { ζ₂ -c "$1" .; exr "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
@@ -37,6 +39,7 @@ clear() { /usr/bin/clear && printf '\e[3J'; }
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
+alias ls='ls -A'
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place
@@ -64,23 +67,13 @@ command_not_found_handle() {
 	}
 
 export NVM_DIR="/Users/ali/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+export PYTHONPATH="/usr/local/lib/python2.7/site-packages" # what
 
-# # enable color support of ls and also add handy aliases
-# if [ -x /usr/bin/dircolors ]; then
-#     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-#     alias ls='ls --color=auto'
-#     #alias dir='dir --color=auto'
-#     #alias vdir='vdir --color=auto'
-
-#     alias grep='grep --color=auto'
-#     alias fgrep='fgrep --color=auto'
-#     alias egrep='egrep --color=auto'
-# fi
-
-# # some more ls aliases
-# alias ll='ls -alF'
-# alias la='ls -A'
-# alias l='ls -CF'
+# colors yay
+export CLICOLOR=1
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
 
 # # Add an "alert" alias for long running commands.  Use like so:
 # #   sleep 10; alert

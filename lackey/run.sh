@@ -4,6 +4,6 @@
 cp lackey.icns ~/"Library/Keyboard Layouts/"
 ζr make_keylayout.ζ₂ ~/"Library/Keyboard Layouts/lackey.keylayout"
 
-ζr make_karab.ζ₂ alice.lackey ~/"Library/Application Support/Karabiner/private.xml"
+ζr make_karab.ζ₂ monday.lackey ~/"Library/Application Support/Karabiner/private.xml"
 /Applications/Karabiner.app/Contents/Library/bin/karabiner reloadxml
 /Applications/Karabiner.app/Contents/Library/bin/karabiner enable lackey
