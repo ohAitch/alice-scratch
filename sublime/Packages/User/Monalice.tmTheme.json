@@ -21,6 +21,7 @@
       }
     },
     {"name": "Comment", "scope": "comment", "settings": {"foreground": "#75715E"}},
+    {"name": "hashtag", "scope": "hashtag", "settings": {"foreground": "#D8D8D3", "fontStyle": "italic"}},
     {"name": "quiet", "scope": "quiet", "settings": {"foreground": "#75715E"}},
     {"name": "Block", "scope": "block", "settings": {"foreground": "#9C987F"}},
     {"name": "String", "scope": "string", "settings": {"foreground": "#049B0A"}},

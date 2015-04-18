@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "node-spotify": "^0.7.0",
-    "rimraf": "^2.2.8",
-    "zeta-two": "^0.4.15"
+    "wav": "^0.1.2",
+    "zeta-two": "^0.5.1"
   }
 }

@@ -34,11 +34,9 @@ think about the prompt at the beginning and figure out what we want to do with t
 	> implement tags
 	> implement easy tag querying (e621.net? sql? ask google about this)
 		track: ?name? [
-			α:<artist>
-			ρ:<album>
-			τ:<track>
-			λ:<length>
-			μ:local
+			by:<artist>
+			in:<album>
+			is:local
 			[playlist]
 			]
 	> 	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})

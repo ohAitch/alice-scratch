@@ -12,7 +12,7 @@ pause() { read -p 'Press [Enter] to continue . . .'; }
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 ex() { chmod -R 755 "$1" &>/dev/null; }
 exr() { ex "$1"; "$@"; }
-this() { [ "$HOME" == "$PWD" ] && echo "~" || [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }
+this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; }
 export -f pause; export -f date_i; export -f ex; export -f exr; export -f this # should be deprecated
 
 alias c='pbcopy'
@@ -40,6 +40,12 @@ D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
 alias ls='ls -A'
+T() { tee /tmp/lastL; }
+L() { cat /tmp/lastL; }
+# mute() { osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
+mute() { osascript -e "set volume output muted true"; }
+unmute() { osascript -e "set volume output muted false"; }
+vol() { osascript -e "set volume output volume $1"; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

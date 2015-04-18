@@ -24,5 +24,5 @@ cp ~/"Library/Application Support/Sublime Text 3/Local/Session.sublime_session" 
 
 rmds
 
-# also history/auto
-cd ~/ali/github/scratch/spotiman; ./backup.sh
+# # also history/auto
+# cd ~/ali/github/scratch/spotiman; ./backup.sh

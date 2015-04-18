@@ -11,7 +11,12 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 		for reg in view.sel():
 			o = view.substr(reg)
 			v = o
-			v = re.sub(r'https?://(?:www\.)?youtube\.com/watch\?v=([^&]+)','http://youtu.be/\\1',v)
+			v = re.sub(r'^https?://(?:www\.)?youtube\.com/watch\?v=([^&]+)','http://youtu.be/\\1',v)
+			v = re.sub(r'^https?://en\.wikipedia\.org/','http://wikipedia.org/',v)
+			v = re.sub(r'^/Users/ali/','file:///~/',v)
+			if re.match(r'^file:///',v): v = re.sub(r'(?<!\\) ','\\ ',v)
+			v = re.sub(r'^file:///~/ali/books/papers/','file:///~/papers/',v)
+			v = re.sub(r'^file:///~/ali/books/','file:///~/books/',v)
 			if v is not o: view.replace(edit, reg, v)
 
 # todo:

@@ -1,20 +1,12 @@
 #!/usr/bin/env ζ₂
 
 util ← require('util')
-
 node_spotify ← require('node-spotify')
-rimraf ← require('rimraf') // rm -rf
 
-_ ← __
-
-// todo:
-// use the node audio handler for Fun Stuff
-// timer() is probably incorrect for its few uses. progress bar would be wonderful.
-// fix the problem where a global repl tramples over _
+// todo: use the node audio handler for Fun Stuff
 
 // ----------------------------------- aux ---------------------------------- //
 
-timer ← λ λ(){t ← Date.now()/1000; r ← t - λ.now; λ.now = t; ↩ Math.round(r*100)/100+'s'}; timer()
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
 is_playlist ← λ(v){↩ v.type === undefined || v.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
 Native ← λ(v,body){@.native = v; _(@).extend(body)}
@@ -26,11 +18,16 @@ Native ← λ(v,body){@.native = v; _(@).extend(body)}
 
 // ----------------------------- getDatabaseoid ----------------------------- //
 
+audio_handler←; //! aiee, such hack ... um, why did we find ourself wanting to do this?
+audio_handler_resume←;
+
 getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){
 			spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
+			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
+			audio_handler_resume = spotify.useNodejsAudio(λ(){↩ audio_handler.apply(@,arguments)})
 			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
@@ -71,8 +68,18 @@ getDatabaseoid ← λ(cb){
 switch (process.argv[2]) {
 default: print('invalid args')
 break; case undefined:
+time ← ζ2_now()
 getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
-	print('[spotiman] loaded db in',timer())
+	print('[spotiman] loaded db in',round((ζ2_now() - time)*100)/100+'s')
+
+	// global.bufs = []
+	// audio_handler = λ(e,buf){if (e) throw e
+	// 	bufs.push(buf)
+	// 	↩ true }
+	
+	// wav ← require('wav')
+	// new wav.FileWriter('t.wav').write(Buffer.concat(bufs))
+	// https://www.npmjs.com/package/lame
 
 	global.tags = tags; global.tracks = tracks; ζ2_repl_start()
 
