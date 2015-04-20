@@ -1,3 +1,0 @@
-
-# magic get-dir-of-file
-t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; DIR="$(cd -P "$( dirname "$t")" && pwd)"

@@ -4,7 +4,7 @@ some of these have not been consumed, but i'll be just fine if i never get aroun
 
 contents:
 	ansi-console
-	artificer            [not yet fully combed for useful ideas / code]
+	artificer
 	asplode
 	befunge              [not yet fully combed for useful ideas / code]
 	bullet
@@ -16,10 +16,10 @@ contents:
 	dict
 	elastic
 	fimfic-wordcount     [not yet fully combed for useful ideas / code]
-	fimfiction scraper   [not yet fully combed for useful ideas / code]
+	fimfiction scraper
 	fishermen
 	fleas                [ we still *want* to do this project but we maybe aren't going to get to it :( ]
-	fnarpg               [not yet fully combed for useful ideas / code]
+	fnarpg
 	gitminder
 	HATETRIS OMEGA
 	hydrocarboner        [not yet fully combed for useful ideas / code]
@@ -41,7 +41,7 @@ contents:
 	speeling
 	stopwatch            [not yet fully combed for useful ideas / code]
 	such-zalgo
-	sure                 [not yet fully combed for useful ideas / code]
+	sure
 	takns                [not yet fully combed for useful ideas / code]
 	teacher
 	trance               [not yet fully combed for useful ideas / code]

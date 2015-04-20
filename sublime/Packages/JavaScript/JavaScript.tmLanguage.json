@@ -7,7 +7,7 @@
   "keyEquivalent": "^~J",
   "name": "JavaScript",
   "patterns": [
-    {"match": "[{},]", "name": "block.js"},
+    {"match": "[{},;.]", "name": "block.js"},
     {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment.line.js"},
     {
       "captures": {"1": {"name": "support.class.js"}, "2": {"name": "support.constant.js"}, "3": {"name": "keyword.operator.js"}},

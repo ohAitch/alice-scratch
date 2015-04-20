@@ -17,7 +17,7 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 			}
 		ext = '' if view.file_name() is None else re.match(r'^.*?(?:\.([^.]*))?$',view.file_name()).group(1) or ''
 		test, match, fill, ends = s_table[e_table(ext)]
-		for region in [v for v in view.sel()][::-1]:
+		for i,region in [v for v in enumerate(view.sel())][::-1]:
 			line = view.line(region)
 			s = view.substr(line)
 			if re.match(test,s):
@@ -35,4 +35,7 @@ class MakeDividerCommand(sublime_plugin.TextCommand):
 				while len_ < 6: len_ += 10
 				r[1] = fill * ((len_+1)//2)
 				r[5] = fill * (len_//2)
+			q = region == line and region.empty()
+			if q: view.sel().subtract(region)
 			view.replace(edit,line,''.join(r))
+			if q: view.sel().add(sublime.Region(view.line(region).end()))

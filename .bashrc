@@ -39,7 +39,7 @@ clear() { /usr/bin/clear && printf '\e[3J'; }
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
-alias ls='ls -A'
+alias ls='ls -AG'
 T() { tee /tmp/lastL; }
 L() { cat /tmp/lastL; }
 # mute() { osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
@@ -74,12 +74,6 @@ command_not_found_handle() {
 
 export NVM_DIR="/Users/ali/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages" # what
-
-# colors yay
-export CLICOLOR=1
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
 
 # # Add an "alert" alias for long running commands.  Use like so:
 # #   sleep 10; alert
