@@ -28,7 +28,7 @@ contents:
 	javadoc generics counter
 	JavaFinder
 	jfront
-	life                 [not yet fully combed for useful ideas / code]
+	life
 	mcode
 	mirror-space
 	misc

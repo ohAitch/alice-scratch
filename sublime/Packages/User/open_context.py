@@ -7,14 +7,18 @@ FIND_URL_REGEX = r'\b(https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?
 IS_URL_REGEX = r'^(https?|file)://'
 
 # the github/google search text combo is weird. work on improving that?
-# should replace "\ " with " " (and "\\" with "\") in file urls
 
 def open(v,app=None,focus=True):
-	print("[OPEN]",v)
+	print("#OPEN",v)
 
 	# replace "\ " in filenames with " "
+	#! should also replace "\\" in filenames with "\"
 	fv = re.match(r'^file://(.*)',v)
 	if fv: v = re.sub(r'\\ ',' ',v)
+
+	if app is "Terminal":
+		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+v+"; clear\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
+		return
 	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 	

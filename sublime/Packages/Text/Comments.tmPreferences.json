@@ -2,6 +2,6 @@
   "name": "Comments",
   "scope": "text.plain",
   "settings": {
-    "shellVariables": [{"name": "TM_COMMENT_START", "value": "# "}]
+    "shellVariables": [{"name": "TM_COMMENT_START", "value": "# ↩"}]
   }
 }
