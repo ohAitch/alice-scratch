@@ -18,13 +18,13 @@ var mkdirp = require('mkdirp')
 
 // --------- utils -------- //
 
-global.ζ0_def = function(o,m,get,set){Object.defineProperty(o,m,{configurable:true, enumerable:false, get:get, set:set}); return o}
+// global.ζ0_def = function(o,m,get,set){Object.defineProperty(o,m,{configurable:true, enumerable:false, get:get, set:set}); return o}
 Function.prototype.def = function(m,get,set){Object.defineProperty(this.prototype,m,{configurable:true, enumerable:false, get:get, set:set}); return this}
 
 global.print = function(){console.log.apply(console,arguments); return arguments[arguments.length-1]}
 String.prototype.repeat = function(v){return new Array(v+1).join(this)}
 global.pad = function(v,s){return v+s.slice(v.length)}
-_.range(0,5).forEach(function(i){Array.def('-'+i,function(){return this.length<i? undefined : this[this.length-i]},function(v){return this.length<i? v : this[this.length-i] = v})})
+// _.range(0,5).forEach(function(i){Array.def('-'+i,function(){return this.length<i? undefined : this[this.length-i]},function(v){return this.length<i? v : this[this.length-i] = v})})
 
 global.argv = {_:process.argv.slice(2)}
 
@@ -42,21 +42,21 @@ var Path = function Path(path){this._path = path.replace(/^~\//,process.env.HOME
 	.def('path',function(){return this._path.slice(0,(process.env.HOME+'/').length)===process.env.HOME+'/'? '~'+this._path.slice(process.env.HOME.length) : this._path})
 var t = function(path){return new Path(path)}; t.__proto__ = fs; global.fs = t
 function PathValue(path){this._path = path}
-Path.prototype.realpath = function(){return fs.realpathSync(this._path)}
-Path.prototype.exists = function(){return fs.existsSync(this._path)}
-Path.prototype.append = function(v){fs.appendFileSync(this._path,v)}
-PathValue.prototype.toString = function(){return fs.readFileSync(this._path)+''}
-PathValue.prototype.split = function(v){return (this+'').split(v)}
+// Path.prototype.realpath = function(){return fs.realpathSync(this._path)}
+// Path.prototype.exists = function(){return fs.existsSync(this._path)}
+// Path.prototype.append = function(v){fs.appendFileSync(this._path,v)}
+// PathValue.prototype.toString = function(){return fs.readFileSync(this._path)+''}
+// PathValue.prototype.split = function(v){return (this+'').split(v)}
 // PathValue.prototype.map = function(f){var t = this._path; return fs.readdirSync(t).map(function(v){return t+'/'+v}).map(f)}
 
 // ------ explictly hacky utils ----- //
 
-PathValue.prototype.ζ0_SUB_BYs = function(b){return this.split(b)}
-global.ζ0_SUB_Fs = function(s,f){return s.split(f).slice(1).join(f)}
-global.ζ0_SUB_Ts = function(s,t){return s.split(t)[0]}
-global.ζ0_memb_Emod_obj = function(o,m,f){o[m] = f(o[m]); return o}
-Array.prototype.ζ0_concat = function(){return Array.prototype.concat.apply([],this)}
-global.ζ0_int = function(v){return parseInt(v)}
+// PathValue.prototype.ζ0_SUB_BYs = function(b){return this.split(b)}
+// global.ζ0_SUB_Fs = function(s,f){return s.split(f).slice(1).join(f)}
+// global.ζ0_SUB_Ts = function(s,t){return s.split(t)[0]}
+// global.ζ0_memb_Emod_obj = function(o,m,f){o[m] = f(o[m]); return o}
+// Array.prototype.ζ0_concat = function(){return Array.prototype.concat.apply([],this)}
+// global.ζ0_int = function(v){return parseInt(v)}
 
 // --------------------------- perfect_history.js --------------------------- //
 

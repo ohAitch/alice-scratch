@@ -62,6 +62,7 @@
     {"scope": "green", "settings": {"foreground": "#00D000"}},
     {"scope": "purple", "settings": {"foreground": "#D050D0"}},
     {"scope": "yellow", "settings": {"foreground": "#E0D000"}},
+    {"scope": "alice", "settings": {"foreground": "#00D000", "background": "#4C6B45", "fontStyle": "bold"}},
     {"scope": "bold", "settings": {"foreground": "#000000", "background": "#DDDDDD", "fontStyle": "bold"}},
     {"scope": "italic", "settings": {"foreground":"#D8D8D3", "fontStyle": "italic"}}
   ],

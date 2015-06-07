@@ -3,8 +3,8 @@ import os, subprocess
 import re
 import urllib
 
-FIND_URL_REGEX = r'\b(https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))'
-IS_URL_REGEX = r'^(https?|file)://'
+FIND_URL_REGEX = r'\b((https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))|mailto:[^\s\\@]+@[^\s\\@]+)'
+IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
 # the github/google search text combo is weird. work on improving that?
 

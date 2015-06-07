@@ -39,7 +39,7 @@ clear() { /usr/bin/clear && printf '\e[3J'; }
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
-alias ls='ls -AG'
+alias l='ls -AG'
 T() { tee /tmp/lastL; }
 L() { cat /tmp/lastL; }
 # mute() { osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
