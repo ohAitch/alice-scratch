@@ -15,7 +15,7 @@
     "rwlock": "^4.0.0",
     "underscore": "^1.7.0",
     "unicode-7.0.0": "^0.1.5",
-    "zeta-two": "^0.4.24"
+    "zeta-two": "^0.5.11"
   },
   "bin": {
     "✨": "./index.js"
