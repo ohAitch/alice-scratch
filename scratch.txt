@@ -77,14 +77,3 @@ namegen ← ζ2_gen2fn(λ*(){
 	short = _.shuffle(short.ζ2_mapcat(λ(v){↩ _.range(10).map(λ(i){↩ v+' '+i})}))
 	to ← round(long.length/2); yield* _.shuffle(long.concat(short.slice(0,to))); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
-
-a bob is a soul and has
-	spirit (hp)
-	a soul, which chooses to attack (adjacent bobs) or move (to adjacent empty cells) or mine (current cell) according to certain rules (which are printed with the bob) - all of which increase tiredness
-	a body, which controls which of the bob's choices will have what effects, and should control what the bob sees
-
-the grid is made of cells. their upper part can contain souls, and their lower part is a mineable reservoir of spirit
-
-we continually print the grid
-
-we iterate physics, randomly generating bobs, letting souls make choices, handling death, and handling the effects of souls' choices

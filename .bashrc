@@ -46,6 +46,7 @@ L() { cat /tmp/lastL; }
 mute() { osascript -e "set volume output muted true"; }
 unmute() { osascript -e "set volume output muted false"; }
 vol() { osascript -e "set volume output volume $1"; }
+switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

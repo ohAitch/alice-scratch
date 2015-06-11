@@ -56,3 +56,4 @@ contents:
 notes, if you wanna reorganize this stuff:
 
 maybe add ARCHIVE READMEs to all of these? or something like that? and update the old ones, maybe? maybe just make them all READMEs?
+actually, maybe move all the ARCHIVE README content into _this_ file?
