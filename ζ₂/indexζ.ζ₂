@@ -1,5 +1,4 @@
-I ← require('./index')
-
+require("./index").__ζ2_extend__(global)
 argv ← process.argv.slice(2)
 
 if (argv.length === 0) {
@@ -11,15 +10,15 @@ if (argv.length === 0) {
 		// and https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee
 		// and http://nodejs.org/api/process.html
 		// for a better thing to do, but then we gave up.
-		eval(I.compile(fs(argv.splice(0,1)[0]).$).replace(/^#!.*/,''))
+		eval(ζ2_compile(fs(argv.splice(0,1)[0]).$).replace(/^#!.*/,''))
 	break; case '-c':
 		out ← fs(argv[-1])
 		argv.slice(1,-1).map(fs).map(λ(fl){
 			if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
-			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = I.compile_file(fl.$)
+			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fl.$)
 			})
 	break; case '-e':
-		print(eval(I.compile(argv[1])))
+		t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
 	break; case '--version':
 		print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
 }
