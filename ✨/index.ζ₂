@@ -1,10 +1,141 @@
 #!/usr/bin/env ζ₂
 
-acorn = require('./acorn') // https://github.com/marijnh/acorn
+util ← require('util')
+_ ← global._ // wat
 
-corpus = fs('corpus/all').find('>').map(λ(v){↩ 'corpus/all/'+v})
-corpus = corpus.map(λ(v){↩ [v, _.memoize(λ(){↩ fs_(v).$})]})
+// ------------------------------ general util ------------------------------ //
 
-q = acorn.parse(fs('corpus/underscore.js').$)
+partition ← λ(n,v){t←[]; for (i←0;i<v.length;i+=n) t.push(_.range(n).map(λ(t){↩ v[i+t]})); ↩ t}
+co_ ← λ(f,cb){iter ← typeof(f)==="function"? f() : f; (λ λ(e,v){t ← e? iter.throw(e) : iter.next(v); t.done? cb&&cb(null,t.value) : t.value(λ)})()}
 
-ζ2_repl_start()
+// --------------------------------- parsing -------------------------------- //
+
+pluralize ← λ(v){↩ v+'s'}
+depluralize ← λ(v){↩ v.replace(/s$/,'')}
+parse_noun ← λ(v){↩ {'newline':'\n'}[v] || v}
+
+parse_table ← partition(2,[
+	/y|yes|yep|yeah/, λ(){↩ true},
+	/n|no|nope|nah/, λ(){↩ false},
+	/on a (\S+)/, λ(v){↩ {on:parse_noun(v)}},
+	/only on a (\S+)/, λ(v){↩ {on:parse_noun(v), exclusive:true}},
+	// /on a (\S+) , unless (\S+) are tricky/, λ(v,b){↩ {on:parse_noun(v), careful:parse_noun(depluralize(b))}},
+	/⟨that's ⟩?⟨a ⟩?(\S+)/, parse_noun,
+	/only if ⟨it's ⟩?followed by ⟨a ⟩?(\S+)/, λ(v){↩ {condition:{next_is:parse_noun(v)}}},
+	]).map(λ(v){v[0]=RegExp('^'+('⟨'+v[0].source+'⟩').replace(/⟨/g,'(?:').replace(/⟩/g,')')+'$');↩v})
+parse_sentences ← λ(v){t ← v.split(/\.(?: |$)/); if (t[-1] === '') t.pop(); ↩ t.map(λ(v){
+	↩ parse_table.map(λ(p){t←; ↩ (t=v.match(p[0])) && p[1].apply(null,t.slice(1))}).filter(λ(v){↩ v != null})[0] || err('did not parse')
+	})}
+
+// ---------------------------------- input --------------------------------- //
+
+__SPECIAL__ = λ λ(v){
+	t ← parse_sentences(v); t.length > 1 && err('too many sentences')
+	cb ← λ.cb; λ.cb = null; cb(null,t[0]) }
+
+get_input ← λ(cb){__SPECIAL__.cb = cb}
+mock_input ← λ(v,cb){print('\x1b[32mζ₊\x1b[39m > '+v); ;(λ λ(){__SPECIAL__.cb? (__SPECIAL__(v),cb()) : λ.in(0.01)})()}
+
+// -------------------------------------------------------------------------- //
+
+// corpus ← fs('corpus/all').find('>').map(λ(v){↩ 'corpus/all/'+v})
+// corpus ← corpus.map(λ(v){↩ [v, _.memoize(λ(){↩ fs_(v).$})]})
+
+q ← fs('corpus/test.js').$
+pos ← {v:0, row:0, col:0}
+
+if (q.match(/\t/)) throw err('bah tabs')
+
+p_next ← λ(){pos = _.clone(pos); pos.v++; if (q[pos.v-1] === '\n') {pos.row++; pos.col = 0} else pos.col++}
+
+print_position ← λ(msg){
+	print('line '+(pos.row+1)+':',msg)
+	print(q.slice(pos.v - pos.col).match(/^.*?(?=\n|$)/)[0])
+	print(' '.repeat(pos.col)+'^')
+	}
+
+query_about_start_of ← λ*(){
+	print_position('what is this the start of?')
+	v ← yield get_input
+	yield* query_about_match_for(v)
+	}
+
+query_about_when_to_end ← λ*(rule){
+	// print_position("i'm at")
+	print('when does parsing a',rule.name,'end?')
+	v ← yield get_input
+	if (typeof(v)==='string' && v !== 'immediately') err()
+	rule.end = v
+	// if (v.careful)
+		// yield* query_about_when_to_be_careful(v)
+	// print((v.careful?'':'alright! ')+'rule is now:',util.inspect(rule,{depth:10,colors:true}))
+	print('alright! rule is now:',util.inspect(rule,{depth:10,colors:true}))
+	}
+
+query_about_match_for ← λ*(thing){
+	print('does that character always start a',thing,'?')
+	v ← yield get_input
+	if (typeof(v)==='boolean') {
+		!v && err()
+		rules.push({start_on:q[pos.v], name:thing})
+	} else if (v.condition && v.condition.next_is) {
+		rules.push({start_on:q[pos.v]+v.condition.next_is, name:thing})
+	} else err()
+	print('yay! adding rule:',rules[-1])
+	}
+
+// query_about_when_to_be_careful ← λ*(condition){
+// 	print('when might',pluralize(condition.careful),'be tricky?')
+// 	v ← yield get_input
+// 	condition.careful = {name:condition.careful, if:v}
+// 	print('good to know.')
+// 	}
+
+
+rules = []
+parses = []
+Object.defineProperty(global,'cp',{get:λ(){↩ parses[-1]&&!parses[-1].end? parses[-1] : null}})
+
+
+finish_parse ← λ(){cp.text = q.slice(cp.start.v, pos.v); cp.end = pos}
+
+;(λ λ(){t←;
+	if (!cp) {
+		if (t=_.find(rules,λ(v){↩ v.start_on === q.slice(pos.v, pos.v + v.start_on.length)})) {
+			parses.push({rule:t, start:pos})
+			p_next(); λ.in()
+		} else {
+			co_(query_about_start_of(), λ)
+		}
+	} else {
+		if (!cp.rule.end) {
+			co_(query_about_when_to_end(cp.rule), λ)
+		} else {
+			if (cp.rule.end === 'immediately') {
+				finish_parse(); λ.in()
+			} else if (cp.rule.end.on) {
+				if (q.slice(pos.v, pos.v + cp.rule.end.on.length) === cp.rule.end.on) {
+					p_next(); finish_parse(); λ.in()
+				} else {
+					p_next(); λ.in()
+				}
+			} else err('‽')
+		}
+	}
+	})()
+
+co_(λ*(){
+yield mock_input.P("that's a comment")
+yield mock_input.P("only if followed by /")
+yield mock_input.P("on a newline")
+yield mock_input.P("whitespace")
+yield mock_input.P("yeah")
+yield mock_input.P("immediately")
+yield mock_input.P("that's a string")
+yield mock_input.P("yeah")
+yield mock_input.P("on a \"")
+// yield mock_input.P("on a \" , unless escapes are tricky")
+// yield mock_input.P("only on a \\")
+// yield mock_input.P("that's a precedence-group")
+ζ2_repl_start.in(0.01)
+})
