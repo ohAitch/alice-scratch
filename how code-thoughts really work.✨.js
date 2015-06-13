@@ -1,25 +1,8 @@
-with a _good_ programmer, the code-thoughts are in a fuzzy sloppy half-wrong frame that`s pretty alien to the existing field
-
-how does this tie in with ✨?
--> ✨ is our latest thoughts in programming language design, and has some experimental notes on "language parsing for eighty-twentiers"
-
-how does this tie in with prentice?
--> prentice is an attempt at understanding and reacting to fully generalized fuzzy sloppy half-wrong things people say. (it didn`t work.)
-
-what _is_ that frame?
-
-
-
-i think it might be good to try writing the code-thoughts of some program i haven`t written already
-i think it might be good to try writing the code-thoughts of weirder and differenter programs
-
-⟨ i tried these, but it felt TOO BIG and then i didn`t know what to try ⟩
-
 ------------------------------------ fb-sdk ------------------------------------
 
 node program. shebang.
 
-library FB.api uses node-callback. and after a call, null, .error, .data.error -> error
+library fb.api uses node-callback. and after a call, null, .error, .data.error -> error
 
 on error, also: print 'ERROR' without a newline. CLI return 1.
 
@@ -28,11 +11,11 @@ read auth from ./arc/fb_auth.json or error
 CLI commands are
 	
 	verify <token> <user_id>
-		call library FB.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: argv.token})
+		call library fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: argv.token})
 		error if false: .data match {is_valid: true, app_id: auth.id, user_id: argv.user_id}
 
 	get-name <token>
-		call library FB.api('/me', {access_token: argv.token})
+		call library fb.api('/me', {access_token: argv.token})
 		print .name without a newline
 
 -------------------------------- perfect-history -------------------------------
@@ -95,7 +78,7 @@ let json.show = λ(v){
 			a+ts.join(', ')+b, unless its .length > wrap_width, then a+'\n'+TAB+ts.join(',\n'+TAB)+'\n'+b
 	}
 
-------------------------------------- sure -------------------------------------
+------------------------------------- dance ------------------------------------
 
 // "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
 
@@ -137,7 +120,82 @@ a well at its cap will spend all its soul on the action of sending an agent with
 the piece of code is just a javascript function, taking the local region of the grid as input and outputting an action object
 
 can i have a grid and controls for running the ticks? as a static javascript app, in a browser tab. i want the grid to be the biggest size that fits in the given window with the given display method.
-and can you display the grid squares as 24×24px squares
+and can you display the grid squares as 12×12px squares
 when empty, a solid square of its well`s soul-color
-when full, the empty version plus a centered 18×18 square of the agent`s soul-color, plus a pair of ascii chars to represent the agent`s code
+when full, the empty version plus a centered 9×9px square of the agent`s soul-color, plus a pair of ascii chars to represent the agent`s code
 and when i mouseover a grid square i want it to display all of the contents in a sort of tooltip
+
+------------------------------------ weather -----------------------------------
+
+// god this is so clunky
+compute
+> vertically concatenate [the weather images for "temp" and "feel", merged] and [the weather images for "rain", merged]
+at hours 0 and 48 and then concatenate them horizontally.
+
+write this image to test.png.
+
+--- aux ---
+
+weather_images(hour, type) =
+  for each in {temp:[0], feel:[2,3], rain:[9,10,11,12]}[type] * ("000000000000000000000000000000000000000000000000000000000" [_]= "1")
+  fetch "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+it+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
+
+the merge a set of weather images is
+  average(the set with the grey pixels masked black) +
+  average(the set with the non-grey pixels masked black)
+
+--------------------------------------------------------------------------------
+
+// http://baconjs.github.io/api.html might be really useful for a lot of the implementation of this
+
+with a _good_ programmer, the code-thoughts are in a fuzzy sloppy half-wrong frame that`s pretty alien to the existing field
+
+how does this tie in with ✨?
+-> ✨ is our latest thoughts in programming language design, and has some experimental notes on "language parsing for eighty-twentiers"
+
+how does this tie in with prentice?
+-> prentice is an attempt at understanding and reacting to fully generalized fuzzy sloppy half-wrong things people say. (it didn`t work.)
+
+what _is_ that frame?
+
+
+i think it might be good to try writing the code-thoughts of some program i haven`t written already -> done!
+i think it might be good to try writing the code-thoughts of weirder and differenter programs -> done!
+
+
+if we have a model of code-thoughts that allows for expressing
+	fb-sdk
+	perfect-history
+	sublime-transform
+	sure
+	lackey
+	tagtime (web/windows/ubuntu/osx/android/ios or some subset of that)
+	IAFF
+	timer-tab.com
+then i think we have a good model.
+
+we`ve completed five of those and started working on the other three but dropped off
+hmm
+i want to ask the questions
+
+
+what programs _would_ we write if our computer understood our code-thoughts?
+what code-thoughts _would_ we have if our computer understood them?
+
+
+these questions don`t have cached answers. we gotta think about them if we want to know.
+
+genex(/-?\d/) and generally constraint programming
+
+' http://worrydream.com/KillMath/ and http://worrydream.com/LadderOfAbstraction/ are relevant here '
+
+i would write a lot more fun toys like "sure"
+	a lot more attempts at generation of beautiful things, like terrain or cities
+i would have my own custom text editor
+	it would include things like "i want code formatters for lots of languages" which would grab code formatter data from the internet and it would be of spotty quality but it would exist and not be worse than sublime`s existing
+	it would dominate etherpad
+i would have been doing custom fuzzing
+	Everything is broken -> embarrassed fuzzer http://danluu.com/everything-is-broken/
+
+> i`m refactoring acorn.js
+> and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit

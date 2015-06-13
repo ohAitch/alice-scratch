@@ -1,22 +1,22 @@
-i have always wished there was some good way of doing units, like `16 newtons` or `6 meters` (could not super-smart primitive wrappers do the trick?)
-consider aliasing :: to prototype
-fat arrow => binds the function to the current value of this #notes-from-coffeescript
-[don't forget] chained comparisons (e.g. a == b == c)
-ruby &:symbol is super cute
-[don't forget] nullsafing
-[don't forget] destructuring includes `[open, contents..., close] =` and `[first, ..., last] =` and you've even got `{name, age, height} =` and also stuff in function calls like `a.b(c...)` <-> `a.b.apply(a,c)`
-[don't forget] it looks like both alignment and indentation are totally redundant
-generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
-concatenation oughta be * but that is hard because reasons. what about ~ ?
-custom numerical types are awesome. e.g. efficient computation with units, working conveniently with image data in hardware-friendly formats (see: julia)
-play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
-[old version - don't forget if it has anything important] "separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?"
-useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
-the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
+# i have always wished there was some good way of doing units, like `16 newtons` or `6 meters` (could not super-smart primitive wrappers do the trick?)
+# consider aliasing :: to prototype
+# fat arrow => binds the function to the current value of this #notes-from-coffeescript
+# #don't-forget chained comparisons (e.g. a == b == c)
+# ruby &:symbol is super cute
+# #don't-forget nullsafing
+# #don't-forget destructuring includes `[open, contents..., close] =` and `[first, ..., last] =` and you've even got `{name, age, height} =` and also stuff in function calls like `a.b(c...)` <-> `a.b.apply(a,c)`
+#don't-forget it looks like both alignment and indentation are totally redundant
+# generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
+# concatenation oughta be * but that is hard because reasons. what about ~ ?
+# custom numerical types are awesome. e.g. efficient computation with units, working conveniently with image data in hardware-friendly formats (see: julia)
+# play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
+# #old-version---don't-forget-if-it-has-anything-important "separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?"
+# useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
+# the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
 
 ------- important but probably not in the scope of ✨ -------
 
-powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
+# powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
 pattern matching (ocaml?)
 	what are the patterns that can be matched?
 		are they just json&spreads?
@@ -42,73 +42,46 @@ so what *is* up with static typing?
 async: now investigating F# and Haskell! see http://wiki.haskell.org/MonadPlus_reform_proposal http://reddit.com/r/haskell/comments/1q6o2a/the_f_computation_expression_zoo_why_computation/ http://stackoverflow.com/questions/19586825/computation-expressions-for-a-haskell-programmer http://stackoverflow.com/questions/5996239/is-fs-implementation-of-monads-unique-with-respect-to-the-amount-of-keywords-a http://en.wikibooks.org/wiki/F_Sharp_Programming/Computation_Expressions#Monad_Primer http://github.com/visionmedia/co http://tomasp.net/academic/papers/async/async.pdf http://learnyouahaskell.com/functors-applicative-functors-and-monoids#functors-redux http://en.wikibooks.org/wiki/Haskell/Practical_monads http://wiki.haskell.org/How_to_write_a_Haskell_program http://mrob.com/pub/comp/hypercalc/hypercalc-javascript.html . (also, c# await is nice)
 haskell lens
 
----------------------------------------  ---------------------------------------
------------------------------ ==> clrs misc.txt <== ----------------------------
----------------------------------------  ---------------------------------------
+-------- bah. in-list. -------
 
 http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
-
------ list comp syntaxes -----
-
-[for <n> in <c> [while <t>] [if <t>]]
-
-F# [for x in collection do ... yield expr] !!
-
-!!
-JavaScript 1.7 has array comprehensions. The JavaScript engine of the popular Firefox browser from Mozilla Foundation---SpiderMonkey---supports them,[3] for example,
-js> [2*x for each (x in [0,1,2,3,4,5,6,7]) if (x*x<5)]
-[0, 2, 4]
-The sequence of integers can be obtained by prototyping the Number object,
-Number.prototype.__iterator__=function(){for (var i=0; i<this; i++) yield i}
-var s = [2*x for (x in 100) if (x*x<5)]
-Or introducing a range function,
-var range = function(start,end){for (var i=start; i<=end; i++) yield i}
-var s = [2*x for (x in range(0,100)) if (x*x<5)]
-
-Perl 6 provides more than one way to implement list comprehensions.
-my @s = ($_ * 2 if $_ ** 2 > 3 for ^100);
-Or, using gather:
-my @s = gather { for ^100 { take 2 * $_ if $_ ** 2 > 3 } };
-
-0..100 | Where {$_ * $_ -gt 3} | ForEach {$_ * 2}
-var s = from x in Enumerable.Range(0, 100) where x*x > 3 select x*2;
-
-The Python programming language has a corresponding syntax for expressing list comprehensions. The near-equivalent in Python to the example above is as follows:
-S = [2 * x for x in range(101) if x ** 2 > 3]
-List comprehensions were introduced in Python version 2.0.[4]
-A generator expression may be used in Python versions 2.4 and above[5] to achieve functional equivalence with S using a generator to iterate a (finite or infinite) sequence:
-from itertools import count
-S = (2 * x for x in count() if x ** 2 > 3)
-
-scala
-Using a for-expression:
-val s = for (x <- Stream.from(0) if x*x > 3) yield 2*x
-
-Version 3.x and 2.7 of the Python language introduces syntax for set comprehensions. Similar in form to list comprehensions, set comprehensions generate Python sets instead of lists.
->>> s = {v for v in 'ABCDABCD' if v not in 'CB'}
->>> print(s)
-{'A', 'D'}
->>> type(s)
-<class 'set'>
-
-Version 3.x and 2.7 of the Python language introduced a new syntax for dictionary comprehensions, similar in form to list comprehensions but which generate Python dicts instead of lists.
->>> s = {key: val for key, val in enumerate('ABCD') if val not in 'CB'}
->>> s
-{0: 'A', 3: 'D'}
-
-Monad comprehension[edit]
-In Haskell, a monad comprehension is a generalization of the list comprehension to other monads in functional programming.
-
-do have zip function . else, list comprehensions are sadder
-tho in clojure map autozips, kinda?
-
----------------------------------------  ---------------------------------------
----------------------------- ==> lang_wishes.txt <== ---------------------------
----------------------------------------  ---------------------------------------
-
 i want the word "clique" to be a meaningful macro or smth
 copy python-style print sometime: print([object, ...], *, sep=' ', end='\n', file=sys.stdout)
 :keywords slash interned-strings are best enum. but they *need* better typo/wrongness detection (for the sake of fail-fast)
+
+-------------------------- list comprehension syntaxes -------------------------
+
+[for <n> in <c> [while <t>] [if <t>]]
+
+F#
+[for x in collection do ... yield expr]
+
+javascript
+js> [2*x for each (x in [0,1,2,3,4,5,6,7]) if (x*x<5)]
+The sequence of integers can be obtained by prototyping the Number object,
+Number.prototype.__iterator__=function(){for (var i=0; i<this; i++) yield i}
+var s = [2*x for (x in 100) if (x*x<5)]
+
+Perl 6
+my @s = ($_ * 2 if $_ ** 2 > 3 for ^100);
+my @s = gather { for ^100 { take 2 * $_ if $_ ** 2 > 3 } };
+
+<unsure>
+0..100 | Where {$_ * $_ -gt 3} | ForEach {$_ * 2}
+var s = from x in Enumerable.Range(0, 100) where x*x > 3 select x*2;
+
+python
+S = [2 * x for x in range(101) if x ** 2 > 3]
+>>> s = {v for v in 'ABCDABCD' if v not in 'CB'}
+>>> s = {key: val for key, val in enumerate('ABCD') if val not in 'CB'}
+
+scala
+val s = for (x <- Stream.from(0) if x*x > 3) yield 2*x
+
+Monad comprehension: In Haskell, a monad comprehension is a generalization of the list comprehension to other monads in functional programming.
+
+do have zip function . else, list comprehensions are sadder
+tho in clojure map autozips, kinda?
 
 ---------------------------------------  ---------------------------------------
 -------------------- ==> thoughts on elastic tabstops.α <== --------------------
@@ -276,41 +249,3 @@ public class ETTabstop
 	{
 	}
 }
-
----------------------------------------  ---------------------------------------
------------------------------ ==> weather.kxlq <== -----------------------------
----------------------------------------  ---------------------------------------
-
-; syntax: `name(args) = blah` == `name = fn(args) blah`
-; fn syntax unknown, was `args -> body` now is `fn(args) body`
-
-slurpi = fn(f) javax.imageio.ImageIO.read(java.net.URL(f))
-spiti = fn(f bi) javax.imageio.ImageIO.write(bi "png" file(f))
-is_grey = fn(c) c.r == c.g == c.b
-merge_weather_images = fn(imgs) (
-  greys  = imgs * * (||is_grey   0x00000000)
-  colors = imgs * * (||!&is_grey 0x00000000)
-  avg(greys) + avg(colors))
-image = fn(method imgs) (
-  GRID_VERTICAL = new object()
-  GRID_HORIZONTAL = new object()
-  )
-
-PMCD = new fn() (
-    this.TEMPERATURE =     "100000000000000000000000000000000000000000000000000000000"
-    this.FEELS_LIKE = [    "001000000000000000000000000000000000000000000000000000000"
-                           "000100000000000000000000000000000000000000000000000000000" ]
-    this.PRECIPITATION = [ "000000000100000000000000000000000000000000000000000000000"
-                           "000000000010000000000000000000000000000000000000000000000"
-                           "000000000001000000000000000000000000000000000000000000000"
-                           "000000000000100000000000000000000000000000000000000000000" ]
-    )
-
-weather_img = fn(ahour ^PMCD. pcmd) slurpi(str("http://forecast.weather.gov/wtf/meteograms/Plotter.php?lat=43.08544&lon=-77.67506&wfo=BUF&zcode=NYZ003&gset=20&gdiff=10&unit=0&tinfo=EY5&ahour="ahour"&pcmd="pcmd"&lg=en&indu=1!1!1&dd=0&bw=0&hrspan=48&pqpfhr=6&psnwhr=6"))
-
-build_chart = fn() new image(.GRID_VERTICAL [
-  new image(.GRID_HORIZONTAL [for [0 48] merge_weather_images([weather_img(it .TEMPERATURE)]+[for pmcd in .FEELS_LIKE weather_img(it pmcd)])])
-  new image(.GRID_HORIZONTAL [for [0 48] merge_weather_images([for pmcd in .PRECIPITATION weather_img(it pmcd)])])
-  ])
-
-spiti("test.png" build_chart())
