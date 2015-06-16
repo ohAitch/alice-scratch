@@ -1,3 +1,27 @@
+// in a good programmer, code-thoughts are in a fuzzy sloppy half-wrong frame that`s pretty alien to the existing field
+// what is that frame?
+// well, what code-thoughts would we have if our computer understood them? and what programs would we write?
+// ... i don`t know. that`s a really hard question.
+// http://baconjs.github.io/api.html might be really useful for the implementation of this
+// http://worrydream.com/KillMath/ http://worrydream.com/LadderOfAbstraction/ is relevant to the implementation of this
+
+if we have a model of code-thoughts that allows for expressing
+	fb-sdk
+	perfect-history
+	sublime-transform
+	sure
+	more attempts at generation of beautiful things, like terrain or cities
+	lackey
+	tagtime (web/windows/ubuntu/osx/android/ios or some subset of that) (6.824 is relevant to this)
+	IAFF
+	timer-tab.com
+	the matasano crypto challenges (http://cryptopals.com/)
+	something like "constraint programming", incl genex(/-?\d/)
+	custom fuzzing http://danluu.com/everything-is-broken/
+	> i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
+	? absolute technical grace ? "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
+then i think we have a good model.
+
 ------------------------------------ fb-sdk ------------------------------------
 
 node program. shebang.
@@ -33,7 +57,6 @@ call library chokidar.watch(root, {persistent:true, ignoreInitial:true})
 		print (event, current time, file) tabularly
 		(if event = 'unlink', copy file to, else touch) '.history/'+current_time+' '+(event = 'unlink'? '-' : '+')+' '+file.replace(/\//g,'::')
 
-
 ------------------------------- sublime-transform ------------------------------
 
 node program. shebang.
@@ -55,8 +78,7 @@ CLI commands are
 
 ------- auxiliary: how to pretty print json ------
 
-// this is my first attempt at stringifying json nicely.
-// i do not think it will be my last.
+// this is my first attempt at stringifying json nicely. i do not think it will be my last.
 let json.show = λ(v){
 	let wrap_width = 150
 	let TAB = '  '
@@ -79,7 +101,6 @@ let json.show = λ(v){
 	}
 
 ------------------------------------- dance ------------------------------------
-
 // "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
 
 let`s define a 2d grid-world with a physics of sequential ticks
@@ -126,76 +147,17 @@ when full, the empty version plus a centered 9×9px square of the agent`s soul-c
 and when i mouseover a grid square i want it to display all of the contents in a sort of tooltip
 
 ------------------------------------ weather -----------------------------------
+// this program really needs to be laid out graphically/nonlinearly.
 
-// god this is so clunky
-compute
-> vertically concatenate [the weather images for "temp" and "feel", merged] and [the weather images for "rain", merged]
-at hours 0 and 48 and then concatenate them horizontally.
-
-write this image to test.png.
+> vertical join [merge weather images @ index 0 2 3] and [merge weather images @ index 9 10 11 12]
+do that at hours 0 48. horizontal join these. write this to test.png.
 
 --- aux ---
 
-weather_images(hour, type) =
-  for each in {temp:[0], feel:[2,3], rain:[9,10,11,12]}[type] * ("000000000000000000000000000000000000000000000000000000000" [_]= "1")
-  fetch "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+it+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
+weather_image(hour, index) =
+  fetch "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+code+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
+	where code = ("000000000000000000000000000000000000000000000000000000000" [index]= "1")
 
 the merge a set of weather images is
   average(the set with the grey pixels masked black) +
   average(the set with the non-grey pixels masked black)
-
---------------------------------------------------------------------------------
-
-// http://baconjs.github.io/api.html might be really useful for a lot of the implementation of this
-
-with a _good_ programmer, the code-thoughts are in a fuzzy sloppy half-wrong frame that`s pretty alien to the existing field
-
-how does this tie in with ✨?
--> ✨ is our latest thoughts in programming language design, and has some experimental notes on "language parsing for eighty-twentiers"
-
-how does this tie in with prentice?
--> prentice is an attempt at understanding and reacting to fully generalized fuzzy sloppy half-wrong things people say. (it didn`t work.)
-
-what _is_ that frame?
-
-
-i think it might be good to try writing the code-thoughts of some program i haven`t written already -> done!
-i think it might be good to try writing the code-thoughts of weirder and differenter programs -> done!
-
-
-if we have a model of code-thoughts that allows for expressing
-	fb-sdk
-	perfect-history
-	sublime-transform
-	sure
-	lackey
-	tagtime (web/windows/ubuntu/osx/android/ios or some subset of that)
-	IAFF
-	timer-tab.com
-then i think we have a good model.
-
-we`ve completed five of those and started working on the other three but dropped off
-hmm
-i want to ask the questions
-
-
-what programs _would_ we write if our computer understood our code-thoughts?
-what code-thoughts _would_ we have if our computer understood them?
-
-
-these questions don`t have cached answers. we gotta think about them if we want to know.
-
-genex(/-?\d/) and generally constraint programming
-
-' http://worrydream.com/KillMath/ and http://worrydream.com/LadderOfAbstraction/ are relevant here '
-
-i would write a lot more fun toys like "sure"
-	a lot more attempts at generation of beautiful things, like terrain or cities
-i would have my own custom text editor
-	it would include things like "i want code formatters for lots of languages" which would grab code formatter data from the internet and it would be of spotty quality but it would exist and not be worse than sublime`s existing
-	it would dominate etherpad
-i would have been doing custom fuzzing
-	Everything is broken -> embarrassed fuzzer http://danluu.com/everything-is-broken/
-
-> i`m refactoring acorn.js
-> and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
