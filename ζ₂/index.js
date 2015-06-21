@@ -5,14 +5,16 @@
 // requireζ2 is maybe actually quite bad since it doesn't handle changes to the source ??
 
 var ζ2_compile = function(v){
-	return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?)|@(?!-))(?!['"])/g,
+	// return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?)|@(?!-))(?!['"])/g,
+	return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?))(?!['"])/g,
 		function(v,name,s,semi){switch(v){
 			case 'λ': return 'function'; case 'λ λ': return 'function λ'
 			case 'λ*': return 'function*'; case 'λ* λ': return 'function* λ'
 			case '↩': case '↩ ': return 'return '
-			case '@': return 'this'
+			// case '@': return 'this'
 			default: return semi===';'? 'var '+name+s+';' : 'var '+name+s+'='
-			}})}
+			}})
+		.replace(/([^'"])@(?!-)/g,'$1this')}
 var ζ2_compile_file = function(v){var shebang
 	v = v.replace(/^(#!.*\n)?/,function(v){shebang = v; return ''})
 	shebang = shebang.replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')
