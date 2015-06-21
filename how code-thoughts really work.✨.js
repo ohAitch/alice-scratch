@@ -2,24 +2,25 @@
 // what is that frame?
 // well, what code-thoughts would we have if our computer understood them? and what programs would we write?
 // ... i don`t know. that`s a really hard question.
+// i think there would be absolute technical grace "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
 // http://baconjs.github.io/api.html might be really useful for the implementation of this
 // http://worrydream.com/KillMath/ http://worrydream.com/LadderOfAbstraction/ is relevant to the implementation of this
+// > i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
 
 if we have a model of code-thoughts that allows for expressing
-	fb-sdk
-	perfect-history
-	sublime-transform
-	sure
+	// fb-sdk
+	// perfect-history
+	// sublime-transform
+	// dance
 	more attempts at generation of beautiful things, like terrain or cities
-	lackey
+	// weather
+	// lackey
 	tagtime (web/windows/ubuntu/osx/android/ios or some subset of that) (6.824 is relevant to this)
 	IAFF
 	timer-tab.com
-	the matasano crypto challenges (http://cryptopals.com/)
+	the matasano crypto challenges
 	something like "constraint programming", incl genex(/-?\d/)
 	custom fuzzing http://danluu.com/everything-is-broken/
-	> i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
-	? absolute technical grace ? "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
 then i think we have a good model.
 
 ------------------------------------ fb-sdk ------------------------------------
@@ -161,3 +162,73 @@ weather_image(hour, index) =
 the merge a set of weather images is
   average(the set with the grey pixels masked black) +
   average(the set with the non-grey pixels masked black)
+
+------------------------------------ lackey ------------------------------------
+
+node module exposing a CLI and no exports.
+require({"xmlbuilder": "*"})
+
+the CLI is () and does:
+	cp lackey.icns ~/Library/Keyboard\ Layouts/
+	make_keylayout >¹ ~/Library/Keyboard\ Layouts/lackey.keylayout
+	make_karabiner > ~/Library/Application\ Support/Karabiner/private.xml
+	using /Applications/Karabiner.app/Contents/Library/bin/ :
+		karabiner reloadxml; karabiner enable lackey
+
+make_keylayout:
+	using lackey.keylayout.template
+	id ← -18674
+	keymapset ← [
+		['a','s','d','f','h','g','z','x','c','v',167,'b','q','w','e','r','y','t','1','2','3','4','6','5','=','9','7','-','8','0',']','o','u','[','i','p',13,'l','j','\'','k',';','\\',',','/','n','m','.',9,' ','`',8,3,27,0,0,0,0,0,0,0,0,0,0,0,'.',29,'*',0,'+',28,27,31,0,0,'/',3,30,'-',0,0,'=','0','1','2','3','4','5','6','7',0,'8','9',0,0,0,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,5,1,11,127,16,4,16,12,16,28,29,31,30,0],
+		['A','S','D','F','H','G','Z','X','C','V',177,'B','Q','W','E','R','Y','T','!','@','#','$','^','%','+','(','&','_','*',')','}','O','U','{','I','P',13,'L','J','"','K',':','|','<','?','N','M','>',9,' ','~',8,3,27,0,0,0,0,0,0,0,0,0,0,0,'.','*','*',0,'+','+',27,'=',0,0,'/',3,'/','-',0,0,'=','0','1','2','3','4','5','6','7',0,'8','9',0,0,0,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,5,1,11,127,16,4,16,12,16,28,29,31,30,0],
+		['A','S','D','F','H','G','Z','X','C','V',167,'B','Q','W','E','R','Y','T','1','2','3','4','6','5','=','9','7','-','8','0',']','O','U','[','I','P',13,'L','J','\'','K',';','\\',',','/','N','M','.',9,' ','`',8,3,27,0,0,0,0,0,0,0,0,0,0,0,'.',29,'*',0,'+',28,27,31,0,0,'/',3,30,'-',0,0,'=','0','1','2','3','4','5','6','7',0,'8','9',0,0,0,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,5,1,11,127,16,4,16,12,16,28,29,31,30,0],
+		[[10],,[13],[15],,,,,[12],,,[11],,,[14],,,,[1],[2],[3],[4],[6],[5],,[9],[7],,[8],[0],,,,,,,,,,,,,,,,,,,,,,8,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,[0],[1],[2],[3],[4],[5],[6],[7],,[8],[9],,,,,,,,,,,,,,,,,,,,,,5,1,11,127,16,4,16,12,16,28,29,31,30,],
+		[1,19,4,6,8,7,26,24,3,22,'0',2,17,23,5,18,25,20,'1','2','3','4','6','5','=','9','7',31,'8','0',29,15,21,27,9,16,13,12,10,'\'',11,';',28,',','/',14,13,'.',9,' ','`',8,3,27,0,0,0,0,0,0,0,0,0,0,0,'.',29,'*',0,'+',28,27,31,0,0,'/',3,30,'-',0,0,'=','0','1','2','3','4','5','6','7',0,'8','9',0,0,0,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,5,1,11,127,16,4,16,12,16,28,29,31,30,0],
+		]. pairs. mapcat ['<keyMap index="'+i+'">', (@_), '</keyMap>'] $ .join('\n')
+			where _ = v. pairs. * '<key code="'+i+'" '+(v isa Array? 'action="'+v[0] : 'output="&#x'+(it as char as buf to hex)+';')+'"/>'
+	↩ filled out template
+
+[1] read the file first and only write if it`s different. and if so, then first
+	id += 1
+	print('!! writing new layout !!')
+	print('you may need to manually set the new layout in System Preferences → Keyboard → Input Sources and then reboot your computer')
+	print('new id:',id)
+
+make_karabiner:
+	//! right command is maybe problematic
+	//! need to enable multi-modifier chords. maybe do this by changing the keylayout so that the hex codes are hidden away?
+
+	/* parse .lackey */
+	read default.lackey
+	remove lines ≈ /#.*/
+	collect lines ≈ /(\S+) : (\S+)/ as chords
+	match interrupted (labeled) ascii boxes.
+		they should have 4 or 6 lines.
+		discard boxes '','⇧'
+		for each line: s/^\||\|$//g. ≈/\S\S?/g.
+		interpret boxes with 4 lines as a [1:-1] view of (box 'homoiconic' with all atoms = '_'), and de-view. flatten all boxes.
+		prepend-zip boxes with box 'homoiconic'. discard pairs ≈ [,'_']. discard box 'homoiconic'.
+		let keycodes ← boxes pop 'keycode' as dict
+		chords ~= boxes ** {keys:[0], out:[1]} ** (.keys= .label+.keys) *cat
+	unmatched part should ≈ /\n+/
+
+	/* build the output */ use only: keycodes, chords
+	let KeyCode x ← 'KeyCode::'+(x≈/\d/? 'KEY_'+x : x≈/[a-z]/? uppercase x : 'RawValue::0x'+keycodes[x])
+	let kc_hex x ← x * (it as char as buf to hex * (KeyCode it)+',ModifierFlag::OPTION_L,'). flatten. as string.
+	let shells ← []
+	let gen_shell x ← (shells ~= [[kc,x]]; kc) where kc ← 'KeyCode::VK_OPEN_URL_'+(random ∈ ≈/\w{8}/)
+	gen_shell 'echo dummy'
+	let autogens ←
+		['__KeyToKey__ KeyCode::PC_APPLICATION, VK_CONTROL, KeyCode::TAB,ModifierFlag::CONTROL_L|ModifierFlag::SHIFT_L'] ~
+		['__KeyToKey__ KeyCode::PC_APPLICATION, ModifierFlag::NONE, KeyCode::RawValue::0x82'] ~
+		(chords -= .keys.length ≠ 2);
+		chords *
+			.keys[0] = '⌥'? '__KeyToKey__ '+(KeyCode .keys[1])+', VK_OPTION|ModifierFlag::NONE,' :
+				'__SimultaneousKeyPresses__ '+(KeyCode .keys[0])+', '+(KeyCode .keys[1])+','
+			//.keys[0] = 'R⌘'? '__KeyToKey__ '+KeyCode(.keys[1])+', ModifierFlag::COMMAND_R,' :
+			+
+			out isa string? kc_hex out : (gen_shell out[0])+','
+	↩ xmlbuilder.create({root: {
+		'#list': shells * {vkopenurldef: {name:it[0], url:{'@type':'shell', '#cdata':it[1]}}}
+		item: {name:'lackey', identifier:'lackey', '#list':autogens * {autogen:it}}
+		}}).end({pretty:true})
