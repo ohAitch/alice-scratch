@@ -1,0 +1,94 @@
+#!/usr/bin/env ζ₂
+
+crypto ← require('crypto')
+
+Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
+Buffer.prototype.bits = λ(){↩ @.toArray().ζ2_mapcat(λ(v){↩ [(v&0x01)>>0,(v&0x02)>>1,(v&0x04)>>2,(v&0x08)>>3,(v&0x10)>>4,(v&0x20)>>5,(v&0x40)>>6,(v&0x80)>>7]})}
+Buffer.prototype.partition = λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r}
+Array.prototype.argmax = λ(f){r←; a ← -Infinity; @.map(λ(v){t ← f(v); if (t > a) {r = v; a = t}}); ↩ r}
+Array.prototype.windows = λ(len){r←[]; for(i←0;i<=@.length-len;i++) r.push(@.slice(i,i+len)); ↩ r}
+Array.prototype.transpose = λ(){↩ _.zip.apply(_,@)}
+
+hex ← {}
+hex.read = λ(str){↩ new Buffer(str.match(/../g).map(λ(v){↩ parseInt(v,16)}))}
+hex.show = λ(buf){↩ buf.toString('hex')}
+
+base64 ← {}
+base64.read = λ(str){↩ new Buffer(str,'base64')}
+base64.show = λ(buf){↩ buf.toString('base64')}
+
+xor ← λ(a,b){
+	ia ← Buffer.isBuffer(a); ib ← Buffer.isBuffer(b)
+	if (!ia && !ib) ↩ a ^ b
+	if (!ia && ib) {t ← a; a = b; b = t}
+	if (ib && b.length > a.length) {t ← a; a = b; b = t}
+	r ← new Buffer(a.length)
+	if (!ib) for (i←0;i<r.length;i++) r[i] = a[i] ^ b
+	else     for (i←0;i<r.length;i++) r[i] = a[i] ^ b[i % b.length]
+	↩ r}
+
+add ← λ(a,b){↩ a + b}
+
+ascii_frequency ← (λ(){
+	// oops, this doesn't actually sum to 1.
+	t ← [,,,,,,,,,-4.60517,-4.60517,,,,,,,,,,,,,,,,,,,,,,-1.755724,-9.538844,-6.008407,-8.622554,-7.478685,-8.734106,-8.39056,-6.006375,-6.122941,-6.097714,-7.366621,-8.440232,-4.90196,-4.281349,-4.185013,-6.463711,-5.193597,-5.376495,-5.700587,-6.287716,-6.602479,-6.393137,-6.759335,-6.871423,-6.848543,-6.877226,-5.430022,-6.707266,-6.698305,-8.381789,-6.684612,-6.513014,-9.525051,-5.759401,-6.129807,-5.538607,-5.753393,-5.918214,-6.553583,-6.271708,-6.059315,-5.734654,-6.355596,-7.275925,-6.268009,-5.640244,-6.166771,-6.29041,-5.940391,-8.053459,-5.977562,-5.514237,-5.700587,-7.107426,-7.01534,-5.974411,-7.971966,-8.091925,-9.484777,-9.349602,-11.042922,-9.326874,-12.716898,-6.753319,-11.618286,-2.952309,-4.579405,-3.850599,-3.679563,-2.449578,-4.282,-4.154158,-3.589106,-3.00904,-7.043575,-4.991274,-3.443364,-4.101732,-2.995232,-2.845985,-4.161575,-7.194105,-3.149723,-3.124225,-2.747061,-3.856777,-4.765691,-4.333694,-6.233281,-4.473791,-7.418581,-10.557414,-11.8696,-10.557414,-12.716898]
+	for (i←0;i<0x100;i++) t[i] || (t[i] = -15.424948)
+	↩ λ(v){↩ t[v]} })()
+
+p_english ← λ(buf){↩ buf.toArray().map(ascii_frequency).reduce(add)}
+
+hamming ← λ(a,b){↩ _.zip(a.bits(),b.bits()).filter(λ(v){↩ v[0] !== v[1]}).length}
+
+solve_single_byte_xor ← λ(buf){↩ _.range(0,0x100).map(λ(key){↩ {key:key, out:xor(buf,key)}}).argmax(λ(v){↩ p_english(v.out)})}
+
+// next: http://cryptopals.com/sets/1/challenges/7/
+
+f7 ← base64.read(
+	'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')
+key ← new Buffer("YELLOW SUBMARINE")
+
+// The Base64-encoded content in this file has been encrypted via AES-128 in ECB mode under the key.
+// Decrypt it. You know the key, after all.
+// Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
+
+encrypt ← λ(buffer){t ← crypto.createCipher('aes-128-ecb',key); ↩ Buffer.concat([t.update(buffer), t.final()])}
+decrypt ← λ(buffer){t ← crypto.createDecipher('aes-128-ecb',key); ↩ Buffer.concat([t.update(buffer), t.final()])}
+ 
+// print(decrypt(encrypt(new Buffer("hello world")))+'')
+print(decrypt(f7)+'')
+
+bwuh. this isn`t working. okay, let`s go do something else :)
+
+// t ← crypto.createDecipher('aes-128-ecb', key)
+// print(Buffer.concat([t.update(f7),t.final()]).toString('utf8'))
+
+// ---------------------------------- past ---------------------------------- //
+
+// print(q.map(hex.read).ζ2_mapcat(λ(v){↩ _.range(0,0x100).map(xor.P(v))}).argmax(p_english)+'')
+
+// print(_.range(0,0x100).map(λ(i){↩ xor(hex.read('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'),i)}).argmax(p_english)+'')
+
+// print(q.map(hex.read).ζ2_mapcat(λ(v){↩ _.range(0,0x100).map(xor.P(v))}).argmax(p_english)+'')
+// print(q.map(hex.read).map(solve_single_byte_xor).argmax(p_english)+'') eesh, duplicate work
+
+// print(
+// 	xor(new Buffer("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"), new Buffer("ICE"))
+// 	.equals(
+// 	hex.read("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f")
+// 	))
+
+// print(hamming(new Buffer('this is a test'),new Buffer('wokka wokka!!!')),'= 37')
+// buf ← base64.read(f6)
+// keysizes ← _.range(1,41)._.sortBy(λ(keysize){
+// 	t ← _.range(0,5).map(λ(i){↩ buf.slice(keysize*i).slice(0,keysize)}).windows(2)
+// 	↩ t.map(λ(v){↩ hamming(v[0],v[1])}).reduce(add) / t.length / keysize
+// 	}).slice(0,5)
+// t ← keysizes.map(λ(keysize){
+// 	t ← buf.partition(keysize).map(λ(v){↩ v.toArray()}).transpose().map(λ(v){↩ solve_single_byte_xor(new Buffer(v))})
+// 	↩ {
+// 		key: new Buffer(t.map(λ(v){↩ v.key})),
+// 		out: new Buffer(t.map(λ(v){↩ v.out.toArray()}).transpose().ζ2_mapcat(λ(v){↩ v}))
+// 		} }).argmax(λ(v){↩ p_english(v.out)})
+// print(t.out+'')
+// print('--------------------------')
+// print('key:',hex.show(t.key))
