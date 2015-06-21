@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "xmlbuilder": "*",
-    "zeta-two": "^0.4.45"
+    "zeta-two": "^0.5.12"
   }
 }
