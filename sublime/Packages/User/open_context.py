@@ -17,7 +17,7 @@ def open(v,app=None,focus=True):
 	if fv: v = re.sub(r'\\ ',' ',v)
 
 	if app is "Terminal":
-		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+v+"; clear\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
+		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 		return
 	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
