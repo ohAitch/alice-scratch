@@ -7,14 +7,14 @@
 	"caret_extra_width": 0,
 	"caret_style": "phase",
 	"close_windows_when_empty": true,
-	"color_scheme": "Packages/User/Monalice.tmTheme",
+	"color_scheme": "Packages/User/Alice Dark.tmTheme",
 	"default_line_ending": "unix",
 	"enable_tab_scrolling": false,
+	"ensure_newline_at_eof_on_save": true,
 	"fade_fold_buttons": false,
 	"find_selected_text": true,
-	"font_size": 13,
+	"font_size": 14,
 	"highlight_line": true,
-	"tab_size": 2,
 	"ignored_packages":
 	[
 		"Vintage"
@@ -30,7 +30,7 @@
 	"scroll_speed": 2.0,
 	"show_full_path": true,
 	"show_tab_close_buttons": true,
-	"ensure_newline_at_eof_on_save": true,
+	"tab_size": 2,
 	"word_separators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}‹›⟨⟩`~?≤≥≠←¬₀⁰₁¹₂²₃³₄⁴₅⁵₆⁶₇⁷₈⁸₉⁹₊⁺₋⁻₌⁼₍⁽₎⁾ₐᵃᵇᶜᵈₑᵉᶠᵍₕʰᵢⁱⱼʲₖᵏₗˡₘᵐₙⁿₒᵒₚᵖᵣʳₛˢₜᵗᵤᵘᵥᵛʷₓˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂ",
 	"word_wrap": true
 }

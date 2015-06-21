@@ -1,6 +1,7 @@
 {
-  "fileTypes": ["txt"],
-  "name": "Plain Text",
+  "oh god": "why is this a duplicate of 'Plain text'?",
+  "fileTypes": ["text"],
+  "name": "Pretty Text",
   "patterns": [
     {"name": "link", "match": "\\b((https?|file)://(?:\\\\ |\\S)+([.,)\\]}](?=\\.)|(?<![\".,)\\]}])(?<!\"[\".,)\\]}]))|mailto:[^\\s\\\\@]+@[^\\s\\\\@]+)"},
     {
@@ -51,5 +52,5 @@
     {"name": "constant.numeric", "match": "[\\d₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰]"},
     {"name": "quiet", "match": "(?!\\b_\\b)_"}
   ],
-  "scopeName": "text.plain"
+  "scopeName": "text.pretty"
 }
