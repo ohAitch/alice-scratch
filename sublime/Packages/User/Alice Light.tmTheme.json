@@ -22,7 +22,7 @@
         "tagsOptions": "stippled_underline"
       }
     },
-    {"name": "Comment", "scope": "comment", "settings": {"foreground": "#5A525F"}},
+    {"name": "Comment", "scope": "comment", "settings": {"foreground": "#B6B6B6"}},
     {"name": "hashtag", "scope": "hashtag", "settings": {"foreground": "#080808", "fontStyle": "italic"}},
     {"name": "quiet", "scope": "quiet", "settings": {"foreground": "#75715E"}},
     {"name": "Block", "scope": "block", "settings": {"foreground": "#9C987F"}},
