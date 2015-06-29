@@ -43,6 +43,12 @@ git prune
 # magic get-dir-of-file
 t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; DIR="$(cd -P "$( dirname "$t")" && pwd)"
 
+# here's a way to easily modify your macros key:
+{ rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
+
+# How to make the tagtime daemon automatically start on bootup in OSX:
+sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
+
 --------------------------- scrape miri publications ---------------------------
 
 // go to https://intelligence.org/all-publications/
@@ -77,3 +83,9 @@ namegen ← ζ2_gen2fn(λ*(){
 	short = _.shuffle(short.ζ2_mapcat(λ(v){↩ _.range(10).map(λ(i){↩ v+' '+i})}))
 	to ← round(long.length/2); yield* _.shuffle(long.concat(short.slice(0,to))); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
+
+-------------------------------------- ocr -------------------------------------
+
+# 0 requests remaining on alice0meta@gmail.com
+# 52 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
+do_it() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=KqsDmZ77kW' -F 'language=en' -F "image=@$1.png" > $1.txt; }
