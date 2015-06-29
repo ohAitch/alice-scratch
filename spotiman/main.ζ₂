@@ -4,6 +4,7 @@ util ← require('util')
 node_spotify ← require('node-spotify')
 
 // todo: use the node audio handler for Fun Stuff
+// todo: rename this file to index.ζ₂
 
 // ----------------------------------- aux ---------------------------------- //
 
@@ -24,6 +25,7 @@ audio_handler_resume←;
 getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){
+			console.error('[spotiman] logging on ...')
 			spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
 			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
@@ -31,6 +33,7 @@ getDatabaseoid ← λ(cb){
 			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
+			console.error('[spotiman] polling for loading ...')
 			t ← spotify.playlistContainer.getPlaylists()
 			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
 				t = _(t.filter(is_playlist).map(λ(v){↩ v.getTracks()})).flatten(true)
@@ -54,6 +57,7 @@ getDatabaseoid ← λ(cb){
 		↩ v }
 
 	loginAndWaitForAllLoaded(λ(e,spotify){
+		console.error('[spotiman] massaging data ...')
 		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
 		d ← _(_(t).countBy('name')).pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]})
 		if (d.length) print('[spotiman] oh no! duplicate tags!',d)
