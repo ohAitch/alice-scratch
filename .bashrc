@@ -40,14 +40,14 @@ D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists() { type "$1" &>/dev/null; }
 alias l='ls -AG'
-T() { tee /tmp/lastL; }
+T() { tee /tmp/lastL; } #! should use mktemp
 L() { cat /tmp/lastL; }
 # mute() { osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
 mute() { osascript -e "set volume output muted true"; }
 unmute() { osascript -e "set volume output muted false"; }
 vol() { osascript -e "set volume output volume $1"; }
 switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
-dot() { t=$(cat); echo $'#!/usr/bin/env bash\n'"$t" > /tmp/q; exr /tmp/q; rm /tmp/q; }
+dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; exr $tmp; rm $tmp; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place
@@ -57,7 +57,8 @@ export GITHUB_TOKEN=$(cat ~/.auth/github)
 
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
-PROMPT_COMMAND='update_terminal_cwd; [ -s /tmp/cnfhcd ] && { cd $(cat /tmp/cnfhcd); rm /tmp/cnfhcd; } || true'
+cnfhcd=$(mktemp /tmp/cnfhcd_XXXXXX)
+PROMPT_COMMAND='update_terminal_cwd; [ -s '"$cnfhcd"' ] && { cd $(cat '"$cnfhcd"'); rm '"$cnfhcd"'; } || true'
 
 command_not_found_handle() {
 	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
@@ -66,7 +67,7 @@ command_not_found_handle() {
 		t=($(for t in "${t[@]}"; do [ -f "$t" ] && echo "$t"; done))
 		if [ "$t" != "" ]; then
 			[ $changed ] && echo "$purple$(this)/$t$reset"
-			echo "$PWD" > /tmp/cnfhcd
+			echo "$PWD" > "$cnfhcd"
 			exr "$t" "${@:2}"
 		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
 		else cd ..; changed=1; continue
