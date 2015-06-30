@@ -6,6 +6,8 @@ purpose
 i'm refactoring acorn.js
 and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
 
+(oh hey, http://blogs.perl.org/users/jeffrey_kegler/2013/05/why-marpa-works-table-parsing.html is cool)
+
 -------------------- for the stated goal, the big things are -------------------
 
 is a view of js
