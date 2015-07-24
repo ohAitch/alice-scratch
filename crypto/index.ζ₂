@@ -2,10 +2,13 @@
 
 crypto ← require('crypto')
 
+err ← λ(v){throw Error(ζ2_A(arguments).join(' '))}
+
 Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
 Buffer.prototype.bits = λ(){↩ @.toArray().ζ2_mapcat(λ(v){↩ [(v&0x01)>>0,(v&0x02)>>1,(v&0x04)>>2,(v&0x08)>>3,(v&0x10)>>4,(v&0x20)>>5,(v&0x40)>>6,(v&0x80)>>7]})}
 Buffer.prototype.partition = λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r}
 Buffer.prototype.str = λ(){↩ @.toString('binary')}
+Buffer.prototype.clone = λ(){↩ Buffer.concat([@, Buffer(0)])}
 String.prototype.buf = λ(){↩ Buffer(@+'','binary')}
 Array.prototype.windows = λ(len){r←[]; for(i←0;i<=@.length-len;i++) r.push(@.slice(i,i+len)); ↩ r}
 Array.prototype.transpose = λ(){↩ _.zip.apply(_,@)}
@@ -37,100 +40,74 @@ p_english ← (λ(){
 	t ← [,,,,,,,,,-4.60517,-4.60517,,,,,,,,,,,,,,,,,,,,,,-1.755724,-9.538844,-6.008407,-8.622554,-7.478685,-8.734106,-8.39056,-6.006375,-6.122941,-6.097714,-7.366621,-8.440232,-4.90196,-4.281349,-4.185013,-6.463711,-5.193597,-5.376495,-5.700587,-6.287716,-6.602479,-6.393137,-6.759335,-6.871423,-6.848543,-6.877226,-5.430022,-6.707266,-6.698305,-8.381789,-6.684612,-6.513014,-9.525051,-5.759401,-6.129807,-5.538607,-5.753393,-5.918214,-6.553583,-6.271708,-6.059315,-5.734654,-6.355596,-7.275925,-6.268009,-5.640244,-6.166771,-6.29041,-5.940391,-8.053459,-5.977562,-5.514237,-5.700587,-7.107426,-7.01534,-5.974411,-7.971966,-8.091925,-9.484777,-9.349602,-11.042922,-9.326874,-12.716898,-6.753319,-11.618286,-2.952309,-4.579405,-3.850599,-3.679563,-2.449578,-4.282,-4.154158,-3.589106,-3.00904,-7.043575,-4.991274,-3.443364,-4.101732,-2.995232,-2.845985,-4.161575,-7.194105,-3.149723,-3.124225,-2.747061,-3.856777,-4.765691,-4.333694,-6.233281,-4.473791,-7.418581,-10.557414,-11.8696,-10.557414,-12.716898]
 	for (i←0;i<0x80;i++) t[i] || (t[i] = small)
 	english_frequency ← λ(v){↩ v < 0x80? t[v] : small}
-	↩ λ(buf){↩ buf.toArray().map(english_frequency).reduce(add)} })()
-
+	↩ λ(buf){↩ buf.toArray().map(english_frequency).reduce(add) / buf.length} })()
 hamming ← λ(a,b){↩ _.zip(a.bits(),b.bits()).filter(λ(v){↩ v[0] !== v[1]}).length}
 
-solve_single_byte_xor ← λ(buf){↩ _.range(0x100).map(λ(key){↩ {key:key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
-
-// aaa padding
-bad_encrypt_ecb ← λ(buf,key){t ← crypto.createCipheriv('aes-128-ecb',key,''); buf.length % key.length === 0 && t.setAutoPadding(false); ↩ Buffer.concat([t.update(buf), t.final()])}
-bad_decrypt_ecb ← λ(buf,key){
-	// doesn't remove padding !
-	t ← crypto.createDecipheriv('aes-128-ecb',key,''); t.setAutoPadding(false); ↩ Buffer.concat([t.update(buf), t.final()])}
-bad_encrypt_cbc ← λ(buf,key,iv){
-	t ← buf.length % key.length; t > 0 && (buf = PKCS_7(buf, buf.length-t+key.length))
-	↩ Buffer.concat(buf.partition(key.length).reduce(λ(r,v){r.push(bad_encrypt_ecb(xor(r[-1],v),key)); ↩ r},[iv]).slice(1)) }
-bad_decrypt_cbc ← λ(buf,key,iv){
-	// doesn't remove padding !
-	↩ Buffer.concat([iv].concat(buf.partition(key.length)).windows(2).map(λ(v){↩ xor(bad_decrypt_ecb(v[1],key),v[0])})) }
+encrypt_aes_128_ecb ← λ(buf,key){buf.length % key.length === 0 || err('‽'); t ← crypto.createCipheriv('aes-128-ecb',key,'').setAutoPadding(false); ↩ Buffer.concat([t.update(buf),t.final()])}
+endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat(_.range(ceil(buf.length/key.length)).map(λ(i){t←; ↩ encrypt_aes_128_ecb(Buffer.concat([nonce,(t=Buffer(key.length-nonce.length).fill(0),t.writeUIntLE(i,0,6),t)]),key)})).slice(0,buf.length))}
 
 bad_keygen ← λ(len){↩ Buffer(_.range(len).map(rand.P(0,0xff)))}
 
-PKCS_7 ← λ(buf,len){len -= buf.length; len < 0 && (len = 0); len <= 0xff || err('‽'); ↩ Buffer.concat([buf, Buffer(len).fill(len)])}
-PKCS_7.show = λ(buf,bsize){↩ PKCS_7(buf, ceil((buf.length+1)/bsize)*bsize)}
-// PKCS_7.read = λ(buf,bsize){buf.length % bsize === 0 || err('invalid buffer alignment')
-PKCS_7.read = λ(buf){
-	buf[-1] > 0 || err('invalid padding')
-	buf.slice(-buf[-1]).toArray().every(λ(v){↩ v === buf[-1]}) || err('invalid padding')
-	↩ buf.slice(0,-buf[-1]) }
+solve_single_byte_xor ← λ(buf){↩ _.range(0x100).map(λ(key){↩ {key:key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
 
-detect_ecb ← λ(buf,bsize){t ← buf.partition(bsize); ↩ t.some(λ(a,i){↩ t.slice(i+1).some(λ(b){↩ a.equals(b)})}) }
-detect_ecb_cbc ← λ(oracle,bsize){↩ detect_ecb(oracle(Buffer(bsize*4).fill(0)),bsize) }
+mt19937 ← λ(seed){
+	mt ← [0].repeat(624)
+	index ← 624
 
-find_bsize ← λ(oracle){a ← oracle(Buffer(0).fill(0)).length; for (i←1;;i++) {t ← oracle(Buffer(i).fill(0)).length - a; if (t > 0) ↩ t} }
-find_prefix_len__ecb_cbc ← λ(oracle,bsize) {
-	t ← _.range(0,bsize+2).map(λ(v){↩ oracle(Buffer(v).fill(0)).partition(bsize)}).windows(2).map(λ(v,i){
-		↩ _.zip(v[0],v[1])._.findIndex(λ(v){↩ !v[0].equals(v[1])})
-	}).windows(2).map(λ(v,i){if (v[0] !== v[1]) ↩ [i+1,v[1]]}).filter(λ(v){↩ v})[0]
-	↩ t[1]*bsize - t[0] }
+	mt[0] = seed|0
+	for(i←1;i<624;i++) mt[i] = (Math.imul(0x6c078965, mt[i-1] ^ (mt[i-1] >>> 30)) + i)|0
 
-decode_ecb_postfix__prefix_safe ← λ(oracle){
-	bsize ← find_bsize(oracle)
-	detect_ecb_cbc(oracle,bsize) || err('‽')
-	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
-	extra ← Buffer(prefix_len_ceil-prefix_len).fill(0)
-	got ← Buffer(0)
-	done: for(block←0;;block++){
-		for(i←bsize-1;i>=0;i--){
-			q ← Buffer(i).fill(0)
-			t ← oracle(Buffer.concat([extra,q])).slice(prefix_len_ceil).slice(bsize*block).slice(0,bsize)
-			got = Buffer.concat([got,Buffer(1)])
-			out: for(;;){
-				for(j←0;j<0x100;j++){got[-1] = j; if (oracle(Buffer.concat([extra,q,got])).slice(prefix_len_ceil).slice(bsize*block).slice(0,bsize).equals(t)) break out}
-				got = got.slice(0,-1); break done}
+	gen ← λ(){
+		for(i←0;i<624;i++){
+			y ← (mt[i] & 0x80000000) + (mt[(i+1)%624] & 0x7fffffff)
+			mt[i] = mt[(i+397)%624] ^ (y >>> 1)
+			if (y % 2 !== 0) mt[i] ^= 0x9908b0df
 			} }
-	↩ got}
+
+	r ← λ λ(){
+		if (index === 624) {gen(); index = 0}
+		y ← mt[index]
+		y ^= y >>> 11
+		y ^= (y << 7) & 0x9d2c5680
+		y ^= (y << 15) & 0xefc60000
+		y ^= y >>> 18
+		index++
+		↩ y < 0? y + 0x100000000 : y }
+	// r.mt = mt
+	↩ r }
 
 print('--- begin ---')
 
-// http://cryptopals.com/sets/2/challenges/16
+// http://cryptopals.com/sets/3/challenges/23
 
-key ← bad_keygen(16); iv ← bad_keygen(16) // private
-encrypt_thing ← λ(v){
-	t ← "comment1=cooking%20MCs;wat;userdata="+v.str().replace(/[;=]/g,'').buf()+";comment2=%20like%20a%20pound%20of%20bacon"
-	// t ← "comment1=cooking%20MCs;userdata="+v.str().replace(/[;=]/g,'').buf()+";comment2=%20like%20a%20pound%20of%20bacon"
-	↩ bad_encrypt_cbc(PKCS_7.show(t.buf(),16), key, iv)}
-is_thing_admin ← λ(buf){↩ PKCS_7.read(bad_decrypt_cbc(buf, key, iv)).split(';')._.contains('admin=true')}
+mt19937_untemper ← λ(x){
+	untemper_xor_rshift ← λ(v,n){
+		...
+	}
+	untemper_xor_lshift_and ← λ(v,n,m){...}
+	x = untemper_xor_rshift(x,18)
+	x = untemper_xor_lshift_and(x,15,0xefc60000)
+	x = untemper_xor_lshift_and(x,7,0x9d2c5680)
+	x = untemper_xor_rshift(x,11)
+	↩ x }
 
-// goal: find input to is_thing_admin that returns true. no ability to crack the key.
+// Clone an MT19937 RNG from its output
+// The internal state of MT19937 consists of 624 32 bit integers.
 
-// You`re relying on the fact that in CBC mode, a 1-bit error in a ciphertext block:
-// * Completely scrambles the block the error occurs in
-// * Produces the identical 1-bit error/edit in the next ciphertext block.
+// For each batch of 624 outputs, MT permutes that internal state. By permuting state regularly, MT19937 achieves a period of 2**19937, which is Big.
+
+// Each time MT19937 is tapped, an element of its internal state is subjected to a tempering function that diffuses bits through the result.
+
+// The tempering function is invertible; you can write an "untemper" function that takes an MT19937 output and transforms it back into the corresponding element of the MT19937 state array.
+
+// To invert the temper transform, apply the inverse of each of the operations in the temper transform in reverse order. There are two kinds of operations in the temper transform each applied twice; one is an XOR against a right-shifted value, and the other is an XOR against a left-shifted value AND'd with a magic number. So you'll need code to invert the "right" and the "left" operation.
+
+// Once you have "untemper" working, create a new MT19937 generator, tap it for 624 outputs, untemper each of them to recreate the state of the generator, and splice that state into a new instance of the MT19937 generator.
+
+// The new "spliced" generator should predict the values of the original.
 
 // Stop and think for a second.
-// Before you implement this attack, answer this question: why does CBC mode have this property?
-
-// https://en.wikipedia.org/wiki/File:CBC_encryption.svg https://en.wikipedia.org/wiki/File:CBC_decryption.svg
-
-an_edit_cbc_hack ← λ(oracle){
-	bsize ← find_bsize(oracle)
-	!detect_ecb_cbc(oracle,bsize) || err('‽')
-	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
-	
-}
-
-// 13
-// profile_for ← λ(v){↩ k_v.show({email:v.replace(/[=&]/g,''), uid:10, role:'user'})}
-// encrypt_profile ← λ λ(v){λ.key || (λ.key = bad_keygen(16)); ↩ bad_encrypt_ecb(Buffer(profile_for(v)), λ.key)}
-// decrypt_profile ← λ(v){↩ k_v.read(PKCS_7.read(bad_decrypt_ecb(v, encrypt_profile.key))+'')}
-//
-// cipher ← encrypt_profile('xxxxxxxxxx'+PKCS_7('admin'.buf(),16).str()).slice(16,32)
-// t ← encrypt_profile('haxxxxxxxxxx0351528'+'@gmail.com'); cipher.copy(t,48)
-// print(decrypt_profile(t))
-
-print(an_edit_cbc_hack(encrypt_thing)+'')
+// How would you modify MT19937 to make this attack hard? What would happen if you subjected each tempered output to a cryptographic hash?
 
 // ---------------------------------- past ---------------------------------- //
 
@@ -203,3 +180,129 @@ print(an_edit_cbc_hack(encrypt_thing)+'')
 // 	↩ λ(buf){↩ bad_encrypt_ecb(Buffer.concat([prefix,buf,secret]),key)}
 // 	})()
 // print(decode_ecb_postfix__prefix_safe(encryption_oracle)+'')
+
+// 16
+// key ← bad_keygen(16); iv ← bad_keygen(16) // private
+// encrypt_thing ← λ(v){
+// 	;(v.str().replace(/[;=]/g,'').buf().length < v.length) && print('>>> debug : fail <<<')
+// 	t ← "comment1=cooking%20MCs;wat=ohya;userdata="+v.str().replace(/[;=]/g,'\x00').buf()+";comment2=%20like%20a%20pound%20of%20bacon"
+// 	↩ bad_encrypt_cbc(PKCS_7.show(t.buf(),16), key, iv)}
+// is_thing_admin ← λ(buf){↩ PKCS_7.read(bad_decrypt_cbc(buf, key, iv)).str().split(';')._.contains('admin=true')}
+// an_edit_cbc_hack ← λ(oracle){t←;
+// 	bsize ← find_bsize(oracle)
+// 	!detect_ecb_cbc(oracle,bsize) || err('‽')
+// 	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
+// 	pad ← Buffer(prefix_len_ceil-prefix_len).fill(0)
+// 	t ← oracle(Buffer.concat([pad,'xxxxxdadminbtrue'.buf()])).partition(bsize)
+// 	t[2] = xor(t[2], '\x00\x00\x00\x00\x00_\x00\x00\x00\x00\x00_\x00\x00\x00\x00'.buf())
+// 	if (is_thing_admin(Buffer.concat(t))) print('win')
+// 	}
+// an_edit_cbc_hack(encrypt_thing)
+
+// 17
+// // attackee
+// key ← bad_keygen(16) // private
+// get_token ← λ(){
+// 	t ← rand(['MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=','MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=','MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==','MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==','MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl','MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==','MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==','MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=','MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=','MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93'].map(base64.read))
+// 	iv ← bad_keygen(16)
+// 	↩ Buffer.concat([iv, bad_encrypt_cbc(PKCS_7.show(t,16), key, iv)]) }
+// check_token ← λ(buf){t ← bad_decrypt_cbc(buf.slice(16), key, buf.slice(0,16)); try {PKCS_7.read(t); ↩ true} catch (e) {↩ false}}
+// // attacker
+// cbc_padding_attack ← λ(){
+// 	o ← get_token()
+// 	bsize ← 16
+// 	// really should check the index instead of the count. but eh.
+// 	padding_length ← _.range(bsize).filter(λ(i){q ← o.clone(); q[q.length - bsize*2 + i] ^= 0xff; ↩ !check_token(q)}).length
+//
+// 	plain ← []
+// 	cipher ← o.clone()
+// 	for(;;){
+// 		if (padding_length === 16) {cipher = o.clone().slice(0,cipher.length-bsize); padding_length -= 16}
+// 		if (cipher.length-bsize === 0) break
+// 		done: for(;;){ for(v←0;v<0x100;v++){
+// 			q ← cipher.clone()
+// 			for(i ← q.length-bsize - padding_length; i < q.length-bsize; i++) q[i] ^= padding_length
+// 			for(i ← q.length-bsize - padding_length - 1; i < q.length-bsize; i++) q[i] ^= padding_length+1
+// 			q[q.length - padding_length - 1 - bsize] ^= v
+// 			if (check_token(q)) {cipher = q; plain.unshift(v); break done}
+// 		}; throw '‽'}
+// 		padding_length++
+// 		}
+//
+// 	↩ plain.map(λ(v){↩ String.fromCharCode(v)}).join('') }
+// print(cbc_padding_attack())
+
+// 18
+// print(endecrypt_aes_128_ctr(base64.read('L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ=='), Buffer("YELLOW SUBMARINE"), Buffer(8).fill(0))+'')
+
+// // aaa padding
+// bad_encrypt_ecb ← λ(buf,key){t ← crypto.createCipheriv('aes-128-ecb',key,''); buf.length % key.length === 0 && t.setAutoPadding(false); ↩ Buffer.concat([t.update(buf), t.final()])}
+// bad_decrypt_ecb ← λ(buf,key){
+// 	// doesn't remove padding !
+// 	t ← crypto.createDecipheriv('aes-128-ecb',key,''); t.setAutoPadding(false); ↩ Buffer.concat([t.update(buf), t.final()])}
+// bad_encrypt_cbc ← λ(buf,key,iv){
+// 	t ← buf.length % key.length; t > 0 && (buf = PKCS_7(buf, buf.length-t+key.length))
+// 	↩ Buffer.concat(buf.partition(key.length).reduce(λ(r,v){r.push(bad_encrypt_ecb(xor(r[-1],v),key)); ↩ r},[iv]).slice(1)) }
+// bad_decrypt_cbc ← λ(buf,key,iv){
+// 	// doesn't remove padding !
+// 	↩ Buffer.concat([iv].concat(buf.partition(key.length)).windows(2).map(λ(v){↩ xor(bad_decrypt_ecb(v[1],key),v[0])})) }
+//
+// PKCS_7 ← λ(buf,len){len -= buf.length; len < 0 && (len = 0); len <= 0xff || err('‽'); ↩ Buffer.concat([buf, Buffer(len).fill(len)])}
+// PKCS_7.show = λ(buf,bsize){↩ PKCS_7(buf, ceil((buf.length+1)/bsize)*bsize)}
+// PKCS_7.read = λ(buf){ // PKCS_7.read = λ(buf,bsize){buf.length % bsize === 0 || err('invalid buffer alignment')
+// 	buf[-1] > 0 || err('invalid padding')
+// 	buf.slice(-buf[-1]).toArray().every(λ(v){↩ v === buf[-1]}) || err('invalid padding')
+// 	↩ buf.slice(0,-buf[-1]) }
+//
+// detect_ecb ← λ(buf,bsize){t ← buf.partition(bsize); ↩ t.some(λ(a,i){↩ t.slice(i+1).some(λ(b){↩ a.equals(b)})}) }
+// detect_ecb_cbc ← λ(oracle,bsize){↩ detect_ecb(oracle(Buffer(bsize*4).fill(0)),bsize) }
+//
+// find_bsize ← λ(oracle){a ← oracle(Buffer(0).fill(0)).length; for (i←1;;i++) {t ← oracle(Buffer(i).fill(0)).length - a; if (t > 0) ↩ t} }
+// find_prefix_len__ecb_cbc ← λ(oracle,bsize) {
+// 	t ← _.range(0,bsize+2).map(λ(v){↩ oracle(Buffer(v).fill(0)).partition(bsize)}).windows(2).map(λ(v,i){
+// 		↩ _.zip(v[0],v[1])._.findIndex(λ(v){↩ !v[0].equals(v[1])})
+// 	}).windows(2).map(λ(v,i){if (v[0] !== v[1]) ↩ [i+1,v[1]]}).filter(λ(v){↩ v})[0]
+// 	↩ t[1]*bsize - t[0] }
+//
+// decode_ecb_postfix__prefix_safe ← λ(oracle){
+// 	bsize ← find_bsize(oracle)
+// 	detect_ecb_cbc(oracle,bsize) || err('‽')
+// 	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
+// 	extra ← Buffer(prefix_len_ceil-prefix_len).fill(0)
+// 	got ← Buffer(0)
+// 	done: for(block←0;;block++){
+// 		for(i←bsize-1;i>=0;i--){
+// 			q ← Buffer(i).fill(0)
+// 			t ← oracle(Buffer.concat([extra,q])).slice(prefix_len_ceil).slice(bsize*block).slice(0,bsize)
+// 			got = Buffer.concat([got,Buffer(1)])
+// 			out: for(;;){
+// 				for(j←0;j<0x100;j++){got[-1] = j; if (oracle(Buffer.concat([extra,q,got])).slice(prefix_len_ceil).slice(bsize*block).slice(0,bsize).equals(t)) break out}
+// 				got = got.slice(0,-1); break done}
+// 			} }
+// 	↩ got}
+
+// // 19
+// // gen
+// key ← bad_keygen(16)
+// data ← ['SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==','Q29taW5nIHdpdGggdml2aWQgZmFjZXM=','RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==','RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=','SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk','T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==','T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=','UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==','QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=','T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl','VG8gcGxlYXNlIGEgY29tcGFuaW9u','QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==','QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=','QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==','QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=','QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=','VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==','SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==','SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==','VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==','V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==','V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==','U2hlIHJvZGUgdG8gaGFycmllcnM/','VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=','QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=','VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=','V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=','SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==','U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==','U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=','VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==','QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu','SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=','VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs','WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=','SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0','SW4gdGhlIGNhc3VhbCBjb21lZHk7','SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=','VHJhbnNmb3JtZWQgdXR0ZXJseTo=','QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4='].map(base64.read).map(λ(v){↩ endecrypt_aes_128_ctr(v,key,Buffer(8).fill(0))})
+// // statistical
+// print(data.map(λ(v){↩ v.toArray()}).transpose().map(λ(v){t←;
+// 	↩ ζ2_A((t=_.object(_.zip(t=_.pairs(v).filter(λ(v){↩ v[1]!==undefined}), solve_single_byte_xor(Buffer(t._.map(1))).out.toArray()).map(λ(v){↩ [v[0][0],v[1]]})),t.length=v.length,t))
+// 	}).transpose().map(λ(v){↩ Buffer(v.filter(λ(v){↩ v!==undefined}))+''}))
+// // solution
+// key2 ← xor(data[37],Buffer('He, too, has been changed in his turn,'))
+// print(data.map(λ(v){↩ xor(v.slice(0,key2.length),key2.slice(0,v.length))+''}))
+
+// 20
+// data ← fs('data/20.txt').$.trim().split('\n').map(base64.read).map(λ(v){↩ endecrypt_aes_128_ctr(v,key,Buffer(8).fill(0))})
+// and same as 19
+
+// 21
+// print(mt19937(0))
+
+// // 22
+// // server
+// output ← mt19937(round(moment()) - rand(40,1000))()
+// // attacker
+// now ← round(moment())
+// for(i←now;;i--) if (mt19937(i)() === output) {print('found seed:',i); break}
