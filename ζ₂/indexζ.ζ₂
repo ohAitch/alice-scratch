@@ -19,6 +19,10 @@ if (argv.length === 0) {
 			})
 	break; case '-e':
 		t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
+	break; case '--es':
+		JSON.parse(argv[1]).map(λ(v){
+			t ← eval(ζ2_compile(v)); t !== undefined && process.stdout.write(t+''); process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
+			})
 	break; case '--version':
 		print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
 }
