@@ -129,7 +129,7 @@
     },
     {"match": "\\b(console)\\b", "name": "entity.name.type.object.js.firebug"},
     {"match": "\\.(warn|info|log|error|time|timeEnd|assert)\\b|\\bcb\\b", "name": "support.function.js.firebug"},
-    {"match": "\\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\\.[0-9]+)?))\\b", "name": "constant.numeric.js"},
+    {"match": "\\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\\.[0-9]+)?))", "name": "constant.numeric.js"},
     {
       "begin": "'",
       "beginCaptures": {"0": {"name": "punctuation.definition.string.begin.js"}},
@@ -160,7 +160,7 @@
       "name": "storage.modifier.js"
     },
     {
-      "match": "\\b(break|case|catch|continue|default|do|else|finally|for|goto|if|import|package|return|yield|switch|throw|try|while)\\b|\\byield\\*",
+      "match": "\\b(break|case|catch|continue|default|do|else|elif|finally|for|goto|if|import|package|return|yield|switch|throw|try|while)\\b|\\byield\\*",
       "name": "keyword.control.js"
     },
     {"match": "\\b(delete|instanceof|new|typeof|with)\\b", "name": "keyword.operator.js"},
@@ -198,7 +198,7 @@
       "name": "support.function.event-handler.js"
     },
     {
-      "match": "!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|@|≤|≥|!=|!==|≠|≤|≥|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\||\\\\|\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
+      "match": "!|\\$|%|×|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|→|@|≤|≥|!=|!==|≠|≤|≥|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\||\\\\|\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
       "name": "keyword.operator.js"
     },
     {"match": "↩", "name": "magic.more.js"},

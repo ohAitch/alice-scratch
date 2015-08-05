@@ -48,6 +48,7 @@ unmute() { osascript -e "set volume output muted false"; }
 vol() { osascript -e "set volume output volume $1"; }
 switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; exr $tmp; rm $tmp; }
+convertpng() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

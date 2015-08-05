@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name        attention: stackexchange
 // @namespace   comely-naiad
-// @version     1.0.1
+// @version     1.0.2
 // @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/attention_stackexchange.user.js
 // @match       http*://*.stackexchange.com/*
 // @match       http*://stackoverflow.com/*
 // @match       http*://serverfault.com/*
 // @match       http*://superuser.com/*
+// @match       http*://askubuntu.com/*
 // @grant       none
 // ==/UserScript==
 
