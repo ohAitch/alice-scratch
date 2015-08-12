@@ -25,10 +25,6 @@ then i think we have a good model.
 
 http://fb.com/strohl89/posts/10153433406284598 ?
 
-i notice that (say) timer-tab is much more declarative than (say) lackey
-but when reading them they both feel perfectly excellent
-but if i take this and try to make lackey more like timer-tab it`s very hard but seems to improve it a great deal
-something Funky is up here
 
 ---------------------- thing generation #fail #unfinished ----------------------
 	// so i tried generating some cities. but i failed. i will try again later!
@@ -501,11 +497,11 @@ something Funky is up here
 ------------------------------------ fb-sdk ------------------------------------
 	// tiny shim to access the fb sdk from arc
 
-	require npm::fb @ ^0.7.0
+	require npm::fb@^0.7.0
 
-	fb.api uses node-callback. and after a call, null, .error, .data.error -> error
+	fb.api uses value-callback. and after a call, null, .error, .data.error -> error
 
-	on error, also: print 'ERROR' sans newline. CLI return 1.
+	on error, also: print 'ERROR' sans newline
 
 	read auth from ./arc/fb_auth.json   or error        (note: should be lazy)
 
@@ -525,7 +521,7 @@ something Funky is up here
 		within root:
 		watch files ∈ (. - ./.history/) *:
 			log (event, now, file) tabularly
-			(event = 'unlink'? touch : copy file to) "./.history/$now $(event = 'unlink'? '-' : '+') $(file.encode('fspath'))"
+			(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file.encode("fspath"))"
 
 --------------------------------- sublime/build --------------------------------
 	// translate sane stuff into weird sublime formats and put it in the sublime places
@@ -541,7 +537,7 @@ something Funky is up here
 		≈/\.snippet-magic$/ -> λ(file). write to distinct .sublime-snippet files in same dir as file
 			where λ = split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
 		else -> write @file to file
-	for paths ∈ (in > *): delete unless we wrote to it earlier || within in, ≈/Package Control\./
+	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
 
 ------------------------------ sublime/json-plist ------------------------------
 	// it's a bit unclear that this really needs to be an entire program
@@ -645,7 +641,7 @@ something Funky is up here
 			'ASDFHGZXCV\xa7BQWERYT123465=97-80]OU[IP\x0dLJ\'K;\\,/NM.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
 			[[10],,[13],[15],,,,,[12],,,[11],,,[14],,,,[1],[2],[3],[4],[6],[5],,[9],[7],,[8],[0],,,,,,,,,,,,,,,,,,,,,,0x08,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,[0],[1],[2],[3],[4],[5],[6],[7],,[8],[9],,,,,,,,,,,,,,,,,,,,,,0x05,0x01,0x0b,0x7f,0x10,0x04,0x10,0x0c,0x10,0x1c,0x1d,0x1f,0x1e,]
 			'\x01\x13\x04\x06\x08\x07\x1a\x18\x03\x160\x02\x11\x17\x05\x12\x19\x14123465=97\x1f80\x1d\x0f\x15\x1b\x09\x10\x0d\x0c\x0a\'\x0b;\x1c,/\x0e\x0d.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-			] * <keyMap index=$i> $(* <key code=$i $(isa Array? action="$₀" : output="&#x$(as char to hex);")/>) </>
+			] * <keyMap index="$i"> $(* <key code="$i" $(isa Array? action="$₀" : output="&#x$(as char to hex);")/>) </>
 		$('keyboard').id = hash it into -100..-30000-100..-30000
 
 	make_karabiner:
@@ -683,7 +679,7 @@ something Funky is up here
 				+
 				out isa string? kc_hex out : (gen_shell out[0])+','
 		↩ xml <root>
-			$(shells * <vkopenurldef> <name>$(it[0])</> <url type="shell">$(it[1])</url> </>)
+			$(shells * <vkopenurldef> <name>$(it[0])</> <url type="shell">$(it[1])</> </>)
 			<item> <name>lackey</> <identifier>lackey</> $(autogens * <autogen>$it</>) </>
 			</>
 
@@ -691,6 +687,9 @@ something Funky is up here
 	// this is a first-pass sketch of a clone of timer-tab.com. the intent is to experiment with it more *after* it's been first rendered.
 	// major implementation requirement: auto-kerning or at least separation-of-concerns kerning
 	// implentation: i expect the stripe cut out will be aligned to pixels
+
+	// desired feature: can edit and stuff to help account for distraction/failure
+	// desired feature: should help user think in kiloseconds and such
 
 	webapp. single page no scroll. offlined fully.
 
@@ -793,95 +792,170 @@ something Funky is up here
 			a+ts.join(', ')+b, unless its .length > wrap_width, then a+'\n'+TAB+ts.join(',\n'+TAB)+'\n'+b
 
 --------------------------------------------------------------------------------
+-------------------- let`s categorize all the language used --------------------
+--------------------------------------------------------------------------------
 
-we`ve got five CLIs and three webapps
-all of them are really really small
-one of them uses a (public!) db
-the webapps are all mostly-declarative and the CLIs are all more procedural.
+i notice that (say) timer-tab is much more declarative than (say) lackey
+but when reading them they both feel perfectly excellent
+but if i take this and try to make lackey more like timer-tab it`s very hard but seems to improve it a great deal
+something Funky is up here
 
-hmm
-maybe let`s categorize all the language used?
+a bug i noticed: in an interactive environment, we would start sketching out something like dance, and -
+oh
+right
+i was taking the text of dance as canon and dutifully transcribing it
+that was silly
+the goal here is to write down each individual concept required
+right
+okay
+let`s do this differently.
+:D
+
+require <library>
+	require npm::fb@^0.7.0
+declare that a function uses a particular callback style
+	fb.api uses value-callback
+declare rule for how we`re using a particular function - i.e., modify it
+	after a fb.api call, null, .error, .data.error -> error
+after declaring a function, reference it implicitly
+	and after a /*fb.api*/ call ⟨...⟩
+add global error hook
+	on error, also: ⟨code⟩
+print things
+	print 5, 'foo'
+	print 'ERROR' sans newline
+log things
+	log (event, now, file) tabularly
+read files
+	read auth from ./arc/fb_auth.json
+write files
+	write @file to file
+copy files
+	copy file to
+have bareword filenames
+	read auth from ./arc/fb_auth.json
+remove file extension
+	write (@file as plist) to file without extension
+implicitly view .json files as json
+	read auth from ./arc/fb_auth.json
+implicitly, the compiler/runtime should choose sensible places to force evaluation / do reduction / have strictness points
+declare name
+	out ← ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
+declare fact about equality which is also kinda a declaration of a name ???
+	let out = ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
+unordered declaration
+	(x * 5 where x = 8) = (let x = 8. x * 5) = 40
+lazy `and`, `or`, `and` and `or` in the other direction
+	read auth from ./arc/fb_auth.json   or error
+	error unless <condition>
+intuitive specification of precedence
+	read auth from ./arc/fb_auth.json   or error
+	we wrote to it earlier  ||  within in and ≈/Package Control\./
+implicitly, top-level errors are automatically printed sanely with text filled in from surrounding code and the program name
+assertion (compiler or runtime should verify)
+	(note: should be lazy)
+statement (compiler and runtime can take as true)
+	(note: path is dir iff event was changed)
+assert that a file will only be read into a variable the first time the program does something with that var or that file
+	read auth from ./arc/fb_auth.json    (note: should be lazy)
+specify a CLI - implicitly with all the nice things, e.g. --version and --help
+	CLI:
+
+		verify <token> <user_id>
+			⟨code⟩
+
+		get-name <token>
+			⟨code⟩
+bare javascript code
+	fb.api('/me', {access_token: token})
+implicit rewriting of code that we know uses callbacks
+	fb.api('/me', {access_token: token})
+	print .name sans newline
+	->
+	fb.api('/me', {access_token: token}, λ(it){
+		print .name sans newline
+		})
+implicit use of the standard pronoun
+	fb.api('/me', {tok:}). print .name
+	(7. it + 8) = 15
+dictionaries/objects
+	{a:5, b:9}
+	('a':'b', 'c':'d')
+	a ← 5. {a:}
+arrays/lists
+	log (event, now, file) tabularly
+	[5, 6]
+string building
+	auth.id+'|'+auth.secret
+	in+'.json'
+	a ← 5. y ← 2; "$a $(a = 5? "y" : "n")" = "5 y"
+cwd changing
+	within root: // ?? somehow `root` is inferred as a filename expression ??
+common verbs
+	error // might look like `throw Error()`
+	now // might look like `moment()`
+	touch // might look like `write "" to`
+	lines // might look like `it as lines`
+	delete // as in "delete file"
+common operators
+	a = b
+	a? b : c
+encode things in other things
+	file.encode('fspath')
+filesystem selectors
+	files ∈ (. - ./.history/)
+	files ∈ *
+filter filesystem selector by name of variable that we`re defining as an element of it (e.g. file,dir,path)
+	files ∈ (. - ./.history/)
+watch files in a filesystem selector. this is an event with a callback. it probably uses implicit vars like event,path,file
+	watch files ∈ (. - ./.history/):
+loop over files in a filesystem selector
+	for files ∈ in *:
+	for paths ∈ (in > *):
+hook into things, locally
+	replace $in with $out in all writes/deletions.
+pretty-print things
+	pretty-print @in to in+'.json'
+unboxing semantic
+	write (@file as plist) to file without extension
+xml literals
+	a ← 5. b ← 2. (xml <foo>a <bar baz="$a"></> $(b + 7)</>) as str = '<foo>a<bar baz="5"></bar>9</foo>'
+object matching
+	.data match {is_valid: true, app_id: auth.id, user_id:}
+syntactically brief matching for strings
+	≈/\.json$/ -> write (@file as plist) to file without extension
+case statements
+	≈/\.json$/ -> write (@file as plist) to file without extension
+view data as another type or convert/cast data to another type
+	@file as plist
+	it as lines
+	boxes pop 'keycode' as dict
+	it as char to hex
+	control fields as hh:mm
+	.time as "YYYY-MM-DD/HH:mm:ssZ"
+pick nice solutions to constraints
+	write /*it::seq*/ to distinct .sublime-snippet files in same dir as file
+split
+	split /*it*/ on '\n\n'
+lines
+	('a\nb\nc' as lines)[0] as str = 'a'
+	('a\nb\nc' as lines)[1:] as str = 'b\nc'
+implicit application of map
+	split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
+conditions about what the entire program did
+	we wrote to it earlier
+englishy and regexy filesystem selectors
+	within in and ≈/Package Control\./
 
 
+define custom data structures declaratively
+	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+		the first nodes each have a slot for an agent
+		the second nodes each have a well of “soul” (numeric)
+
+... but what are the pieces?
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-require <package manager>::<library> [@ <version>]
-<function> uses <callback style>. and after a call, /*filter*/ <match implicit return value> -> <code>
-on error, also /*in addition to the normal results of an error*/: <code>
-print <expr> sans newline
-CLI return <expr>
-separation of statements by periods
-<code1> or <code2> /* || */
-(5 + 6   * 7) = 77
-<code>    (note: <assertion>)
-<code>    (note: <fact>)
-should be lazy /* is an assertion */
-<var> is dir /* is a fact */
-<fact> iff <expr> /* is a fact */
-read <var> from <file as bareword>
-write <expr> to <filename expr>
-read <var> from <filename expr>    (note: should be lazy) /* should only read file the first time var is accessed */
-/* implicitly: top-level errors are automatically printed sanely with text filled in from surrounding code */
-CLI: \n? ⟨ <man-like command line argument parsing string /* e.g. verify <token> <user_id> */> /->|\n/ <code> \n ⟩+
-<javascript code>
-<function using callback style node-callback>(...) /* rewritten like npm::streamline or npm::co or whatever */
-(7. it + 8) = 15
-<code> unless <code>
-({a:5, b:9} match {a:5}) = true
-(a ← 5. {a:} match {a:5}) = true
-within <filename expr>: /* changes cwd */
-(5, 6) = javascript [5, 6] //! ??
-('a':'b', 'c':'d') = javascript {'a':'b', 'c':'d'} //! ??
-log <list> tabularly
-now
-<expr> = <expr> /* === or maybe something like ==; unsure */
-<expr>? <expr> : <expr>
-touch
-copy file to
-a ← 5. "$a $(a = 5? 'y' : 'n')" = "5 y"
-watch <var>s ∈ <file set expr>: /* next indented lines are executed on file change events, with implicit vars event,path due to impl and var "<var>" which = path. if "<var>" = "file" then exclude directories; if = "dir" then exclude non-directories; if = "path" then no exclusions; if something else maybe don't interpret it as a file set expr ?? */
-for <var>s ∈ <file set expr>: /* similar to watch, but a for-loop instead of watching for file change events */
-* :: file set expr /* all descendants of . */
-(. - ./.history/) * /* if interpreted as a set of files, the set of files in . and descendants minus any files in ./.history/ and descendants */
-change <var> by <dict>
-(change <var> by <expr>. <var> was changed) should be true iff the change statement altered <var>
-(a, b -> a += 5) isa function
-<var> ← <file as bareword>
-replace <expr> with <expr> in all writes/deletions /* specifies a rewrite rule on filenames when writing or deleting files in this program */
-/*it*/≈<regex> -> <code> /* is a case statement */
-@<var> /* unboxes var */
-@<filename expr> /* contents of file */
-<expr> as <type> /* cast/view/convert expr to type */
-<filename expr> without extension
-(<code> \n? where <var> = <expr>) equivalent-to (let <var> = <expr>. <code>)
-let <var> = <expr> /* somehow different from <var> ← <expr> maybe?? */
-write /*it::seq*/ to distinct .<ext> files in same dir as <var> /* maybe: * write to <var>.dir+hash(it)+".<ext>" */
-split /*it*/ on <str>
-/*it*/ * <function>
-a ← 5. b ← 2. (xml <foo>a <bar baz=$a></> $(b + 7)</>) as str = '<foo>a<bar baz=5></bar>9</foo>'
-lines = it as lines
-('a\nb\nc' as lines)[0] as str = 'a'
-('a\nb\nc' as lines)[1:] as str = 'b\nc'
-pretty-print <expr> to <filename expr>
-a ← 'foo'. a+'.bar' = 'foo.bar'
 rectangular grid of nodes w/ adjacency north/east/west/south
 <grid of nodes>, plus for each of those /*nodes*/ a node connected <direction preposition> it
 define: <thing of nodes, plus ... a node> \n (the /first|second/ nodes = /* the first or second set of nodes */)
@@ -890,17 +964,17 @@ a slot for an agent
 a well of “soul” (numeric)
 <type>s regenerate at <rate>
 (<number>/tick) :: rate
+a <type> with <condition> will /* execute */ <code>
+inside above, where type has an attribute <name>, <name> is valid to occur inside <condition>
 
+------------------------------------- dance ------------------------------------
+// "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
 
+define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+	the first nodes each have a slot for an agent
+	the second nodes each have a well of “soul” (numeric)
 
-// ------------------------------------- dance ------------------------------------
-// // "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
-
-// define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
-// 	the first nodes each have a slot for an agent
-// 	the second nodes each have a well of “soul” (numeric)
-
-// wells regenerate at 0.01/tick
+wells regenerate at 0.01/tick
 a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
 
 an agent has a container of soul and a code that is executed to return the chosen action
@@ -990,7 +1064,7 @@ make_keylayout:
 		'ASDFHGZXCV\xa7BQWERYT123465=97-80]OU[IP\x0dLJ\'K;\\,/NM.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
 		[[10],,[13],[15],,,,,[12],,,[11],,,[14],,,,[1],[2],[3],[4],[6],[5],,[9],[7],,[8],[0],,,,,,,,,,,,,,,,,,,,,,0x08,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,[0],[1],[2],[3],[4],[5],[6],[7],,[8],[9],,,,,,,,,,,,,,,,,,,,,,0x05,0x01,0x0b,0x7f,0x10,0x04,0x10,0x0c,0x10,0x1c,0x1d,0x1f,0x1e,]
 		'\x01\x13\x04\x06\x08\x07\x1a\x18\x03\x160\x02\x11\x17\x05\x12\x19\x14123465=97\x1f80\x1d\x0f\x15\x1b\x09\x10\x0d\x0c\x0a\'\x0b;\x1c,/\x0e\x0d.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-		] * <keyMap index=$i> $(* <key code=$i $(isa Array? action="$₀" : output="&#x$(as char to hex);")/>) </>
+		] * <keyMap index="$i"> $(* <key code="$i" $(isa Array? action="$₀" : output="&#x$(as char to hex);")/>) </>
 	$('keyboard').id = hash it into -100..-30000-100..-30000
 
 make_karabiner:
@@ -1028,7 +1102,7 @@ make_karabiner:
 			+
 			out isa string? kc_hex out : (gen_shell out[0])+','
 	↩ xml <root>
-		$(shells * <vkopenurldef> <name>$(it[0])</> <url type="shell">$(it[1])</url> </>)
+		$(shells * <vkopenurldef> <name>$(it[0])</> <url type="shell">$(it[1])</> </>)
 		<item> <name>lackey</> <identifier>lackey</> $(autogens * <autogen>$it</>) </>
 		</>
 
@@ -1036,6 +1110,9 @@ make_karabiner:
 // this is a first-pass sketch of a clone of timer-tab.com. the intent is to experiment with it more *after* it's been first rendered.
 // major implementation requirement: auto-kerning or at least separation-of-concerns kerning
 // implentation: i expect the stripe cut out will be aligned to pixels
+
+// desired feature: can edit and stuff to help account for distraction/failure
+// desired feature: should help user think in kiloseconds and such
 
 webapp. single page no scroll. offlined fully.
 
@@ -1114,6 +1191,14 @@ if need and don`t know the user`s email, ask for it with a modal dialog
 // you can watch descendants ∈ path by /* explains how to implement watch from above */
 // subscribe to <event name>: <function> /* implicitly on `it` */
 // /* should guess that when told how to do a thing that takes a callback and there's a single subscription in the explanation, the callback is called at the end of it */
+// change <var> by <dict>
+// (change <var> by <expr>. <var> was changed) should be true iff the change statement altered <var>
+// (a, b -> a += 5) isa function
+
+you can watch descendants ∈ path by
+	require npm::chokidar
+	chokidar.watch(path, {persistent:true, ignoreInitial:true}). subscribe to 'all': event, path ->
+		change event by ('addDir': 'add', 'unlinkDir': 'unlink')        (note: path is dir iff event was changed)
 
 read plist: npm::plist.parse(it)
 show plist: npm::plist.build(it)
