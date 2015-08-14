@@ -490,6 +490,29 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	https://github.com/alice0meta/TagTime/raw/master/resources/tray%402x.png
 	https://github.com/alice0meta/TagTime/raw/master/resources/whoosh.wav
 
+// --------------------- #notes on filesystem selectors --------------------- //
+
+	*
+	⟨x⟩ > ⟨children⟩
+	⟨x⟩ ⟨descendants⟩
+	.⟨ext⟩
+	:file
+	:dir
+	⟨selector1⟩, ⟨selector2⟩
+	⟨filename⟩
+
+	unresolved interesting things:
+	existence
+	normalization (remove excess . ..)
+	absolute path (canonical form *does* use ~/)
+	links, symbolic and hard
+
+	fs('/bin')
+	fs('./file.txt') = fs('file.txt')
+	fs('~/Library/')
+
+	// a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
+
 ################################################################################
 ##################################### ready ####################################
 ################################################################################
@@ -521,7 +544,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 		within root:
 		watch files ∈ (. - ./.history/) *:
 			log (event, now, file) tabularly
-			(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file.encode("fspath"))"
+			(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
 
 // ------------------------------ sublime/build ----------------------------- //
 	// translate sane stuff into weird sublime formats and put it in the sublime places
@@ -533,7 +556,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	replace $in with $out in all writes/deletions.
 
 	for files ∈ in *:
-		≈/\.json$/ -> write (@file as plist) to file without extension
+		≈/\.json$/ -> write @file as plist to file without extension
 		≈/\.snippet-magic$/ -> λ(file). write to distinct .sublime-snippet files in same dir as file
 			where λ = split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
 		else -> write @file to file
@@ -806,97 +829,142 @@ okay
 let`s do this differently.
 :D
 
-require <library>
+there`s a certain pattern of the things we want to say being the interesting things and the things we don`t want to say being simple things where we could take the thing we wanted to say and in an automatic fashion implement the other parts
+this suggests a compiler that sometimes says "i don`t know a way to do this - can you help me?"
+
+// ---------------------------- I want to say ... --------------------------- //
+require <library> ⋈this is a bit of a felt sense; what am I really trying to say here?⋈
 	require npm::fb@^0.7.0
-declare that a function uses a particular callback style
+machine, know that $fact is true
 	fb.api uses value-callback
-declare rule for how we`re using a particular function - i.e., modify it
+	(note: path is dir iff event was changed)
+machine, make sure that $fact is true
+	(note: should be lazy)
+(machine, know that) $function uses a particular callback style
+	fb.api uses value-callback
+how we`re always going to use $function // likely implemented by modifying it
 	after a fb.api call, null, .error, .data.error -> error
-after declaring a function, reference it implicitly
-	and after a /*fb.api*/ call ⟨...⟩
-add global error hook
-	on error, also: ⟨code⟩
-print things
+how we`re always going to use $action(s)
+	replace $in with $out in all writes/deletions.
+replace stuff
+	replace $in with $out
+filter $this by $pattern and if it matches do/be $that (“case statement”)
+	null, .error, .data.error -> error
+	≈/\.json$/ -> write @file as plist to file without extension
+implicit reference, often to the previous clause or value, sometimes to the most salient clause or value by some other metric
+	(7. it + 8) = 15
+	fb.api('/me', {tok:}). print .name
+	fb.api ⟨...⟩. and after a /*fb.api*/ call ⟨...⟩
+	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+	a well with soul ≥ 100
+	a well ⟨...⟩ its soul
+	split on '\n\n', /*it*/ * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
+on $event, do $stuff
+	on /*top-level global*/ error, also: ⟨code⟩
+print $things
 	print 5, 'foo'
 	print 'ERROR' sans newline
-log things
+log $things
 	log (event, now, file) tabularly
-read files
+read from $file
 	read auth from ./arc/fb_auth.json
-write files
+write to $file
 	write @file to file
-copy files
-	copy file to
-have bareword filenames
+copy $file to $destination
+	(copy file to)
+a filename
 	read auth from ./arc/fb_auth.json
-remove file extension
-	write (@file as plist) to file without extension
-implicitly view .json files as json
-	read auth from ./arc/fb_auth.json
-implicitly, the compiler/runtime should choose sensible places to force evaluation / do reduction / have strictness points
-declare name
-	out ← ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
-declare fact about equality which is also kinda a declaration of a name ???
+$filename without extension
+	write @file as plist to file without extension
+⋈implicitly⋈ view file as type
+	read auth from ./arc/fb_auth.json. ⟨...⟩. auth.id
+⋈stuff⋈ where the machine will have to independently choose sensible places to force evaluation / do reduction / have strictness points (maybe by asking for help)
+⋈stuff⋈ where the output of a computation has some parts that the machine will have to arbitrarily choose
+	write /*it::seq*/ to distinct .sublime-snippet files in same dir as file
+(machine, make sure that) this file is read only if the program does something with this var or this file
+	read auth from ./arc/fb_auth.json    (note: should be lazy)
+by $name I mean $thing
+	// unsure if this is a good example of wanting to say that
 	let out = ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
-unordered declaration
+get $value and put it in the slot $name
+	// unsure if this is a good example of wanting to say that
+	out ← ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
+things which need later things to make sense (“unordered declaration”)
 	(x * 5 where x = 8) = (let x = 8. x * 5) = 40
-lazy `and`, `or`, `and` and `or` in the other direction
+lazy `and` `or` and in both directions
 	read auth from ./arc/fb_auth.json   or error
 	error unless <condition>
-intuitive specification of precedence
+semantic whitespace
 	read auth from ./arc/fb_auth.json   or error
 	we wrote to it earlier  ||  within in and ≈/Package Control\./
-implicitly, top-level errors are automatically printed sanely with text filled in from surrounding code and the program name
-assertion (compiler or runtime should verify)
-	(note: should be lazy)
-statement (compiler and runtime can take as true)
-	(note: path is dir iff event was changed)
-assert that a file will only be read into a variable the first time the program does something with that var or that file
-	read auth from ./arc/fb_auth.json    (note: should be lazy)
-specify a CLI - implicitly with all the nice things, e.g. --version and --help
+⋈i expect⋈ top-level errors to be printed sanely with text filled in from surrounding code and the program name
+a CLI // implicitly with all the nice things, e.g. --version and --help
 	CLI:
-
 		verify <token> <user_id>
-			⟨code⟩
-
+			⟨...⟩
 		get-name <token>
-			⟨code⟩
-bare javascript code
-	fb.api('/me', {access_token: token})
-implicit rewriting of code that we know uses callbacks
-	fb.api('/me', {access_token: token})
-	print .name sans newline
-	->
-	fb.api('/me', {access_token: token}, λ(it){
-		print .name sans newline
-		})
-implicit use of the standard pronoun
-	fb.api('/me', {tok:}). print .name
-	(7. it + 8) = 15
-dictionaries/objects
+			⟨...⟩
+⋈?⋈ javascript-y function calls, property accessors, primitive&object&array literals, operators + ?: = , common verbs
+	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
+	(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
 	{a:5, b:9}
 	('a':'b', 'c':'d')
 	a ← 5. {a:}
-arrays/lists
 	log (event, now, file) tabularly
 	[5, 6]
-string building
-	auth.id+'|'+auth.secret
-	in+'.json'
-	a ← 5. y ← 2; "$a $(a = 5? "y" : "n")" = "5 y"
-cwd changing
-	within root: // ?? somehow `root` is inferred as a filename expression ??
-common verbs
 	error // might look like `throw Error()`
 	now // might look like `moment()`
 	touch // might look like `write "" to`
 	lines // might look like `it as lines`
 	delete // as in "delete file"
-common operators
-	a = b
-	a? b : c
-encode things in other things
-	file.encode('fspath')
+	split /*it*/ on '\n\n'
+literal xml
+	a ← 5. b ← 2. (xml <foo>a <bar baz="$a"></> $(b + 7)</>) as str = '<foo>a<bar baz="5"></bar>9</foo>'
+javascript callback function calls as sequential
+	fb.api('/me', {access_token: token})
+	print .name sans newline
+	// fb.api('/me', {access_token: token}, λ(it){
+	// 	print .name sans newline })
+build a string like this
+	auth.id+'|'+auth.secret
+	in+'.json'
+	"./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
+set the current working directory
+	within root: //! unsure how this manages to figure out i intend to set the current working directory!
+the contents of this file ("unboxing"?)
+	write @file as plist to file without extension
+does $object have these key/values?
+	.data match {is_valid: true, app_id: auth.id, user_id:}
+does $string match regex?
+	≈/\.json$/ -> write @file as plist to file without extension
+view $it as $type
+	it as lines
+	control fields as hh:mm
+convert $it to $type
+	@file as plist
+	boxes pop 'keycode' as dict
+	it as char to hex
+	.time as "YYYY-MM-DD/HH:mm:ssZ"
+	"$(file as filename)"
+/*view $it as*/ lines
+	'a\nb\nc'. lines[0] as str = 'a'
+	'a\nb\nc'. lines[1:] as str = 'b\nc'
+
+⋈ I-want-to-say transformation ongoing ⋈
+
+	watch files ∈ (. - ./.history/) *:
+
+	for files ∈ in *:
+		≈/\.snippet-magic$/ -> λ(file). write to distinct .sublime-snippet files in same dir as file
+			where λ = split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
+		else -> write @file to file
+	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
+
+
+⋈some⋈ conditions about what the entire program did
+	we wrote to it earlier
+⋈some⋈ filesystem selectors that aren`t jquery
+	within in and ≈/Package Control\./
 filesystem selectors
 	files ∈ (. - ./.history/)
 	files ∈ *
@@ -907,70 +975,51 @@ watch files in a filesystem selector. this is an event with a callback. it proba
 loop over files in a filesystem selector
 	for files ∈ in *:
 	for paths ∈ (in > *):
-hook into things, locally
-	replace $in with $out in all writes/deletions.
-pretty-print things
-	pretty-print @in to in+'.json'
-unboxing semantic
-	write (@file as plist) to file without extension
-xml literals
-	a ← 5. b ← 2. (xml <foo>a <bar baz="$a"></> $(b + 7)</>) as str = '<foo>a<bar baz="5"></bar>9</foo>'
-object matching
-	.data match {is_valid: true, app_id: auth.id, user_id:}
-syntactically brief matching for strings
-	≈/\.json$/ -> write (@file as plist) to file without extension
-case statements
-	≈/\.json$/ -> write (@file as plist) to file without extension
-view data as another type or convert/cast data to another type
-	@file as plist
-	it as lines
-	boxes pop 'keycode' as dict
-	it as char to hex
-	control fields as hh:mm
-	.time as "YYYY-MM-DD/HH:mm:ssZ"
-pick nice solutions to constraints
-	write /*it::seq*/ to distinct .sublime-snippet files in same dir as file
-split
-	split /*it*/ on '\n\n'
-lines
-	('a\nb\nc' as lines)[0] as str = 'a'
-	('a\nb\nc' as lines)[1:] as str = 'b\nc'
-implicit application of map
-	split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
-conditions about what the entire program did
-	we wrote to it earlier
-englishy and regexy filesystem selectors
-	within in and ≈/Package Control\./
-
-
-define custom data structures declaratively
-	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+// ------------ define custom data structure types declaratively ------------ //
+	// -------- define custom graph data structure types declaratively -------- //
+		define a type and simultaneously define the naming schema for nodes
+			define: rectangular grid of nodes
+		define adjacency
+			define: rectangular grid of nodes w/ adjacency north/east/west/south // implicit-refers to a previous clause
+		define new nodes and adjacency simultaneously
+			define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it // implicit-refers to a previous clause
+		add attributes to graph nodes
+			define: ⟨...⟩
+				the first nodes each have a slot for an agent // implicit-refers to a previous clause
+				the second nodes each have a well of “soul” (numeric) // implicit-refers to a previous clause
+	explicit-refer to the textual ordering in a previous clause
+		define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+			the first nodes ⟨...⟩
+			the second nodes ⟨...⟩
+	english textual declarative map
 		the first nodes each have a slot for an agent
 		the second nodes each have a well of “soul” (numeric)
+	declare a typed attribute with no name other than the type
+		the first nodes each have a slot for an agent
+	declare a named, typed attribute with a fuzzy-english name
+		the second nodes each have a well of “soul” (numeric)
+implicitly talk about a physics of ticks
+	wells regenerate at 0.01/tick
+concept: regenerate
+	wells regenerate at 0.01/tick
+rates
+	0.01/tick
+set event on condition, implicitly in a physics of ticks
+	a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
+use types that haven`t been defined yet
+	the action of sending an agent with code well_code_gen() to the node above it
 
-... but what are the pieces?
+/*it*/ spend/*s*/ all its soul on the action of sending an agent with code well_code_gen() to the node above it
 
+// // ---------------------------------- dance --------------------------------- //
+// // "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
 
-rectangular grid of nodes w/ adjacency north/east/west/south
-<grid of nodes>, plus for each of those /*nodes*/ a node connected <direction preposition> it
-define: <thing of nodes, plus ... a node> \n (the /first|second/ nodes = /* the first or second set of nodes */)
-<set of nodes> each have <property>
-a slot for an agent
-a well of “soul” (numeric)
-<type>s regenerate at <rate>
-(<number>/tick) :: rate
-a <type> with <condition> will /* execute */ <code>
-inside above, where type has an attribute <name>, <name> is valid to occur inside <condition>
+// define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+// 	the first nodes each have a slot for an agent
+// 	the second nodes each have a well of “soul” (numeric)
 
-------------------------------------- dance ------------------------------------
-// "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
-
-define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
-	the first nodes each have a slot for an agent
-	the second nodes each have a well of “soul” (numeric)
-
-wells regenerate at 0.01/tick
-a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
+// wells regenerate at 0.01/tick
+// a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
 
 an agent has a container of soul and a code that is executed to return the chosen action
 
