@@ -122,7 +122,7 @@ moment.fn.toString = λ(){↩ @.utc().format('YYYY-MM-DD[T]HH:mm:ss[Z]')}
 moment.fn.inspect = λ(x,opts){t ← @.toString(); ↩ true/*opts.colors*/? '\x1b[35m'+t+'\x1b[39m' : t}
 }
 
-//===----------------------------===// fs/Path //===---------------------------===//
+// --------------------------------- fs/Path -------------------------------- //
 
 fs ← exports.fs = exports.fs_ = (λ(){t ← λ(path){↩ new Path(path)}; t.__proto__ = require('fs'); ↩ t})()
 // a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
@@ -158,7 +158,19 @@ Path.prototype.findˢ = λ*(sel){
 			break; case '>': yield* seq(fs.readdirSync(t).map(λ(v){↩ t+'/'+v}))
 			break; case '*':
 				root ← t+'/'
-				//! bad - should be something like breadth-first but smarter
+				//! bad - should use directed Dijkstra's from all roots with edge length equal to the number of files in a dir
+				// sample impl:
+					// all ← λ(v){try {↩ fs.readdirSync(v).map(λ(t){↩ v+'/'+t}) } catch (e) {↩ []}}
+					// root ← '.'
+					// dist ← {}; dist[root] = 0
+					// next ← [root] // should be pqueue
+					// out ← []
+					// while (next.length) {t ← next._.min(λ(v){↩ dist[v]}); next = next._.without(t); out.push(t); at←; (at=all(t)).map(λ(v){dist[v] = dist[t] + at.length; next.push(v)}) }
+				// or just:
+					// all ← λ(v){try {↩ fs.readdirSync(v).map(λ(t){↩ v+'/'+t}) } catch (e) {↩ []}}; root ← '.'; out ← []
+					// (λ λ(v,dist){out.push([dist,v]); at←;(at=all(v)).forEach(λ(t){λ(t,dist + at.length)})})(root,0)
+					// q ← out._.sortBy(0)._.map(1)
+				// note: as is will inf-loop on scary things
 				walk_ ← λ*(v){try {l ← fs.readdirSync(root+v); for (i←0;i<l.length;i++){t ← v+l[i]; try {fs.lstatSync(fs(root+t).path).isDirectory()? (yield root+t, yield* walk_(t+'/')) : yield root+t} catch (e) {}}} catch (e) {}}
 				yield* walk_('')
 			} }
@@ -170,6 +182,7 @@ Path.prototype.findˢ = λ*(sel){
 
 	sel_a ← (' '+sel).replace(/(^|[^>* ])( +(?![>* ]))/g,'$1 * ').trim().split(/ +/)
 	if (!sel_a.every(λ(v){↩ v.match(/^>|\*|\.\S+|#\S+$/)})) ERR()
+	//! should be: if (!sel_a.every(λ(v){↩ v.match(/^(>|\*|\.\S+|#\S+)$/)})) ERR()
 
 	r ← seq([@.path_])
 	sel_a.forEach(λ(v){
@@ -186,7 +199,7 @@ Path.prototype.findˢ = λ*(sel){
 
 	yield* r}
 // misc
-Path.prototype.as_type = λ(View){_(@).extend(O(View).replace({'$':'_$'})); ↩ @}
+Path.prototype.as_type = λ(View){_(@).extend(O(View).replace({'$':'_$'})); ↩ @} // ⋈this is silly⋈
 // Path.prototype.cached = λ(){_$ ← @._$(); @._$ = λ(){↩ _$}; t ← @['=']; @['='] = λ(v){_$ = v; t(v)}}
 Path.prototype.toString = λ(){↩ @.resolve().replace(new RegExp('^'+escape_regex(process.env.HOME)+'(?=/)'),'~')}
 // content manipulation
@@ -220,7 +233,7 @@ Path.prototype.rmrf = λ(){
 	if (@.path === '/') err('??? you tried to rmrf /')
 	rimraf.sync(@.path) }
 
-//===------------------------===// discarded bits //===------------------------===//
+// ----------------------------- discarded bits ----------------------------- //
 
 // exports.poll = λ(f,cb){t←; (t=f())? cb.in(0,null,t) : poll.in(0.02,f,cb)}
 // exports.ζ2_memb_Emod_obj = λ(o,m,f){o[m] = f(o[m]); ↩ o}

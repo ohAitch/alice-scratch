@@ -26,7 +26,7 @@ then i think we have a good model.
 http://fb.com/strohl89/posts/10153433406284598 ?
 
 
----------------------- thing generation #fail #unfinished ----------------------
+// ------------------- thing generation #fail #unfinished ------------------- //
 	// so i tried generating some cities. but i failed. i will try again later!
 
 	i wanna generate some cities
@@ -70,7 +70,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	⋈ what if i do the eurisko thing and make a really good space of algorithms that could be useful to run here and then do simple genetic programming on that?
 	⋈ but uh, i do not know how to do that
 
-------------------------------- IAFF #unfinished -------------------------------
+// ---------------------------- IAFF #unfinished ---------------------------- //
 
 	// so there`s the boring way where we slowly nom this file and make it smaller and prettier
 	// and then eventually there`s no more easy nomming and we can do other stuff
@@ -96,7 +96,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	frame { width: 85%; centered; bg: #fff; non-top border: 1px solid #d2d2d2; }
 	topbar { bg: #254e7d; }
 
------------------------------------- tagtime -----------------------------------
+// --------------------------------- tagtime -------------------------------- //
 
 	"special_dependencies": {"atom_shell": "0.19.1"},
 
@@ -494,7 +494,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 ##################################### ready ####################################
 ################################################################################
 
------------------------------------- fb-sdk ------------------------------------
+// --------------------------------- fb-sdk --------------------------------- //
 	// tiny shim to access the fb sdk from arc
 
 	require npm::fb@^0.7.0
@@ -515,7 +515,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 			fb.api('/me', {access_token: token})
 			print .name sans newline
 
--------------------------------- perfect-history -------------------------------
+// ----------------------------- perfect-history ---------------------------- //
 
 	CLI: <root>
 		within root:
@@ -523,7 +523,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 			log (event, now, file) tabularly
 			(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file.encode("fspath"))"
 
---------------------------------- sublime/build --------------------------------
+// ------------------------------ sublime/build ----------------------------- //
 	// translate sane stuff into weird sublime formats and put it in the sublime places
 	// then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 
@@ -539,12 +539,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 		else -> write @file to file
 	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
 
------------------------------- sublime/json-plist ------------------------------
-	// it's a bit unclear that this really needs to be an entire program
-
-	CLI: <in> -> pretty-print @in to in+'.json'
-
-------------------------------------- dance ------------------------------------
+// ---------------------------------- dance --------------------------------- //
 	// "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
 
 	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
@@ -609,7 +604,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 
 	soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
 
------------------------------------- weather -----------------------------------
+// --------------------------------- weather -------------------------------- //
 
 	2d`~`
 	(merge weather images @ hour 0, index 0 2 3     ) (″ @ hour 48)
@@ -620,7 +615,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 		weather_image(hour, index) = GET "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+("000000000000000000000000000000000000000000000000000000000" [index]= "1")+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
 		merge a set of weather images = average(it s/\grey/black/g) + average(it s/[^\grey]/black/g)
 
------------------------------------- lackey ------------------------------------
+// --------------------------------- lackey --------------------------------- //
 
 	make ~/Library/Keyboard\ Layouts/lackey.icns equal ./lackey.icns
 	make ~/Library/Keyboard\ Layouts/lackey.keylayout equal make_keylayout()
@@ -683,7 +678,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 			<item> <name>lackey</> <identifier>lackey</> $(autogens * <autogen>$it</>) </>
 			</>
 
------------------------------------ timer-tab ----------------------------------
+// -------------------------------- timer-tab ------------------------------- //
 	// this is a first-pass sketch of a clone of timer-tab.com. the intent is to experiment with it more *after* it's been first rendered.
 	// major implementation requirement: auto-kerning or at least separation-of-concerns kerning
 	// implentation: i expect the stripe cut out will be aligned to pixels
@@ -748,7 +743,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	action.value shows in page title w/ seconds truncated if hours>0
 		and in page icon, similarly
 
-------------------------- cute point redemption webapp -------------------------
+// ---------------------- cute point redemption webapp ---------------------- //
 
 	webapp. public db.
 
@@ -762,7 +757,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 
 	if need and don`t know the user`s email, ask for it with a modal dialog
 
------------------------------------- <impl> ------------------------------------
+// --------------------------------- <impl> --------------------------------- //
 
 	you can watch descendants ∈ path by
 		require npm::chokidar
@@ -791,9 +786,9 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 			let a,b ← it isa array? '[]' : '{}'
 			a+ts.join(', ')+b, unless its .length > wrap_width, then a+'\n'+TAB+ts.join(',\n'+TAB)+'\n'+b
 
---------------------------------------------------------------------------------
--------------------- let`s categorize all the language used --------------------
---------------------------------------------------------------------------------
+// -------------------------------------------------------------------------- //
+// ----------------- let`s categorize all the language used ----------------- //
+// -------------------------------------------------------------------------- //
 
 i notice that (say) timer-tab is much more declarative than (say) lackey
 but when reading them they both feel perfectly excellent
@@ -1032,7 +1027,7 @@ on mouseover grid square, display its node`s contents in an html tooltip
 
 soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
 
------------------------------------- weather -----------------------------------
+// --------------------------------- weather -------------------------------- //
 
 2d`~`
 (merge weather images @ hour 0, index 0 2 3     ) (″ @ hour 48)
@@ -1043,7 +1038,7 @@ where
 	weather_image(hour, index) = GET "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+("000000000000000000000000000000000000000000000000000000000" [index]= "1")+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
 	merge a set of weather images = average(it s/\grey/black/g) + average(it s/[^\grey]/black/g)
 
------------------------------------- lackey ------------------------------------
+// --------------------------------- lackey --------------------------------- //
 
 make ~/Library/Keyboard\ Layouts/lackey.icns equal ./lackey.icns
 make ~/Library/Keyboard\ Layouts/lackey.keylayout equal make_keylayout()
@@ -1106,7 +1101,7 @@ make_karabiner:
 		<item> <name>lackey</> <identifier>lackey</> $(autogens * <autogen>$it</>) </>
 		</>
 
------------------------------------ timer-tab ----------------------------------
+// -------------------------------- timer-tab ------------------------------- //
 // this is a first-pass sketch of a clone of timer-tab.com. the intent is to experiment with it more *after* it's been first rendered.
 // major implementation requirement: auto-kerning or at least separation-of-concerns kerning
 // implentation: i expect the stripe cut out will be aligned to pixels
@@ -1171,7 +1166,7 @@ two stripes project from the current control to edges of window, overlapping on 
 action.value shows in page title w/ seconds truncated if hours>0
 	and in page icon, similarly
 
-------------------------- cute point redemption webapp -------------------------
+// ---------------------- cute point redemption webapp ---------------------- //
 
 webapp. public db.
 
@@ -1185,7 +1180,7 @@ then, display "you have $n cute points. [redeem?]"
 
 if need and don`t know the user`s email, ask for it with a modal dialog
 
------------------------------------- <impl> ------------------------------------
+// --------------------------------- <impl> --------------------------------- //
 
 // <noteified>
 // you can watch descendants ∈ path by /* explains how to implement watch from above */

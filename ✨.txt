@@ -10,6 +10,7 @@ and - i - i want to just _pick up_ the damn graph and _splay it out all over the
 (oh hey http://www.cs.cornell.edu/projects/sherrloc/)
 (oh hey http://elm-lang.org/blog/compiler-errors-for-humans)
 (oh hey, data visualization)
+(oh hey, http://worrydream.com/KillMath/ is beautiful and I have not become strong enough to generate it yet)
 
 -------------------- for the stated goal, the big things are -------------------
 
