@@ -20,7 +20,7 @@ alias p='pbpaste'
 alias 64e='base64'
 alias 64d='base64 --decode'
 sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
-alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
+chrome() { open -a "Google Chrome.app" --args -disable-new-avatar-menu; }
 alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
 alias killcp='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist'
 alias opencp='sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan &'

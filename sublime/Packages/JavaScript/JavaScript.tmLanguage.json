@@ -7,6 +7,7 @@
   "keyEquivalent": "^~J",
   "name": "JavaScript",
   "patterns": [
+    {"name": "alice", "match": "⋈"},
     {"match": "[{},;.]", "name": "block.js"},
     {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment.line.js"},
     {
@@ -148,6 +149,14 @@
     },
     {"begin": "/\\*\\*(?!/)", "captures": {"0": {"name": "punctuation.definition.comment.js"}}, "end": "\\*/", "name": "comment.block.documentation.js"},
     {"begin": "/\\*", "captures": {"0": {"name": "punctuation.definition.comment.js"}}, "end": "\\*/", "name": "comment.block.js"},
+    {"match": "(//) (---+)(.*?)(---+) (//)$\\n?", "name": "plaintext.js",
+      "captures": {
+        "1": {"name": "comment.line.double-slash.js"},
+        "2": {"name": "keyword.js"},
+        "3": {"name": "plaintext.js"},
+        "4": {"name": "keyword.js"},
+        "5": {"name": "comment.line.double-slash.js"}
+      } },
     {"captures": {"1": {"name": "punctuation.definition.comment.js"}}, "match": "(//).*$\\n?", "name": "comment.line.double-slash.js"},
     {
       "captures": {"0": {"name": "punctuation.definition.comment.html.js"}, "2": {"name": "punctuation.definition.comment.html.js"}},
@@ -198,7 +207,7 @@
       "name": "support.function.event-handler.js"
     },
     {
-      "match": "!|\\$|%|×|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|→|@|≤|≥|!=|!==|≠|≤|≥|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\||\\\\|\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
+      "match": "!|\\$|%|×|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|←|→|@|≤|≥|!=|!==|≠|≈|≉|≤|≥|<=|>=|<<=|>>=|>>>=|<>|<|>|⟨|⟩|!|&&|\\|\\||\\||\\\\|\\?\\:|\\?|:|\\*=|(?<!\\()/=|%=|\\+=|\\-=|&=|\\^=|\\b(in|instanceof|new|delete|typeof|void)\\b",
       "name": "keyword.operator.js"
     },
     {"match": "↩", "name": "magic.more.js"},

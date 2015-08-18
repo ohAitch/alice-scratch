@@ -44,7 +44,7 @@
     {"name": "italic", "match": "\\b_\\B[^_\\n]+?\\B_\\b"},
     {"name": "bold", "match": "\\B\\*\\b[^*\\n]+?\\b\\*\\B"},
     {"name": "magic", "match": "[!$&+,\\-.:;=?@`\\\\|/↯…≪≫‽⁺⁻₊×∀∃₋~←→↔≡⇒∈∉≠⎋✓¬≔*↩↑↓≈]"},
-    {"name": "alice", "match": "[⋈]"},
+    {"name": "alice", "match": "⋈"},
     {"name": "bright_red", "match": "\\b(?<![|])[A-Z](?<![ABCDEINO])(?=\\b|[₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰])(?![|])"},
     {"name": "bracket", "match": "[()\\[\\]{}<>‹›⟨⟩]"},
     {"name": "string", "match": "[\"“”]"},
