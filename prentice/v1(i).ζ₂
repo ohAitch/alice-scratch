@@ -1,0 +1,237 @@
+// not actually used
+T ← λ(v,type){↩ new _T(v,type||T.id)}
+T.id = [λ(v,k){↩ v[k]}, λ(v,k,n){v[k] = n; ↩ v}]
+T.spaces = [λ(v,k){↩ v.split(' ')[k]}, λ(v,k,n){t ← v.split(' '); t[k] = n; ↩ t.join(' ')}]
+_T ← λ(v,type){@.$ = v; @.type = type}
+_T.prototype.m = λ(k,f){@.$ = @.type[1](@.$,k,f(@.type[0](@.$,k))); ↩ @}
+
+// -------- parsing ------- //
+
+alice_parse_table ← (λ(){
+	author ← 'alice'
+	↩ [
+	// // [/^(hi!?|don't worry, i'm gonna make you better :\)|wow, this is a mess|thanks <3|yay)$/, ['small talk']],
+	// // [/^(yep|yeah|yes)$/, ['yes']],
+	// // [/^(nah|nope|no)$/, ['no']],
+	// // [/^((?:like[,.] )?(\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['noun: $thing in $place']],
+	// // [/^((?:nah|nope|no)[.,]) ((\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['no','noun: $thing in $place']],
+	// [/^i (?:want to|wanna) refactor (.+?)$/, λ(thing){↩ {type:'claim', by:author, v:
+	// 	{type:'subgoal', of:author, v:
+	// 		{type:'process-done', by_hint:author, v:{type:'process', v:'refactoring', on:thing}}
+	// 		}} }],
+	// [/^(?:(?:oh|uh)[,.] )?it's in (.+?)(?: :\)|\.)?$/, λ(place){↩ {type:'claim', by:author, v:
+	// 	{type:'relation', a:'it', v:'in', b:place}
+	// 	} }],
+	// // [/^(that's a project of mine)$/, ['it is a project of mine']],
+	// // [/^((hm[.,] )?can you talk to sublime( text)?\?)$/, ['inquiry: you can talk to sublime text']],
+	// // [/^((can you )?help me (do|with) (a morning update|my morning thing)\??)$/, ['help me do a morning update']],
+	// // [/^(belay that)$/, ['↯']],
+	]})()
+alice_parse_sentences ← λ(v){↩ _(alice_parse_table.map(λ(p){t←; ↩ (t=v.match(p[0])) && p[1].apply(null,t.slice(1))})).compact()[0] || {type:'unknown', by:'alice', source:v}}
+add RegExp('^'+('⟨'+v.source+'⟩').replace(/⟨/g,'(?:').replace(/⟩/g,')')+'$') to that
+
+// --------- state -------- //
+
+input ← []
+context ← {conversation: []}
+context.conversation.new = false
+subgoals ← []
+
+// --- action loop guts --- //
+
+say_fluff ← λ(v){context.conversation.push({type:'fluff', by:'apri'}); print(v)}
+ask_for_meaning ← λ(v){
+	// e.g. 'conversation 0 v v v on' where conversation[0] is {type:'claim', by:author, v:{type:'subgoal', of:author, v:{type:'process-done', by_hint:author, v:{type:'process', v:'refactoring', on:v}}}} -> "okay! i looked in the schelling places for it but no luck - point me to it?"
+	context.conversation.push({type:'question', by:'apri', v:{type:'meaning', path:v}})
+	print("REQUEST FOR MEANING. OF QUERY:")
+	print("  "+v)
+	}
+ask_if_guess_true ← λ(v){
+	// e.g. 'conversation i v b' & something -> "is $place a project of yours at $guess?"
+	context.conversation.push({type:'question', by:'apri', v:{type:'guess', path:v}})
+	print("REQUEST IF GUESS IS TRUE:")
+	print("  "+v)
+	}
+
+action_table ← {
+	make_small_talk: λ make_small_talk(){say_fluff("small talk acknowledged :P")},
+	examine_input: λ examine_input(){
+		t ← alice_parse_sentences(input.shift())
+		t.forEach(λ(v){context.conversation.push(v)})
+		t.length && (context.conversation.new = true)
+		},
+	wait_for_input: λ wait_for_input(){↩ 'wait_for_input'},
+	think_about_conversation: λ think_about_conversation(){
+		//> always just only thinks about the last one - not really very agenty, is it?
+
+		resolve_author ← λ(v){_.indexBy(['alice'])[v] || EDGE()}
+		resolve_process ← λ(v){_.indexBy(['refactoring'])[v] || EDGE()}
+		get_process ← λ(v){↩ {
+			'refactoring': {resolve_target: λ(v,path){
+				subgoals.push({type:'subgoal', of:'apri', v:
+					{type:'knowledge', in:'apri', v:{type:'meaning', path:path}}
+					})
+				}},
+			}[v] }
+		resolve_relation ← λ(v){↩ {
+			'in': {resolve_target: λ(v,path){
+				subgoals.push({type:'subgoal', of:'apri', v:
+					{type:'knowledge', in:'apri', v:{type:'meaning', path:path+' a'}}
+					})
+				subgoals.push({type:'subgoal', of:'apri', v:
+					{type:'knowledge', in:'apri', v:{type:'meaning', path:path+' b'}}
+					})
+				}},
+			}[v] || EDGE() }
+		resolve ← λ(specifier,word_thing,path){
+			switch (specifier) {default: EDGE()
+				break; case 'unknown by':      resolve_author(word_thing.by)
+				break; case 'claim by':        resolve_author(word_thing.by)
+				break; case 'subgoal of':      resolve_author(word_thing.of)
+				break; case 'process-done by': word_thing.by? resolve_author(word_thing.by) : resolve_author(word_thing.by_hint)
+				break; case 'process':         resolve_process(word_thing.v)
+				break; case 'process on':      get_process(word_thing.v).resolve_target(word_thing.on,path)
+				// trying something new
+				break; case 'relation':        ↩ resolve_relation(word_thing.v)
+			} }
+
+		context.conversation.new = false
+		i ← context.conversation.length - 1
+		v ← context.conversation[i]
+		if (is_obj(v,{type:'claim', by:ANY, v:
+			{type:'subgoal', of:ANY, v:
+				{type:'process-done', by_hint:ANY, v:{type:'process', v:ANY, on:ANY}}
+				}})) {
+			resolve('claim by', v)
+			resolve('subgoal of', v.v)
+			resolve('process-done by', v.v.v)
+			resolve('process', v.v.v.v)
+			resolve('process on', v.v.v.v, 'conversation '+i+' v v v on')
+		} else if (is_obj(v,{type:'claim', by:ANY, v:
+			{type:'relation', a:ANY, v:ANY, b:ANY}
+			})) {
+			resolve('claim by', v)
+			v=v.v
+			resolve('relation', v).resolve_target(v, 'conversation '+i+' v')
+		} else {
+			assert_obj(v,{type:'unknown', by:ANY, source:ANY})
+			resolve('unknown by', v)
+			say_fluff("oh... i'm totally at a loss to parse that")
+		}
+	},
+	}
+
+scheme_about_subgoal ← λ(subgoal){
+	assert_obj(subgoal,{type:'subgoal', of:'apri', v:
+		{type:'knowledge', in:'apri', v:{type:'meaning', path:ANY}}
+		})
+
+	path_s ← subgoal.v.v.path
+	path ← path_s.split(' ')
+	// path_t ← T(path_s, T.spaces)
+	if (path_s.match(/^conversation \d+ v v v on$/) && is_obj(path.slice(0,2).reduce(sub,context),
+		{type:'claim', by:'alice', v:
+			{type:'subgoal', of:'alice', v:
+				{type:'process-done', by_hint:'alice', v:{type:'process', v:'refactoring', on:ANY}}
+				}} )) {
+		thing ← path.reduce(sub,context)
+		↩ [
+		λ search_for_plausible_candidate_in_schelling_places(){
+			// is that a file in a schelling place?
+			schelling_places ← ['.']
+			l ← _(schelling_places.map(λ(v){↩ fs(v).find('> #'+thing)[0]})).filter(λ(v){↩ v})[0]
+			// if so, tell her my guess and open it
+			if (l) {
+				EDGE()
+				// print("(assuming you mean "+l+")")
+				// print("okay, let's open it!")
+				// sublime_open(l)
+			// else, ask for more information
+			} else {
+			}
+			;(subgoal.tried_strategies || (subgoal.tried_strategies = [])).push(search_for_plausible_candidate_in_schelling_places)
+			},
+		λ did_not_find_in_schelling_places___ask_alice(){
+			//> should really be like "ask_alice ... if tried_strategies does not include search-candi-schelling then ask alice with that knowledge, else just ask alice"
+			ask_for_meaning(path_s)
+
+			;(subgoal.tried_strategies || (subgoal.tried_strategies = [])).push(did_not_find_in_schelling_places___ask_alice)
+			},
+		].filter(λ(v){↩ !(subgoal.tried_strategies || []).some(λ(w){↩ v.name === w.name})})
+	} else if (path_s.match(/^conversation \d+ v a$/) && is_obj(path.slice(0,2).reduce(sub,context),
+		{type:'claim', by:'alice', v:
+			{type:'relation', a:ANY, v:'in', b:ANY}
+			} )) {
+		t ← context[path[0]][path[1]-1]
+		assert_obj(t,{type:'question', by:'apri', v:{type:'meaning', path:ANY}})
+		t.v.path.match(/^conversation \d+ v v v on$/) || EDGE()
+		↩ [
+		λ trace_pronoun(){
+			v ← path.slice(0,-1).reduce(sub,context)
+			v[path[-1]] = {type:'pronoun', source:v[path[-1]], ref:t.v.path}
+
+			;(subgoal.tried_strategies || (subgoal.tried_strategies = [])).push(trace_pronoun)
+			},
+		].filter(λ(v){↩ !(subgoal.tried_strategies || []).some(λ(w){↩ v.name === w.name})})
+	} else if (path_s.match(/^conversation \d+ v b$/) && is_obj(path.slice(0,2).reduce(sub,context),
+		{type:'claim', by:'alice', v:
+			{type:'relation', a:ANY, v:'in', b:ANY}
+			} )) {
+		t ← context[path[0]][path[1]-1]
+		assert_obj(t,{type:'question', by:'apri', v:{type:'meaning', path:ANY}})
+		t.v.path.match(/^conversation \d+ v v v on$/) || EDGE()
+		// propose action of searching for $place in home dir
+		//> also reasonable: just ask what $place is without bothering to search
+		↩ [
+		λ search_for_place_in_home_dir(){
+			//! doesn't take into account the part where we're searching for a $place *that has* a $thing
+			v ← path.slice(0,-1).reduce(sub,context)
+			guess ← fs(process.env.HOME+'/ali').findˢ('#'+v[path[-1]]).next().value
+			guess || EDGE()
+			v[path[-1]] = {type:'guess', source:v[path[-1]], v:guess}
+
+			;(subgoal.tried_strategies || (subgoal.tried_strategies = [])).push(search_for_place_in_home_dir)
+			},
+		λ found_place_in_home_dir___ask_alice_if_correct(){
+			//> should really of course be part of a more general "ask alice" function
+			ask_if_guess_true(path_s)
+			
+			;(subgoal.tried_strategies || (subgoal.tried_strategies = [])).push(found_place_in_home_dir___ask_alice_if_correct)
+			},
+		].filter(λ(v){↩ !(subgoal.tried_strategies || []).some(λ(w){↩ v.name === w.name})})
+	} else EDGE(subgoal,path)
+	
+	// ---
+	// # * apologize for failure to parse context.conversation[0]
+	// 	should probably be an inquiry with subgoal_hint:get_answer instead of subgoal:get_answer
+
+	} // ↩ [] }
+
+select_action ← λ(){t←;
+	if (input.length) ↩ action_table.examine_input
+
+	if (context.conversation.new) ↩ action_table.think_about_conversation
+	
+	//! so how can i actually teach priorities better than "scheme about every subgoal in an arbitrary order"?
+	if (t=_(subgoals.map(scheme_about_subgoal)).flatten(true)[0]) ↩ t
+
+	if (context.conversation.length && context.conversation[-1].by !== 'apri')
+		↩ action_table.make_small_talk
+	else
+		↩ action_table.wait_for_input
+}
+
+do_action ← λ(action){
+	↩ action() }
+
+// ---- top-level code ---- //
+
+action_loop ← λ(){t←; i←0; while (t=select_action()) {if (do_action(t) === 'wait_for_input') break; if (i++ > 100) throw '<too many iterations>'}}
+
+global.__SPECIAL__ = λ(v){input.push(v); action_loop()}
+
+action_loop()
+ζ2_repl_start()
+
+global.p = [input,context,subgoals]
+global.conversation = context.conversation
