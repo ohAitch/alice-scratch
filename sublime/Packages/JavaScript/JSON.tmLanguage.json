@@ -42,13 +42,13 @@
       "endCaptures": {"0": {"name": "punctuation.definition.dictionary.end.json"}},
       "name": "meta.structure.dictionary.json",
       "patterns": [
-        {"comment": "the JSON object key", "include": "#string"},
+        {"comment": "the JSON object key", "include": "#stringkey"},
         {"include": "#comments"},
         {
           "begin": ":",
-          "beginCaptures": {"0": {"name": "punctuation.separator.dictionary.key-value.json"}},
+          "beginCaptures": {"0": {"name": "quiet.json"}},
           "end": "(,)|(?=\\})",
-          "endCaptures": {"1": {"name": "punctuation.separator.dictionary.pair.json"}},
+          "endCaptures": {"1": {"name": "quiet.json"}},
           "name": "meta.structure.dictionary.value.json",
           "patterns": [{"comment": "the JSON object value", "include": "#value"}, {"match": "[^\\s,]", "name": "invalid.illegal.expected-dictionary-separator.json"}]
         },
@@ -61,6 +61,20 @@
       "end": "\"",
       "endCaptures": {"0": {"name": "punctuation.definition.string.end.json"}},
       "name": "string.quoted.double.json",
+      "patterns": [
+        {
+          "match": "(?x:                # turn on extended mode\n                     \\\\                # a literal backslash\n                     (?:               # ...followed by...\n                       [\"\\\\/bfnrt]     # one of these characters\n                       |               # ...or...\n                       u               # a u\n                       [0-9a-fA-F]{4}  # and four hex digits\n                     )\n                   )",
+          "name": "constant.character.escape.json"
+        },
+        {"match": "\\\\.", "name": "invalid.illegal.unrecognized-string-escape.json"}
+      ]
+    },
+    "stringkey": {
+      "begin": "\"",
+      "beginCaptures": {"0": {"name": "quiet.json"}},
+      "end": "\"",
+      "endCaptures": {"0": {"name": "quiet.json"}},
+      "name": "entity.name.function.json",
       "patterns": [
         {
           "match": "(?x:                # turn on extended mode\n                     \\\\                # a literal backslash\n                     (?:               # ...followed by...\n                       [\"\\\\/bfnrt]     # one of these characters\n                       |               # ...or...\n                       u               # a u\n                       [0-9a-fA-F]{4}  # and four hex digits\n                     )\n                   )",
