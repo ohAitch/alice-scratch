@@ -21,7 +21,11 @@ if (argv.length === 0) {
 		t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
 	break; case '--es':
 		JSON.parse(argv[1]).map(λ(v){
-			t ← eval(ζ2_compile(v)); t !== undefined && process.stdout.write(t+''); process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
+			0,λ __special_es__u7h7zxgvi__(){
+			try {t ← eval(ζ2_compile(v)); t !== undefined && process.stdout.write(t+'')}
+			catch (e) {print(typeof(e.stack)==='string'? e.stack.replace(/(\n    at )(?:eval \(eval at )?__special_es__u7h7zxgvi__[\s\S]*/,'$1<eval>') : '<error> '+e)}
+			}()
+			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
 	break; case '--version':
 		print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)

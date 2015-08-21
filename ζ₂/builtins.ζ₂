@@ -81,6 +81,7 @@ exports.ζ2_jsonclone = λ(v){↩ v===undefined? v : JSON.parse(JSON.stringify(v
 print ← exports.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a,{colors:true,depth:2})+'\n'); ↩ a[-1]}
 err ← exports.err = λ(v){print.apply(null,['ζ2_err'].concat(ζ2_A(arguments))); throw Error(v)}
 _(exports).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt'))
+_(exports).extend({ln: Math.log, ln2: Math.log2, ln10: Math.log10})
 
 exports.ζ2_gen2fn = λ(f){t ← f(); ↩ λ(){↩ t.next().value}}
 monkeypatch(λ(G){ G.Function.prototype.def = λ(m,get,set){O(@.prototype).def(m,get,set); ↩ @} })
