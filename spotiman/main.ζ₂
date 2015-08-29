@@ -70,6 +70,13 @@ getDatabaseoid ← λ(cb){
 
 // ---------------------------------- main ---------------------------------- //
 
+global.search = λ(v){
+	get_track ← λ(v){↩ v.numTracks === 0? v.query : v.getTrack(0)}
+	Array.isArray(v)? async.map(v,λ(v,cb){new spotify.Search(v).execute(λ(e,r){r.query = v; cb(e,r)})},λ(e,vs){
+		global.__ = vs.map(get_track); print('[spotiman::search]',vs.length,'results')
+		}) :
+		new spotify.Search(v).execute(λ(e,r){r.query = v; print(global.__ = get_track(r))}) }
+
 switch (process.argv[2]) {
 default: print('invalid args:',process.argv)
 break; case undefined:
