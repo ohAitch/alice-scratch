@@ -91,6 +91,12 @@ namegen ← ζ2_gen2fn(λ*(){
 do_it() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=KqsDmZ77kW' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
 
 pdf_to_image() { convert -verbose -density 150 -trim "$1" -quality 100 -sharpen 0x1.0 "${1%.*}.png"; }
+
+--------------------------------- image montage --------------------------------
+
+convert -scale 1124x in out
+montage -mode concatenate -tile x1 in* out
+
 -------------- start of playing with http://minesweeperonline.com/ ------------- */
 
 rand = function(a,b){return arguments.length === 0? Math.random() : arguments.length === 1? Math.floor(rand()*a) : rand(b-a)+a}
@@ -139,3 +145,6 @@ main_loop = setInterval(function(){var t;
 	console.log('dunno what to do'); return
 },0)
 
+---------------------- make nice pretty bookmarks listing ----------------------
+
+ζ₂ -e 'copy((λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("~/Library/Application Support/Google/Chrome/Default/Bookmarks").$).roots.bookmark_bar.children))'

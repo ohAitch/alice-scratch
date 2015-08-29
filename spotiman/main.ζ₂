@@ -2,6 +2,7 @@
 
 util ← require('util')
 node_spotify ← require('node-spotify')
+async ← require('async')
 
 // todo: use the node audio handler for Fun Stuff
 // todo: rename this file to index.ζ₂
@@ -25,7 +26,7 @@ audio_handler_resume←;
 getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){
-			console.error('[spotiman] logging on ...')
+			console.error('[spotiman] signing in ...')
 			spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
 			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
@@ -33,7 +34,7 @@ getDatabaseoid ← λ(cb){
 			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
-			console.error('[spotiman] polling for loading ...')
+			console.error('[spotiman] loading tracks ...')
 			t ← spotify.playlistContainer.getPlaylists()
 			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
 				t = _(t.filter(is_playlist).map(λ(v){↩ v.getTracks()})).flatten(true)
