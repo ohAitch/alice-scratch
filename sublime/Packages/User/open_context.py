@@ -7,6 +7,7 @@ FIND_URL_REGEX = r'\b((https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(
 IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
 # the github/google search text combo is weird. work on improving that?
+# make use of the fact that urls can't contain newlines
 
 def open(v,app=None,focus=True):
 	print("#OPEN",v)

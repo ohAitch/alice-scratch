@@ -22,8 +22,8 @@ alias 64d='base64 --decode'
 sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
 chrome() { open -a "Google Chrome.app" --args -disable-new-avatar-menu; }
 alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
-alias killcp='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist'
 alias opencp='sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan &'
+alias killcp='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist'
 f() { open "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 x() { [[ $? = 0 ]] && exit; }
 b() { say -v Zarvox "beep"; }
