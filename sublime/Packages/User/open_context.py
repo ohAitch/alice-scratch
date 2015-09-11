@@ -11,6 +11,7 @@ IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
 def open(v,app=None,focus=True):
 	print("#OPEN",v)
+	if v is None and app is "Terminal": v = os.getenv("HOME")
 
 	# replace "\ " in filenames with " "
 	#! should also replace "\\" in filenames with "\"
@@ -18,7 +19,12 @@ def open(v,app=None,focus=True):
 	if fv: v = re.sub(r'\\ ',' ',v)
 
 	if app is "Terminal":
-		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \"cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
+		if os.path.isdir(v):
+			t = "cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear"
+		else:
+			dir,base = os.path.dirname(v), os.path.basename(v)
+			t = "cd "+re.sub(r' ','\\\\\\\\ ',dir)+"; clear; set -- \\\""+base+"\\\"; ({ sleep 0.001; printf \\\"\\\\\\\\b${green}/${purple}"+base+" ${reset}\\\"; } &)"
+		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \""+t+"\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 		return
 	
 	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
@@ -52,8 +58,7 @@ class OpenContextCommand(sublime_plugin.TextCommand):
 				hash = '' if line == 1 else '#L'+str(line)
 				if t: open(t+hash,focus=focus)
 		elif type == "terminal":
-			fl = view.file_name()
-			open(os.getenv("HOME") if fl is None else os.path.dirname(fl),focus=focus,app="Terminal")
+			open(view.file_name(),focus=focus,app="Terminal")
 		elif type == "link":
 			if all([v.empty() for v in view.sel()]):
 				for sel in view.sel():

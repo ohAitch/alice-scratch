@@ -1,5 +1,8 @@
------------------------------------- git ops -----------------------------------
+--------------------------------- image montage --------------------------------
+convert -scale 1124x in out
+montage -mode concatenate -tile x1 in* out
 
+------------------------------------ git ops -----------------------------------
 next time we merge git repos, let us document the steps here
 
 --- convert hg repo to git ---
@@ -50,7 +53,6 @@ t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd
 sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
 
 --------------------------- scrape miri publications ---------------------------
-
 // go to https://intelligence.org/all-publications/
 // copy this into the console
 // results will be in the clipboard
@@ -91,11 +93,6 @@ namegen ← ζ2_gen2fn(λ*(){
 do_it() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=KqsDmZ77kW' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
 
 pdf_to_image() { convert -verbose -density 150 -trim "$1" -quality 100 -sharpen 0x1.0 "${1%.*}.png"; }
-
---------------------------------- image montage --------------------------------
-
-convert -scale 1124x in out
-montage -mode concatenate -tile x1 in* out
 
 -------------- start of playing with http://minesweeperonline.com/ ------------- */
 
@@ -145,6 +142,10 @@ main_loop = setInterval(function(){var t;
 	console.log('dunno what to do'); return
 },0)
 
----------------------- make nice pretty bookmarks listing ----------------------
+-------------------------------- play that game --------------------------------
 
-ζ₂ -e 'copy((λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("~/Library/Application Support/Google/Chrome/Default/Bookmarks").$).roots.bookmark_bar.children))'
+secret ← _.shuffle(fs_('google-10000-english-usa.txt').$.split('\n').map(λ(v){↩ v.toLowerCase()}))[0]
+guess_a ← ''; guess_b ← '';
+all_words_dict ← fs_('/usr/share/dict/words').$.split('\n').map(λ(v){↩ v.toLowerCase()})._.indexBy()
+global.__SPECIAL__ = λ(word){word = word.toLowerCase(); print('\x1b[3A\x1b[0E'); if (!all_words_dict[word]) print('"'+word+'" is not a word'); else if ((guess_a && word <= guess_a) || (guess_b && guess_b <= word)) print('<no progress>'); else if (secret < word) {guess_b = word; print('"'+guess_a+'" < secret < "'+guess_b+'"')} else if (word < secret) {guess_a = word; print('"'+guess_a+'" < secret < "'+guess_b+'"')} else print('you are a winner')}
+console.log('\n'.repeat(30))

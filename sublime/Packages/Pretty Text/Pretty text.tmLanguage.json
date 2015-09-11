@@ -52,5 +52,5 @@
     {"name": "constant.numeric", "match": "[\\d₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰]"},
     {"name": "quiet", "match": "(?!\\b_\\b)_"}
   ],
-  "scopeName": "text.pretty"
+  "scopeName": "source.pretty"
 }

@@ -19,8 +19,9 @@ alias c='pbcopy'
 alias p='pbpaste'
 alias 64e='base64'
 alias 64d='base64 --decode'
-sb() { "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" "$@"; }
-chrome() { open -a "Google Chrome.app" --args -disable-new-avatar-menu; }
+sbf() { open -a "Sublime Text.app" -f; }
+sb() { /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; }
+chrome() { /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
 alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
 alias opencp='sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan &'
 alias killcp='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist'
@@ -49,6 +50,11 @@ vol() { osascript -e "set volume output volume $1"; }
 switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; exr $tmp; rm $tmp; }
 convertpng() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
+alias pwf='echo "$(this)/$1"'
+path_resolve() { pushd . > /dev/null; if [ -d "$1" ]; then cd "$1"; dirs -l +0; else cd "`dirname \"$1\"`"; cur_dir=`dirs -l +0`; if [ "$cur_dir" == "/" ]; then echo "$cur_dir`basename \"$1\"`"; else echo "$cur_dir/`basename \"$1\"`"; fi; fi; popd > /dev/null; }
+bookmarks() { ζ₂ -e 'print((λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children))' | sbf; }
+# async() { ( nohup bash -cl "$*" > ~/nohup.out & ) }
+killsb() { killall Sublime\ Text; sleep 0.2; sb; }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

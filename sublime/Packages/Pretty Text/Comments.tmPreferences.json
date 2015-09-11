@@ -1,6 +1,6 @@
 {
   "name": "Comments",
-  "scope": "text.pretty",
+  "scope": "source.pretty",
   "settings": {
     "shellVariables": [{"name": "TM_COMMENT_START", "value": "# ↩"}]
   }
