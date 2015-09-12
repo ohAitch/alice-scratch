@@ -55,6 +55,7 @@ path_resolve() { pushd . > /dev/null; if [ -d "$1" ]; then cd "$1"; dirs -l +0; 
 bookmarks() { ζ₂ -e 'print((λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children))' | sbf; }
 # async() { ( nohup bash -cl "$*" > ~/nohup.out & ) }
 killsb() { killall Sublime\ Text; sleep 0.2; sb; }
+alias du’=duTICK; duTICK() { ( shopt -s nullglob; du -hd0 .[!.] .??* * .; ) }
 
 #! terrible PATH organization. should really put external things properly external.
 export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place

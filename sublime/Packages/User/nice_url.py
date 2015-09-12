@@ -4,20 +4,21 @@ import re
 
 # todo: understand urls magically like open_context.py does.
 # actually parse the query string
+# symlinks should maybe actually query the folders / and ~ for symlinks and do replacements for all of them
 
 class NiceUrlCommand(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		for reg in view.sel():
 			v = o = view.substr(reg)
-			#
+			
 			v = re.sub(r'^/','file:///',v)
-			if re.match(r'^file:///',v): v = re.sub(r'(?<!\\) ','\\ ',v)
-			# symlinks
+			v = re.sub(r'^~','file:///~',v)
+			
 			v = re.sub(r'^file:///Users/ali/','file:///~/',v)
 			v = re.sub(r'^file:///~/ali/books/papers/','file:///~/papers/',v)
 			v = re.sub(r'^file:///~/ali/books/','file:///~/books/',v)
-			#
+			
 			v = re.sub(r'^https://','http://',v)
 			v = re.sub(r'^http://www\.','http://',v)
 			v = re.sub(r'^http://youtube\.com/watch\?v=([^&]+)&','http://youtu.be/\\1?',v)
@@ -26,6 +27,8 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 			v = re.sub(r'^(http://docs\.google\.com/document/d/[\w_]+)/edit','\\1',v)
 			v = re.sub(r'^http://facebook\.com/(\w+)(?:\?fref=nf)?','http://fb.com/\\1',v)
 			v = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)','http://google.com/mail/#all/\\1',v)
+
+			if re.match(r'^file:///',v): v = re.sub(r'(?<!\\) ','\\ ',v)
 			if v is not o: view.replace(edit, reg, v)
 
 ############ todo ############
@@ -38,3 +41,6 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 
 # http://mail.google.com/mail/u/0/#search/working+with+or+volunteering+for+giv/1471d4aa606b592f
 # http://google.com/mail/#all/1471d4aa606b592f
+
+# https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+# http://goo.gl/0nrUfP
