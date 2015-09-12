@@ -1,0 +1,1 @@
+use the classpath folder from the non-archive grass2 to make the archived versions work

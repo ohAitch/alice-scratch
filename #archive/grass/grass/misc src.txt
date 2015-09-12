@@ -1,0 +1,127 @@
+	//if (queue != null)
+	//{
+	//	while (queue.hasElements())
+	//		queue.pop().run();
+	//	queue = null;
+	//}
+	//private static GLTaskQueue queue;
+	//use: Render.exe(new GLT(){public void run(){  ;  }});
+	//public static void exe(GLT toEnqueue)
+	//{
+	//	//yes, there's a potential synchronization bug here, but it's so unlikely... meh.
+	//	if (queue == null)
+	//		queue = new GLTaskQueue();
+	//	queue.push(toEnqueue);
+	//}
+
+/**A synchronized squirrel-cage style queue for GLT (GLTask) objects. Note that when elements are removed, the squirrel-cage does not shrink.*/
+class GLTaskQueue
+{
+	private GLT[] tasks;
+	private int first = 0, end = 0;
+
+		/**The initial size of the squirrel-cage.*/
+	public GLTaskQueue(int sizeHint)
+		{tasks = new GLT[sizeHint];}
+		/**default sizeHint = 4*/
+	public GLTaskQueue()
+		{this(4);}
+
+	public synchronized void push(GLT toAdd)
+	{
+		if (end == first - 1 || (end == tasks.length - 1 && first == 0))
+		{
+			GLT[] temp = new GLT[tasks.length * 2];
+
+			if (first == 0)
+			{
+				S.ac(tasks, 0, temp, 0, tasks.length);
+				end = tasks.length - 1;
+			}
+			else
+			{
+				S.ac(tasks, 0, temp, 0, end);
+				S.ac(tasks, first, temp, first + tasks.length, tasks.length - first);
+				first += tasks.length;
+			}
+
+			tasks = temp;
+		}
+
+		tasks[end] = toAdd;
+		end++;
+		if (end == tasks.length)
+			end = 0;
+	}
+
+	public synchronized GLT pop()
+	{
+		if (end == first)
+			return null;
+		GLT ret = tasks[first];
+		tasks[first] = null;
+		first++;
+		if (first == tasks.length)
+			first = 0;
+		return ret;
+	}
+
+	public boolean hasElements()
+		{return first != end;}
+
+	//public int size()
+	//	{return end - first < 0? end - first + tasks.length : end - first;}
+}
+
+		/*GL.loadIdentity();
+		GL.translate(0.0f, 0.0f, -12.0f);
+		GL.rotate(xrot, 1.0f, 0.0f, 0.0f);
+		GL.rotate(yrot, 0.0f, 1.0f, 0.0f);
+		GL.rotate(zrot, 0.0f, 0.0f, 1.0f);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tim.address);
+		GL11.glBegin(GL11.GL_QUADS);
+			for (int x = 0; x < 44; x++)
+			for (int y = 0; y < 44; y++)
+			{
+				float fx = x / 44.0f;
+				float fy = y / 44.0f;
+				float b = 1 / 44.0f;
+
+				GL11.glTexCoord2f(fx    , fy    ); GL11.glVertex3f(points[x  ][y  ][0], points[x  ][y  ][1], points[x  ][y  ][2]);
+				GL11.glTexCoord2f(fx    , fy + b); GL11.glVertex3f(points[x  ][y+1][0], points[x  ][y+1][1], points[x  ][y+1][2]);
+				GL11.glTexCoord2f(fx + b, fy + b); GL11.glVertex3f(points[x+1][y+1][0], points[x+1][y+1][1], points[x+1][y+1][2]);
+				GL11.glTexCoord2f(fx + b, fy    ); GL11.glVertex3f(points[x+1][y  ][0], points[x+1][y  ][1], points[x+1][y  ][2]);
+			}
+		GL11.glEnd();//*/
+
+		/*GL11.glBindTexture(GL11.GL_TEXTURE_2D, starTex.address);
+		for (int i = 0; i < star.length; i++)
+		{
+			GL.loadIdentity();								// Reset The Current Modelview Matrix
+			GL.translate(0.0f, 0.0f, zoom);
+			GL.rotate(tilt, 1.0f, 0.0f, 0.0f);				// Tilt The View (Using The Value In 'tilt')
+			GL.rotate(star[i].angle, 0.0f, 1.0f, 0.0f);	// Rotate To The Current Stars Angle
+			GL.translate(star[i].dist, 0.0f, 0.0f);		// Move Forward On The X Plane
+			GL.rotate(-star[i].angle, 0.0f, 1.0f, 0.0f);	// Cancel The Current Stars Angle
+			GL.rotate(-tilt, 1.0f, 0.0f, 0.0f);			// Cancel The Screen Tilt
+			
+			if (twinkle)// Twinkling Stars Enabled
+			{
+				GL11.glColor4ub(star[star.length - i - 1].r, star[star.length - i - 1].g, star[star.length - i -1].b, (byte)0xff);// Assign A Color Using Bytes
+				GL11.glBegin(GL11.GL_QUADS);
+					GL11.glTexCoord2f(0.0f, 0.0f); GL11.glVertex3f(-1.0f,-1.0f, 0.0f);
+					GL11.glTexCoord2f(1.0f, 0.0f); GL11.glVertex3f( 1.0f,-1.0f, 0.0f);
+					GL11.glTexCoord2f(1.0f, 1.0f); GL11.glVertex3f( 1.0f, 1.0f, 0.0f);
+					GL11.glTexCoord2f(0.0f, 1.0f); GL11.glVertex3f(-1.0f, 1.0f, 0.0f);
+				GL11.glEnd();
+			}
+			
+			GL.rotate(spin, 0.0f, 0.0f, 1.0f);// Rotate The Star On The Z Axis
+			GL11.glColor4ub(star[i].r, star[i].g, star[i].b, (byte)0xff);
+			GL11.glBegin(GL11.GL_QUADS);
+				GL11.glTexCoord2f(0.0f, 0.0f); GL11.glVertex3f(-1.0f,-1.0f, 0.0f);
+				GL11.glTexCoord2f(1.0f, 0.0f); GL11.glVertex3f( 1.0f,-1.0f, 0.0f);
+				GL11.glTexCoord2f(1.0f, 1.0f); GL11.glVertex3f( 1.0f, 1.0f, 0.0f);
+				GL11.glTexCoord2f(0.0f, 1.0f); GL11.glVertex3f(-1.0f, 1.0f, 0.0f);
+			GL11.glEnd();
+		}*/

@@ -1,0 +1,34 @@
+(ns penbra.compute
+  (:refer-clojure :exclude [print file-seq])
+  (:use rainboom)
+  (:require [penbra.glsl.operators :as glsl]
+            [penbra.opengl.texture :as tex])
+  (:use [penbra.opengl.core :only (*render-to-screen?*)]
+        [cantor.core :only (rectangle-factors)]))
+
+(defmacro defmap [name & body]
+  `(def ~name (glsl/create-map-template (quote ~body))))
+
+(defmacro defreduce [name & body]
+  `(def ~name (glsl/create-reduce-template (quote ~body))))
+
+(defmacro defpipeline [name & params]
+  `(def ~name (glsl/create-renderer-template (apply hash-map (quote ~params)))))
+
+(defmacro with-pipeline [pipeline args & body]
+  `(~pipeline ~args (fn [] ~@body)))
+
+(defmacro render-to-screen [& body]
+  `(binding [*render-to-screen?* true]
+     ~@body))
+
+(defn wrap
+  ([s] (wrap s 1))
+  ([s tuple-or-dim & params]
+     (let [tuple (if (number? tuple-or-dim)
+                   tuple-or-dim
+                   (/ (len s) (apply * tuple-or-dim)))
+           dim (if-not (number? tuple-or-dim)
+                 tuple-or-dim
+                 (rectangle-factors (/ (len s) tuple)))]
+       (apply tex/wrap (list* s tuple dim params)))))

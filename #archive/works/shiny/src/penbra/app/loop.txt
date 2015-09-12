@@ -1,0 +1,79 @@
+(ns penbra.app.loop
+  (:refer-clojure :exclude [print file-seq])
+  (:use rainboom)
+  (:use [penbra.opengl]
+        [penbra.app.core])
+  (:require [penbra.app.controller :as controller]
+            [penbra.app.window :as window]
+            [penbra.time :as time]))
+
+;;;
+
+;;;
+
+(defn timed-fn
+  "Creates a wrapper function which prepends any arguments with [dt t] in seconds."
+  [clock f]
+  (when f
+    (let [previous (atom @clock)]
+      (fn [& args]
+        (let [now @clock]
+          (try
+           (apply f (list* [(- now @previous) now] args))
+           (finally
+            (reset! previous now))))))))
+
+(defn create-thread
+  "Creates a thread. 'outer-fn' is passed 'inner-fn' as its only argument."
+  [app outer-fn inner-fn]
+  (Thread.
+   #(with-app app
+      (outer-fn inner-fn))))
+
+(defn pauseable-loop
+  [app outer-fn inner-fn]
+  (with-app app
+    (try
+     (outer-fn
+      (fn []
+        (loop []
+          (controller/wait! app)
+          (try
+           (inner-fn)
+           (catch Exception e
+             (.printStackTrace e)
+             (controller/stop! app :exception)))
+          (when-not (controller/stopped? app)
+            (recur)))))
+     (catch Exception e
+       (.printStackTrace e)
+       (controller/stop! app :exception))
+     (finally
+      ))))
+
+(defn pauseable-thread
+  [app outer-fn inner-fn]
+  (create-thread
+   app
+   #(%)
+   #(pauseable-loop app outer-fn inner-fn)))
+
+(defn basic-loop
+  [app outer-fn inner-fn]
+  (with-app app
+    (try
+     (outer-fn
+      (fn []
+        (loop []
+          (try
+           (inner-fn)
+           (catch Exception e
+             (.printStackTrace e)
+             (controller/stop! app :exception)))
+          (when-not (or (controller/paused? app) (controller/stopped? app))
+            (recur)))))
+     (catch Exception e
+       (.printStackTrace e)
+       (controller/stop! app :exception))
+     (finally
+      ))))

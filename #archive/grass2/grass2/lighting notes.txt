@@ -1,0 +1,62 @@
+﻿Per request: This is how the new lighting will work
+
+This could get a bit technical.
+
+Currently, each block has 8 bits of block type, 4 bits of aux data that varies per block type, and 4 bits of lighting data. That means each block can be one of 16 levels of brightness.
+
+When the sky color changes, I lower that value by 1 for each block directly exposed to sunlight, then recalculate the lighting propagation for all affected blocks. After that is done, I rebuild the chunks.
+
+This lighting recalculation is very slow for maps with many half transparent blocks like the leaves, or when there are a lot of torches, and it’s the reason I originally wasn’t going to do day and night lighting. It’s also the cause of the “black hole when digging at sunrise or sunset” bug, since the lighting engine is busy recalculating stuff otherwere.
+
+Now, the new engine will instead have several multiple layers of lighting per block.
+
+Layer 1: Sky color. Always treats the sky as fully lit.
+Layer 2: Block lights.
+
+These two layers gets updated whenever a block in light (in that layer) gets removed or added. Layer 2 also gets updated when adding a light emitting block.
+These updates are local to that change and are quite fast. Note that the only time the change happens in both layers if if you change a block that’s lit by both the sun and a block (torch, fire, lava, and so on). Most of the time, the recalculation only happens in a single layer.
+
+Layer 3: Dynamic light sources.
+
+This could be an implied layer derived from lit entities, or a real calculated layer, depending on how I implement it.
+
+When a chunk gets recalculated, I iterate over all the blocks in the chunk and calculate their brightness as:
+
+tile.brightness = max(layer1-skyDarkness, layer2, layer3)
+
+So when the sky gets darker at night, layer 1 never gets recalculated, but I just offset the values in it when calculating the brightness.
+
+What’s even MORE fun is that I could potentially assign each layer a different color.
+
+tile.redBrightness = max(layer1-skyDarkness, layer2)
+tile.greenBrightness = max(layer1-skyDarkness)
+tile.blueBrightness = max(layer1-skyDarkness, layer3)
+
+Suddenly, all carried light sources are blue, and blocks emit red light, and the sun is white. This would allow for reddish sun light during sunsets and sunrises.
+
+Since blocks updates always happen close to the player first, this will completely stop the black hole bug, and it’d cut the processing time of the light transitions down to almost zero (just changing the value of skyDarkness and marking all chunks as dirty).
+
+
+
+
+
+
+
+
+Finite water will not work on infinite maps, and water has never really behaved predictable and well anyway. I´m instead going to try a model that focuses on making water do what one WANTS it to do, as a player, rather than on trying to make it simulate some kind of blocky physics thingie.
+
+The idea is to make a purely local model, with two types of water: Flowing and Static.
+
+* Static water doesn´t move as long as it´s on top of ground or other water, and will spawn Flowing water next to it on any free tiles.
+
+* Flowing water has a direction, which is visible in the texture, and will push object in it along. Flowing water will never be more than two tiles deep, and will flow towards the nearest lower tile within a small radius (5 blocks?) of its location.
+
+* Flowing water not connected to static water will turn into air.
+
+* Small bodies of static water turn into flowing water if there´s a slope nearby.
+
+There are some quirks with this system, such as small lakes being able to sustain infinite waterfalls and so, but it gives the control of creating and removing lakes firmly in the hands of the player.
+
+Unflooding a cave will be as easy as just closing the hole, and the flowing water will go away.
+
+And since this is a purely local model, it works in infinite, and is MUCH faster than the old system.

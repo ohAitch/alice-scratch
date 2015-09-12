@@ -1,0 +1,183 @@
+runge-kutta 4:
+
+	class Global
+	{
+		public static void integrate(State s, double t, double dt)
+		{
+			Deriv a = eval(s, t, 0, new Deriv());
+			Deriv b = eval(s, t + dt / 2, dt / 2, a);
+			Deriv c = eval(s, t + dt / 2, dt / 2, b);
+			Deriv d = eval(s, t + dt, dt, c);
+
+			double dxdt = (a.dx + (b.dx + c.dx) * 2 + d.dx) / 6;
+			double dvdt = (a.dv + (b.dv + c.dv) * 2 + d.dv) / 6;
+
+			s.x += dxdt * dt;
+			s.v += dvdt * dt;
+		}
+
+		public static Deriv eval(State initial, double t, double dt, Deriv d)
+		{
+			State s = null;
+			s.x = initial.x + d.dx * dt;
+			s.v = initial.v + d.dv * dt;
+			
+			Deriv ret = new Deriv();
+			ret.dx = s.v;
+			ret.dv = accel(s, t + dt);
+			return ret;
+		}
+		
+		public static double accel(State s, double t)
+		{
+			double k = 10, b = 1;
+			return -k * s.x - b * s.v;
+		}
+	}
+
+	class State
+	{
+		public double x; //position
+		public double v; //velocity
+	}
+
+	class Deriv
+	{
+		public double dx; //d(position) = velocity
+		public double dv; //d(velocity) = acceleration
+	}
+
+
+
+
+
+
+/*class Sector
+{
+	public Quad[] list;
+	
+	public Sector(int size)
+		{list = new Quad[size];}
+		
+	public Sector(String filename)
+	{
+		try
+		{
+			BufferedReader br = new BufferedReader(new InputStreamReader(M.class.getResourceAsStream(filename), "UTF-8"));
+				//specifically, the file is expected to be encoded in UTF-8 without a BOM
+
+			for (String line = ""; line != null; line = br.readLine())
+			{
+				if (line.trim().length() == 0 || line.trim().startsWith("//"))
+					continue;
+				if (line.startsWith("NUMPOLLIES"))
+				{
+					list = new Quad[Integer.parseInt(line.substring(line.indexOf("NUMPOLLIES") + "NUMPOLLIES".length() + 1))];
+					for (int i = 0; i < list.length; i++)
+						list[i] = new Quad();
+					break;
+				}
+			}
+
+			outer:
+			for (int i = 0; i < list.length; i++)
+			for (int j = 0; j < list[0].list.length; j++)
+			{
+				String line;
+				while (true)
+				{
+					line = br.readLine();
+					if (line == null)
+						break outer;
+					if (line.trim().length() != 0 && !line.trim().startsWith("//"))
+						break;
+				}
+
+				java.util.StringTokenizer st = new java.util.StringTokenizer(line, " ");
+
+				list[i].list[j] = new Vertex();
+				list[i].list[j].x = Float.valueOf(st.nextToken()).floatValue();
+				list[i].list[j].y = Float.valueOf(st.nextToken()).floatValue();
+				list[i].list[j].z = Float.valueOf(st.nextToken()).floatValue();
+				list[i].list[j].u = Float.valueOf(st.nextToken()).floatValue();
+				list[i].list[j].v = Float.valueOf(st.nextToken()).floatValue();
+			}
+			br.close();
+		}
+		catch (IOException e) {M.catchEx(e, "Could not read " + filename);}
+    }
+}
+
+class Quad
+{
+	public Vertex[] list = new Vertex[S.getRandomNumber()];
+}
+
+class Vertex
+{
+	public float x, y, z;	// 3D Coordinates
+	public float u, v;		// Texture Coordinates
+}*/
+
+		/*GL.loadIdentity();
+		//GL.rotate(lookupdown, 1.0f, 0, 0);// Rotate Up And Down To Look Up And Down
+		GL.rotate(yrot, 0, 1.0f, 0);
+		//GL.translate(-xpos, -walkbias - 0.25f, -zpos);// Translate The Scene Based On Player Position
+		GL.translate(0, -0.5f, 0);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, Texture.get(22).address);
+		for (int i = 0; i < sector1.list.length; i++)
+		{
+			GL11.glBegin(GL11.GL_QUADS);
+				GL11.glNormal3f(0.0f, 0.0f, 1.0f);// Normal Pointing Forward
+				for (int j = 0; j < 4; j++)
+				{
+					float x = sector1.list[i].list[j].x;
+					float y = sector1.list[i].list[j].y;
+					float z = sector1.list[i].list[j].z;
+					float u = sector1.list[i].list[j].u;
+					float v = sector1.list[i].list[j].v;
+					GL11.glTexCoord2f(u, v);
+					GL11.glVertex3f(x, y, z);
+				}
+			GL11.glEnd();
+		}//*/
+
+
+
+		
+		
+/*GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, mesh.vboVertices);
+GL11.glVertexPointer(3, GL11.GL_FLOAT, 0, 0);
+
+GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, mesh.vboTexCoords);
+GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 0, 0);//glColorPointer, 4
+
+ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, indexBufferID);
+GL12.glDrawRangeElements(GL11.GL_TRIANGLES, 0, mesh.vertexCount, indexBufferSize, GL11.GL_UNSIGNED_INT, 0);*/
+
+	// save the initial ModelView matrix before modifying ModelView matrix
+	/*GL.loadIdentity();
+	GL.pushMatrix();
+
+	// enble and specify pointers to vertex arrays
+	GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
+	GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+	GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+    GL11.glNormalPointer(GL11.GL_FLOAT, 0, normalsI);
+    GL11.glColorPointer(3, GL11.GL_FLOAT, 0, colorsI);
+    GL11.glVertexPointer(3, GL11.GL_FLOAT, 0, verticesI);
+
+	GL.pushMatrix();
+	GL.translate(2, 2, 0);                  // move to upper-right
+
+	GL11.glDrawArrays(GL11.GL_QUADS, 0, 24);
+
+	GL.popMatrix();
+
+	GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);  // disable vertex arrays
+	GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+	GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
+
+	GL.popMatrix();*/

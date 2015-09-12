@@ -1,0 +1,14 @@
+32b x 20000^3 fits in 320gb if compressed 100x
+32b x 10000^3 fits in 400gb if compressed 10x
+32b x 5000^3 fits in 500gb
+any x 2000^3 is probably the largest size for which we can compute interesting physics (10^6 ticks)
+32b x 1000^3 fits in 2gb
+32b x 500^3 we should be able to (real-time) render tolerably flowly-like
+32b x 200^3 we should be able to (real-time) compute simple local physics
+32b x 100^3 has the same size as voxatron
+any x 20^3 is probably the largest size for which we can compute really interesting physics (10^12 ticks)
+
+
+
+
+fuzzy voxels + egg-foam^3 gravity-well grid ?? stuff would _try_ to align with standard-voxels and could be represented cheaply when in equilibrium?
