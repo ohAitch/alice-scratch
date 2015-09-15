@@ -11,6 +11,9 @@ and - i - i want to just _pick up_ the damn graph and _splay it out all over the
 (oh hey http://elm-lang.org/blog/compiler-errors-for-humans)
 (oh hey, data visualization)
 (oh hey, http://worrydream.com/KillMath/ is beautiful and I have not become strong enough to generate it yet)
+(when you want more exotic PL ideas: http://www.cs.cmu.edu/~rwh/theses/okasaki.pdf)
+"reviewing hundreds of small high-quality examples is reading the Plan 9 code base. the pieces are small and it's written with clarity in mind"
+try examining the quality of the code in file:///~/papers/BotWorld.pdf
 
 -------------------- for the stated goal, the big things are -------------------
 

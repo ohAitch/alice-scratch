@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
 eval $mydir
 
 rm -r t; mkdir t; mkdir t/1; mkdir t/2; mkdir t/3; mkdir t/bin

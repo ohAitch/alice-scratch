@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
+npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 
 # if versions are equal:
 # global.cmp_versions = λ(cb){
@@ -10,7 +12,7 @@
 # 	}) }
 # then increment patch by 1
 
-[[ $1 ]] || { . ~/.bashrc; npmi; }
+[[ $1 ]] || npmi
 npm publish .
 sleep 0.1
 npm install zeta-two -g

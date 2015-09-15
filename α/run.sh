@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+ex() { chmod -R 755 "$1" &>/dev/null; }
+export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
 eval $mydir
 
 rm bin/*
 mkdir bin
 load/load.js load.α bin/load.js
-chmod -R 755 bin &>/dev/null
+ex bin
 bin/load.js test.α bin/test.js
 #bin/load.js load.α bin/load2.js
 #bin/load2.js load.α bin/load3.js
