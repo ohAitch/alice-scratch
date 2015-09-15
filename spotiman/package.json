@@ -1,8 +1,6 @@
 {
   "dependencies": {
-    "async": "^1.4.2",
     "node-spotify": "0.7.0",
-    "wav": "^0.1.2",
     "zeta-two": "^0.5.35"
   }
 }

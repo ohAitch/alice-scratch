@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name        augment search
+// @name        remember
 // @namespace   comely-naiad
 // @version     1.0.2
-// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/augment_search.user.js
+// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/remember.user.js
 // @match       https://*.google.com/*
 // @require     https://code.jquery.com/jquery-latest.js
 // @require     file:///~/ali/scratch/remember.txt.js

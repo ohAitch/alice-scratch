@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name        asoftmurmur
+// @name        compact: asoftmurmur
 // @namespace   comely-naiad
 // @version     1.0.0
-// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/asoftmurmur.user.js
+// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/compact_asoftmurmur.user.js
 // @match       http*://*.asoftmurmur.com/*
 // @grant       none
 // ==/UserScript==

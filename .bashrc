@@ -9,10 +9,6 @@ HISTFILESIZE=2000
 export PATH="./node_modules/.bin:/usr/local/bin:$PATH:."
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages" # what
 
-# local
-exp() { a=$(stat -f "%p" "$1"); chmod a+x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod a+x \"$1\"$reset"; }
-exr() { chmod a+x "$1"; "$@"; }
-
 alias 64e='base64'
 alias 64d='base64 -D'
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
@@ -28,15 +24,16 @@ x() { [[ $? = 0 ]] && exit; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 rmds() { rm -f ~/.DS_STORE ~/Desktop/.DS_STORE ~/ali/**/.DS_STORE; }
 jz() { p | jsζ₂ | p; x; }
-ζr() { ζ₂ -c "$1" .; exr "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
+ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
-switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
-dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; exr $tmp; rm $tmp; }
-convertpng() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
+dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod a+x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
 path_resolve() { pushd . > /dev/null; if [ -d "$1" ]; then cd "$1"; dirs -l +0; else cd "`dirname \"$1\"`"; cur_dir=`dirs -l +0`; if [ "$cur_dir" == "/" ]; then echo "$cur_dir`basename \"$1\"`"; else echo "$cur_dir/`basename \"$1\"`"; fi; fi; popd > /dev/null; }
-bookmarks() { ζ₂ -e 'print((λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children))' | sb; }
+bookmarks() { ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb; }
 alias du’=duTICK; duTICK() { ( shopt -s nullglob; du -hd0 .[!.] .??* * .; ) }
+im_to_png() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
+im_scale() { convert -scale "$1" "$2" "$2"; }
+im_montage() { [[ $1 = 1x || $1 = x1 ]] || { echo bad tile mode '"'$1'"'; return 1; }; montage -mode concatenate -tile "$@"; }
 
 export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
@@ -58,6 +55,7 @@ cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
 PROMPT_COMMAND='update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
 __rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }
 __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
+exp() { a=$(stat -f "%p" "$1"); chmod a+x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod a+x \"$1\"$reset"; }
 
 # export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place
 # export PATH="$PATH:$(echo ~/go/bin):$(echo ~/Library/Haskell/bin):/Applications/Racket v6.1.1/bin"
@@ -81,10 +79,21 @@ __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 # unmute() { osascript -e "set volume output muted false"; }
 # vol() { osascript -e "set volume output volume $1"; }
 # async() { ( nohup bash -cl "$*" > ~/nohup.out & ) }
-# export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
-# export mydir='t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")"'
+# export cd_mydir='cd $(dirname "${BASH_SOURCE[0]}")'
+# t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")" # cd directory of this file
+# export mydir='t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; DIR="$(cd -P "$( dirname "$t")" && pwd)"'
 # pause() { read -p 'Press [Enter] to continue . . .'; }
+# switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
 
 # # Add an "alert" alias for long running commands.  Use like so:
 # #   sleep 10; alert
 # alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+# # here's a way to easily modify your macros key:
+# { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
+# # How to make the tagtime daemon automatically start on bootup in OSX:
+# sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
+
+# not
+# for t in $(find . -type f); do echo $t; done
+# instead
+# find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done
