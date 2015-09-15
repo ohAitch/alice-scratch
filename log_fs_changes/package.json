@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "chokidar": "^1.0.5",
+    "zeta-two": "^0.5.35"
+  }
+}
