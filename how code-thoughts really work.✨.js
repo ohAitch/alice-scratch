@@ -543,7 +543,7 @@ mv ./etc/sudoers{,.bak}
 
 	CLI: <root>
 		within root:
-		watch files ∈ (. - ./.history/) *:
+		watch files ∈ (. - ./.history/):
 			log (event, now, file) tabularly
 			(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
 
@@ -564,7 +564,7 @@ mv ./etc/sudoers{,.bak}
 	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
 
 // ---------------------------------- dance --------------------------------- //
-	// "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
+	// "sure" is a 183-line toy from late 2013. This is a sequel, not a direct translation. In the style of the original, this would be >> 183 lines.
 
 	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
 		the first nodes each have a slot for an agent
@@ -578,20 +578,20 @@ mv ./etc/sudoers{,.bak}
 	each tick, each agent may choose an action to attempt
 		send X soul or fire to adjacent node
 		send X soul from adjacent node with well to own node
-		send new agent with X soul and code φ to adjacent node with an agent-slot
-	it`s first given a description of its node and adjacent nodes, plus any adjacent nodes with wells
-	if it chooses an action costing more than its soul, nothing happens
+		send a new agent with X soul and code φ to adjacent node with an agent-slot
+	impl: its code is called on a description of its node plus adjacent nodes plus nodes below those (represented as a graph with its node as the root). it should return an action to be created. (if the action`s cost > the agent`s soul, the action is not created)
 
-	each tick, soul in a node with no agents sends itself at the cost of itself to the node below
+	each tick, soul in a node with no agents and a node below it sends itself at the cost of itself to the node below
 
-	all actions happen simultaneously: first, they move to their destinations, then each node resolves the actions it received
+	all actions happen simultaneously: after everything else has happened, each node resolves the actions directed towards it
 
 		fire is negative soul.
 		soul and soul the same cell immediately combine. if the soul is not directed towards a particular agent, it combines with all agents in the cell in proportion to their existing amounts of soul
 
 		any agent with zero soul is immediately removed
 
-		agents in the same node fight. they`re given a description of the node and may choose to send fire to each agent in the node.
+		agents in the same node fight. their code is called on a description of the node and it should return an action to be created
+			it may also send X fire to a particular agent in the node
 			all¹ agents that send no fire send all of their soul to the node
 				[1] if no agent sends fire, all except the agent with the most soul
 		this iterates until there are no longer multiple agents in the same node
@@ -601,30 +601,27 @@ mv ./etc/sudoers{,.bak}
 	sending a new agent with X soul and code φ costs X + 0.1 soul
 	sending X soul from adjacent node to own node costs 0.1 soul
 
-	the code is a javascript function(situation, info).
+	the code is a method agent.code(node).
 
-	let well_code_gen = λ():
-		θ ← λ(situation, node):
-			if situation ≠ 'tick': ↩ null
+	let well_code_gen() =
+		λ(node):
+			the node has agents other than me ->
+				do nothing
+			the adjacent nodes with agents with code ≠ mine have total soul < the amount of fire half my soul would buy ->
+				send enough fire to the one with most soul to reduce it to zero soul
+			the node below me has >10 soul or (>30% of my soul and >1 soul) ->
+				send all soul from it to my node
+			my soul < 0.1 ->
+				do nothing
+			a node below an empty adjacent node has >10 soul ->
+				send a new agent with half of my soul and the same code as me to such a node with the most soul
 
-			θsoul ← node.agent.soul
-			if (t ← node.adjacent * .agent - null - (.code.name == θ.name))≠[] && t*.soul/+ < cost_fire⁻¹(θsoul/2):
-				↩ 'send '+(t ← t max .soul)+' fire '+node.dir(t)
-			if node.down.well.soul > min(max(1, θsoul*0.3), 10):
-				↩ 'send '+node.down.well.soul+' from down up'
-			if θsoul < 0.1: ↩ null
-			if (t ← node.adjacent - .agent max .down.well.soul).down.well.soul > 10
-				↩ 'send a new agent with '+(θsoul/2)+' soul and code '+Buffer(JSON.stringify(_(_.clone(θ)).extend({λ:θ+''}))).toString('base64')+' '+node.dir(t)
-		
-		θ.name = rand()+''
-		// (t←_.range(5)*rand) * (% t/+)
-		θ
-
-	can i have a grid and controls for running the ticks? as a static javascript app, in a browser tab. i want the grid to be the biggest size that fits in the given window with the given display method.
+	create a grid and controls for running ticks on it. (as a static js app, in a browser tab, with no scrolling)
+		let the grid be the largest that visually fits in the window
 	display the top grid nodes as 12×12px squares
-	if empty, a solid square of the soul-color of the well in the node below it
-	else, the empty version plus a centered 9×9px square of the agent`s soul-color, plus 2 ascii chars to represent the agent`s code
-	on mouseover grid square, display its node`s contents in an html tooltip
+		if empty, a solid square of the soul-color of the well in the node below it
+		else, the empty version plus a centered 9×9px square of the agent`s soul-color, plus 2 ascii chars to represent the agent`s code
+	on mouseover grid square, display its node`s contents in detail in an html tooltip
 
 	soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
 
@@ -860,8 +857,6 @@ implicit reference, often to the previous clause or value, sometimes to the most
 	a well with soul ≥ 100
 	a well ⟨...⟩ its soul
 	split on '\n\n', /*it*/ * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
-on $event, do $stuff
-	on /*top-level global*/ error, also: ⟨code⟩
 print $things
 	print 5, 'foo'
 	print 'ERROR' sans newline
@@ -877,8 +872,6 @@ a filename
 	read auth from ./arc/fb_auth.json
 $filename without extension
 	write @file as plist to file without extension
-⋈implicitly⋈ view file as type
-	read auth from ./arc/fb_auth.json. ⟨...⟩. auth.id
 ⋈stuff⋈ where the machine will have to independently choose sensible places to force evaluation / do reduction / have strictness points (maybe by asking for help)
 ⋈stuff⋈ where the output of a computation has some parts that the machine will have to arbitrarily choose
 	write /*it::seq*/ to distinct .sublime-snippet files in same dir as file
@@ -892,6 +885,7 @@ get $value and put it in the slot $name
 	out ← ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
 things which need later things to make sense (“unordered declaration”)
 	(x * 5 where x = 8) = (let x = 8. x * 5) = 40
+	the action of sending an agent with code well_code_gen() to the node above it // "action" and "agent" and "code" haven't been defined yet
 lazy `and` `or` and in both directions
 	read auth from ./arc/fb_auth.json   or error
 	error unless <condition>
@@ -905,7 +899,13 @@ a CLI // implicitly with all the nice things, e.g. --version and --help
 			⟨...⟩
 		get-name <token>
 			⟨...⟩
-⋈?⋈ javascript-y function calls, property accessors, primitive&object&array literals, operators + ?: = , common verbs
+⋈something already written in javascript⋈
+	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
+call $function
+	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
+get $property of $object
+	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
+a primitive. an array. an object. +. ?:. =. error. now. touch. lines. delete. split.
 	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
 	(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
 	{a:5, b:9}
@@ -921,22 +921,22 @@ a CLI // implicitly with all the nice things, e.g. --version and --help
 	split /*it*/ on '\n\n'
 literal xml
 	a ← 5. b ← 2. (xml <foo>a <bar baz="$a"></> $(b + 7)</>) as str = '<foo>a<bar baz="5"></bar>9</foo>'
-javascript callback function calls as sequential
+call this external callback-using function with sequential/blocking syntax
 	fb.api('/me', {access_token: token})
 	print .name sans newline
 	// fb.api('/me', {access_token: token}, λ(it){
 	// 	print .name sans newline })
-build a string like this
+build a string like $this
 	auth.id+'|'+auth.secret
 	in+'.json'
 	"./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
 set the current working directory
 	within root: //! unsure how this manages to figure out i intend to set the current working directory!
-the contents of this file ("unboxing"?)
+the contents of this file (“unboxing”?)
 	write @file as plist to file without extension
 does $object have these key/values?
 	.data match {is_valid: true, app_id: auth.id, user_id:}
-does $string match regex?
+does $string look like this? *and* does $string match regex?
 	≈/\.json$/ -> write @file as plist to file without extension
 view $it as $type
 	it as lines
@@ -950,132 +950,115 @@ convert $it to $type
 /*view $it as*/ lines
 	'a\nb\nc'. lines[0] as str = 'a'
 	'a\nb\nc'. lines[1:] as str = 'b\nc'
-
-⋈ I-want-to-say transformation ongoing ⋈
-
-	watch files ∈ (. - ./.history/) *:
-
-	for files ∈ in *:
-		≈/\.snippet-magic$/ -> λ(file). write to distinct .sublime-snippet files in same dir as file
-			where λ = split on '\n\n', * xml <snippet> <content>$(lines[1:])</> <tabTrigger>$(lines[0])</> </>
-		else -> write @file to file
-	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
-
-
-⋈some⋈ conditions about what the entire program did
+⋈implicitly⋈ view file as type
+	read auth from ./arc/fb_auth.json. ⟨...⟩. auth.id
+has this program done $thing in the course of its current execution?
 	we wrote to it earlier
-⋈some⋈ filesystem selectors that aren`t jquery
-	within in and ≈/Package Control\./
-filesystem selectors
-	files ∈ (. - ./.history/)
-	files ∈ *
-filter filesystem selector by name of variable that we`re defining as an element of it (e.g. file,dir,path)
-	files ∈ (. - ./.history/)
-watch files in a filesystem selector. this is an event with a callback. it probably uses implicit vars like event,path,file
+all files (not dirs) which are self&descendants of $path except self&descendants of $path
 	watch files ∈ (. - ./.history/):
-loop over files in a filesystem selector
+all files (not dirs) which are self&descendants of the cwd
+	for files ∈ *:
+loop through this list
 	for files ∈ in *:
 	for paths ∈ (in > *):
-// ------------ define custom data structure types declaratively ------------ //
-	// -------- define custom graph data structure types declaratively -------- //
-		define a type and simultaneously define the naming schema for nodes
-			define: rectangular grid of nodes
-		define adjacency
-			define: rectangular grid of nodes w/ adjacency north/east/west/south // implicit-refers to a previous clause
-		define new nodes and adjacency simultaneously
-			define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it // implicit-refers to a previous clause
-		add attributes to graph nodes
-			define: ⟨...⟩
-				the first nodes each have a slot for an agent // implicit-refers to a previous clause
-				the second nodes each have a well of “soul” (numeric) // implicit-refers to a previous clause
-	explicit-refer to the textual ordering in a previous clause
-		define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
-			the first nodes ⟨...⟩
-			the second nodes ⟨...⟩
-	english textual declarative map
-		the first nodes each have a slot for an agent
-		the second nodes each have a well of “soul” (numeric)
-	declare a typed attribute with no name other than the type
-		the first nodes each have a slot for an agent
-	declare a named, typed attribute with a fuzzy-english name
-		the second nodes each have a well of “soul” (numeric)
-implicitly talk about a physics of ticks
+does $file look like this?
+	within in and ≈/Package Control\./
+on $event, do $stuff
+	on /*top-level global*/ error, also: ⟨code⟩
+on $condition, do $stuff
+	watch files ∈ (. - ./.history/):
+	/*in context of a physics of ticks*/ a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
+	/*condition is "a tick"*/ each tick, each agent may choose an action to attempt
+	/*condition is "a tick"*/ wells regenerate at 0.01/tick
+on each $discretetimeunit let $value_with+ be increased by $amount
 	wells regenerate at 0.01/tick
-concept: regenerate
-	wells regenerate at 0.01/tick
-rates
-	0.01/tick
-set event on condition, implicitly in a physics of ticks
-	a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
-use types that haven`t been defined yet
+watch this list of files for changes (creates an event and a subscription)
+	watch files ∈ (. - ./.history/):
+		log (event, now, file) tabularly
+define a (graph) (data structure) type and simultaneously define the naming schema for nodes
+	define: rectangular grid of nodes
+define a (record) (data structure) type
+	an agent has a container of soul and a code that is executed to return the chosen action
+define a (union of records) (data structure) type
+	each tick, each agent may choose an action to attempt
+		send X soul or fire to adjacent node
+		send X soul from adjacent node with well to own node
+		send a new agent with X soul and code φ to adjacent node with an agent-slot
+extend a (graph) (data structure) type with new adjacencys
+	define: rectangular grid of nodes w/ adjacency north/east/west/south // implicit-refers to a previous clause
+extend a (graph) (data structure) type with new nodes and new adjacencys simultaneously
+	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it // implicit-refers to a previous clause
+extend (the nodes of) a (graph) (data structure) type with attributes
+	define: ⟨...⟩
+		the first nodes each have a slot for an agent // implicit-refers to a previous clause
+		the second nodes each have a well of “soul” (numeric) // implicit-refers to a previous clause
+⋈something⋈ which refers to a previously defined thing by using the ordering of definition in the text
+	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
+		the first nodes ⟨...⟩
+		the second nodes ⟨...⟩
+extend each of $these with $this (“englishy declarative map”?)
+	the first nodes each have a slot for an agent
+	the second nodes each have a well of “soul” (numeric)
+extend $this type with a typed property (without any name)
+	the first nodes each have a slot for an agent
+extend $this type with a typed, named property with english $alias
+	the second nodes each have a well of “soul” (numeric)
+$type spends all its $property on creating a ⋈type which has some mechanics that haven`t been defined yet⋈
+	/*it*/ spend/*s*/ all its soul on the action of sending an agent with code well_code_gen() to the node above it
+construct an instance of $type with $values
 	the action of sending an agent with code well_code_gen() to the node above it
 
-/*it*/ spend/*s*/ all its soul on the action of sending an agent with code well_code_gen() to the node above it
+⋈ ⋈ ⋈
 
-// // ---------------------------------- dance --------------------------------- //
-// // "sure" is a 183-line toy I made in late 2013. This is a sequel, not a direct translation. I expect writing this in the style of the original would take rather more than 183 lines.
+	each tick, each agent may choose an action to attempt
+		send X soul or fire to adjacent node
+		send X soul from adjacent node with well to own node
+		send a new agent with X soul and code φ to adjacent node with an agent-slot
+	impl: its code is called on a description of its node plus adjacent nodes plus nodes below those (represented as a graph with its node as the root). it should return an action to be created. (if the action`s cost > the agent`s soul, the action is not created)
 
-// define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
-// 	the first nodes each have a slot for an agent
-// 	the second nodes each have a well of “soul” (numeric)
+	each tick, soul in a node with no agents and a node below it sends itself at the cost of itself to the node below
 
-// wells regenerate at 0.01/tick
-// a well with soul ≥ 100 will spend all its soul on the action of sending an agent with code well_code_gen() to the node above it
+	all actions happen simultaneously: after everything else has happened, each node resolves the actions directed towards it
 
-an agent has a container of soul and a code that is executed to return the chosen action
+		fire is negative soul.
+		soul and soul the same cell immediately combine. if the soul is not directed towards a particular agent, it combines with all agents in the cell in proportion to their existing amounts of soul
 
-each tick, each agent may choose an action to attempt
-	send X soul or fire to adjacent node
-	send X soul from adjacent node with well to own node
-	send new agent with X soul and code φ to adjacent node with an agent-slot
-it`s first given a description of its node and adjacent nodes, plus any adjacent nodes with wells
-if it chooses an action costing more than its soul, nothing happens
+		any agent with zero soul is immediately removed
 
-each tick, soul in a node with no agents sends itself at the cost of itself to the node below
+		agents in the same node fight. their code is called on a description of the node and it should return an action to be created
+			it may also send X fire to a particular agent in the node
+			all¹ agents that send no fire send all of their soul to the node
+				[1] if no agent sends fire, all except the agent with the most soul
+		this iterates until there are no longer multiple agents in the same node
 
-all actions happen simultaneously: first, they move to their destinations, then each node resolves the actions it received
+	sending X fire costs ⌈ X*1.1 ⌉ soul, + 0.05 if it`s to another node
+	sending X soul costs X soul, + 0.05 if it`s to another node
+	sending a new agent with X soul and code φ costs X + 0.1 soul
+	sending X soul from adjacent node to own node costs 0.1 soul
 
-	fire is negative soul.
-	soul and soul the same cell immediately combine. if the soul is not directed towards a particular agent, it combines with all agents in the cell in proportion to their existing amounts of soul
+	the code is a method agent.code(node).
 
-	any agent with zero soul is immediately removed
+	let well_code_gen() =
+		λ(node):
+			the node has agents other than me ->
+				do nothing
+			the adjacent nodes with agents with code ≠ mine have total soul < the amount of fire half my soul would buy ->
+				send enough fire to the one with most soul to reduce it to zero soul
+			the node below me has >10 soul or (>30% of my soul and >1 soul) ->
+				send all soul from it to my node
+			my soul < 0.1 ->
+				do nothing
+			a node below an empty adjacent node has >10 soul ->
+				send a new agent with half of my soul and the same code as me to such a node with the most soul
 
-	agents in the same node fight. they`re given a description of the node and may choose to send fire to each agent in the node.
-		all¹ agents that send no fire send all of their soul to the node
-			[1] if no agent sends fire, all except the agent with the most soul
-	this iterates until there are no longer multiple agents in the same node
+	create a grid and controls for running ticks on it. (as a static js app, in a browser tab, with no scrolling)
+		let the grid be the largest that visually fits in the window
+	display the top grid nodes as 12×12px squares
+		if empty, a solid square of the soul-color of the well in the node below it
+		else, the empty version plus a centered 9×9px square of the agent`s soul-color, plus 2 ascii chars to represent the agent`s code
+	on mouseover grid square, display its node`s contents in detail in an html tooltip
 
-sending X fire costs ⌈ X*1.1 ⌉ soul, + 0.05 if it`s to another node
-sending X soul costs X soul, + 0.05 if it`s to another node
-sending a new agent with X soul and code φ costs X + 0.1 soul
-sending X soul from adjacent node to own node costs 0.1 soul
-
-the code is a javascript function(situation, info).
-
-let well_code_gen = λ():
-	θ ← λ(situation, node):
-		if situation ≠ 'tick': ↩ null
-
-		θsoul ← node.agent.soul
-		if (t ← node.adjacent * .agent - null - (.code.name == θ.name))≠[] && t*.soul/+ < cost_fire⁻¹(θsoul/2):
-			↩ 'send '+(t ← t max .soul)+' fire '+node.dir(t)
-		if node.down.well.soul > min(max(1, θsoul*0.3), 10):
-			↩ 'send '+node.down.well.soul+' from down up'
-		if θsoul < 0.1: ↩ null
-		if (t ← node.adjacent - .agent max .down.well.soul).down.well.soul > 10
-			↩ 'send a new agent with '+(θsoul/2)+' soul and code '+Buffer(JSON.stringify(_(_.clone(θ)).extend({λ:θ+''}))).toString('base64')+' '+node.dir(t)
-	
-	θ.name = rand()+''
-	// (t←_.range(5)*rand) * (% t/+)
-	θ
-
-can i have a grid and controls for running the ticks? as a static javascript app, in a browser tab. i want the grid to be the biggest size that fits in the given window with the given display method.
-display the top grid nodes as 12×12px squares
-if empty, a solid square of the soul-color of the well in the node below it
-else, the empty version plus a centered 9×9px square of the agent`s soul-color, plus 2 ascii chars to represent the agent`s code
-on mouseover grid square, display its node`s contents in an html tooltip
-
-soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
+	soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
 
 // --------------------------------- weather -------------------------------- //
 
