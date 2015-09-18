@@ -1,8 +1,26 @@
 require("./index").__ζ2_extend__(global)
 argv ← process.argv.slice(2)
 
+pipe_in_out ← λ(f){
+	read_all ← λ(θ/*Readable*/,cb){t ← []; θ.resume(); θ.setEncoding('utf8'); θ.on('data',λ(v){t.push(v)}); θ.on('end',λ(){cb(null,t.join(''))})}
+	read_all(process.stdin, λ(e,v){process.stdout.write(f(v))}) }
+
+ζ2_compile_file ← λ(v){
+	t ← v.match(/^(#!.*\n)?([\s\S]*)$/)
+	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
+		'require("zeta-two").__ζ2_extend__(global);'+
+		ζ2_compile(t[2]) }
+ζ2_compile_inverse ← λ(v){
+	↩ v.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g,
+		λ(v,name,s,eq){switch(v){
+			case 'function': ↩ 'λ'
+			case 'return': ↩ '↩'
+			case 'this': ↩ '@'
+			default: ↩ eq==='='? name+s+'←' : name+s+'←;'
+		}}) }
+
 if (argv.length === 0) {
-	ζ2_repl_start()
+		ζ2_repl_start()
 } else switch (argv[0]) {
 	default:
 		// this is lame.
@@ -17,8 +35,7 @@ if (argv.length === 0) {
 			if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
 			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fl.$)
 			})
-	break; case '-e':
-		t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
+	break; case '-e': t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
 	break; case '--es':
 		JSON.parse(argv[1]).map(λ(v){
 			0,λ __special_es__u7h7zxgvi__(){
@@ -27,6 +44,7 @@ if (argv.length === 0) {
 			}()
 			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
-	break; case '--version':
-		print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '--version': print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '--ζj': pipe_in_out(ζ2_compile)
+	break; case '--jζ': pipe_in_out(ζ2_compile_inverse)
 }

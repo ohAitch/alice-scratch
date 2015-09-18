@@ -15,10 +15,6 @@ var ζ2_compile = function(v){
 			default: return semi===';'? 'var '+name+s+';' : 'var '+name+s+'='
 			}})
 		.replace(/([^'"])@(?!-)/g,'$1this')}
-var ζ2_compile_file = function(v){var shebang
-	v = v.replace(/^(#!.*\n)?/,function(v){shebang = v; return ''})
-	shebang = shebang.replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')
-	return shebang+'require("zeta-two").__ζ2_extend__(global);'+ζ2_compile(v) }
 
 var requireζ2 = function(name,path){
 	try {return require(name)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e
@@ -27,6 +23,5 @@ var requireζ2 = function(name,path){
 
 var exports = module.exports = requireζ2('./builtins',__dirname+'/builtins')
 exports.ζ2_compile = ζ2_compile
-exports.ζ2_compile_file = ζ2_compile_file
 
 if (!module.parent) requireζ2('./indexζ',__dirname+'/indexζ')
