@@ -23,7 +23,6 @@ alias l='ls -AG'
 x() { [[ $? = 0 ]] && exit; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 rmds() { rm -f ~/.DS_STORE ~/Desktop/.DS_STORE ~/ali/**/.DS_STORE; }
-jz() { p | jsζ₂ | p; x; }
 ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod a+x $tmp; $tmp; rm $tmp; }

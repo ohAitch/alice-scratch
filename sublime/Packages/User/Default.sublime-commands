@@ -1,3 +1,11 @@
 [
-  {"caption": "#⋈ nice url", "command": "nice_url"}
+  {"caption": "niceify url #⋈", "command": "nice_url"},
+  {"caption": "zeta → js #⋈", "command": "inline_compile_zeta_js"},
+  {"caption": "js → zeta #⋈", "command": "inline_compile_js_zeta"},
+  {"caption": "eval(ζ₂) #⋈", "command": "inline_eval_zeta"},
+  {"caption": "make divider (short) #⋈", "command": "make_divider", "args": {"length": 30}},
+  {"caption": "make divider (long) #⋈", "command": "make_divider", "args": {"length": 80}},
+  {"caption": "open link #⋈", "command": "open_context", "args": {"type": "link"}},
+  {"caption": "open google search #⋈", "command": "open_context", "args": {"type": "browser"}},
+  {"caption": "open terminal #⋈", "command": "open_context", "args": {"type": "terminal"}}
 ]

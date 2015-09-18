@@ -1,3 +1,4 @@
+"""
 import sublime, sublime_plugin
 import threading
 import http.server
@@ -30,3 +31,4 @@ class Listener(sublime_plugin.EventListener):
 
 class ExecEditCommand(sublime_plugin.TextCommand):
 	def run(self,edit,v): view = self.view; exec(v)
+"""

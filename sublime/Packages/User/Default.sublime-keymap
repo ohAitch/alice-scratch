@@ -24,7 +24,7 @@
 
 	{ "keys": ["super+;"], "command": "open_context", "args": {"type": "terminal"}},
 	{ "keys": ["super+shift+;"], "command": "open_context", "args": {"type": "browser"}},
-	{ "keys": ["ctrl+super+;"], "command": "open_context", "args": {"type": "terminal", "focus": false}},
+	// { "keys": ["ctrl+super+;"], "command": "open_context", "args": {"type": "terminal", "focus": false}},
 	{ "keys": ["ctrl+super+shift+;"], "command": "open_context", "args": {"type": "browser", "focus": false}},
 
 	{ "keys": ["super+shift+minus"], "command": "make_divider", "args": {"length": 30}},
