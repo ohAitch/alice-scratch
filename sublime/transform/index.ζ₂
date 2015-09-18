@@ -71,11 +71,11 @@ main ← λ(){
 				})
 		: (fs(arg.out+'/'+R(v)).$ = fs(arg.in+'/'+v).$)
 		})
-	roots ← fs(arg.in).find('>')
-	out ← fs(arg.out).find('*').filter(λ(v){↩ roots.some(λ(r){↩ v.indexOf(r) === 0})}).filter(λ(v){↩ !fs(arg.out+'/'+v).dir()})
-	_.difference(out,written)
-		.filter(λ(v){ ↩ !/Package Control\./.test(v) })
-		.map(λ(v){ fs(arg.out+'/'+v).unlink() })
+	roots ← fs(arg.in).find('>').map(λ(v){↩ v.replace(arg.in,arg.out)})
+	out ← fs(arg.out).find('*').filter(λ(v){↩ roots.some(λ(r){↩ v.indexOf(r) === 0})}).filter(λ(v){↩ !fs(v).dir()})
+	_.difference(out,written.map(λ(v){↩ v.replace(arg.in,arg.out)}))
+		.filter(λ(v){ ↩ !/Package Control\./.test(v.replace(arg.out,'')) })
+		.map(λ(v){ fs(v).unlink() })
 	}
 
 switch (arg.cmd) {
