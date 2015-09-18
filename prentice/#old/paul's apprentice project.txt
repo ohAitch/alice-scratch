@@ -1,0 +1,10 @@
+https://medium.com/ai-control/implementing-our-considered-judgment-6c715a239b3e 
+	This tries to define an OK optimization target for a very sophisticated predictor (very superhuman). This protocol obviously won't be useful
+https://medium.com/ai-control/safe-automated-assistants-aa69edd46a57
+	This provides some indication of how the approach might be scaled down to merely human-level predictors, and also is a bit less dry (but also much sloppier).
+https://medium.com/ai-control/steps-towards-safe-ai-from-episodic-rl-ffb4b6a80363
+https://medium.com/ai-control/handling-errors-with-arguments-1f34a04ccbff
+	Moving towards protocols that might work with human or sub-human level reinforcement learners. The second post is a very technical patch to the first, and probably won't make much sense on its own.
+https://medium.com/ai-control/counterfactual-human-in-the-loop-a7822e36f399
+https://medium.com/ai-control/model-free-decisions-6e6609f5d99e
+	Not technically relevant but may be more helpful in developing a feeling for where I am coming from
