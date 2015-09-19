@@ -23,16 +23,16 @@ def open(v,app=None,focus=True):
 			t = "cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear"
 		else:
 			dir,base = os.path.dirname(v), os.path.basename(v)
-			t = "cd "+re.sub(r' ','\\\\\\\\ ',dir)+"; clear; set -- \\\""+base+"\\\"; ({ sleep 0.001; printf \\\"\\\\\\\\b${green}/${purple}"+base+" ${reset}\\\"; } &)"
+			t = "cd "+re.sub(r' ','\\\\\\\\ ',dir)+"; clear; set -- \\\""+base+"\\\"; ({ sleep 0.01; printf \\\"\\\\\\\\b${green}/${purple}"+base+" ${reset}\\\"; } &)"
 		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \""+t+"\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
-		return
+	else:
+		subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 	
-	subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
-	
-	# predict when path finder got used
-	fv = re.match(r'^file://(.*)',v)
-	if not app and fv and os.path.isdir(fv.group(1)):
-		app = "Path Finder"
+	if app is None:
+		# predict when path finder got used
+		fv = re.match(r'^file://(.*)',v)
+		if fv and os.path.isdir(fv.group(1)):
+			app = "Path Finder"
 
 	if app is "Path Finder": os.system("osascript -e 'tell application \""+"Path Finder"+"\" to activate'")
 

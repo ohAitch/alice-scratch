@@ -15,15 +15,13 @@ date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
 p() { if [ -t 0 ]; then pbpaste; else pbcopy; fi; }
 sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; else open -a "Sublime Text.app" -f; fi; }
-chrome() { /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
 opencp() { sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
 killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
-alias l='ls -AG'
 x() { [[ $? = 0 ]] && exit; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 rmds() { rm -f ~/.DS_STORE ~/Desktop/.DS_STORE ~/ali/**/.DS_STORE; }
-ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
+ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod a+x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
@@ -34,7 +32,10 @@ im_to_png() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
 im_scale() { convert -scale "$1" "$2" "$2"; }
 im_montage() { [[ $1 = 1x || $1 = x1 ]] || { echo bad tile mode '"'$1'"'; return 1; }; montage -mode concatenate -tile "$@"; }
 
-export PS1='\[$([[ $? -eq 0 ]] && echo $green || echo $red)\]$(this) \[$reset\]'
+chrome() { /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
+alias l='ls -AG'
+
+export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 command_not_found_handle() {
 	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
@@ -51,7 +52,7 @@ command_not_found_handle() {
 	break; done
 	}
 cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
-PROMPT_COMMAND='update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
+PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
 __rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }
 __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 exp() { a=$(stat -f "%p" "$1"); chmod a+x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod a+x \"$1\"$reset"; }
@@ -79,8 +80,7 @@ exp() { a=$(stat -f "%p" "$1"); chmod a+x "$1"; b=$(stat -f "%p" "$1"); [[ $a ==
 # vol() { osascript -e "set volume output volume $1"; }
 # async() { ( nohup bash -cl "$*" > ~/nohup.out & ) }
 # export cd_mydir='cd $(dirname "${BASH_SOURCE[0]}")'
-# t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")" # cd directory of this file
-# export mydir='t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; DIR="$(cd -P "$( dirname "$t")" && pwd)"'
+# dir=$(t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")" && pwd) # get directory of this file
 # pause() { read -p 'Press [Enter] to continue . . .'; }
 # switch() { echo $(date_i) "$1" >> ~/ali/history/auto/switch.log; }
 
