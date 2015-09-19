@@ -1,0 +1,91 @@
+#!/usr/bin/env ζ₂
+child_process ← require('child_process')
+
+stdout ← process.stdout.write.bind(process.stdout)
+remove_ansi_colors ← λ(v){↩ v.replace(/\[.+?m/g,'')}
+diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',f)}
+
+IS_URL ← /^((https?|file):\/\/|mailto:)/
+FIND_URL ← /\b((https?|file):[⟩\/][⟩\/](?:\\ |\S)+|mailto:[^\s\\@]+@[^\s\\@]+)/
+PROMPT ← '[30;47m>[0m '
+PREVIEW_PROMPT ← '[30;47m:[0m'
+PREVIEW_MORE_PROMPT ← '[30;47m...[0m'
+
+postredirect_url ← λ(v){↩ v
+	.replace(/^http:\/\/google.com/,'http://www.google.com/')
+	.replace(/^http:/,'https') }
+as_url ← λ(v){t←;
+	↩ IS_URL.test(v)?
+		encodeURI(v) :
+	(t=v.match(FIND_URL))?
+		encodeURI(t[1].replace(/⟩/g,'/').replace(/\\ /g,' ')) :
+		"http://google.com/search?q="+encodeURIComponent(v) }
+
+line ← ''; pos ← 0
+preview_v ← null
+print ← λ(){a ← ζ2_A(arguments); stdout('[2K[0G'+sprint(a)+'\n'+PROMPT+line)}
+preview ← λ(v){
+	height ← λ(v){↩ remove_ansi_colors(v).split('\n').map(λ(v){↩ 1+floor(v.length/80)}).reduce(λ(a,b){↩a+b},0)}
+	if (v === null);
+	else if (height(v) > 20) {t ← v.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); v = PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
+	else v = PREVIEW_PROMPT+'\n'+v
+	if (preview_v === v) ↩;
+	preview_v !== null && stdout('['+(height(preview_v)+height(PROMPT+line)-1)+'A[0G[J')
+	v === null? stdout(PROMPT+line) : print(v)
+	preview_v = v }
+
+stdout('[0G'+PROMPT)
+diy_stdin(λ(key){
+	switch (key) {default:
+		if (key[0] === '') {print('got code \\x1b'+key.slice(1)); ↩}
+		else {stdout(key); line = line.slice(0,pos)+key+line.slice(pos+1); pos++}
+		break; case '\x03': stdout('[2K[0G'); preview(null); process.stdin.pause(); ↩;
+		break; case '\r': {preview(null); t ← line; line = ''; pos = 0; stdout('\n'+PROMPT+line); on_line_change(t,true); ↩}
+		break; case '\x7f': if (line !== '') {stdout('\x08 \x08'); line = line.slice(0,pos-1)+line.slice(pos); pos--} else ↩;
+		break; case '[D': if (pos > 0) {pos--; stdout(key)}
+		break; case '[C': if (pos < line.length) {pos++; stdout(key)}
+		break; case '\t':
+			//! potentially should preview
+			// line.slice(0,pos).match(/\S*$/)[0] + line.slice(pos).match(/^\S*/)[0]
+			v ← line.match(/\S*$/)[0]
+			if (pos !== line.length || v === '') {print('got code \\t'); ↩}
+			completions ← /* if is filename context */ fs('.').find('>').map(λ(v){↩ v.slice(2)})
+			if (line === v) completions.push('ls','chrome','echo','dl')
+			completions = completions.filter(λ(t){↩ t.slice(0,v.length) === v})
+			if (completions.length > 1) {print('found',completions.length,'completions'); ↩}
+			add ← completions[0].slice(v.length)
+			line += add; pos += add.length; stdout(add)
+	}
+	on_line_change(line)
+	})
+
+on_line_change ← λ(v,act){vs ← v.trim().split(' ')
+	P ← λ(v){P = null; preview(v)}
+	if (v === '') {
+		if (act) {stdout('[1A[2K[0G<reboot>\n\n'); process.exit(44)}
+	} else if (vs[0] === 'dl') {
+		t ← vs.slice(1).join(' ')
+		if (t.match(/^http:\/\/youtu\.be\/[^?#]+$/)) {
+			if (!act) {
+				P('would download 1 mp3 from youtube')
+			} else {
+				t = 'cd ~/Downloads; youtube-dl --extract-audio --audio-format mp3 -o \'"\'"\'%(title)s '+t.replace(/\//g,'⟩')+' .%(ext)s\'"\'"\' '+t
+				child_process.exec("osascript -e 'tell application \"terminal\"' -e 'do script \""+t+"\"' -e 'end tell'; osascript -e 'tell application \"terminal\" to activate'")
+			}
+		}
+	} else if (vs.length === 1 && (vs[0] === 'l' || vs[0] === 'ls')) {
+		t ← (child_process.execSync("bash -ci 'cd "+process.cwd().replace(/ /g,'\\ ')+"; echo $green$(this)$reset; CLICOLOR_FORCE=t l'")+'').replace(/\n$/,'')
+		;(act? print : P)(t)
+	} else if (vs[0] === 'chrome') {
+		t ← as_url(vs.slice(1).join(' '))
+		!act?
+			P(t) :
+			child_process.exec("bash -c '/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome "+postredirect_url(t)+"'") //! maybe should call "as_urls" instead
+	} else if (vs[0] === 'echo') {
+		t ← vs.slice(1).join(' ')
+		;(act? print : P)(t)
+	}
+	P&&P(null)
+	}
+
+// mv E\t Fate Stay:Night - Emiya#0.mp3
