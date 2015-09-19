@@ -9,7 +9,7 @@
   "patterns": [
     {"name": "alice", "match": "⋈"},
     {"match": "[{},;.]", "name": "block.js"},
-    {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment.line.js"},
+    {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment2.line.js"},
     {
       "captures": {"1": {"name": "support.class.js"}, "2": {"name": "support.constant.js"}, "3": {"name": "keyword.operator.js"}},
       "comment": "match stuff like: Sound.prototype = { … } when extending an object",
@@ -147,21 +147,21 @@
       "name": "string.quoted.double.js",
       "patterns": [{"match": "\\\\(x\\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)", "name": "constant.character.escape.js"}]
     },
-    {"begin": "/\\*\\*(?!/)", "captures": {"0": {"name": "punctuation.definition.comment.js"}}, "end": "\\*/", "name": "comment.block.documentation.js"},
-    {"begin": "/\\*", "captures": {"0": {"name": "punctuation.definition.comment.js"}}, "end": "\\*/", "name": "comment.block.js"},
+    {"begin": "/\\*\\*(?!/)", "captures": {"0": {"name": "punctuation.definition.comment2.js"}}, "end": "\\*/", "name": "comment2.block.documentation.js"},
+    {"begin": "/\\*", "captures": {"0": {"name": "punctuation.definition.comment2.js"}}, "end": "\\*/", "name": "comment2.block.js"},
     {"match": "(//) (---+)(.*?)(---+) (//)$\\n?", "name": "plaintext.js",
       "captures": {
-        "1": {"name": "comment.line.double-slash.js"},
+        "1": {"name": "comment2.line.double-slash.js"},
         "2": {"name": "keyword.js"},
         "3": {"name": "plaintext.js"},
         "4": {"name": "keyword.js"},
-        "5": {"name": "comment.line.double-slash.js"}
+        "5": {"name": "comment2.line.double-slash.js"}
       } },
-    {"captures": {"1": {"name": "punctuation.definition.comment.js"}}, "match": "(//).*$\\n?", "name": "comment.line.double-slash.js"},
+    {"captures": {"1": {"name": "punctuation.definition.comment2.js"}}, "match": "(//).*$\\n?", "name": "comment2.line.double-slash.js"},
     {
-      "captures": {"0": {"name": "punctuation.definition.comment.html.js"}, "2": {"name": "punctuation.definition.comment.html.js"}},
+      "captures": {"0": {"name": "punctuation.definition.comment2.html.js"}, "2": {"name": "punctuation.definition.comment2.html.js"}},
       "match": "(<!--|-->)",
-      "name": "comment.block.html.js"
+      "name": "comment2.block.html.js"
     },
     {"match": "\\b(boolean|byte|char|class|double|enum|float|function|λ|int|interface|long|short|var)\\b", "name": "storage.type.js"},
     {
@@ -213,7 +213,7 @@
     {"match": "↩", "name": "magic.more.js"},
     {"match": "\\b(Infinity|NaN|undefined)\\b", "name": "constant.language.js"},
     {
-      "begin": "(?<=[=(,:\\[]|^|return|yield|yield\\*|↩|&&|\\|\\||!)\\s*(/)(?![/*+{}?])",
+      "begin": "(?<=[=(,:\\[]|^|return|yield|yield\\*|↩|&&|\\|\\||!|\\?|←)\\s*(/)(?![/*+{}?])",
       "beginCaptures": {"1": {"name": "punctuation.definition.string.begin.js"}},
       "end": "(/)[igm]*",
       "endCaptures": {"1": {"name": "punctuation.definition.string.end.js"}},
