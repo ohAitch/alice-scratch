@@ -816,16 +816,16 @@ but when reading them they both feel perfectly excellent
 but if i take this and try to make lackey more like timer-tab it`s very hard but seems to improve it a great deal
 something Funky is up here
 
-a bug i noticed: in an interactive environment, we would start sketching out something like dance, and -
-oh
-right
-i was taking the text of dance as canon and dutifully transcribing it
-that was silly
-the goal here is to write down each individual concept required
-right
-okay
-let`s do this differently.
-:D
+// a bug i noticed: in an interactive environment, we would start sketching out something like dance, and -
+// oh
+// right
+// i was taking the text of dance as canon and dutifully transcribing it
+// that was silly
+// the goal here is to write down each individual concept required
+// right
+// okay
+// let`s do this differently.
+// :D
 
 there`s a certain pattern of the things we want to say being the interesting things and the things we don`t want to say being simple things where we could take the thing we wanted to say and in an automatic fashion implement the other parts
 this suggests a compiler that sometimes says "i don`t know a way to do this - can you help me?"

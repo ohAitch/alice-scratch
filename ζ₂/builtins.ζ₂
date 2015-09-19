@@ -22,14 +22,14 @@ monkeypatches ← []
 monkeypatch ← λ(f){f(global); monkeypatches.push(f)}
 
 // todo: refactor def, because it is awful
-exec ← λ(v){t ← child_process.execSync(v)+''; process.stdout.write(t); ↩ t}
-Object.defineProperty(global,'ls',{get:λ(){exec("bash -c 'echo $green$(this)$reset'"); exec('CLICOLOR=1 CLICOLOR_FORCE=1 ls -AC')}})
+
+// exec ← λ(v){t ← child_process.execSync(v)+''; process.stdout.write(t); ↩ t}
+// Object.defineProperty(global,'ls',{get:λ(){exec("bash -c 'echo $green$(this)$reset'"); exec('CLICOLOR=1 CLICOLOR_FORCE=1 ls -AC')}})
 
 frames ← λ(){t ← Error.prepareStackTrace; Error.prepareStackTrace = λ(_,v){↩ v}; r ← new Error().stack.slice(1); Error.prepareStackTrace = t; ↩ r}
 monkeypatch(λ(G){ ('ˢ' in G) || Object.defineProperty(G,'ˢ',{get:λ(){t ← frames()[1]; ↩ t.getFunction().toString().replace(/^function /,'').split('\n').slice(t.getLineNumber() - 1).join('\n').slice(t.getColumnNumber() - 1).match(/\/\*([\s\S]*?)\*\//)[1]}}) })
 
 escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
-sprint ← λ(v,opt){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,opt)}).join(' ')}
 mkdir_p ← λ λ(v){try {fs.statSync(v).isDirectory() || fs.mkdirSync(v)} catch (e) {if(!e.code==='ENOENT')throw e; λ(node_path.dirname(v)); fs.mkdirSync(v)}}
 seq ← λ*(v){for (i←0;i<v.length;i++) yield v[i]}
 /*polyfill*/ Array.from || (Array.from = λ(v){r ← []; while (t = v.next(), !t.done) r.push(t.value); ↩ r})
@@ -78,7 +78,8 @@ _O.prototype.replace = λ(o){θ ← @.$; _.pairs(o).map(λ(kv){θ[kv[1]] = θ[kv
 exports.ζ2_bind = λ(o,v){↩ o[v].bind(o)}
 exports.ζ2_jsonclone = λ(v){↩ v===undefined? v : JSON.parse(JSON.stringify(v))}
 
-print ← exports.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a,{colors:true,depth:2})+'\n'); ↩ a[-1]}
+sprint ← exports.sprint = λ(v){↩ v.map(λ(v){↩ typeof(v)==='string'? v : util.inspect(v,{colors:true,depth:2})}).join(' ')}
+print ← exports.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a)+'\n'); ↩ a[-1]}
 err ← exports.err = λ(v){print.apply(null,['ζ2_err'].concat(ζ2_A(arguments))); throw Error(v)}
 _(exports).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt'))
 _(exports).extend({ln: Math.log, ln2: Math.log2, ln10: Math.log10})
