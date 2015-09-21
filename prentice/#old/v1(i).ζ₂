@@ -1,34 +1,34 @@
-// not actually used
-T ← λ(v,type){↩ new _T(v,type||T.id)}
-T.id = [λ(v,k){↩ v[k]}, λ(v,k,n){v[k] = n; ↩ v}]
-T.spaces = [λ(v,k){↩ v.split(' ')[k]}, λ(v,k,n){t ← v.split(' '); t[k] = n; ↩ t.join(' ')}]
-_T ← λ(v,type){@.$ = v; @.type = type}
-_T.prototype.m = λ(k,f){@.$ = @.type[1](@.$,k,f(@.type[0](@.$,k))); ↩ @}
+// // not actually used
+// T ← λ(v,type){↩ new _T(v,type||T.id)}
+// T.id = [λ(v,k){↩ v[k]}, λ(v,k,n){v[k] = n; ↩ v}]
+// T.spaces = [λ(v,k){↩ v.split(' ')[k]}, λ(v,k,n){t ← v.split(' '); t[k] = n; ↩ t.join(' ')}]
+// _T ← λ(v,type){@.$ = v; @.type = type}
+// _T.prototype.m = λ(k,f){@.$ = @.type[1](@.$,k,f(@.type[0](@.$,k))); ↩ @}
 
-// -------- parsing ------- //
+// // -------- parsing ------- //
 
-alice_parse_table ← (λ(){
-	author ← 'alice'
-	↩ [
-	// // [/^(hi!?|don't worry, i'm gonna make you better :\)|wow, this is a mess|thanks <3|yay)$/, ['small talk']],
-	// // [/^(yep|yeah|yes)$/, ['yes']],
-	// // [/^(nah|nope|no)$/, ['no']],
-	// // [/^((?:like[,.] )?(\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['noun: $thing in $place']],
-	// // [/^((?:nah|nope|no)[.,]) ((\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['no','noun: $thing in $place']],
-	// [/^i (?:want to|wanna) refactor (.+?)$/, λ(thing){↩ {type:'claim', by:author, v:
-	// 	{type:'subgoal', of:author, v:
-	// 		{type:'process-done', by_hint:author, v:{type:'process', v:'refactoring', on:thing}}
-	// 		}} }],
-	// [/^(?:(?:oh|uh)[,.] )?it's in (.+?)(?: :\)|\.)?$/, λ(place){↩ {type:'claim', by:author, v:
-	// 	{type:'relation', a:'it', v:'in', b:place}
-	// 	} }],
-	// // [/^(that's a project of mine)$/, ['it is a project of mine']],
-	// // [/^((hm[.,] )?can you talk to sublime( text)?\?)$/, ['inquiry: you can talk to sublime text']],
-	// // [/^((can you )?help me (do|with) (a morning update|my morning thing)\??)$/, ['help me do a morning update']],
-	// // [/^(belay that)$/, ['↯']],
-	]})()
-alice_parse_sentences ← λ(v){↩ _(alice_parse_table.map(λ(p){t←; ↩ (t=v.match(p[0])) && p[1].apply(null,t.slice(1))})).compact()[0] || {type:'unknown', by:'alice', source:v}}
-add RegExp('^'+('⟨'+v.source+'⟩').replace(/⟨/g,'(?:').replace(/⟩/g,')')+'$') to that
+// alice_parse_table ← (λ(){
+// 	author ← 'alice'
+// 	↩ [
+// 	// // [/^(hi!?|don't worry, i'm gonna make you better :\)|wow, this is a mess|thanks <3|yay)$/, ['small talk']],
+// 	// // [/^(yep|yeah|yes)$/, ['yes']],
+// 	// // [/^(nah|nope|no)$/, ['no']],
+// 	// // [/^((?:like[,.] )?(\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['noun: $thing in $place']],
+// 	// // [/^((?:nah|nope|no)[.,]) ((\S+) (?:over )?\(?in (\S+?)\)?\.?)$/, ['no','noun: $thing in $place']],
+// 	// [/^i (?:want to|wanna) refactor (.+?)$/, λ(thing){↩ {type:'claim', by:author, v:
+// 	// 	{type:'subgoal', of:author, v:
+// 	// 		{type:'process-done', by_hint:author, v:{type:'process', v:'refactoring', on:thing}}
+// 	// 		}} }],
+// 	// [/^(?:(?:oh|uh)[,.] )?it's in (.+?)(?: :\)|\.)?$/, λ(place){↩ {type:'claim', by:author, v:
+// 	// 	{type:'relation', a:'it', v:'in', b:place}
+// 	// 	} }],
+// 	// // [/^(that's a project of mine)$/, ['it is a project of mine']],
+// 	// // [/^((hm[.,] )?can you talk to sublime( text)?\?)$/, ['inquiry: you can talk to sublime text']],
+// 	// // [/^((can you )?help me (do|with) (a morning update|my morning thing)\??)$/, ['help me do a morning update']],
+// 	// // [/^(belay that)$/, ['↯']],
+// 	]})()
+// alice_parse_sentences ← λ(v){↩ _(alice_parse_table.map(λ(p){t←; ↩ (t=v.match(p[0])) && p[1].apply(null,t.slice(1))})).compact()[0] || {type:'unknown', by:'alice', source:v}}
+// add RegExp('^'+('⟨'+v.source+'⟩').replace(/⟨/g,'(?:').replace(/⟩/g,')')+'$') to that
 
 // --------- state -------- //
 
