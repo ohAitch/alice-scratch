@@ -1,6 +1,6 @@
 https://medium.com/ai-control/implementing-our-considered-judgment-6c715a239b3e 
 	This tries to define an OK optimization target for a very sophisticated predictor (very superhuman). This protocol obviously won't be useful
-https://medium.com/ai-control/safe-automated-assistants-aa69edd46a57
+https://medium.com/ai-control/safe-automated-assistants-aa69edd46a57 ⋈ current
 	This provides some indication of how the approach might be scaled down to merely human-level predictors, and also is a bit less dry (but also much sloppier).
 https://medium.com/ai-control/steps-towards-safe-ai-from-episodic-rl-ffb4b6a80363
 https://medium.com/ai-control/handling-errors-with-arguments-1f34a04ccbff

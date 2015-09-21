@@ -1,25 +1,36 @@
 #!/usr/bin/env ζ₂
+util ← require('util')
 child_process ← require('child_process')
 
-stdout ← process.stdout.write.bind(process.stdout)
-remove_ansi_colors ← λ(v){↩ v.replace(/\[.+?m/g,'')}
+// ---------------------------------- util ---------------------------------- //
+
+argv ← process.argv.slice(2)
+stdout ← λ(ι){process.stdout.write(ι)}
+remove_ansi_colors ← λ(ι){↩ ι.replace(/\[.+?m/g,'')}
 diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',f)}
+IS_URL ← /^((https?|file):\/\/|mailto:)/.λ
+FIND_URL ← /\b((https?|file):[⟩\/][⟩\/](?:\\ |\S)+|mailto:[^\s\\@]+@[^\s\\@]+)/.λ
+postredirect_url ← λ(ι){↩ ι
+	.replace(/^http:\/\/google.com\//,'http://www.google.com/')
+	.replace(/^http:/,'https:') }
+as_url ← λ(ι){t←;
+	↩ IS_URL(ι)? encodeURI(ι) :
+	(t=FIND_URL(ι))? encodeURI(t[1].replace(/⟩/g,'/').replace(/\\ /g,' ')) :
+		"http://google.com/search?q="+encodeURIComponent(ι) }
+height ← λ(ι){↩ remove_ansi_colors(ι).split('\n').map(λ(ι){↩ 1+floor(ι.length/80)}).reduce(λ(a,b){↩a+b},0)}
 
-IS_URL ← /^((https?|file):\/\/|mailto:)/
-FIND_URL ← /\b((https?|file):[⟩\/][⟩\/](?:\\ |\S)+|mailto:[^\s\\@]+@[^\s\\@]+)/
-PROMPT ← '[30;47m>[0m '
-PREVIEW_PROMPT ← '[30;47m:[0m'
-PREVIEW_MORE_PROMPT ← '[30;47m...[0m'
+osa←; osa_v←; (λ(){
+	osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
+	osa_parse_array ← λ(ι){↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+	osa = λ(ι){child_process.exec(osa_gen(ι))}
+	osa_v = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
+	})()
+bash ←   λ(flag,ι){!ι && (ι = flag, flag = ''); child_process.exec("bash -c "+flag+" "+bash_encode(ι))}
+bash_v ← λ(flag,ι){!ι && (ι = flag, flag = ''); ↩ (child_process.execSync("bash -c "+flag+" "+bash_encode(ι))+'').replace(/\n$/,'')}
 
-postredirect_url ← λ(v){↩ v
-	.replace(/^http:\/\/google.com/,'http://www.google.com/')
-	.replace(/^http:/,'https') }
-as_url ← λ(v){t←;
-	↩ IS_URL.test(v)?
-		encodeURI(v) :
-	(t=v.match(FIND_URL))?
-		encodeURI(t[1].replace(/⟩/g,'/').replace(/\\ /g,' ')) :
-		"http://google.com/search?q="+encodeURIComponent(v) }
+bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&")}).join(" ")}
+basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
+osa_encode ← λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'}
 
 line ← ''; pos ← 0
 preview_v ← null
@@ -55,6 +66,11 @@ diy_stdin(λ(key){
 			if (completions.length > 1) {print('found',completions.length,'completions'); ↩}
 			add ← completions[0].slice(v.length)
 			line += add; pos += add.length; stdout(add)
+PROMPT ← '[30;47m>[0m '
+PREVIEW_PROMPT ← '[30;47m:[0m'
+PREVIEW_MORE_PROMPT ← '[30;47m.[0m [30;47m.[0m [30;47m.[0m'
+DATA_FILE ← '~/ali/github/scratch/prentice/~:.prentice'
+
 	}
 	on_line_change(line)
 	})
@@ -69,23 +85,31 @@ on_line_change ← λ(v,act){vs ← v.trim().split(' ')
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
-				t = 'cd ~/Downloads; youtube-dl --extract-audio --audio-format mp3 -o \'"\'"\'%(title)s '+t.replace(/\//g,'⟩')+' .%(ext)s\'"\'"\' '+t
-				child_process.exec("osascript -e 'tell application \"terminal\"' -e 'do script \""+t+"\"' -e 'end tell'; osascript -e 'tell application \"terminal\" to activate'")
+				t = 'cd ~/Downloads; youtube-dl --extract-audio --audio-format mp3 -o '+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(t)
+				osa('tell application "terminal"; do script '+osa_encode(t)+'; end tell'); osa('tell application "terminal" to activate')
 			}
 		}
-	} else if (vs.length === 1 && (vs[0] === 'l' || vs[0] === 'ls')) {
-		t ← (child_process.execSync("bash -ci 'cd "+process.cwd().replace(/ /g,'\\ ')+"; echo $green$(this)$reset; CLICOLOR_FORCE=t l'")+'').replace(/\n$/,'')
-		;(act? print : P)(t)
-	} else if (vs[0] === 'chrome') {
-		t ← as_url(vs.slice(1).join(' '))
+	} else if (ιs.length === 1 && (ιs[0] === 'l' || ιs[0] === 'ls')) {
+		;(act? print : P)(bash_v("-i",'cd '+bash_encode(process.cwd())+'; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l'))
+	} else if (ιs[0] === 'chrome') {
+		t ← ιs.length === 1? 'chrome:newtab' : as_url(ιs.slice(1).join(' '))
 		!act?
 			P(t) :
-			child_process.exec("bash -c '/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome "+postredirect_url(t)+"'") //! maybe should call "as_urls" instead
-	} else if (vs[0] === 'echo') {
-		t ← vs.slice(1).join(' ')
+			osa('tell application "chrome" to open location '+osa_encode(postredirect_url(t)))
+	} else if (ιs[0] === 'echo') {
+		t ← ιs.slice(1).join(' ')
 		;(act? print : P)(t)
 	}
 	P&&P(null)
 	}
 
+
 // mv E\t Fate Stay:Night - Emiya#0.mp3
+// crop F\t
+
+// http://tampermonkey.net/faq.php
+// chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#open=1bbe177e-96ec-49c8-8086-f3bf7a2a9e58
+// osa_v('tell application "chrome"; get {URL,title} of tabs of windows; end tell')
+
+//! line wrapping doesn't work
+// multiline input (literal \n if the last line seemed incomplete)
