@@ -235,6 +235,14 @@ Path.prototype.rmrf = λ(){
 	if (@.path === '/') err('??? you tried to rmrf /')
 	rimraf.sync(@.path) }
 
+// ----------------------------------- new ---------------------------------- //
+
+exports.ζ2_bash_encode = λ(v){↩ v.replace(/\W/g,'\\$&')}
+exports.λ = λ(ι){r ← λ(i){↩ ι[i]}; r.ι = ι; ↩ r}
+monkeypatch(λ(G){ G.String.def('λ',λ(){θ←@; r ← λ(ι){↩ ι[θ]}      ; r.ι = @; ↩ r}) })
+monkeypatch(λ(G){ G.Number.def('λ',λ(){θ←@; r ← λ(ι){↩ ι[θ]}      ; r.ι = @; ↩ r}) })
+monkeypatch(λ(G){ G.RegExp.def('λ',λ(){θ←@; r ← λ(ι){↩ ι.match(θ)}; r.ι = @; ↩ r}) })
+
 // ----------------------------- discarded bits ----------------------------- //
 
 // exports.poll = λ(f,cb){t←; (t=f())? cb.in(0,null,t) : poll.in(0.02,f,cb)}
