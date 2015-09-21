@@ -45,7 +45,7 @@ D ← { // data
 	}
 print ← λ(){a ← ζ2_A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+D.line); pos_set()}
 hide_interface ← λ(){stdout(D.preview === null? '[0G[2K' : '['+(height(D.preview)+height(PROMPT+D.line)-1)+'A[0G[J')}
-show_interface ← λ(){print(D.preview); pos_set()}
+show_interface ← λ(){print(D.preview)}
 preview ← λ(ι){
 	if (ι === null) t ← null
 	else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
@@ -56,11 +56,12 @@ pos_set ← λ(ι){arguments.length === 1 && (D.pos = ι); stdout('['+(1+D.pos+
 line_splice ← λ(i,del,ι){D.pos === i || pos_set(i); no_set ← D.pos === D.line.length; D.line = D.line.slice(0,D.pos)+ι+D.line.slice(D.pos+del); stdout((del-ι.length>0?'[K':'')+D.line.slice(D.pos)); D.pos += ι.length; no_set || pos_set()}
 
 on_key ← λ λ(key){line_a ← D.line; switch (key) {default:
-	/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)?
-		line_splice(D.pos,0,key) :
-		print('got '+util.inspect(key).replace(/\\u00/g,'\\x'))
+	/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)? line_splice(D.pos,0,key) :
+		on_unknown_key(key)
 	break; case '\x03': hide_interface(); process.stdin.pause()
-	break; case '\r': preview(null); D.line === '' && (stdout('<reboot>\n\n'), process.exit(44)); D.line = ''; D.pos = 0; stdout('\n'+PROMPT+D.line); on_line_change(line_a,true); ↩
+	break; case '\r':
+		D.line === '' && (stdout('<reboot>\n\n'), process.exit(44))
+		preview(null); D.line = ''; D.pos = 0; stdout('\n'+PROMPT); on_line_change(line_a,true); ↩
 	break; case '\x7f': D.pos > 0 && line_splice(D.pos-1,1,'')
 	break; case '[D': D.pos > 0 && pos_set(D.pos-1)
 	break; case '[C': D.pos < D.line.length && pos_set(D.pos+1)
@@ -68,17 +69,23 @@ on_key ← λ λ(key){line_a ← D.line; switch (key) {default:
 	break; case '\x05': pos_set(D.line.length)
 	break; case '\x15': line_splice(0,D.pos,'')
 	break; case '\t':
-		ι ← D.line.slice(0,D.pos).match(/\S*$/)[0]
-		if (ι === '') {λ(D.line.length%'  '.length===0?'  ':' '); break}
-		if (D.pos !== D.line.length) {print('tab completion is scary if not at the end of a line'); break}
-		//! potentially should preview
-		completions ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
-		if (D.line === ι) completions.push('ls','chrome','echo','dl')
-		completions = completions.filter(λ(t){↩ t.slice(0,ι.length) === ι})
-		if (completions.length > 1) {print('found',completions.length,'completions'); break}
-		if (completions.length === 0) {print('no completions found'); break}
-		line_splice(D.pos - ι.length, ι.length, completions[0])
+		// if (/^ +$/.λ(D.line.slice(0,D.pos))) {line_splice(D.pos,0,D.pos%'  '.length===0?'  ':' '); break}
+		on_tab(D.line,D.pos,line_splice)
 	}; line_a === D.line || on_line_change(D.line) }
+
+on_unknown_key ← λ(key){print('got '+util.inspect(key).replace(/\\u00/g,'\\x'))}
+
+on_tab ← λ(line,pos,line_splice){
+	if (pos !== line.length) {print('tab completion is scary if not at the end of a line'); ↩}
+	ι ← line.slice(0,pos).match(/\S*$/)[0]
+	//! potentially should preview
+	completions ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
+	if (line === ι) completions.push('ls','chrome','echo','dl')
+	completions = completions.filter(λ(t){↩ t.slice(0,ι.length) === ι})
+	if (completions.length > 1) {print('found',completions.length,'completions'); ↩}
+	if (completions.length === 0) {print('no completions found'); ↩}
+	line_splice(pos - ι.length, ι.length, completions[0])
+	}
 
 on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
 	P ← λ(ι){P = null; preview(ι)}
@@ -88,8 +95,8 @@ on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
-				t = 'cd ~/Downloads; youtube-dl --extract-audio --audio-format mp3 -o '+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(t)
-				osa('tell application "terminal"; do script '+osa_encode(t)+'; end tell'); osa('tell application "terminal" to activate')
+				t = 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(t)
+				osa('tell application "terminal"; do script '+osa_encode(t)+'; activate; end tell')
 			}
 		}
 	} else if (ιs.length === 1 && (ιs[0] === 'l' || ιs[0] === 'ls')) {
@@ -113,12 +120,16 @@ else {
 	show_interface(); diy_stdin(on_key)
 	}
 
+// todo: hmmmm
+// we could go through the process of fetching bookmarks and the process of fetching spotify tracks, with an eye for paul's model
+
 // mv E\t Fate Stay:Night - Emiya#0.mp3
 // crop F\t
 
 // http://tampermonkey.net/faq.php
 // chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#open=1bbe177e-96ec-49c8-8086-f3bf7a2a9e58
 // osa_v('tell application "chrome"; get {URL,title} of tabs of windows; end tell')
+// file:///~/ali/github/scratch/#archive/minesweeperonline.com/index.js
 
 //! line wrapping doesn't work
 // multiline input (literal \n if the last line seemed incomplete)
