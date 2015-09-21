@@ -32,56 +32,59 @@ bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&"
 basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
 osa_encode ← λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'}
 
-line ← ''; pos ← 0
-preview_v ← null
-print ← λ(){a ← ζ2_A(arguments); stdout('[2K[0G'+sprint(a)+'\n'+PROMPT+line)}
-preview ← λ(v){
-	height ← λ(v){↩ remove_ansi_colors(v).split('\n').map(λ(v){↩ 1+floor(v.length/80)}).reduce(λ(a,b){↩a+b},0)}
-	if (v === null);
-	else if (height(v) > 20) {t ← v.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); v = PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
-	else v = PREVIEW_PROMPT+'\n'+v
-	if (preview_v === v) ↩;
-	preview_v !== null && stdout('['+(height(preview_v)+height(PROMPT+line)-1)+'A[0G[J')
-	v === null? stdout(PROMPT+line) : print(v)
-	preview_v = v }
+// -------------------------------------------------------------------------- //
 
-stdout('[0G'+PROMPT)
-diy_stdin(λ(key){
-	switch (key) {default:
-		if (key[0] === '') {print('got code \\x1b'+key.slice(1)); ↩}
-		else {stdout(key); line = line.slice(0,pos)+key+line.slice(pos+1); pos++}
-		break; case '\x03': stdout('[2K[0G'); preview(null); process.stdin.pause(); ↩;
-		break; case '\r': {preview(null); t ← line; line = ''; pos = 0; stdout('\n'+PROMPT+line); on_line_change(t,true); ↩}
-		break; case '\x7f': if (line !== '') {stdout('\x08 \x08'); line = line.slice(0,pos-1)+line.slice(pos); pos--} else ↩;
-		break; case '[D': if (pos > 0) {pos--; stdout(key)}
-		break; case '[C': if (pos < line.length) {pos++; stdout(key)}
-		break; case '\t':
-			//! potentially should preview
-			// line.slice(0,pos).match(/\S*$/)[0] + line.slice(pos).match(/^\S*/)[0]
-			v ← line.match(/\S*$/)[0]
-			if (pos !== line.length || v === '') {print('got code \\t'); ↩}
-			completions ← /* if is filename context */ fs('.').find('>').map(λ(v){↩ v.slice(2)})
-			if (line === v) completions.push('ls','chrome','echo','dl')
-			completions = completions.filter(λ(t){↩ t.slice(0,v.length) === v})
-			if (completions.length > 1) {print('found',completions.length,'completions'); ↩}
-			add ← completions[0].slice(v.length)
-			line += add; pos += add.length; stdout(add)
 PROMPT ← '[30;47m>[0m '
 PREVIEW_PROMPT ← '[30;47m:[0m'
 PREVIEW_MORE_PROMPT ← '[30;47m.[0m [30;47m.[0m [30;47m.[0m'
 DATA_FILE ← '~/ali/github/scratch/prentice/~:.prentice'
 
+D ← { // data
+	line:'', pos:0,
+	preview:null,
 	}
-	on_line_change(line)
-	})
+print ← λ(){a ← ζ2_A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+D.line); pos_set()}
+hide_interface ← λ(){stdout(D.preview === null? '[0G[2K' : '['+(height(D.preview)+height(PROMPT+D.line)-1)+'A[0G[J')}
+show_interface ← λ(){print(D.preview); pos_set()}
+preview ← λ(ι){
+	if (ι === null) t ← null
+	else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
+	else t ← PREVIEW_PROMPT+'\n'+ι
+	D.preview === t || (hide_interface(), D.preview = t, show_interface())
+	}
+pos_set ← λ(ι){arguments.length === 1 && (D.pos = ι); stdout('['+(1+D.pos+remove_ansi_colors(PROMPT).length)+'G')}
+line_splice ← λ(i,del,ι){D.pos === i || pos_set(i); no_set ← D.pos === D.line.length; D.line = D.line.slice(0,D.pos)+ι+D.line.slice(D.pos+del); stdout((del-ι.length>0?'[K':'')+D.line.slice(D.pos)); D.pos += ι.length; no_set || pos_set()}
 
-on_line_change ← λ(v,act){vs ← v.trim().split(' ')
-	P ← λ(v){P = null; preview(v)}
-	if (v === '') {
-		if (act) {stdout('[1A[2K[0G<reboot>\n\n'); process.exit(44)}
-	} else if (vs[0] === 'dl') {
-		t ← vs.slice(1).join(' ')
-		if (t.match(/^http:\/\/youtu\.be\/[^?#]+$/)) {
+on_key ← λ λ(key){line_a ← D.line; switch (key) {default:
+	/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)?
+		line_splice(D.pos,0,key) :
+		print('got '+util.inspect(key).replace(/\\u00/g,'\\x'))
+	break; case '\x03': hide_interface(); process.stdin.pause()
+	break; case '\r': preview(null); D.line === '' && (stdout('<reboot>\n\n'), process.exit(44)); D.line = ''; D.pos = 0; stdout('\n'+PROMPT+D.line); on_line_change(line_a,true); ↩
+	break; case '\x7f': D.pos > 0 && line_splice(D.pos-1,1,'')
+	break; case '[D': D.pos > 0 && pos_set(D.pos-1)
+	break; case '[C': D.pos < D.line.length && pos_set(D.pos+1)
+	break; case '\x01': pos_set(0)
+	break; case '\x05': pos_set(D.line.length)
+	break; case '\x15': line_splice(0,D.pos,'')
+	break; case '\t':
+		ι ← D.line.slice(0,D.pos).match(/\S*$/)[0]
+		if (ι === '') {λ(D.line.length%'  '.length===0?'  ':' '); break}
+		if (D.pos !== D.line.length) {print('tab completion is scary if not at the end of a line'); break}
+		//! potentially should preview
+		completions ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
+		if (D.line === ι) completions.push('ls','chrome','echo','dl')
+		completions = completions.filter(λ(t){↩ t.slice(0,ι.length) === ι})
+		if (completions.length > 1) {print('found',completions.length,'completions'); break}
+		if (completions.length === 0) {print('no completions found'); break}
+		line_splice(D.pos - ι.length, ι.length, completions[0])
+	}; line_a === D.line || on_line_change(D.line) }
+
+on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
+	P ← λ(ι){P = null; preview(ι)}
+	if (ιs[0] === 'dl') {
+		t ← ιs.slice(1).join(' ')
+		if (/^http:\/\/youtu\.be\/[^?#]+$/.λ(t)) {
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
@@ -103,6 +106,12 @@ on_line_change ← λ(v,act){vs ← v.trim().split(' ')
 	P&&P(null)
 	}
 
+if (argv.length) {print = global.print; preview = null; on_line_change(argv.join(' '),true)}
+else {
+	t ← fs(DATA_FILE).$; t && _.extend(D, _(JSON.parse(t)).pick(_.keys(D)))
+	process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(D,null,'  ')})
+	show_interface(); diy_stdin(on_key)
+	}
 
 // mv E\t Fate Stay:Night - Emiya#0.mp3
 // crop F\t
