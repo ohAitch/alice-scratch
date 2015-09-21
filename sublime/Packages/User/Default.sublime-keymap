@@ -52,5 +52,7 @@
 	{ "keys": ["super+l"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} }, // overwrites { "keys": ["super+l"], "command": "expand_selection", "args": {"to": "line"} },
 	{ "keys": ["super+p"], "command": "null" },
 
+	{ "keys": ["super+b"], "command": "build_dollar" },
+
 	null
 ]

@@ -7,5 +7,6 @@
   {"caption": "make divider (long) #⋈", "command": "make_divider", "args": {"length": 80}},
   {"caption": "open link #⋈", "command": "open_context", "args": {"type": "link"}},
   {"caption": "open google search #⋈", "command": "open_context", "args": {"type": "browser"}},
-  {"caption": "open terminal #⋈", "command": "open_context", "args": {"type": "terminal"}}
+  {"caption": "open terminal #⋈", "command": "open_context", "args": {"type": "terminal"}},
+  {"caption": "build #⋈", "command": "build_dollar"}
 ]
