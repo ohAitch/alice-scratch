@@ -68,9 +68,7 @@ on_key ← λ λ(key){line_a ← D.line; switch (key) {default:
 	break; case '\x01': pos_set(0)
 	break; case '\x05': pos_set(D.line.length)
 	break; case '\x15': line_splice(0,D.pos,'')
-	break; case '\t':
-		// if (/^ +$/.λ(D.line.slice(0,D.pos))) {line_splice(D.pos,0,D.pos%'  '.length===0?'  ':' '); break}
-		on_tab(D.line,D.pos,line_splice)
+	break; case '\t': on_tab(D.line,D.pos,line_splice)
 	}; line_a === D.line || on_line_change(D.line) }
 
 on_unknown_key ← λ(key){print('got '+util.inspect(key).replace(/\\u00/g,'\\x'))}
