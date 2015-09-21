@@ -34,7 +34,7 @@ def open(v,app=None,focus=True):
 		if fv and os.path.isdir(fv.group(1)):
 			app = "Path Finder"
 
-	if app is "Path Finder": os.system("osascript -e 'tell application \""+"Path Finder"+"\" to activate'")
+	if app is "Path Finder": os.system("osascript -e 'tell application \"Path Finder\" to activate'")
 
 def github_url_of_file_in_repo(fl):
 	if not fl: return None

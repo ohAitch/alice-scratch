@@ -37,7 +37,7 @@ alias l='ls -AG'
 
 export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
-command_not_found_handle() {
+command_not_found_handle() { t=0
 	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
 	while true; do
 		t=($(for t in "${try[@]}"; do echo "$t $t.sh $t.ζ₂ $t.js $t.py"; done))
@@ -45,12 +45,12 @@ command_not_found_handle() {
 		if [ "$t" != "" ]; then
 			[ $changed ] && echo "$purple$(this)/$t$reset"
 			echo "$PWD" > "$cnfh_cd"
-			exp "$t"; "$t" "${@:2}"
+			exp "$t"; "$t" "${@:2}"; t=$?
 		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
 		else cd ..; changed=1; continue
 		fi
 	break; done
-	}
+	return $t; }
 cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
 PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
 __rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }

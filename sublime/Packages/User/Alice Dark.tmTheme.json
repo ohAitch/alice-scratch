@@ -66,7 +66,8 @@
     {"scope": "alice", "settings": {"foreground": "#00D000", "background": "#4C6B45", "fontStyle": "bold"}},
     {"scope": "bold", "settings": {"foreground": "#000000", "background": "#DDDDDD", "fontStyle": "bold"}},
     {"scope": "italic", "settings": {"foreground":"#D8D8D3", "fontStyle": "italic"}},
-    {"scope": "bracket", "settings": {"foreground":"#E6DB74"}}
+    {"scope": "brace.square", "settings": {"foreground":"#E6DB74"}},
+    {"scope": "brace.round", "settings": {"foreground":"#E0FFA3"}}
   ],
   "uuid": "D8D5E82E-3D5B-46B5-B38E-8C841C21347D"
 }

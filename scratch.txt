@@ -75,3 +75,10 @@ namegen ← ζ2_gen2fn(λ*(){
 do_it() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=KqsDmZ77kW' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
 
 pdf_to_image() { convert -verbose -density 150 -trim "$1" -quality 100 -sharpen 0x1.0 "${1%.*}.png"; }
+
+------------------------------------- dunno ------------------------------------
+
+$.on_view = function(f){document.addEventListener('visibilitychange',function(){if (!document.hidden) f()})}
+var poll = function(f,cb){var t; if (t=f()) cb(null,t); else setTimeout(poll,10,f,cb)}
+$.css = function(v){$('head').append('<style>'+v+'</style>')}
+// @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js

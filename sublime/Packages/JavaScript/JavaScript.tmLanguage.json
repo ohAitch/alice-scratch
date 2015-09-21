@@ -10,6 +10,9 @@
     {"name": "alice", "match": "⋈"},
     {"name": "support.function", "match": "ι"},
     {"match": "[{},;.]", "name": "block.js"},
+    {"match": "\\{|\\}", "name": "brace.curly.js"},
+    {"match": "\\(|\\)", "name": "brace.round.js"},
+    {"match": "\\[|\\]", "name": "brace.square.js"},
     {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment2.line.js"},
     {
       "captures": {"1": {"name": "support.class.js"}, "2": {"name": "support.constant.js"}, "3": {"name": "keyword.operator.js"}},
@@ -224,9 +227,6 @@
     {"match": "\\;", "name": "punctuation.terminator.statement.js"},
     {"match": ",[ |\\t]*", "name": "meta.delimiter.object.comma.js"},
     {"match": "\\.", "name": "meta.delimiter.method.period.js"},
-    {"match": "\\{|\\}", "name": "meta.brace.curly.js"},
-    {"match": "\\(|\\)", "name": "meta.brace.round.js"},
-    {"match": "\\[|\\]", "name": "meta.brace.square.js"},
     {"match": "(?!\\b_\\b)_", "name": "quiet.js"},
     {"match": "\\b_\\b", "name": "support.function.js"}
   ],
