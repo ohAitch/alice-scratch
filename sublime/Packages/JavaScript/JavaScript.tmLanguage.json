@@ -8,6 +8,7 @@
   "name": "JavaScript",
   "patterns": [
     {"name": "alice", "match": "⋈"},
+    {"name": "support.function", "match": "ι"},
     {"match": "[{},;.]", "name": "block.js"},
     {"comment": "node.js shebang", "match": "^#!/.*", "name": "comment2.line.js"},
     {
