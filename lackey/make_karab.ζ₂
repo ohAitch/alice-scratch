@@ -7,9 +7,9 @@ arg ← {
 	}
 
 //! right command is maybe problematic
-//! need to enable multi-modifier chords. maybe do this by changing the keylayout so that the hex codes are hidden away?
 
 hex ← λ(v,l){r ← v.toString(16); while (r.length < l) r = '0'+r; ↩ r}
+as_char_as_hex ← λ(v){↩ ('000'+v.charCodeAt(0).toString(16)).slice(-4)}
 
 parse_lackey ← λ(src){
 	chords ← []
@@ -33,35 +33,38 @@ parse_lackey ← λ(src){
 	t.map(λ(v){v.keys = _.zip(h.keys,v.keys).filter(λ(v){↩ v[1] !== '_'})})
 	kc ← _(t).indexBy('hots')['keycode']
 	t = _(t).without(kc).ζ2_mapcat(λ(v){↩ v.keys.map(λ(k){↩ [v.hots+k[0],k[1]]})})
-	↩ {keycodes: _.object(kc.keys), chords: chords.concat(t)} }
+	↩ {keycodes: kc.keys._.object(), chords: chords.concat(t)} }
 
 make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
-	KeyCode ← λ(v){↩ 'KeyCode::'+(v.length > 1? v : /\d/.test(v)? 'KEY_'+v : /[a-z]/.test(v)? v.toUpperCase() : 'RawValue::0x'+keycodes[v])}
-	kc_hex ← λ(v){↩ v.split('').map(λ(v){t ← v.charCodeAt(0); ↩ hex(t, t <= 0xffff? 4 : 5).split('').map(λ(v){↩ KeyCode(v)+',ModifierFlag::OPTION_L,'}).join('')}).join('')}
+	KeyCode ← λ(v){↩ 'KeyCode::'+(v.length > 2? v : /^\d$/.test(v)? 'KEY_'+v : /^[a-z]$/.test(v)? v.toUpperCase() : 'RawValue::0x'+keycodes[v])}
+	Mod ← λ(){↩ ζ2_A(arguments).map(λ(v){↩ {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "L⇧":"ModifierFlag::SHIFT_L", "L^":"ModifierFlag::CONTROL_L", "L⌥":"ModifierFlag::OPTION_L", "L⌘":"ModifierFlag::COMMAND_L", "R⇧":"ModifierFlag::SHIFT_R", "R⌥":"ModifierFlag::OPTION_R", "R⌘":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", "null":"ModifierFlag::NONE"}[v]}).join('|')}
+	kc_hex ← λ(v){↩ v.split('').map(λ(v){t ← v.charCodeAt(0); ↩ hex(t,4).split('').ζ2_mapcat(λ(v){↩ [KeyCode(v),Mod('L⌥')]}).join(',')}).join(',')}
+	kc_hex ← λ(v){↩ v.split('').map(λ(v){↩ as_char_as_hex(v).split('').ζ2_mapcat(λ(v){↩ [KeyCode(v),Mod('L⌥')]}).join(',')}).join(',')}
 	shells ← [[KeyCode('VK_OPEN_URL_dummy'),'echo dummy']]
-	shell ← λ(v){id ← KeyCode('VK_OPEN_URL_'+(Math.random()*Math.pow(2,50)).toString(36)); shells.push([id,v]); ↩ id}
+	shell ← λ(v){id ← KeyCode('VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36)); shells.push([id,v]); ↩ id}
 	chords.reverse() //! hack - karabiner applies the first matched <autogen>, and we currently get a sane order by reversing the chords
 	autogens ← [
-		'__KeyToKey__ '+KeyCode('PC_APPLICATION')+',ModifierFlag::CONTROL_L, '+KeyCode('⇥')+',ModifierFlag::CONTROL_L|ModifierFlag::SHIFT_L,',
-		'__KeyToKey__ '+KeyCode('PC_APPLICATION')+',ModifierFlag::NONE, '+KeyCode('DASHBOARD')+',',
+		'__KeyToKey__ '+KeyCode('⇪')+","+Mod('^')+","+KeyCode('⇥')+","+Mod('^','L⇧'),
+		'__KeyToKey__ '+KeyCode('⇪')+","+Mod(null)+","+shell('osascript -e '+ζ2_bash_encode('tell application "chrome" to open location "chrome:newtab"')),
+		'__KeyToKey__ '+KeyCode('LAUNCHPAD')+","+KeyCode('DASHBOARD'),
 	].concat(chords.map(λ(v){hots ← v[0].split(''); out ← v[1]
 		command_string ← typeof(out)==='string'? kc_hex(out) : shell(out[0])
 		if (hots.length===3 && hots[0] === '⇧'){
 			if (hots[1] === '⌥') {
 				if (/^[←↑↓→]$/.test(out))
-					↩ '__KeyToKey__ '+KeyCode(hots[2])+', ModifierFlag::OPTION_R|ModifierFlag::SHIFT_R|ModifierFlag::NONE,'+command_string+','
+					↩ '__KeyToKey__ '+KeyCode(hots[2])+","+Mod('R⌥','R⇧',null)+","+command_string
 				else
-					↩ '__KeyToKey__ '+KeyCode(hots[2])+', VK_OPTION|VK_SHIFT|ModifierFlag::NONE,'+command_string+','
+					↩ '__KeyToKey__ '+KeyCode(hots[2])+","+Mod('⌥','⇧',null)+","+command_string
 			} else {
-				↩ '__SimultaneousKeyPresses__ '+KeyCode(hots[1])+', '+KeyCode(hots[2])+', VK_SHIFT|ModifierFlag::NONE,'+command_string+','
+				↩ '__SimultaneousKeyPresses__ '+KeyCode(hots[1])+","+KeyCode(hots[2])+","+Mod('⇧',null)+","+command_string
 			}
 		}
 		if (hots.length === 3) ↩ null
 		↩ (
 			hots[0]==='⌥'?
-				'__KeyToKey__ '+KeyCode(hots[1])+', VK_OPTION|ModifierFlag::NONE,' :
-				'__SimultaneousKeyPresses__ '+KeyCode(hots[0])+', '+KeyCode(hots[1])+','
-			)+command_string+','
+				'__KeyToKey__ '+KeyCode(hots[1])+","+Mod('⌥',null)+"," :
+				'__SimultaneousKeyPresses__ '+KeyCode(hots[0])+","+KeyCode(hots[1])+","
+			)+command_string
 		})).filter(λ(v){↩ v})
 	↩ builder.create({root: {
 		'#list': shells.map(λ(v){↩ {vkopenurldef: {name:v[0], url:{'@type':'shell', '#cdata':v[1]}}}}),
@@ -70,3 +73,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
 
 // --------- main --------- //
 fs(arg.out).$ = make_xml(parse_lackey(fs(arg.lackey).$))
+
+// mild todo:
+// if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
+// handle chars outside of BMP
