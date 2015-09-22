@@ -18,6 +18,10 @@ def open(v,app=None,focus=True):
 	fv = re.match(r'^file://(.*)',v)
 	if fv: v = re.sub(r'\\ ',' ',v)
 
+	if app is None and fv:
+		app = "Path Finder" if os.path.isdir(fv.group(1)) else "Sublime Text"
+		if app is "Sublime Text": v = fv.group(1)
+
 	if app is "Terminal":
 		if os.path.isdir(v):
 			t = "cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear"
@@ -27,12 +31,6 @@ def open(v,app=None,focus=True):
 		os.system("osascript -e 'tell application \"terminal\"' -e 'do script \""+t+"\"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 	else:
 		subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
-	
-	if app is None:
-		# predict when path finder got used
-		fv = re.match(r'^file://(.*)',v)
-		if fv and os.path.isdir(fv.group(1)):
-			app = "Path Finder"
 
 	if app is "Path Finder": os.system("osascript -e 'tell application \"Path Finder\" to activate'")
 

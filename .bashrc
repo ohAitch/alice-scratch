@@ -18,7 +18,8 @@ sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/
 opencp() { sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
 killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
-x() { [[ $? = 0 ]] && exit; }
+is_term() { osascript -e 'path to frontmost application' | grep Terminal.app >/dev/null; }
+x() { if [[ $? = 0 ]]; then is_term || afplay ~/ali/github/scratch/sublime/win.wav; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; afplay ~/ali/github/scratch/sublime/error.wav; }; }
 ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
 rmds() { rm -f ~/.DS_STORE ~/Desktop/.DS_STORE ~/ali/**/.DS_STORE; }
 ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
