@@ -5,8 +5,7 @@
 // requireζ2 is maybe actually quite bad since it doesn't handle changes to the source ??
 
 var ζ2_compile = function(v){
-	// return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?)|@(?!-))(?!['"])/g,
-	return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩ ?|([\w_$αβγδεζηθικλμνξπρστυφχψωℂℕℚℝℤʰʲʳʷʸˡˢˣᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂᵃᵇᵈᵉᵍᵏᵐᵒᵖᵗᵘᵛᵢᵣᵤᵥᶜᶠᶻⁱⁿₐₑₒₓₕₖₗₘₙₚₛₜⱼⱽ]+)(\s*)←(;?))(?!['"])/g,
+	return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩(?!\]) ?|([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?))(?!['"])/g,
 		function(v,name,s,semi){switch(v){
 			case 'λ': return 'function'; case 'λ λ': return 'function λ'
 			case 'λ*': return 'function*'; case 'λ* λ': return 'function* λ'

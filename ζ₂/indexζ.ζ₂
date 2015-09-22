@@ -1,10 +1,6 @@
 require("./index").__ζ2_extend__(global)
 argv ← process.argv.slice(2)
 
-pipe_in_out ← λ(f){
-	read_all ← λ(θ/*Readable*/,cb){t ← []; θ.resume(); θ.setEncoding('utf8'); θ.on('data',λ(v){t.push(v)}); θ.on('end',λ(){cb(null,t.join(''))})}
-	read_all(process.stdin, λ(e,v){process.stdout.write(f(v))}) }
-
 ζ2_compile_file ← λ(v){
 	t ← v.match(/^(#!.*\n)?([\s\S]*)$/)
 	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
