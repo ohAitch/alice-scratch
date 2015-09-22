@@ -32,44 +32,55 @@ bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&"
 basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
 osa_encode ← λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'}
 
+// ----------------------------- rigid_interface ---------------------------- //
+
+rigid_interface ← (λ(){
+	PROMPT ← '[30;47m>[0m '
+	PREVIEW_PROMPT ← '[30;47m:[0m'
+	PREVIEW_MORE_PROMPT ← '[30;47m.[0m [30;47m.[0m [30;47m.[0m'
+	DATA_FILE ← '~/ali/github/scratch/prentice/~:.prentice'
+
+	var Δ = { // data
+		line:'', pos:0,
+		preview:null,
+		}
+
+	print ← λ(){a ← ζ2_A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+Δ.line); pos_set()}
+	preview ← λ(ι){
+		if (ι === null) t ← null
+		else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
+		else t ← PREVIEW_PROMPT+'\n'+ι
+		Δ.preview === t || (hide(), Δ.preview = t, show())
+		}
+	pos_set ← λ(ι){arguments.length === 1 && (Δ.pos = ι); stdout('['+(1+Δ.pos+remove_ansi_colors(PROMPT).length)+'G')}
+	line_splice ← λ(i,del,ι){Δ.pos === i || pos_set(i); no_set ← Δ.pos === Δ.line.length; Δ.line = Δ.line.slice(0,Δ.pos)+ι+Δ.line.slice(Δ.pos+del); stdout((del-ι.length>0?'[K':'')+Δ.line.slice(Δ.pos)); Δ.pos += ι.length; no_set || pos_set()}
+	on_key ← λ(key){line_a ← Δ.line; switch (key) {default:
+		/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)? line_splice(Δ.pos,0,key) :
+			on_unknown_key(key)
+		break; case /* ^c */ '\x03': hide(); process.stdin.pause()
+		break; case /* ⌫  */ '\x7f': Δ.pos > 0 && line_splice(Δ.pos-1,1,'')
+		break; case /* ⌘⌫ */ '\x15': line_splice(0,Δ.pos,'')
+		break; case /* ←  */ '[D': Δ.pos > 0 && pos_set(Δ.pos-1)
+		break; case /* →  */ '[C': Δ.pos < Δ.line.length && pos_set(Δ.pos+1)
+		break; case /* ⌘← */ '\x01': pos_set(0)
+		break; case /* ⌘→ */ '\x05': pos_set(Δ.line.length)
+		break; case /* ⇥  */ '\t': on_tab(Δ.line,Δ.pos,line_splice)
+		break; case /* ↩  */ '\r':
+			Δ.line === '' && (stdout('<reboot>\n\n'), process.exit(44)) // hack
+			preview(null); Δ.line = ''; Δ.pos = 0; stdout('\n'+PROMPT); on_line_change(line_a,true); ↩
+		}; line_a === Δ.line || on_line_change(Δ.line) }
+
+	show ← λ(){print(Δ.preview)}
+	hide ← λ(){stdout(Δ.preview === null? '[0G[2K' : '['+(height(Δ.preview)+height(PROMPT+Δ.line)-1)+'A[0G[J')}
+	start: λ(){
+		t ← fs(DATA_FILE).$; t && _.extend(Δ, _(JSON.parse(t)).pick(_.keys(Δ)))
+		process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(Δ,null,'  ')})
+		show()
+		diy_stdin(on_key)
+		}
+	↩ {start:start, print:print, preview:preview} })()
+
 // -------------------------------------------------------------------------- //
-
-PROMPT ← '[30;47m>[0m '
-PREVIEW_PROMPT ← '[30;47m:[0m'
-PREVIEW_MORE_PROMPT ← '[30;47m.[0m [30;47m.[0m [30;47m.[0m'
-DATA_FILE ← '~/ali/github/scratch/prentice/~:.prentice'
-
-D ← { // data
-	line:'', pos:0,
-	preview:null,
-	}
-print ← λ(){a ← ζ2_A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+D.line); pos_set()}
-hide_interface ← λ(){stdout(D.preview === null? '[0G[2K' : '['+(height(D.preview)+height(PROMPT+D.line)-1)+'A[0G[J')}
-show_interface ← λ(){print(D.preview)}
-preview ← λ(ι){
-	if (ι === null) t ← null
-	else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
-	else t ← PREVIEW_PROMPT+'\n'+ι
-	D.preview === t || (hide_interface(), D.preview = t, show_interface())
-	}
-pos_set ← λ(ι){arguments.length === 1 && (D.pos = ι); stdout('['+(1+D.pos+remove_ansi_colors(PROMPT).length)+'G')}
-line_splice ← λ(i,del,ι){D.pos === i || pos_set(i); no_set ← D.pos === D.line.length; D.line = D.line.slice(0,D.pos)+ι+D.line.slice(D.pos+del); stdout((del-ι.length>0?'[K':'')+D.line.slice(D.pos)); D.pos += ι.length; no_set || pos_set()}
-
-on_key ← λ λ(key){line_a ← D.line; switch (key) {default:
-	/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)? line_splice(D.pos,0,key) :
-		on_unknown_key(key)
-	break; case '\x03': hide_interface(); process.stdin.pause()
-	break; case '\r':
-		D.line === '' && (stdout('<reboot>\n\n'), process.exit(44))
-		preview(null); D.line = ''; D.pos = 0; stdout('\n'+PROMPT); on_line_change(line_a,true); ↩
-	break; case '\x7f': D.pos > 0 && line_splice(D.pos-1,1,'')
-	break; case '[D': D.pos > 0 && pos_set(D.pos-1)
-	break; case '[C': D.pos < D.line.length && pos_set(D.pos+1)
-	break; case '\x01': pos_set(0)
-	break; case '\x05': pos_set(D.line.length)
-	break; case '\x15': line_splice(0,D.pos,'')
-	break; case '\t': on_tab(D.line,D.pos,line_splice)
-	}; line_a === D.line || on_line_change(D.line) }
 
 on_unknown_key ← λ(key){print('got '+util.inspect(key).replace(/\\u00/g,'\\x'))}
 
@@ -86,7 +97,7 @@ on_tab ← λ(line,pos,line_splice){
 	}
 
 on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
-	P ← λ(ι){P = null; preview(ι)}
+	P ← λ(ι){P = null; rigid_interface.preview(ι)}
 	if (ιs[0] === 'dl') {
 		t ← ιs.slice(1).join(' ')
 		if (/^http:\/\/youtu\.be\/[^?#]+$/.λ(t)) {
@@ -111,12 +122,10 @@ on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
 	P&&P(null)
 	}
 
-if (argv.length) {print = global.print; preview = null; on_line_change(argv.join(' '),true)}
-else {
-	t ← fs(DATA_FILE).$; t && _.extend(D, _(JSON.parse(t)).pick(_.keys(D)))
-	process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(D,null,'  ')})
-	show_interface(); diy_stdin(on_key)
-	}
+// if (argv.length) {rigid_interface = null; on_line_change(argv.join(' '),true)}
+// else {
+	rigid_interface.start(); print ← rigid_interface.print
+// }
 
 // todo: hmmmm
 // we could go through the process of fetching bookmarks and the process of fetching spotify tracks, with an eye for paul's model
