@@ -1,11 +1,4 @@
-// ==UserScript==
-// @name        compact: asoftmurmur
-// @namespace   comely-naiad
-// @version     1.0.0
-// @downloadURL https://github.com/alice0meta/scratch/raw/master/userscripts/compact_asoftmurmur.user.js
 // @match       http*://*.asoftmurmur.com/*
-// @grant       none
-// ==/UserScript==
 
 $('#action-bar, #site-title, #gp-container, #about-link-container').remove()
 $('#intro-text').text('')
