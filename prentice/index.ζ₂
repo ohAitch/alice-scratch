@@ -72,12 +72,10 @@ rigid_interface ← (λ(){
 
 	show ← λ(){print(Δ.preview)}
 	hide ← λ(){stdout(Δ.preview === null? '[0G[2K' : '['+(height(Δ.preview)+height(PROMPT+Δ.line)-1)+'A[0G[J')}
-	start: λ(){
+	start ← λ(){
 		t ← fs(DATA_FILE).$; t && _.extend(Δ, _(JSON.parse(t)).pick(_.keys(Δ)))
 		process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(Δ,null,'  ')})
-		show()
-		diy_stdin(on_key)
-		}
+		show(); diy_stdin(on_key) }
 	↩ {start:start, print:print, preview:preview} })()
 
 // -------------------------------------------------------------------------- //
@@ -86,49 +84,49 @@ on_unknown_key ← λ(key){print('got '+util.inspect(key).replace(/\\u00/g,'\\x'
 
 on_tab ← λ(line,pos,line_splice){
 	if (pos !== line.length) {print('tab completion is scary if not at the end of a line'); ↩}
-	ι ← line.slice(0,pos).match(/\S*$/)[0]
+	t ← line.slice(0,pos).match(/\S*$/)[0]
 	//! potentially should preview
-	completions ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
-	if (line === ι) completions.push('ls','chrome','echo','dl')
-	completions = completions.filter(λ(t){↩ t.slice(0,ι.length) === ι})
-	if (completions.length > 1) {print('found',completions.length,'completions'); ↩}
-	if (completions.length === 0) {print('no completions found'); ↩}
-	line_splice(pos - ι.length, ι.length, completions[0])
+	ιs ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
+	if (line === t) ιs.push('ls','chrome','echo','dl')
+	ιs = ιs.filter(λ(ι){↩ ι.slice(0,t.length) === t})
+	if (ιs.length > 1) {print('found',ιs.length,'ιs'); ↩}
+	if (ιs.length === 0) {print('no ιs found'); ↩}
+	line_splice(pos - t.length, t.length, ιs[0]+' ')
 	}
 
-on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
-	P ← λ(ι){P = null; rigid_interface.preview(ι)}
-	if (ιs[0] === 'dl') {
-		t ← ιs.slice(1).join(' ')
-		if (/^http:\/\/youtu\.be\/[^?#]+$/.λ(t)) {
+on_line_change ← λ(ι,act){
+	P ← !act && λ(ι){P = null; rigid_interface.preview(ι)}
+	t ← /^(\S*) ?(.*)/.λ(ι.trim()); a ← t[1]; b ← t[2]
+	if (a === 'dl') {
+		if (/^http:\/\/youtu\.be\/[^?#]+$/.λ(b)) {
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
-				t = 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(t)
+				t = 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(b)
 				osa('tell application "terminal"; do script '+osa_encode(t)+'; activate; end tell')
 			}
 		}
-	} else if (ιs.length === 1 && (ιs[0] === 'l' || ιs[0] === 'ls')) {
+	} else if ((a === 'l' || a === 'ls') && b === '') {
 		;(act? print : P)(bash_v("-i",'cd '+bash_encode(process.cwd())+'; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l'))
-	} else if (ιs[0] === 'chrome') {
-		t ← ιs.length === 1? 'chrome:newtab' : as_url(ιs.slice(1).join(' '))
+	} else if (a === 'chrome') {
+		t ← b? as_url(b) : 'chrome:newtab'
 		!act?
 			P(t) :
 			osa('tell application "chrome" to open location '+osa_encode(postredirect_url(t)))
-	} else if (ιs[0] === 'echo') {
-		t ← ιs.slice(1).join(' ')
-		;(act? print : P)(t)
+	} else if (a === 'echo') {
+		;(act? print : P)(b)
 	}
 	P&&P(null)
 	}
 
-// if (argv.length) {rigid_interface = null; on_line_change(argv.join(' '),true)}
+// if (argv.length) on_line_change(argv.join(' '),true)
 // else {
-	rigid_interface.start(); print ← rigid_interface.print
+	print ← rigid_interface.print; rigid_interface.start()
 // }
 
 // todo: hmmmm
 // we could go through the process of fetching bookmarks and the process of fetching spotify tracks, with an eye for paul's model
+	// the song I'm listening to, crop it at 3:11 (think of me ∈ select critchpop)
 
 // mv E\t Fate Stay:Night - Emiya#0.mp3
 // crop F\t
@@ -136,7 +134,7 @@ on_line_change ← λ(ι,act){ιs ← ι.trim().split(' ')
 // http://tampermonkey.net/faq.php
 // chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#open=1bbe177e-96ec-49c8-8086-f3bf7a2a9e58
 // osa_v('tell application "chrome"; get {URL,title} of tabs of windows; end tell')
-// file:///~/ali/github/scratch/#archive/minesweeperonline.com/index.js
+// file:///~/ali/github/scratch/userscripts file:///~/ali/github/scratch/#archive/minesweeperonline.com/index.js
 
-//! line wrapping doesn't work
+// line wrapping doesn't work
 // multiline input (literal \n if the last line seemed incomplete)
