@@ -7,7 +7,7 @@ child_process ← require('child_process')
 argv ← process.argv.slice(2)
 stdout ← λ(ι){process.stdout.write(ι)}
 remove_ansi_colors ← λ(ι){↩ ι.replace(/\[.+?m/g,'')}
-diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',f)}
+diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})}
 IS_URL ← /^((https?|file):\/\/|mailto:)/.λ
 FIND_URL ← /\b((https?|file):[⟩\/][⟩\/](?:\\ |\S)+|mailto:[^\s\\@]+@[^\s\\@]+)/.λ
 postredirect_url ← λ(ι){↩ ι
@@ -57,7 +57,7 @@ rigid_interface ← (λ(){
 	on_key ← λ(key){line_a ← Δ.line; switch (key) {default:
 		/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)? line_splice(Δ.pos,0,key) :
 			on_unknown_key(key)
-		break; case /* ^c */ '\x03': hide(); process.stdin.pause()
+		break; case /* ^c */ '\x03': hide(); ↩ -1
 		break; case /* ⌫  */ '\x7f': Δ.pos > 0 && line_splice(Δ.pos-1,1,'')
 		break; case /* ⌘⌫ */ '\x15': line_splice(0,Δ.pos,'')
 		break; case /* ←  */ '[D': Δ.pos > 0 && pos_set(Δ.pos-1)
