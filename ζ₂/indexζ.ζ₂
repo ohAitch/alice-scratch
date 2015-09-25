@@ -24,7 +24,7 @@ if (argv.length === 0) {
 		// and https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee
 		// and http://nodejs.org/api/process.html
 		// for a better thing to do, but then we gave up.
-		eval(ζ2_compile(fs(argv.splice(0,1)[0]).$).replace(/^#!.*/,''))
+		eval(ζ2_compile(fs(process.argv.splice(2,1)[0]).$).replace(/^#!.*/,''))
 	break; case '-c':
 		out ← fs(argv[-1])
 		argv.slice(1,-1).map(fs).map(λ(fl){

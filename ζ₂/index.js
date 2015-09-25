@@ -13,7 +13,7 @@ var ζ2_compile = function(v){
 			// case '@': return 'this'
 			default: return semi===';'? 'var '+name+s+';' : 'var '+name+s+'='
 			}})
-		.replace(/([^'"])@(?!-)/g,'$1this')}
+		.replace(/([^'"])@(?![-'"\w])/g,'$1this')}
 
 var requireζ2 = function(name,path){
 	try {return require(name)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e

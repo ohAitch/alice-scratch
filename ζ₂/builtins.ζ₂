@@ -1,11 +1,11 @@
 require_if ← λ(v){try {↩ require(v)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e}}
 exports ← module.exports
 
-node_path ← require('path')
-util ← require('util')
+node_path ← exports.path = require('path')
+util ← exports.util = require('util')
 repl ← require('repl')
 vm ← require('vm')
-child_process ← require('child_process')
+child_process ← exports.child_process = require('child_process')
 
 PQueue ← require_if('priorityqueuejs')
 RWLock ← require_if('rwlock')
@@ -22,12 +22,6 @@ monkeypatches ← []
 monkeypatch ← λ(f){f(global); monkeypatches.push(f)}
 
 // todo: refactor def, because it is awful
-
-// exec ← λ(v){t ← child_process.execSync(v)+''; process.stdout.write(t); ↩ t}
-// Object.defineProperty(global,'ls',{get:λ(){exec("bash -c 'echo $green$(this)$reset'"); exec('CLICOLOR=1 CLICOLOR_FORCE=1 ls -AC')}})
-
-frames ← λ(){t ← Error.prepareStackTrace; Error.prepareStackTrace = λ(_,v){↩ v}; r ← new Error().stack.slice(1); Error.prepareStackTrace = t; ↩ r}
-monkeypatch(λ(G){ ('ˢ' in G) || Object.defineProperty(G,'ˢ',{get:λ(){t ← frames()[1]; ↩ t.getFunction().toString().replace(/^function /,'').split('\n').slice(t.getLineNumber() - 1).join('\n').slice(t.getColumnNumber() - 1).match(/\/\*([\s\S]*?)\*\//)[1]}}) })
 
 escape_regex ← λ(v){↩ v.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
 mkdir_p ← λ λ(v){try {fs.statSync(v).isDirectory() || fs.mkdirSync(v)} catch (e) {if(!e.code==='ENOENT')throw e; λ(node_path.dirname(v)); fs.mkdirSync(v)}}
@@ -58,9 +52,9 @@ exports.ζ2_repl_start = λ(opts){
 	wrap ← λ(v){t ← v.replace(/\x1b\[.*?m/g,''); ↩ {$:v, split:λ(){↩ [t]}, valueOf:λ(){↩ v}}}
 	t ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:wrap('\x1b[32mζ₂\x1b[39m '),
 		eval:λ(code,ctx,fl,cb){t←;
-			ctx._ !== _ && (ctx.__ = ctx._, ctx._ = _)
-			// if (t=code.match(/^(.*);↯\n$/)) {code = t[1]; } // etc. analogue of bashrc ;x
-			if (t=code.match(/^>(.*)/)) code = '__SPECIAL__('+util.inspect(t[1].trim())+')' // hack for apprentice
+			if (ctx._ !== _) {ctx.__ = ctx._; ctx._ = _}
+			if (ctx.fs !== fs && ctx.fs === require('fs')) ctx.fs = fs // hack: god, such a hack
+			if (t=code.match(/^>(.*)/)) code = '__SPECIAL__('+util.inspect(t[1].trim())+')' // hack: for apprentice
 			try {t = vm.createScript(exports.ζ2_compile(code), {filename:fl, displayErrors:false})}
 			catch (e) {typeof(e.stack)==='string' && (e.stack = e.stack.replace(/(\n    at )[\s\S]*/,'$1<repl>')); cb(e,undefined); return}
 			try {cb(undefined, @.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(ctx,{displayErrors:false}))}
@@ -83,6 +77,9 @@ print ← exports.print = λ(){a ← ζ2_A(arguments); process.stdout.write(spri
 err ← exports.err = λ(v){print.apply(null,['ζ2_err'].concat(ζ2_A(arguments))); throw Error(v)}
 _(exports).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt'))
 _(exports).extend({ln: Math.log, ln2: Math.log2, ln10: Math.log10})
+exports.multiline = λ(θ){ι ← θ.toString().split('\n').slice(1,-1); t ← Math.min.apply(null,ι.map(λ(ι){↩ ι.match(/^\t*/)[0].length})); ι = ι.map(λ(ι){↩ ι.slice(t)}); ↩ (ι[0]==="" && ι[ι.length-1]===""? ι.slice(1,-1) : ι).join('\n')}
+
+monkeypatch(λ(G){ ('ˢ' in G) || Object.defineProperty(G,'ˢ',{get:λ(){t ← frames()[1]; ↩ t.getFunction().toString().replace(/^function /,'').split('\n').slice(t.getLineNumber() - 1).join('\n').slice(t.getColumnNumber() - 1).match(/\/\*([\s\S]*?)\*\//)[1]}}) })
 
 exports.ζ2_gen2fn = λ(f){t ← f(); ↩ λ(){↩ t.next().value}}
 monkeypatch(λ(G){ G.Function.prototype.def = λ(m,get,set){O(@.prototype).def(m,get,set); ↩ @} })
@@ -237,8 +234,6 @@ Path.prototype.rmrf = λ(){
 
 // ----------------------------------- new ---------------------------------- //
 
-exports.ζ2_bash_encode = λ(v){↩ v.replace(/\W/g,'\\$&')}
-
 exports.λ = λ(ι){r ← λ(i){↩ ι[i]}; r.ι = ι; ↩ r}
 monkeypatch(λ(G){ G.String.def('λ',λ(){θ←@; r ← λ(ι){↩ ι[θ]}      ; r.ι = @; ↩ r}) })
 monkeypatch(λ(G){ G.Number.def('λ',λ(){θ←@; r ← λ(ι){↩ ι[θ]}      ; r.ι = @; ↩ r}) })
@@ -247,6 +242,19 @@ monkeypatch(λ(G){ G.RegExp.def('λ',λ(){θ←@; r ← λ(ι){↩ ι.match(θ)}
 exports.pipe_in_out = λ(f){
 	read_all ← λ(θ/*Readable*/,cb){t ← []; θ.resume(); θ.setEncoding('utf8'); θ.on('data',λ(v){t.push(v)}); θ.on('end',λ(){cb(null,t.join(''))})}
 	read_all(process.stdin, λ(e,v){process.stdout.write(f(v))}) }
+
+;(λ(){
+osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
+osa_parse_array ← λ(ι){↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+exports.osa = λ(ι){child_process.exec(osa_gen(ι))}
+exports.osaᵥ = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
+})()
+exports.bash = λ(ι){child_process.exec("bash -c "+bash_encode(ι))}
+exports.bashᵥ = λ(ι){↩ (child_process.execSync("bash -c "+bash_encode(ι))+'').replace(/\n$/,'')}
+
+exports.bash_encode = exports.ζ2_bash_encode = λ(){↩ ζ2_A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(" ")}
+exports.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
+exports.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
 
 // ----------------------------- discarded bits ----------------------------- //
 
