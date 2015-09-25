@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
-npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
+npmi() { mkdir npm_inc_tmp; mv package.json npm_inc_tmp; cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 
 # if versions are equal:
 # global.cmp_versions = λ(cb){

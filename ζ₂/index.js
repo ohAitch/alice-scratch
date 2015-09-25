@@ -4,9 +4,9 @@
 // let's turn everything into continuation passing style!
 // requireζ2 is maybe actually quite bad since it doesn't handle changes to the source ??
 
-var ζ2_compile = function(v){
-	return v.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩(?!\]) ?|([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?))(?!['"])/g,
-		function(v,name,s,semi){switch(v){
+var ζ2_compile = function(ι){
+	return ι.replace(/(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩(?!\]) ?|([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?))(?!['"])/g,
+		function(ι,name,s,semi){switch(ι){
 			case 'λ': return 'function'; case 'λ λ': return 'function λ'
 			case 'λ*': return 'function*'; case 'λ* λ': return 'function* λ'
 			case '↩': case '↩ ': return 'return '

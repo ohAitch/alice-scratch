@@ -1,14 +1,14 @@
 require("./index").__ζ2_extend__(global)
 argv ← process.argv.slice(2)
 
-ζ2_compile_file ← λ(v){
-	t ← v.match(/^(#!.*\n)?([\s\S]*)$/)
+ζ2_compile_file ← λ(ι){
+	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
 	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
 		'require("zeta-two").__ζ2_extend__(global);'+
 		ζ2_compile(t[2]) }
-ζ2_compile_inverse ← λ(v){
-	↩ v.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g,
-		λ(v,name,s,eq){switch(v){
+ζ2_compile_inverse ← λ(ι){
+	↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g,
+		λ(ι,name,s,eq){switch(ι){
 			case 'function': ↩ 'λ'
 			case 'return': ↩ '↩'
 			case 'this': ↩ '@'
@@ -33,14 +33,14 @@ if (argv.length === 0) {
 			})
 	break; case '-e': t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
 	break; case '--es':
-		JSON.parse(argv[1]).map(λ(v){
+		JSON.parse(argv[1]).map(λ(ι){
 			0,λ __special_es__u7h7zxgvi__(){
-			try {t ← eval(ζ2_compile(v)); t !== undefined && process.stdout.write(t+'')}
+			try {t ← eval(ζ2_compile(ι)); t !== undefined && process.stdout.write(t+'')}
 			catch (e) {print(typeof(e.stack)==='string'? e.stack.replace(/(\n    at )(?:eval \(eval at )?__special_es__u7h7zxgvi__[\s\S]*/,'$1<eval>') : '<error> '+e)}
 			}()
 			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
-	break; case '--version': print('v'+JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '--version': print('ι'+JSON.parse(fs(__dirname+'/package.json').$).version)
 	break; case '--ζj': pipe_in_out(ζ2_compile)
 	break; case '--jζ': pipe_in_out(ζ2_compile_inverse)
 }
