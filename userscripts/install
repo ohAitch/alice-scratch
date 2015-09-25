@@ -1,7 +1,5 @@
 #!/usr/bin/env ζ₂
-path ← require("path")
-child_process ← require("child_process")
-arg ← {ι: process.argv[3]}
+arg ← {ι: process.argv[2]}
 
 // ---- hacky copypaste --- //
 bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&")}).join(" ")}

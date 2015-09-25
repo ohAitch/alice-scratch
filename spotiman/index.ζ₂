@@ -40,7 +40,7 @@ getDatabaseoid ← λ(cb){
 		name: v.name,
 		link: v.link,
 		artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
-		album: (λ(v){↩ {name: v.name, link: v.link}})(v.album),
+		album: (λ(v){↩ {name: v&&v.name, link: v&&v.link}})(v.album),
 		tags: [],
 		createTime: [],
 		}) ) } })()

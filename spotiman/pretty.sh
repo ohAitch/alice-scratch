@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-t="${BASH_SOURCE[0]}"; while [ -h "$t" ]; do d="$(cd -P "$(dirname "$t")" && pwd)"; t="$(readlink "$t")"; [[ $t != /* ]] && t="$d/$t"; done; cd -P "$(dirname "$t")" # cd directory of this file
+cd $(dirname $(realpath "${BASH_SOURCE[0]}"))
 
 sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; else open -a "Sublime Text.app" -f; fi; }
 

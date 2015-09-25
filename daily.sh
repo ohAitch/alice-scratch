@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 shopt -s globstar
-rmds() { rm -f ~/.DS_STORE ~/Desktop/.DS_STORE ~/ali/**/.DS_STORE; }
+rmds() { rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 date_month() { date -u +"%Y-%m"; }
 
