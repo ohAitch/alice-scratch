@@ -3,7 +3,7 @@ import os, subprocess
 import re
 import urllib
 
-FIND_URL_REGEX = r'\b((https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<![".,)\]}])(?<!"[".,)\]}]))|mailto:[^\s\\@]+@[^\s\\@]+)'
+FIND_URL_REGEX = r'\b((https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<!["”.,+)\]}])(?<!"["”.,+)\]}]))|mailto:[^\s\\@]+@[^\s\\@]+)'
 IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
 def bash_encode(ι): return re.escape(ι)

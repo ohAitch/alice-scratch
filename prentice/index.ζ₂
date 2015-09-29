@@ -1,6 +1,8 @@
 #!/usr/bin/env ζ₂
-util ← require('util')
-child_process ← require('child_process')
+
+// file:///~/ali/github/lang-alpha/how\ code-thoughts\ really\ work.✨.js
+// file:///~/ali/github/scratch/#archive/README.txt
+// bug: line wrapping doesn't work
 
 // ---------------------------------- util ---------------------------------- //
 
@@ -18,19 +20,6 @@ as_url ← λ(ι){t←;
 	(t=FIND_URL(ι))? encodeURI(t[1].replace(/⟩/g,'/').replace(/\\ /g,' ')) :
 		"http://google.com/search?q="+encodeURIComponent(ι) }
 height ← λ(ι){↩ remove_ansi_colors(ι).split('\n').map(λ(ι){↩ 1+floor(ι.length/80)}).reduce(λ(a,b){↩a+b},0)}
-
-osa←; osa_v←; (λ(){
-	osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
-	osa_parse_array ← λ(ι){↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
-	osa = λ(ι){child_process.exec(osa_gen(ι))}
-	osa_v = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
-	})()
-bash ←   λ(flag,ι){!ι && (ι = flag, flag = ''); child_process.exec("bash -c "+flag+" "+bash_encode(ι))}
-bash_v ← λ(flag,ι){!ι && (ι = flag, flag = ''); ↩ (child_process.execSync("bash -c "+flag+" "+bash_encode(ι))+'').replace(/\n$/,'')}
-
-bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&")}).join(" ")}
-basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
-osa_encode ← λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'}
 
 // ----------------------------- rigid_interface ---------------------------- //
 
@@ -102,12 +91,12 @@ on_line_change ← λ(ι,act){
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
-				t = 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+bash_encode(basename_encode('%(title)s '+t+' .%(ext)s'))+' '+bash_encode(b)
+				t ← 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+bash_encode(basename_encode('%(title)s '+b+' .%(ext)s'))+' '+bash_encode(b)+'; x'
 				osa('tell application "terminal"; do script '+osa_encode(t)+'; activate; end tell')
 			}
 		}
 	} else if ((a === 'l' || a === 'ls') && b === '') {
-		;(act? print : P)(bash_v("-i",'cd '+bash_encode(process.cwd())+'; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l'))
+		;(act? print : P)(bashᵥ('cd '+bash_encode(process.cwd())+'; . ~/.bashrc; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l'))
 	} else if (a === 'chrome') {
 		t ← b? as_url(b) : 'chrome:newtab'
 		!act?
@@ -116,6 +105,7 @@ on_line_change ← λ(ι,act){
 	} else if (a === 'echo') {
 		;(act? print : P)(b)
 	}
+	// osaᵥ('tell application "chrome"; get {URL,title} of tabs of windows; end tell')
 	P&&P(null)
 	}
 

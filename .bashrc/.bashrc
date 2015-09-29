@@ -17,15 +17,20 @@ sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/
 opencp() { sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
 killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
-ar() { tar -cf "${1%/}.tar" "$@"; xz -v "${1%/}.tar"; }
+ar() { tar -c "$@" | xz -v > "${1%/}.tar.xz"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod a+x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
 bookmarks() { ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb; }
-alias du’=du_; du_() { ( shopt -s nullglob; du -hd0 .[!.] .??* * .; ) }
+alias du’=du_; du_() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" | wc -l | tr '\n' '\t'; echo "$t"; done ) }
+
 im_to_png() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
-im_scale() { convert -scale "$1" "$2" "$2"; }
-im_concat() { [[ $1 = 1x || $1 = x1 ]] || { echo bad tile mode '"'$1'"'; return 1; }; montage -mode concatenate -tile "$@"; }
+im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
+im_concat() {
+	tile="$1"; if [[ $tile = 1x || $tile = x1 ]]; then shift; else tile=x1; fi
+	[ -e "${@: -1}" ] && { echo "won't overwrite" '"'"${@: -1}"'"'; return 1; }
+	montage -mode concatenate -tile "$tile" "$@"; }
+im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
 del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql() { (-q qlmanage -p "$@" &); }
 
