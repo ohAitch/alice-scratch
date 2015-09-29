@@ -1,0 +1,132 @@
+inquire ← λ(cb,this_sen,inquiry,msg){
+	ctx_push({type:'my_inquiry', replying_to:this_sen, v:inquiry, goto_:cb})
+	print.apply(null,aif(msg))
+	}
+
+mega_table ← {
+// '↯': λ(){print("sorry, i'm totally at a loss to parse that")},
+// 'small talk': λ(){print("small talk acknowledged :P")},
+'yes': λ(){t←;
+	if (context.length === 1 && context[0].type === 'my_inquiry' && (t=context[0].v.match(/^noun: (.*)$/))) {
+		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:t[1]}); sen = v.replying_to; v.goto_()
+	} else if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'proposed: go to sleep log') {
+		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:true}); sen = v.replying_to; v.goto_()
+	} else if (context.length === 2 && context[1].type === 'my_inquiry' && (t=context[1].v.match(/^inquiry: (.+?) is a project of yours at (.+?)$/))) {
+		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:t[2]}); sen = v.replying_to; v.goto_()
+	} else {
+		print("..."); throw Error('↯')
+	}
+	},
+'no': λ(){t←;
+	if (context.length === 1 && context[0].type === 'my_inquiry' && (t=context[0].v.match(/^noun: (.*)$/))) {
+		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:null}); sen = v.replying_to; v.goto_()
+	} else if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'proposed: go to sleep log') {
+		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:false}); sen = v.replying_to; v.goto_()
+	} else {
+		print("..."); throw Error('↯')
+	}
+	},
+// <only finished from some sources>
+// 'noun: $thing in $place': λ(){t←sen.args; thing ← t[0]; place ← t[1];
+// 	if (context.length === 1 && context[0].type === 'my_inquiry' && context[0].v === 'noun') {
+// 		v ← ctx_pop(); ctx_push({type:'ur_answer', to:v, v:['noun: $thing in $place',thing,place]}); sen = v.replying_to; v.goto_()
+// 	} else {
+// 		print("..."); throw Error('↯')
+// 	}
+// 	},
+'wants to refactor $thing': λ(){t←sen.args; thing ← t[0]
+	if (thing.match(/^(a standalone (javascript|js) file|some (javascript|js)|(javascript|js))$/)) {
+		// know no way in which this is a sequitur
+		if (context.length) {context = []; print("(assuming non-sequitur)")}
+		// look for js files in schelling places
+		schelling_places ← ['.']
+		l ← _(schelling_places.map(λ(v){↩ fs(v).find('> .js')})).flatten(false).map(λ(v){↩ _(path.parse(v)).extend({v:v})})
+		// prioritize schelling filenames
+		li ← _(l).groupBy('name'); t = li['index'].concat(li['main']||[]); l = t.length? t : l.slice(0,1)
+		l = _(l).map('v')
+		// ask about them
+		l.length===0? inquire(mega_table.INQ_0,sen, 'noun', "okay. i didn't find any in the schelling places. point me to it?") :
+		l.length===1? inquire(mega_table.INQ_1,sen, 'noun: '+l[0], ["?:",l[0]]) :
+			inquire(null,sen, 'noun:*\n'+l.join('\n'), "which? i found\n"+l.join('\n'))
+	} else {
+		// know no way in which this is a sequitur
+		if (context.length) {context = []; print("(assuming non-sequitur)")}
+		// // // is that a file in a schelling place?
+		// // schelling_places ← ['.']
+		// // l ← _(schelling_places.map(λ(v){↩ fs(v).find('> #'+thing)[0]})).filter(λ(v){↩ v})[0]
+		// // if so, tell her my guess and open it
+		// if (l) {
+		// 	print("(assuming you mean "+l+")")
+		// 	print("okay, let's open it!")
+		// 	sublime_open(l)
+		// // else, ask for more information
+		// } else {
+		// 	inquire(mega_table.INQ_0,sen, 'noun', "eep. i didn't find it in any of the schelling places. also i don't think i can remember it. can you point me to it again, in more detail?")
+		// }
+	}
+	},
+// <only finished from some sources>
+// 'INQ_0': λ(){
+// 	if (context.length === 1 && context[0].type === 'ur_answer' && context[0].v[0] === 'noun: $thing in $place') {
+// 		v ← context[0]; thing ← v.v[1]; place ← v.v[2]
+// 		guess ← fs(process.env.HOME+'/ali').findˢ('#'+place).next().value
+// 		inquire(mega_table.INQ_2,sen,'inquiry: '+place+' is a project of yours at '+guess,["is",place,"a project of yours at",guess,"?"])
+// 		// also reasonable: print(place,"?")
+// 	} else {
+// 		print("..."); throw Error('↯')
+// 	}
+// 	},
+'INQ_1': λ(){
+	if (context.length === 1 && context[0].type === 'ur_answer' && context[0].v) {
+		v ← ctx_pop()
+		print("here, let's open it")
+		sublime_open(v.v)
+	} else {
+		v ← ctx_pop()
+		inquire(mega_table.INQ_0,sen, 'noun', "okay. point me to it?")
+	}
+	},
+'INQ_2': λ(){
+	if (context.length === 2 && context[1].type === 'ur_answer' && fs(context[1].v+'/'+context[0].v[1]).exists()) {
+		// 		if (!fs(file).exists()) {
+		// 			print("er, sorry, i don't see anything at",file)
+		file ← context[1].v+'/'+context[0].v[1]
+		ctx_pop(); ctx_pop()
+		print("here, let's open it")
+		sublime_open(file)
+	} else {
+		print("..."); throw Error('↯')
+	}
+	},
+'it is a project of mine': λ(){
+	print("..."); throw Error('↯')
+	// 	// // wanna refactor -> ./index.js ? -> nah. acorn.js over in ✨ -> ✨ ? -> that's a project of mine
+	// 	// [(/^that's a project of mine$/), λ(){
+	// 	// 	thing ← '✨'
+	// 	// 	t ← fs(process.env.HOME+'/ali').findˢ('#'+thing).next().value
+	// 	// 	print("at",t,"?")
+	// 	// 	}],
+	},
+'inquiry: you can talk to sublime text': λ(){print("a little bit! i can read text and write text and open files.")},
+'help me do a morning update': λ(){
+	// know no way in which this is a sequitur
+	if (context.length) {context = []; print("(assuming non-sequitur)")}
+
+	sublime_open(fs('~/ali/scratch/planspad').path)
+	setTimeout(λ(){ sublime_eval("import re\nt = view.substr(sublime.Region(0,view.size()))\nt = re.search(r'---+ percolation ---+[\\s\\S]*?---+ ready ---+[\\s\\S]*?(\\n)\\n*---+ queue ---+[\\s\\S]*?(\\n[ \\t]+)(.+)',t)\nview.run_command('exec_edit',{'v':'view.erase(edit,sublime.Region('+repr(t.start(2))+','+repr(t.end(3))+'))\\nview.insert(edit,'+repr(t.end(1))+','+repr(t.group(3)+'\\n')+')'})") },500)
+	print("i've updated your queue.")
+
+	inquire(mega_table.INQ_3,sen,'proposed: go to sleep log',"-> sleep log now?")
+	},
+'INQ_3': λ(){
+	if (context.length !== 1) {print("..."); throw Error('↯')}
+	v ← ctx_pop()
+	if (v.v) {
+		sublime_open(fs('~/ali/scratch/records.txt').path)
+		setTimeout(λ(){ sublime_eval('view.show(view.size())\nview.sel().clear()\nview.sel().add(sublime.Region(view.size()))') },500)
+		print('done :)')
+	} else {
+		print('alright. do it sometime today, though!')
+	}
+	},
+}
