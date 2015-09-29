@@ -5,7 +5,7 @@
 ########### private ##########
 shopt -s globstar
 is_term() { osascript -e 'path to frontmost application' | grep Terminal.app >/dev/null; }
-exp() { a=$(stat -f "%p" "$1"); chmod a+x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod a+x \"$1\"$reset"; }
+exp() { a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
 
 ###### interactive only ######
 shopt -s autocd; shopt -s no_empty_cmd_completion
@@ -19,10 +19,12 @@ killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.pli
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 ar() { tar -c "$@" | xz -v > "${1%/}.tar.xz"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
-dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod a+x $tmp; $tmp; rm $tmp; }
+dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
 bookmarks() { ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb; }
-alias du’=du_; du_() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" | wc -l | tr '\n' '\t'; echo "$t"; done ) }
+d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
+del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+ql() { (-q qlmanage -p "$@" &); }
 
 im_to_png() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
 im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
@@ -31,8 +33,7 @@ im_concat() {
 	[ -e "${@: -1}" ] && { echo "won't overwrite" '"'"${@: -1}"'"'; return 1; }
 	montage -mode concatenate -tile "$tile" "$@"; }
 im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
-del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-ql() { (-q qlmanage -p "$@" &); }
+im_date() { for v in "$@"; do printf "$v"; printf $'\t'; t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); echo "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z"; done; }
 
 export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
 command_not_found_handle() { t=0
@@ -60,7 +61,7 @@ date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
 x() { if [[ $? = 0 ]]; then is_term || afplay ~/ali/github/scratch/.bashrc/win.wav; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; afplay ~/ali/github/scratch/.bashrc/error.wav; }; }
 rmds() { rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
-ζr() { ζ₂ -c "$1" .; chmod a+x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
+ζr() { pushd $(dirname "$1") >/dev/null; ζ₂ -c "$1" .; popd >/dev/null; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
 
 ####### prentice knows #######
 chrome() { /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
