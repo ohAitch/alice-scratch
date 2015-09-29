@@ -43,7 +43,7 @@ rigid_interface ← (λ(){
 		}
 	pos_set ← λ(ι){arguments.length === 1 && (Δ.pos = ι); stdout('['+(1+Δ.pos+remove_ansi_colors(PROMPT).length)+'G')}
 	line_splice ← λ(i,del,ι){Δ.pos === i || pos_set(i); no_set ← Δ.pos === Δ.line.length; Δ.line = Δ.line.slice(0,Δ.pos)+ι+Δ.line.slice(Δ.pos+del); stdout((del-ι.length>0?'[K':'')+Δ.line.slice(Δ.pos)); Δ.pos += ι.length; no_set || pos_set()}
-	on_key ← λ(key){line_a ← Δ.line; switch (key) {default:
+	on_key ← λ(key){line_a ← Δ.line; key = key.replace(/\r/g,'\n'); switch (key) {default:
 		/^[ -~±-³¹ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱ⁴-₎ₐ-ₓₕ-ₜ↩]+$/.λ(key)? line_splice(Δ.pos,0,key) :
 			on_unknown_key(key)
 		break; case /* ^c */ '\x03': hide(); ↩ -1
@@ -54,10 +54,10 @@ rigid_interface ← (λ(){
 		break; case /* ⌘← */ '\x01': pos_set(0)
 		break; case /* ⌘→ */ '\x05': pos_set(Δ.line.length)
 		break; case /* ⇥  */ '\t': on_tab(Δ.line,Δ.pos,line_splice)
-		break; case /* ↩  */ '\r':
-			Δ.line === '' && (stdout('<reboot>\n\n'), process.exit(44)) // hack
-			preview(null); Δ.line = ''; Δ.pos = 0; stdout('\n'+PROMPT); on_line_change(line_a,true); ↩
-		}; line_a === Δ.line || on_line_change(Δ.line) }
+		break; case /* ↩  */ '\n':
+			if (Δ.line === '') {stdout('<reboot>\n\n'); process.exit(44)} // hack
+			preview(null); Δ.line = ''; Δ.pos = 0; stdout('\n'+PROMPT); do_command(line_a); ↩
+		}; line_a === Δ.line || do_command('<pre> '+Δ.line) }
 
 	show ← λ(){print(Δ.preview)}
 	hide ← λ(){stdout(Δ.preview === null? '[0G[2K' : '['+(height(Δ.preview)+height(PROMPT+Δ.line)-1)+'A[0G[J')}
@@ -83,7 +83,7 @@ on_tab ← λ(line,pos,line_splice){
 	line_splice(pos - t.length, t.length, ιs[0]+' ')
 	}
 
-on_line_change ← λ(ι,act){
+do_command ← λ(ι){act←; ι = ι.replace(/^(?:<pre> )?/,λ(ι){act = !ι; ↩ ''})
 	P ← !act && λ(ι){P = null; rigid_interface.preview(ι)}
 	t ← /^(\S*) ?(.*)/.λ(ι.trim()); a ← t[1]; b ← t[2]
 	if (a === 'dl') {
@@ -109,22 +109,71 @@ on_line_change ← λ(ι,act){
 	P&&P(null)
 	}
 
-// if (argv.length) on_line_change(argv.join(' '),true)
-// else {
-	print ← rigid_interface.print; rigid_interface.start()
+/* todo: hmmmm
+we could go through the process of _, with an eye for paul's model https://medium.com/ai-control/safe-automated-assistants-aa69edd46a57 
+	fetching bookmarks
+		ι ← "~/Library/Application Support/Google/Chrome/Default/Bookmarks"
+		ι = JSON.parse(fs(ι).$)
+		ι = ι.roots.bookmark_bar.children
+		ι = (λ λ(ι){↩
+			Array.isArray(ι)?
+				ι.map(λ).join("\n") :
+			ι.children?
+				(ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
+			ι.url === "http://transparent-favicon.info/favicon.ico"?
+				ι.name :
+			ι.url?
+				(!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
+				JSON.stringify(ι)})(ι)
+		child_process.spawn('bash',['-c','. ~/.bashrc; sb']).stdin.end(ι)
+	fetching spotify tracks
+	the song I'm listening to, crop it at 3:11 (think of me ∈ select critchpop)
+	mv E\t Fate Stay:Night - Emiya#0.mp3
+		mv E\t "Fate Stay:Night - Emiya#0.mp3"
+	crop Fate\t
+		// broken! ffmpeg exits too quickly.
+		ι ← 'Fate Stay:Night - Emiya#0.mp3'
+		to ← 389 // 6:29
+		bash("cp "+bash_encode(ι)+" "+bash_encode(ι)+".orig; . ~/.bashrc; del "+bash_encode(ι)+".orig; ffmpeg -y -ss 0 -t "+to+" -i "+bash_encode(ι)+" -acodec copy "+bash_encode(ι))
+	lyrics of current song
+		ι ← osaᵥ('tell application "spotify"; get {artist,album,name} of current track; end tell')
+		osa('tell application "chrome" to open location '+osa_encode(postredirect_url(as_url(ι.join(' ')+' lyrics'))))
+	download these songs
+		Limozeen - Because, It's Midnite                              http://youtu.be/jsArcMMqbhw
+		Clint Mansell - Together We Will Live Forever (The Last Man)  http://youtu.be/cDAO4Ql1cLU
+		Homestuck - Cascade                 ✓✓                        http://homestuck.bandcamp.com/track/cascade
+		Steve Conte - Call Me Call Me                                 http://youtu.be/AiumBwlr-CU
+		Apollo Sunshine - We Are Born When We Die                     http://youtu.be/GKAgo-g5V2E
+		Danger - 13h12                                                http://youtu.be/-gBCVeisp6M
+		Phantom Power Music - Overpowered                             http://youtu.be/VBlaWzMiZYw
+		B-Movie - Nowhere Girl (Adam Freeland mix)                    http://youtu.be/LIRdDl9Ba98
+		Origa - Inner Universe              ✓✓                        http://youtu.be/EIVgSuuUTwQ
+		I Am Kloot - Avenue Of Hope                                   http://youtu.be/9hZftgET4GI
+		Lana Del Rey - Born To Die (Gemini remix)                     http://youtu.be/awaz1aNTNL8
+		Johnossi - Maverick                                           http://youtu.be/ZcM7lbsnAr4
+		Porcupine Tree - The Sky Moves Sideways                       http://youtu.be/590BYwVuC_E
+		Vivien Chebbah - Imperia                                      http://youtu.be/qyOKGKisGMs
+		Donna Burke - Sins Of The Father    ✓✓                        http://youtu.be/GXs9V4x0W2E
+*/
+
+// do_user_command ← λ(ι){
+// 	if (Math.random() < 0.01) {
+
+// 	}
 // }
 
-// todo: hmmmm
-// we could go through the process of fetching bookmarks and the process of fetching spotify tracks, with an eye for paul's model
-	// the song I'm listening to, crop it at 3:11 (think of me ∈ select critchpop)
+// global.primitive = {eval: λ(ι){eval(ι)}, print: print}
+// do_command_ ← λ(ι){t←;
+// 	if ((t=ι.match(/^(\S+) ?([\s\S]*)/)) && primitive[t[1]]) primitive[t[1]](t[2])
+// 	else predict_sequence(ι).map(do_command_)
+// 	}
 
-// mv E\t Fate Stay:Night - Emiya#0.mp3
-// crop F\t
+// predict_sequence ← λ(ι){
+// 	↩ ['print hello world']
+// 	// [this] guesses what the value F(Q) = [Q1, Q2, …, Qk] would have been, if you had been asked to enter training data and Q* = Q had been chosen. It then executes each instruction Q1, Q2, …, Qk.
+// 	}
 
-// http://tampermonkey.net/faq.php
-// chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#open=1bbe177e-96ec-49c8-8086-f3bf7a2a9e58
-// osa_v('tell application "chrome"; get {URL,title} of tabs of windows; end tell')
-// file:///~/ali/github/scratch/userscripts file:///~/ali/github/scratch/#archive/minesweeperonline.com/index.js
-
-// line wrapping doesn't work
-// multiline input (literal \n if the last line seemed incomplete)
+// if (argv[0] === '2') {global.__SPECIAL__ = do_user_command; ζ2_repl_start()}
+// // else if (argv.length) do_command(argv.join(' ')+'\n')
+// else
+{print = rigid_interface.print; rigid_interface.start()}
