@@ -16,13 +16,13 @@ gen ← λ(ι){name←;
 		// ==UserScript==
 		// @name        NAME
 		REST
-		// @require     file://FILE
+		// @require     FILE
 		// @grant       none
 		// ==/UserScript==
 		*/})
 		.replace("NAME",name=path.basename(ι,".js"))
-		.replace("FILE",fs(ι).resolve())
 		.replace("REST",fs(ι).$.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
+		.replace("FILE",'file://'+fs(ι).resolve())
 	u ← "/tmp/userscript_"+Math.random().toString(36).slice(2,10)+".user.js"
 	fs(u).$ = t
 	t ← λ(){osa('tell application "chrome" to open location '+osa_encode('file://'+u))}
@@ -36,7 +36,7 @@ else {
 		if (!ιs.length) ↩ -1
 		ι ← ιs.shift()
 		print('  '+ι[0]); yield
-		osa('tell application "chrome" to open location '+osa_encode('file://'+ι[1]))
+		ι[1]()
 		}}(); t.next()
 	diy_stdin(λ(key){↩ key==='\x03'? -1 : t.next().value})
 	}

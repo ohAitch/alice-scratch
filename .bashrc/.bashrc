@@ -6,6 +6,7 @@
 shopt -s globstar
 is_term() { osascript -e 'path to frontmost application' | grep Terminal.app >/dev/null; }
 exp() { a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
+bash_escape_() { sed "s/'/'\\\\''/g"; }
 
 ###### interactive only ######
 shopt -s autocd; shopt -s no_empty_cmd_completion
@@ -19,9 +20,13 @@ killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.pli
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 ar() { tar -c "$@" | xz -v > "${1%/}.tar.xz"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
-dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
+# dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
+dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
-bookmarks() { ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb; }
+bookmarks() {
+	if [[ $1 = t ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]}).join("\n")' | sb
+	else ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb
+	fi; }
 d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql() { (-q qlmanage -p "$@" &); }
@@ -59,7 +64,7 @@ export PATH="./node_modules/.bin:/usr/local/bin:$PATH:."
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
-x() { if [[ $? = 0 ]]; then is_term || afplay ~/ali/github/scratch/.bashrc/win.wav; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; afplay ~/ali/github/scratch/.bashrc/error.wav; }; }
+x() { t=$?; if [[ $t = 0 ]]; then is_term || afplay ~/ali/github/scratch/.bashrc/win.wav; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; afplay ~/ali/github/scratch/.bashrc/error.wav; }; return $t; }
 rmds() { rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 ζr() { pushd $(dirname "$1") >/dev/null; ζ₂ -c "$1" .; popd >/dev/null; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
 

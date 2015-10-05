@@ -19,8 +19,11 @@ cp ~/Library/Application\ Support/Google/Chrome/Default/Bookmarks "$out/bookmark
 cp ~/Library/Application\ Support/Google/Chrome/Default/History "$out/chrome History $(date_month).db"
 cp ~/Library/Spelling/LocalDictionary "$out/dictionary/$(date_i).txt"
 cp ~/Library/Application\ Support/Skype/alice0meta/main.db "$out/skype zii-prime macbook $(date_month).db"
+
 ls -AloR ~/ali > "$out/ls/$(date_i) ~:ali.txt"
 ls -Alo /Applications > "$out/ls/$(date_i) :Applications.txt"
 ls -Alo ~/Applications > "$out/ls/$(date_i) ~:Applications.txt"
-ls -Alo ~/Applications/Chrome\ Apps > "$out/ls/$(date_i) ~:Applications:Chrome Apps.txt"
+ls -Alo ~/Applications/Chrome\ Apps.localized > "$out/ls/$(date_i) ~:Applications:Chrome Apps.localized.txt"
+echo $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)" > "$out/ls/$(date_i) brew ls.txt"
+
 cd ~/spotiman; ./backup.sh

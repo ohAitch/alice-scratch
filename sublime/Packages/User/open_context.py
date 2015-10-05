@@ -33,6 +33,7 @@ def open(v,app=None,focus=True):
 			t = "cd '"+dir+"'; clear; set -- '"+base+"'; ({ sleep 0.01; printf \"\\b${green}/${purple}"+base+" ${reset}\"; } &)"
 		os.system("osascript -e 'tell application \"terminal\"' -e 'do script "+osa_encode(t)+"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 	else:
+		print([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 		subprocess.call([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])
 
 	if app is "Path Finder": os.system("osascript -e 'tell application \"Path Finder\" to activate'")
@@ -44,7 +45,7 @@ def github_url_of_file_in_repo(fl):
 	user = 'dreeves' if t.group(1) == 'beeminder' else 'machine-intelligence' if t.group(1) == 'research-forum' else 'alice0meta'
 	return 'https://github.com/'+urllib.parse.quote(user+'/'+t.group(1)+'/blob/master/'+t.group(2))
 
-def omnibox(v): return v if re.match(IS_URL_REGEX,v) else "https://www.google.com/search?q="+v
+def omnibox(ι): return ι if re.match(IS_URL_REGEX,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8"))
 
 class OpenContextCommand(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,edges=True):

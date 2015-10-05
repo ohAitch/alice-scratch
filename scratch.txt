@@ -82,3 +82,5 @@ $.on_view = function(f){document.addEventListener('visibilitychange',function(){
 var poll = function(f,cb){var t; if (t=f()) cb(null,t); else setTimeout(poll,10,f,cb)}
 $.css = function(v){$('head').append('<style>'+v+'</style>')}
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
+
+minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | bash_escape_)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | bash_escape_)'"; done; }

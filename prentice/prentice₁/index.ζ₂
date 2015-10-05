@@ -132,6 +132,7 @@ we could go through the process of _, with an eye for paul's model https://mediu
 		mv E\t "Fate Stay:Night - Emiya#0.mp3"
 	crop Fate\t
 		// broken! ffmpeg exits too quickly.
+		// ah, don't overwrite the original file
 		ι ← 'Fate Stay:Night - Emiya#0.mp3'
 		to ← 389 // 6:29
 		bash("cp "+bash_encode(ι)+" "+bash_encode(ι)+".orig; . ~/.bashrc; del "+bash_encode(ι)+".orig; ffmpeg -y -ss 0 -t "+to+" -i "+bash_encode(ι)+" -acodec copy "+bash_encode(ι))
