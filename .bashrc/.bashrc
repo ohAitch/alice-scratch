@@ -18,7 +18,8 @@ sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/
 opencp() { sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
 killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
 f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
-ar() { tar -c "$@" | xz -v > "${1%/}.tar.xz"; }
+ar()  { tar -c "$@" | xz -v    > "$(basename "$1").tar.xz"; }
+ar9() { tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 clear() { /usr/bin/clear && printf '\e[3J'; }
 # dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
 dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
