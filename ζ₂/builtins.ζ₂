@@ -123,7 +123,7 @@ moment.fn.inspect = λ(x,opts){t ← @.toString(); ↩ true/*opts.colors*/? '\x1
 
 // --------------------------------- fs/Path -------------------------------- //
 
-fs ← exports.fs = exports.fs_ = (λ(){t ← λ(path){↩ new Path(path)}; t.__proto__ = require('fs'); ↩ t})()
+fs ← exports.fs = (λ(){t ← λ(path){↩ new Path(path)}; t.__proto__ = require('fs'); ↩ t})()
 // a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
 // represented as a Path, it has properties path and $/val/value/deref
 // a Path is normally just a fluent wrapper but can become a file descriptor holder or an event manager
@@ -245,7 +245,7 @@ exports.pipe_in_out = λ(f){
 
 ;(λ(){
 osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
-osa_parse_array ← λ(ι){↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+osa_parse_array ← λ(ι){if (ι!=='') ↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 exports.osa = λ(ι){child_process.exec(osa_gen(ι))}
 exports.osaᵥ = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
 })()

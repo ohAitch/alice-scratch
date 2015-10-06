@@ -14,6 +14,7 @@ and - i - i want to just _pick up_ the damn graph and _splay it out all over the
 (when you want more exotic PL ideas: http://www.cs.cmu.edu/~rwh/theses/okasaki.pdf)
 "reviewing hundreds of small high-quality examples is reading the Plan 9 code base. the pieces are small and it's written with clarity in mind"
 try examining the quality of the code in file:///~/papers/BotWorld.pdf
+you know, fuzzing looks pretty amazing: embarrassed http://danluu.com/everything-is-broken/ AFL http://lcamtuf.coredump.cx/afl/
 
 -------------------- for the stated goal, the big things are -------------------
 

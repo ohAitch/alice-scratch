@@ -20,9 +20,7 @@ if (argv.length === 0) {
 } else switch (argv[0]) {
 	default:
 		// this is lame.
-		// we looked at https://github.com/jashkenas/coffeescript/blob/master/bin/coffee
-		// and https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee
-		// and http://nodejs.org/api/process.html
+		// we looked at https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee and http://nodejs.org/api/process.html
 		// for a better thing to do, but then we gave up.
 		eval(ζ2_compile(fs(process.argv.splice(2,1)[0]).$).replace(/^#!.*/,''))
 	break; case '-c':
