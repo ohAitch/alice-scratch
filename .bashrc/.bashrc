@@ -26,20 +26,23 @@ dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$
 alias pwf='echo "$(this)/$1"'
 bookmarks() {
 	if [[ $1 = t ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]}).join("\n")' | sb
+	elif [[ $1 = l ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); r ← _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]})[-1]; copy(r); r'; echo '<copied>'
 	else ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb
 	fi; }
 d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql() { (-q qlmanage -p "$@" &); }
 
-im_to_png() { for t in "$@"; do convert "$t" "${t%.*}.png"; done; }
+im_to_png() { for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
 im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
 im_concat() {
 	tile="$1"; if [[ $tile = 1x || $tile = x1 ]]; then shift; else tile=x1; fi
 	[ -e "${@: -1}" ] && { echo "won't overwrite" '"'"${@: -1}"'"'; return 1; }
 	montage -mode concatenate -tile "$tile" "$@"; }
 im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_date() { for v in "$@"; do printf "$v"; printf $'\t'; t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); echo "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z"; done; }
+im_dateify() { for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
+# im_std_dcim() { im_dateify; im_to_png *.jpg; im_autowhite *.png; }
+im_grayscale() { for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 
 export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
 command_not_found_handle() { t=0
@@ -61,7 +64,7 @@ PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $
 __rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 
 ####### externally used ######
-export PATH="./node_modules/.bin:/usr/local/bin:$PATH:."
+export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.

@@ -19,7 +19,7 @@ def open(v,app=None,focus=True):
 	# replace "\ " in filenames with " "
 	#! should also replace "\\" in filenames with "\"
 	fv = re.match(r'^file://(.*)',v)
-	if fv: v = re.sub(r'\\ ',' ',v)
+	if fv: v = re.sub(r'\\ ',' ',v); fv = re.match(r'^file://(.*)',v)
 
 	if app is None and fv:
 		app = "Path Finder" if os.path.isdir(fv.group(1)) else "Sublime Text"
