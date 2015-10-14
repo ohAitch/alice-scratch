@@ -7,6 +7,7 @@ shopt -s globstar
 is_term() { osascript -e 'path to frontmost application' | grep Terminal.app >/dev/null; }
 exp() { a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
 bash_escape_() { sed "s/'/'\\\\''/g"; }
+beep() { local t=$?; [[ $1 != '' ]] && t="$1"; if [[ $t = 0 ]]; then afplay ~/ali/github/scratch/.bashrc/win.wav; else afplay ~/ali/github/scratch/.bashrc/error.wav; fi; return $t; }
 
 ###### interactive only ######
 shopt -s autocd; shopt -s no_empty_cmd_completion
@@ -33,14 +34,21 @@ d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null |
 del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql() { (-q qlmanage -p "$@" &); }
 alias man=man_; man_() { /usr/bin/man "$@" | col -bfx | sb; }
+imgur() {
+	osascript -e 'tell application "path finder" to activate'
+	img=$(mktemp /tmp/imgur_XXXXXX)
+	# p > $img
+	img=$(osascript -s s -e 'tell application "path finder" to set v to selection' -e 'item 1 of v' | ζ₂ -e 'pipe_in_out(λ(ι){↩ "/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")})') &&
+	curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$img" "https://api.imgur.com/3/upload" | jq -r .data.link | tr -d $'\n' | p
+	x; }
 
 im_to_png() { for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
 im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
 im_concat() {
-	tile="$1"; if [[ $tile = 1x || $tile = x1 ]]; then shift; else tile=x1; fi
-	[ -e "${@: -1}" ] && { echo "won't overwrite" '"'"${@: -1}"'"'; return 1; }
-	# identify -format "%wx%h" 0.png
-	montage -mode concatenate -tile "$tile" "$@"; }
+	tile="$1"; if [[ $tile = 1x || $tile = x1 || $tile = 8x4  || $tile = 10x3 ]]; then shift; else tile=x1; fi
+	out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
+	# identify -format "%f %wx%h" 0.png
+	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
 im_dateify() { for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
 # im_std_dcim() { im_dateify; im_to_png *.jpg; im_autowhite *.png; }
@@ -70,7 +78,7 @@ export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:.
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
-x() { t=$?; if [[ $t = 0 ]]; then is_term || afplay ~/ali/github/scratch/.bashrc/win.wav; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; afplay ~/ali/github/scratch/.bashrc/error.wav; }; return $t; }
+x() { t=$?; if [[ $t = 0 ]]; then is_term || beep $t; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; beep $t; }; return $t; }
 rmds() { rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 ζr() { pushd $(dirname "$1") >/dev/null; ζ₂ -c "$1" .; popd >/dev/null; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
 
