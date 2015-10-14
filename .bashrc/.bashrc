@@ -32,12 +32,14 @@ bookmarks() {
 d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql() { (-q qlmanage -p "$@" &); }
+alias man=man_; man_() { /usr/bin/man "$@" | col -bfx | sb; }
 
 im_to_png() { for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
 im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
 im_concat() {
 	tile="$1"; if [[ $tile = 1x || $tile = x1 ]]; then shift; else tile=x1; fi
 	[ -e "${@: -1}" ] && { echo "won't overwrite" '"'"${@: -1}"'"'; return 1; }
+	# identify -format "%wx%h" 0.png
 	montage -mode concatenate -tile "$tile" "$@"; }
 im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
 im_dateify() { for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
@@ -63,7 +65,7 @@ cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
 PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
 __rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 
-####### externally used ######
+### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
@@ -78,6 +80,9 @@ l() { ls -AG "$@"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
+
+#### system configuration ####
+# defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool FALSE
 
 ############ bleh ############
 

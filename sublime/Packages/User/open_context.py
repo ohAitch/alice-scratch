@@ -3,7 +3,7 @@ import os, subprocess
 import re
 import urllib
 
-FIND_URL_REGEX = r'\b((https?|file)://(?:\\ |\S)+([.,)\]}](?=\.)|(?<!["”.,+)\]}])(?<!"["”.,+)\]}]))|mailto:[^\s\\@]+@[^\s\\@]+)'
+FIND_URL_REGEX = r'\b((https?|file)://|mailto:)(?:\\ |\S)+([.,)\]}](?=\.)|(?<!["”.,+)\]}])(?<!"["”.,+)\]}]))'
 IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
 def bash_encode(ι): return re.escape(ι)
@@ -16,11 +16,13 @@ def open(v,app=None,focus=True):
 	print("#OPEN",v)
 	if v is None and app is "Terminal": v = os.getenv("HOME")
 
-	# replace "\ " in filenames with " "
-	#! should also replace "\\" in filenames with "\"
-	fv = re.match(r'^file://(.*)',v)
-	if fv: v = re.sub(r'\\ ',' ',v); fv = re.match(r'^file://(.*)',v)
+	#! wat
+	v = re.sub(r'\\ ',' ',v)
+	# # replace "\ " in filenames with " "
+	# #! should also replace "\\" in filenames with "\"
+	# if fv: v = re.sub(r'\\ ',' ',v); fv = re.match(r'^file://(.*)',v)
 
+	fv = re.match(r'^file://(.*)',v)
 	if app is None and fv:
 		app = "Path Finder" if os.path.isdir(fv.group(1)) else "Sublime Text"
 		if app is "Sublime Text": v = fv.group(1)

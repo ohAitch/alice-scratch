@@ -35,8 +35,6 @@ assert_obj ← λ(v,template){if (!is_obj(v,template)) EDGE(v)}
 partition ← λ(n,v){t←[]; for (i←0;i<v.length;i+=n) t.push(_.range(n).map(λ(t){↩ v[i+t]})); ↩ t}
 
 sublime_open ← λ(v){child_process.exec('"'+'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'+'" "'+v+'"')}
-sublime_eval ← λ(v){t ← JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 --data-binary @-', {input: v})); ↩ t === null? undefined : t}
-// sublime_view ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||0)+','+(b||1000000)+')))')}
 
 // -------------------------------------------------------------------------- //
 

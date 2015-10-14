@@ -47,6 +47,10 @@ make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
 		['__KeyToKey__',Key('⇪'),Mod('^'),Key('⇥'),Mod('^'),Mod('⇧L')],
 		['__KeyToKey__',Key('⇪'),Mod(' '),shell('osascript -e '+ζ2_bash_encode('tell application "chrome" to open location "chrome:newtab"'))],
 		['__KeyToKey__',Key('LAUNCHPAD'),Key('DASHBOARD')],
+		['__KeyToKey__',Key('3'),'⌘⇧' .split('').map(Mod),shell('screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
+		['__KeyToKey__',Key('4'),'⌘⇧' .split('').map(Mod),shell('screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
+		['__KeyToKey__',Key('3'),'⌘⇧^'.split('').map(Mod),shell('screencapture     -cr')],
+		['__KeyToKey__',Key('4'),'⌘⇧^'.split('').map(Mod),shell('screencapture -io -cr')],
 	].concat(chords.map(λ(t){hots ← t[0]; out ← t[1]
 		hots = hots.replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')
 		mds ← split_keys(hots).filter(Mod)
