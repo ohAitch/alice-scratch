@@ -66,6 +66,7 @@ command_not_found_handle() { t=0
 			exp "$t"; "$t" "${@:2}"; t=$?
 		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
 		else cd ..; changed=1; continue
+		t=$(for t in run index run.sh index.sh index.ζ₂ run.js index.js index.py main.py; do [ -f "$t" ] && echo "$t"; done)
 		fi
 	break; done
 	return $t; }
