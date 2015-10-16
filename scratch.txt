@@ -83,5 +83,5 @@ var poll = function(f,cb){var t; if (t=f()) cb(null,t); else setTimeout(poll,10,
 $.css = function(v){$('head').append('<style>'+v+'</style>')}
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
 
-minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | bash_escape_)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | bash_escape_)'"; done; }
+minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | bash_encode)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | bash_encode)'"; done; }
 q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3"; }

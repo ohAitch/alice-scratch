@@ -1,96 +1,114 @@
--q() { "$@" &>/dev/null; } # private
-####### system checkup #######
--q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
-
 ########### private ##########
 shopt -s globstar
-is_term() { osascript -e 'path to frontmost application' | grep Terminal.app >/dev/null; }
-exp() { a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
-bash_escape_() { sed "s/'/'\\\\''/g"; }
-beep() { local t=$?; [[ $1 != '' ]] && t="$1"; if [[ $t = 0 ]]; then afplay ~/ali/github/scratch/.bashrc/win.wav; else afplay ~/ali/github/scratch/.bashrc/error.wav; fi; return $t; }
+-q(){ "$@" &>/dev/null; }
+is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
+exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
+# bash_encode(){ sed "s/'/'\\\\''/g"; }
+beep(){ local t=$?; [[ $1 != '' ]] && t="$1"; if [[ $t = 0 ]]; then afplay ~/ali/github/scratch/.bashrc/win.wav; else afplay ~/ali/github/scratch/.bashrc/error.wav; fi; return $t; }
 
 ###### interactive only ######
 shopt -s autocd; shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=5000
-64e() { base64; }
-64d() { base64 -D; }
-p() { if [ -t 0 ]; then pbpaste; else pbcopy; fi; }
-sb() { if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; else open -a "Sublime Text.app" -f; fi; }
-opencp() { sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
-killcp() { sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
-f() { open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
+64e(){ base64; }
+64d(){ base64 -D; }
+p(){ if [ -t 0 ]; then pbpaste; else pbcopy; fi; }
+sb(){ if [ -t 0 ]; then /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; else open -a "Sublime Text.app" -f; fi; }
+opencp(){ sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
+killcp(){ sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
+f(){ open -a 'Path Finder' "${1:-.}"; osascript -e 'tell application "Path Finder" to activate'; }
 ar()  { tar -c "$@" | xz -v    > "$(basename "$1").tar.xz"; }
-ar9() { tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
-clear() { /usr/bin/clear && printf '\e[3J'; }
-# dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
-dot() { t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
+ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
+clear(){ /usr/bin/clear && printf '\e[3J'; }
+# …(){ t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
+…(){ t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
 alias pwf='echo "$(this)/$1"'
-bookmarks() {
+bookmarks(){
 	if [[ $1 = t ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]}).join("\n")' | sb
 	elif [[ $1 = l ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); r ← _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]})[-1]; copy(r); r'; echo '<copied>'
 	else ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb
 	fi; }
-d() { ( shopt -s nullglob; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
-del() { for v in "$@"; do v="$(realpath "$v")"; osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"' >/dev/null; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-ql() { (-q qlmanage -p "$@" &); }
-alias man=man_; man_() { /usr/bin/man "$@" | col -bfx | sb; }
-imgur() {
+d(){ ( shopt -s nullglob; cd ${1:-.}; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
+del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+ql(){ (-q qlmanage -p "$@" &); }
+man(){ /usr/bin/man "$@" | col -bfx | sb; }
+imgur(){
 	osascript -e 'tell application "path finder" to activate'
 	img=$(mktemp /tmp/imgur_XXXXXX)
 	# p > $img
-	img=$(osascript -s s -e 'tell application "path finder" to set v to selection' -e 'item 1 of v' | ζ₂ -e 'pipe_in_out(λ(ι){↩ "/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")})') &&
+	img=$(osascript -s s -e 'tell application "path finder" to set v to selection' -e 'item 1 of v' | ζ₂ -ef '"/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")') &&
 	curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$img" "https://api.imgur.com/3/upload" | jq -r .data.link | tr -d $'\n' | p
 	x; }
 
-im_to_png() { for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
-im_resize() { t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
-im_concat() {
+im_to_png(){ for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
+im_resize(){ t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
+im_concat(){
 	tile="$1"; if [[ $tile = 1x || $tile = x1 || $tile = 8x4  || $tile = 10x3 ]]; then shift; else tile=x1; fi
 	out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	# identify -format "%f %wx%h" 0.png
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
-im_rotate_jpg() { jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify() { for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
-# im_std_dcim() { im_dateify; im_to_png *.jpg; im_autowhite *.png; }
-im_grayscale() { for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
+im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
+im_dateify(){ for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
+im_grayscale(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 
 export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
-command_not_found_handle() { t=0
-	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
+# PS1='$( RET=$?; if [ $RET != 0 ] ; then echo "rc: $RET"; fi )\n\$ ' 
+# export PS1='$(R=$?; [[ $? = 0 ]] && echo '\''\['\''$green'\''\]'\'' || [[ $? = 1 ]] && echo '\''\['\''$red'\''\]'\'' || echo '\''\['\''$red'\''\]'\''"$R. ")$(this)\[$reset\] '
+find_main(){
+	-q pushd .
 	while true; do
-		t=($(for t in "${try[@]}"; do echo "$t $t.sh $t.ζ₂ $t.js $t.py"; done))
-		t=($(for t in "${t[@]}"; do [ -f "$t" ] && echo "$t"; done))
-		if [ "$t" != "" ]; then
-			[ $changed ] && echo "$purple$(this)/$t$reset"
-			echo "$PWD" > "$cnfh_cd"
-			exp "$t"; "$t" "${@:2}"; t=$?
-		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
-		else cd ..; changed=1; continue
-		t=$(for t in run index run.sh index.sh index.ζ₂ run.js index.js index.py main.py; do [ -f "$t" ] && echo "$t"; done)
+		t=$(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done)
+		[[ $t != "" ]] && { echo "$PWD/$t"; break; } || [[ $PWD = / ]] && break || cd ..
+		done; -q popd; }
+# t=$(find_main); ! [ $t ] && echo no “main” command found || { echo "$purple$t$reset"; exp "$t"; "$t" "${@:2}"; }
+alias ↩='
+	__e_changed=""
+	dir="$PWD"
+	while true; do
+		t=($(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
+		if [[ $t != "" ]]; then [ $__e_changed ] && echo "$purple$(this)/$t$reset"; exp "$t"; "$t" "${@:2}"
+		elif [[ $PWD = / ]]; then echo no “main” command found; cd "$dir"; false
+		else cd ..; __e_changed=✓; continue
 		fi
-	break; done
-	return $t; }
-cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
-PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
-__rc_t1() { if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2() { __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
+	t=$?; break; done; (exit $t) '
+# command_not_found_handle(){ t=0
+# 	if [ "$1" = $ ]; then echo 'use ↩ instead'; return 1; fi
+# 	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
+# 	while true; do
+# 		t=($(for t in "${try[@]}"; do echo "$t $t.sh $t.ζ₂ $t.js $t.py"; done))
+# 		t=($(for t in "${t[@]}"; do [ -f "$t" ] && echo "$t"; done))
+# 		if [ "$t" != "" ]; then
+# 			# [ $changed ] && echo "$purple$(this)/$t$reset"
+# 			# echo "$PWD" > "$cnfh_cd"
+# 			# exp "$t"; "$t" "${@:2}"; t=$?
+# 			echo 'is cnfh really needed here'; return 1
+# 		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
+# 		else cd ..; changed=1; continue
+# 		fi
+# 	break; done
+# 	return $t; }
+# cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
+# PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
+PROMPT_COMMAND='__rc_exit=$?; '"$PROMPT_COMMAND"
+__rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
-date_i() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-this() { [ "$HOME" == "${PWD:0:${#HOME}}" ] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
-x() { t=$?; if [[ $t = 0 ]]; then is_term || beep $t; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; beep $t; }; return $t; }
-rmds() { rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
-ζr() { pushd $(dirname "$1") >/dev/null; ζ₂ -c "$1" .; popd >/dev/null; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
+date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+this(){ [[ "$HOME" == "${PWD:0:${#HOME}}" ]] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
+x(){ t=$?; if [[ $t = 0 ]]; then is_term || beep $t; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; beep $t; }; return $t; }
+rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
+ζr(){ -q pushd $(dirname "$1"); ζ₂ -c "$1" .; -q popd; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
 
 ####### prentice knows #######
-chrome() { /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
-l() { ls -AG "$@"; }
+chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
+l(){ ls -AG "$@"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 
 #### system configuration ####
+-q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool FALSE
 
 ############ bleh ############
@@ -102,21 +120,21 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # export NVM_DIR="/Users/ali/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
-# b() { say -v Zarvox "beep"; }
-# ar_zip() { ditto -ckv --keepParent "$1" "${2%/}.zip"; }
-# beeg() { t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)"); echo "$t" | jq .roadall | sb & }
-# beep() { curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
-# npmi() { mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
-# D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
-# RM() { [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
-# exists() { type "$1" &>/dev/null; }
-# T() { tee /tmp/lastL; } #! should use mktemp
-# L() { cat /tmp/lastL; }
-# mute() { osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
-# mute() { osascript -e "set volume output muted true"; }
-# unmute() { osascript -e "set volume output muted false"; }
-# vol() { osascript -e "set volume output volume $1"; }
-# async() { ( nohup bash -cl "$*" > ~/nohup.out & ) }
+# b(){ say -v Zarvox "beep"; }
+# ar_zip(){ ditto -ckv --keepParent "$1" "${2%/}.zip"; }
+# beeg(){ t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)"); echo "$t" | jq .roadall | sb & }
+# beep(){ curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
+# npmi(){ mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
+# D(){ [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
+# RM(){ [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
+# exists(){ type "$1" &>/dev/null; }
+# T(){ tee /tmp/lastL; } #! should use mktemp
+# L(){ cat /tmp/lastL; }
+# mute(){ osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
+# mute(){ osascript -e "set volume output muted true"; }
+# unmute(){ osascript -e "set volume output muted false"; }
+# vol(){ osascript -e "set volume output volume $1"; }
+# async(){ ( nohup bash -cl "$*" > ~/nohup.out & ) }
 # cd $(dirname $(realpath "${BASH_SOURCE[0]}"))
 
 # # Add an "alert" alias for long running commands.  Use like so:
