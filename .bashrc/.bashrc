@@ -5,10 +5,18 @@ is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; 
 exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
 # bash_encode(){ sed "s/'/'\\\\''/g"; }
 beep(){ local t=$?; [[ $1 != '' ]] && t="$1"; if [[ $t = 0 ]]; then afplay ~/ali/github/scratch/.bashrc/win.wav; else afplay ~/ali/github/scratch/.bashrc/error.wav; fi; return $t; }
+home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
+find_main(){ while :; do
+	t=$(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done)
+	[[ $t != "" ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
+	break; done; }
 
 ###### interactive only ######
 shopt -s autocd; shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=5000
+export PS1='$(R=$?; echo \[$([[ $R = 0 ]] && echo $green || echo $red)\]$([[ $R = 0 || $R = 1 ]] || echo "$R. ")$(this)\[$reset\]" ")'
+__rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
+
 64e(){ base64; }
 64d(){ base64 -D; }
 p(){ if [ -t 0 ]; then pbpaste; else pbcopy; fi; }
@@ -21,7 +29,7 @@ ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 clear(){ /usr/bin/clear && printf '\e[3J'; }
 # …(){ t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\nset -o xtrace\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
 …(){ t=$(cat); tmp=$(mktemp /tmp/dot_XXXXXX); echo $'#!/usr/bin/env bash\n'"$t" > $tmp; chmod +x $tmp; $tmp; rm $tmp; }
-alias pwf='echo "$(this)/$1"'
+alias pwf='echo "$(home_link "$PWD/$1")"'
 bookmarks(){
 	if [[ $1 = t ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]}).join("\n")' | sb
 	elif [[ $1 = l ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); r ← _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]})[-1]; copy(r); r'; echo '<copied>'
@@ -38,7 +46,6 @@ imgur(){
 	img=$(osascript -s s -e 'tell application "path finder" to set v to selection' -e 'item 1 of v' | ζ₂ -ef '"/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")') &&
 	curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$img" "https://api.imgur.com/3/upload" | jq -r .data.link | tr -d $'\n' | p
 	x; }
-
 im_to_png(){ for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
 im_resize(){ t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
 im_concat(){
@@ -50,55 +57,15 @@ im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
 im_dateify(){ for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
 im_grayscale(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 
-export PS1='\[$([[ $? = 0 ]] && echo $green || echo $red)\]$([[ $__rc_exit = 0 || $__rc_exit = 1 ]] || echo "$__rc_exit. ")$(this)\[$reset\] '
-# PS1='$( RET=$?; if [ $RET != 0 ] ; then echo "rc: $RET"; fi )\n\$ ' 
-# export PS1='$(R=$?; [[ $? = 0 ]] && echo '\''\['\''$green'\''\]'\'' || [[ $? = 1 ]] && echo '\''\['\''$red'\''\]'\'' || echo '\''\['\''$red'\''\]'\''"$R. ")$(this)\[$reset\] '
-find_main(){
-	-q pushd .
-	while true; do
-		t=$(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done)
-		[[ $t != "" ]] && { echo "$PWD/$t"; break; } || [[ $PWD = / ]] && break || cd ..
-		done; -q popd; }
-# t=$(find_main); ! [ $t ] && echo no “main” command found || { echo "$purple$t$reset"; exp "$t"; "$t" "${@:2}"; }
-alias ↩='
-	__e_changed=""
-	dir="$PWD"
-	while true; do
-		t=($(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
-		if [[ $t != "" ]]; then [ $__e_changed ] && echo "$purple$(this)/$t$reset"; exp "$t"; "$t" "${@:2}"
-		elif [[ $PWD = / ]]; then echo no “main” command found; cd "$dir"; false
-		else cd ..; __e_changed=✓; continue
-		fi
-	t=$?; break; done; (exit $t) '
-# command_not_found_handle(){ t=0
-# 	if [ "$1" = $ ]; then echo 'use ↩ instead'; return 1; fi
-# 	if [ "$1" = $ ]; then try=(run index main); else try=("$1"); fi
-# 	while true; do
-# 		t=($(for t in "${try[@]}"; do echo "$t $t.sh $t.ζ₂ $t.js $t.py"; done))
-# 		t=($(for t in "${t[@]}"; do [ -f "$t" ] && echo "$t"; done))
-# 		if [ "$t" != "" ]; then
-# 			# [ $changed ] && echo "$purple$(this)/$t$reset"
-# 			# echo "$PWD" > "$cnfh_cd"
-# 			# exp "$t"; "$t" "${@:2}"; t=$?
-# 			echo 'is cnfh really needed here'; return 1
-# 		elif [ "$PWD" = / ]; then echo "$0: $1: command not found"; return 1
-# 		else cd ..; changed=1; continue
-# 		fi
-# 	break; done
-# 	return $t; }
-# cnfh_cd=$(mktemp /tmp/cnfh_cd_XXXXXX)
-# PROMPT_COMMAND='__rc_exit=$?; update_terminal_cwd; [ -s '"$cnfh_cd"' ] && { cd $(cat '"$cnfh_cd"'); rm '"$cnfh_cd"'; } || true'
-PROMPT_COMMAND='__rc_exit=$?; '"$PROMPT_COMMAND"
-__rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
-
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
 export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput setaf 5); export reset=$(tput sgr0)
 date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-this(){ [[ "$HOME" == "${PWD:0:${#HOME}}" ]] && echo "~${PWD:${#HOME}}" || echo "$PWD"; } #! this is weird.
+this(){ home_link "$PWD"; }
 x(){ t=$?; if [[ $t = 0 ]]; then is_term || beep $t; exit; fi; is_term || { osascript -e 'tell application "terminal" to activate'; beep $t; }; return $t; }
 rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 ζr(){ -q pushd $(dirname "$1"); ζ₂ -c "$1" .; -q popd; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; t=$?; rm "${1/.ζ₂/.js}"; return $t; }
+↩(){ local t=$(find_main); ! [ $t ] && echo "no “main” command found" || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "${@:2}"; }; }
 
 ####### prentice knows #######
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
