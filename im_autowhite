@@ -3,8 +3,6 @@
 #
 # PURPOSE: To automatically adjust the white balance of an image.
 # 
-# DESCRIPTION: AUTOWHITE automatically adjusts the white balance of an image. Two methods are available. Method 1 uses a multiplicative adjustment using -recolor (-color-matrix). Method 2 uses an additive adjustment using -evaluate add. Both methods compute RGB channel averages of a user specified percentage of pixels closest to white. The channel averages are used in a ratio compared with white in method 1 and as  a difference from white in method 2.
-# 
 # OPTIONS: 
 # -m method ... METHOD defines how the white balance adjustment will be handled. Method 1 uses a multiplicative adjustment using -recolor (-color-matrix), where the matrix values are the ratios of 100% to the  channel averages in percent graylevel. Method 2 uses an additive adjustment using -evaluate add, where the additive amount is the percent difference of the channel averages from 100%. Method 1 is generally superior. Method 2 often shifts the overall color oddly. The default is method=1.
 # -p percent ... PERCENT is the percentage of pixels closest in color to white that is used to compute the average graylevel of each RGB channel in the image. Values are floats between 0 and 100. Default=1
