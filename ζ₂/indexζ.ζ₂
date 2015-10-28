@@ -30,6 +30,7 @@ if (argv.length === 0) {
 			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fl.$)
 			})
 	break; case '-e': t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
+	break; case '-ef': t ← pipe_in_out(λ(ι){↩ eval(ζ2_compile(argv[1]))}); t !== undefined && print(t)
 	break; case '--es':
 		JSON.parse(argv[1]).map(λ(ι){
 			0,λ __special_es__u7h7zxgvi__(){
@@ -38,7 +39,7 @@ if (argv.length === 0) {
 			}()
 			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
-	break; case '--version': print('ι'+JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
 	break; case '--ζj': pipe_in_out(ζ2_compile)
 	break; case '--jζ': pipe_in_out(ζ2_compile_inverse)
 }

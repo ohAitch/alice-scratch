@@ -16,31 +16,23 @@ moment ← exports.moment = require_if('moment')
 // todo: probably correct to lazy-load everything that's possible to
 // Algebraic JavaScript Specification https://github.com/fantasyland/fantasy-land is cute and might be relevant to further builtin design
 // todo: __ζ2_extend__ seems to be calling itself twice on things and this is bad
+// todo: refactor def, because it is awful
 
 exports.__ζ2_extend__ = λ(to){to.__ζ2_extend__ === exports.__ζ2_extend__ || (_(to).extend(exports), monkeypatches.map(λ(f){f(to)}))}
 monkeypatches ← []
 monkeypatch ← λ(f){f(global); monkeypatches.push(f)}
 
-// todo: refactor def, because it is awful
-
-escape_regex ← λ(ι){↩ ι.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1')}
-mkdir_p ← λ λ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {if(!e.code==='ENOENT')throw e; λ(node_path.dirname(ι)); fs.mkdirSync(ι)}}
+mkdir_p ← λ λ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {if (e.code !== 'ENOENT') throw e; λ(node_path.dirname(ι)); fs.mkdirSync(ι)}}
 seq ← λ*(ι){for (i←0;i<ι.length;i++) yield ι[i]}
 /*polyfill*/ Array.from || (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
+sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 --data-binary @-', {input:ι})); if (t !== null) ↩ t}
+sublime_view_substr ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||'0')+','+(b||'view.size()')+')))')}
+jqish_raw ← λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{depth:null})}
 
-exports.copy = λ(ι){
-	t ← child_process.spawn('pbcopy')
-	t.stdin.setEncoding('utf8')
-	if (ι.pipe) ι.pipe(t.stdin)
-	else t.stdin.end(
-		Object.prototype.toString.call(ι) === '[object Object]'? util.inspect(ι, {depth:null}) :
-		Object.prototype.toString.call(ι) === '[object Array]'? ι.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι, {depth:null})}).join('\n') :
-		Object.prototype.toString.call(ι) === '[object String]'? ι :
-			ι.toString() )
-	}
-exports.paste = λ(){↩ child_process.execSync('pbpaste').toString()}
-exports.ζ2_now = λ(){↩ Date.now() / 1000}
-exports.ζ2_i = λ(ι){↩ parseInt(ι)}
+exports.p = λ(ι){
+	if (arguments.length === 0) ↩ child_process.execSync('pbpaste').toString()
+	else {t ← child_process.spawn('pbcopy'); t.stdin.setEncoding('utf8'); ι.pipe? ι.pipe(t.stdin) : t.stdin.end(jqish_raw(ι))} }
+exports.sb = λ(ι){↩ arguments.length === 0? sublime_view_substr() : child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin.end(jqish_raw(ι))}
 exports.ζ2_bit_reverse_i = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
 ζ2_A ← exports.ζ2_A = λ(ι){↩ Array.prototype.slice.call(ι)}
 monkeypatch(λ(G){ G.Function.prototype.P = λ(){if (arguments.length === 0) ↩ @; a ← ζ2_A(arguments); θ←@; ↩ λ(){↩ θ.apply(null,arguments.length === 0? a : a.concat(ζ2_A(arguments)))}} })
@@ -52,7 +44,7 @@ exports.ζ2_repl_start = λ(opts){
 	wrap ← λ(ι){t ← ι.replace(/\x1b\[.*?m/g,''); ↩ {$:ι, split:λ(){↩ [t]}, valueOf:λ(){↩ ι}}}
 	t ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:wrap('\x1b[32mζ₂\x1b[39m '),
 		eval:λ(code,ctx,fl,cb){t←;
-			if (ctx._ !== _) {ctx.__ = ctx._; ctx._ = _}
+			if (ctx._ !== _) {ctx.__ = ctx._; ctx._ = _} // hack: pretty hacky
 			if (ctx.fs !== fs && ctx.fs === require('fs')) ctx.fs = fs // hack: god, such a hack
 			if (t=code.match(/^>(.*)/)) code = '__SPECIAL__('+util.inspect(t[1].trim())+')' // hack: for apprentice
 			try {t = vm.createScript(exports.ζ2_compile(code), {filename:fl, displayErrors:false})}
@@ -62,34 +54,26 @@ exports.ζ2_repl_start = λ(opts){
 			},
 		}).extend(opts))
 	exports.__ζ2_extend__(t.context)
-	// O(t).def('prompt',λ(){↩ t.prompt.$},λ(ι){t.prompt = wrap(ι)})
 	↩ t}
-
-O ← exports.O = λ(ι){↩ new _O(ι)}; _O ← λ(ι){@.$ = ι}
-_O.prototype.set = λ(n,f){@.$[n] = f(@.$[n]); ↩ @.$}
-_O.prototype.def = λ(m,get,set){Object.defineProperty(@.$,m,{configurable:true, enumerable:true, get:get, set:set}); ↩ @.$}
-_O.prototype.replace = λ(o){θ ← @.$; _.pairs(o).map(λ(kv){θ[kv[1]] = θ[kv[0]]; delete(θ[kv[0]])}); ↩ @.$}
-exports.ζ2_bind = λ(o,ι){↩ o[ι].bind(o)}
 exports.ζ2_jsonclone = λ(ι){↩ ι===undefined? ι : JSON.parse(JSON.stringify(ι))}
 
 sprint ← exports.sprint = λ(ι){↩ ι.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')}
 print ← exports.print = λ(){a ← ζ2_A(arguments); process.stdout.write(sprint(a)+'\n'); ↩ a[-1]}
 err ← exports.err = λ(ι){print.apply(null,['ζ2_err'].concat(ζ2_A(arguments))); throw Error(ι)}
 _(exports).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt'))
-_(exports).extend({ln: Math.log, ln2: Math.log2, ln10: Math.log10})
-exports.multiline = λ(θ){ι ← θ.toString().split('\n').slice(1,-1); t ← Math.min.apply(null,ι.map(λ(ι){↩ ι.match(/^\t*/)[0].length})); ι = ι.map(λ(ι){↩ ι.slice(t)}); ↩ (ι[0]==="" && ι[ι.length-1]===""? ι.slice(1,-1) : ι).join('\n')}
-
-monkeypatch(λ(G){ ('ˢ' in G) || Object.defineProperty(G,'ˢ',{get:λ(){t ← frames()[1]; ↩ t.getFunction().toString().replace(/^function /,'').split('\n').slice(t.getLineNumber() - 1).join('\n').slice(t.getColumnNumber() - 1).match(/\/\*([\s\S]*?)\*\//)[1]}}) })
+_(global ).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt'))
+_(exports).extend({ln:log, ln2:log2, ln10:log10})
+exports.multiline = λ(ι){ι = ι.toString().split('\n').slice(1,-1); t ← min.apply(null,ι.map(λ(ι){↩ ι.match(/^\t*/)[0].length})); ι = ι.map(λ(ι){↩ ι.slice(t)}); ↩ (ι[0]==="" && ι[ι.length-1]===""? ι.slice(1,-1) : ι).join('\n')}
 
 exports.ζ2_gen2fn = λ(f){t ← f(); ↩ λ(){↩ t.next().value}}
-monkeypatch(λ(G){ G.Function.prototype.def = λ(m,get,set){O(@.prototype).def(m,get,set); ↩ @} })
+monkeypatch(λ(G){ G.Function.prototype.def = λ(m,get,set){Object.defineProperty(@.prototype,m,{configurable:true, enumerable:true, get:get, set:set}); ↩ @} })
 _ && monkeypatch(λ(G){ [G.Array,G.String,G.Buffer].forEach(λ(Class){ _.range(0,5).forEach(λ(i){Class.def('-'+i,λ(){↩ @.length<i? undefined : @[@.length-i]},λ(ι){↩ @.length<i? ι : (@[@.length-i] = ι)})}) }) })
-monkeypatch(λ(G){ G.String.prototype.repeat = λ(x){↩ x<=0? '' : new Array(x+1).join(@)} })
+monkeypatch(λ(G){ G.String.prototype.repeat = λ(x){↩ x<=0? '' : Array(x+1).join(@)} })
 monkeypatch(λ(G){ G.Array.prototype.repeat = λ(x){↩ x<=0? [] : _.range(0,x).map(_.constant(@))._.flatten(true)} })
 monkeypatch(λ(G){ G.Array.def('_',λ(){↩ _(@)}) })
-monkeypatch(λ(G){ G.Function.prototype.every = λ(time){args ← ζ2_A(arguments).slice(1); ↩ setInterval.apply(null,[@,time*1000].concat(args))} })
 monkeypatch(λ(G){ G.Function.prototype.in = λ(time){args ← ζ2_A(arguments).slice(1); ↩ !time || time <= 0? setImmediate.apply(null,[@].concat(args)) : setTimeout.apply(null,[@,time*1000].concat(args))} })
-monkeypatch(λ(G){t ← G.Buffer.prototype.inspect; G.Buffer.prototype.inspect.name === 'λ' || (G.Buffer.prototype.inspect = λ λ(){↩ t.call(@).replace(/(^<\w+)/,'$1['+@.length+']')}) })
+monkeypatch(λ(G){ G.Function.prototype.every = λ(time){args ← ζ2_A(arguments).slice(1); ↩ setInterval.apply(null,[@,time*1000].concat(args))} })
+monkeypatch(λ(G){t ← G.Buffer.prototype.inspect; G.Buffer.prototype.inspect.name === 'ζ' || (G.Buffer.prototype.inspect = λ ζ(){↩ t.call(@).replace(/(^<\w+)/,'$1['+@.length+']')}) })
 
 if (PQueue && RWLock) {
 // robust to setTimeout taking extra time
@@ -102,16 +86,6 @@ monkeypatch(λ(G){ G.Function.prototype.at = λ(time){args ← ζ2_A(arguments).
 	if (time < now()) {t.f.in(); ↩ {clear:λ(){}}}
 	else {enq(t); ↩ {clear:λ(){t.canceled = true}}} } })
 }
-
-// if (global.$) {
-// keyinfo ← λ(key){
-// 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
-// 	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
-// $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
-// 	// t ← key.split(/(?=\.\w)/); key = t[0]; ns ← t.slice(1).join('')
-// 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
-// $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
-// }
 
 if (moment) {m_old ← moment
 moment = exports.moment = λ(i){↩ typeof(i)==='number' && arguments.length===1? m_old(i*1000) : m_old.apply(@,arguments)}
@@ -190,39 +164,36 @@ Path.prototype.findˢ = λ*(sel){
 			sw←; switch (sw=ι[0], ι=ι.slice(1), sw) {
 				default: ERR()
 				break; case '>': case '*': while (t=r_.next(),!t.done) {t=t.value; yield* WALK(t, sw)}
-				break; case '.': while (t=r_.next(),!t.done) {t=t.value; if (t.match(new RegExp(escape_regex('.'+ι)+'$'))) yield t}
-				break; case '#': while (t=r_.next(),!t.done) {t=t.value; if (t.match(new RegExp(escape_regex(ι)+'$'))) {yield t; break}}
+				break; case '.': while (t=r_.next(),!t.done) {t=t.value; if (t.match(RegExp(regex_encode('.'+ι)+'$'))) yield t}
+				break; case '#': while (t=r_.next(),!t.done) {t=t.value; if (t.match(RegExp(regex_encode(ι)+'$'))) {yield t; break}}
 				} })()
 		r = temp
 		})
 
 	yield* r}
 // misc
-Path.prototype.as_type = λ(View){_(@).extend(O(View).replace({'$':'_$'})); ↩ @} // ⋈this is silly⋈
-// Path.prototype.cached = λ(){_$ ← @._$(); @._$ = λ(){↩ _$}; t ← @['=']; @['='] = λ(ι){_$ = ι; t(ι)}}
-Path.prototype.toString = λ(){↩ @.resolve().replace(new RegExp('^'+escape_regex(process.env.HOME)+'(?=/)'),'~')}
+Path.prototype.toString = λ(){↩ @.resolve().replace(RegExp('^'+regex_encode(process.env.HOME)+'(?=/)'),'~')}
 // content manipulation
-Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.dir()? (print('[ζ₂] [deprecated] dir.$'), fs.readdirSync(t).map(λ(ι){↩ t+'/'+ι})) : fs.readFileSync(t)+''}
+Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.dir()? dir_$(t) : fs.readFileSync(t)+''}
 Path.prototype['='] = λ(ι){
 	// string: text file, Array: directory, etc
 	// async should use like fs.createReadStream(ι.path).pipe(fs.createWriteStream(@.path))
 	if (@.exists() && @.dir()) throw Error('writing to directories not implemented')
 	mkdir_p(@.parent().resolve())
-	fs.writeFileSync(@.path,ι)
-	}
-Path.prototype.lines = λ(){t ← fs(@).$.split('\n'); ↩ t[-1]===''? t.slice(0,-1) : t}
-Path.prototype.open = λ(f){fd ← fs.openSync(@.path,'r+'); f.call(@,fd); fs.closeSync(fd)}
+	fs.writeFileSync(@.path,ι) }
+Path.prototype.lines = λ(){t ← fs(@).$.split('\n'); t[-1]==='' && t.pop(); ↩ t}
+path_open ← λ(ι,f){fd ← fs.openSync(ι.path,'r+'); f.call(ι,fd); fs.closeSync(fd)}
 // i think slice maybe should actually replace splice?
-// Path.prototype.slice = λ(i){↩ ζ2_def({},'$',λ(){},λ(ι){@.open(λ(){t ← new Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
+// Path.prototype.slice = λ(i){↩ ζ2_def({},'$',λ(){},λ(ι){path_open(@,λ(){t ← Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
 Path.prototype.append = λ(ι){fs.appendFileSync(@.path,ι)}
-Path.prototype.ensure_eof_nl = λ(){@.open(λ(fd){
+Path.prototype.ensure_eof_nl = λ(){path_open(@,λ(fd){
 	size ← @.stat().size
-	t ← new Buffer(1); fs.readSync(fd,t,0,t.length,size - 1)
-	if (t+'' !== '\n') {t ← new Buffer('\n'); fs.writeSync(fd,t,0,t.length,size)}
+	t ← Buffer(1); fs.readSync(fd,t,0,t.length,size - 1)
+	if (t+'' !== '\n') {t ← Buffer('\n'); fs.writeSync(fd,t,0,t.length,size)}
 	}); ↩ @}
-Path.prototype.splice = λ(idx,rm,ι){@.open(λ(fd){t←;
-	ι = new Buffer(ι)
-	rm === ι.length || (t = new Buffer(@.stat().size - (idx+rm)), fs.readSync(fd,t,0,t.length,idx+rm))
+Path.prototype.splice = λ(idx,rm,ι){path_open(@,λ(fd){t←;
+	ι = Buffer(ι)
+	rm === ι.length || (t = Buffer(@.stat().size - (idx+rm)), fs.readSync(fd,t,0,t.length,idx+rm))
 	fs.writeSync(fd,ι,0,ι.length,idx)
 	rm === ι.length || fs.writeSync(fd,t,0,t.length,idx+ι.length)
 	rm > ι.length && fs.ftruncateSync(fd,idx+ι.length+t.length)
@@ -244,6 +215,7 @@ exports.pipe_in_out = λ(f){
 	read_all(process.stdin, λ(e,ι){process.stdout.write(f(ι))}) }
 
 ;(λ(){
+//! bug: splits on semicolons inside osa_encode'd strings
 osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
 osa_parse_array ← λ(ι){if (ι!=='') ↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 exports.osa = λ(ι){child_process.exec(osa_gen(ι))}
@@ -252,9 +224,36 @@ exports.osaᵥ = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+
 exports.bash = λ(ι){child_process.exec("bash -c "+bash_encode(ι))}
 exports.bashᵥ = λ(ι){↩ (child_process.execSync("bash -c "+bash_encode(ι))+'').replace(/\n$/,'')}
 
-exports.bash_encode = exports.ζ2_bash_encode = λ(){↩ ζ2_A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(" ")}
+exports.regex_encode = λ(ι){↩ ι.replace(/([.*+?^=!:${}()\[\]|\/\\])/g, '\\$1')}
+exports.bash_encode = λ(){↩ ζ2_A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(" ")}
 exports.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
 exports.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
+
+exports.email = λ(){
+	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
+		.map(λ(ι){osa('tell application "chrome" to open location '+osa_encode(ι))})
+	osa('tell application "chrome" to activate') }
+
+// ----------------------------- deprecated bits ---------------------------- //
+
+DEPRECATED ← λ(f,name){↩ λ(){console.trace('[ζ₂] DEPRECATED '+(name||f.name)); ↩ f.apply(@,arguments)}}
+
+dir_$ ← DEPRECATED(λ dir_$(path){↩ fs.readdirSync(path).map(λ(ι){↩ path+'/'+ι})})
+exports.copy = DEPRECATED(exports.p,'copy')
+exports.paste = DEPRECATED(exports.p,'paste')
+exports.ζ2_now = DEPRECATED(λ ζ2_now(){↩ Date.now() / 1000})
+exports.ζ2_i = DEPRECATED(λ ζ2_i(ι){↩ parseInt(ι)})
+exports.O = DEPRECATED(λ(){
+	_O ← λ(ι){@.$ = ι}
+	_O.prototype.set = λ(n,f){@.$[n] = f(@.$[n]); ↩ @.$}
+	_O.prototype.def = λ(m,get,set){Object.defineProperty(@.$,m,{configurable:true, enumerable:true, get:get, set:set}); ↩ @.$}
+	_O.prototype.replace = λ(o){θ ← @.$; _.pairs(o).map(λ(kv){θ[kv[1]] = θ[kv[0]]; delete(θ[kv[0]])}); ↩ @.$}
+	↩ λ new_O(ι){↩ new _O(ι)} }())
+exports.ζ2_bind = DEPRECATED(λ ζ2_bind(o,ι){↩ o[ι].bind(o)})
+exports.ζ2_bash_encode = DEPRECATED(exports.bash_encode,'ζ2_bash_encode')
+monkeypatch(λ(G){ ('ˢ' in G) || Object.defineProperty(G,'ˢ',{get:DEPRECATED(λ multiline_silly(){t ← frames()[1]; ↩ t.getFunction().toString().replace(/^function /,'').split('\n').slice(t.getLineNumber() - 1).join('\n').slice(t.getColumnNumber() - 1).match(/\/\*([\s\S]*?)\*\//)[1]})}) })
+Path.prototype.as_type = DEPRECATED(λ Path_as_type(View){O_replace ← λ(ι,o){_.pairs(o).map(λ(kv){ι[kv[1]] = ι[kv[0]]; delete(ι[kv[0]])}); ↩ ι}; _(@).extend(O_replace(View,{'$':'_$'})); ↩ @}) // ⋈this is silly⋈
+Path.prototype.open = DEPRECATED(λ Path_open(f){path_open(@,f)})
 
 // ----------------------------- discarded bits ----------------------------- //
 
@@ -262,9 +261,10 @@ exports.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably
 // exports.ζ2_memb_Emod_obj = λ(o,m,f){o[m] = f(o[m]); ↩ o}
 // exports.pad = λ(ι,s){↩ ι+s.slice(ι.length)}
 // Array.prototype.zipmap = λ(f,ctx){↩ _.zip.apply(_,@).map(λ(ι){↩ f.apply(ctx,ι)})}
-// String.prototype.replace_all = λ(find,replace){↩ @.replace(new RegExp(escape_regex(find),'g'),replace)}
+// String.prototype.replace_all = λ(find,replace){↩ @.replace(RegExp(regex_encode(find),'g'),replace)}
 // exports.ζ2_lazy = λ(o,m,f){ζ2_def(o,m,_.once(λ(){delete(o[m]); ↩ o[m] = f()}),λ(ι){delete(o[m]); ↩ o[m] = ι})}
 // Function.prototype.inherits = λ(super_){t ← λ(){}; t.prototype = super_.prototype; @.prototype = new t(); @.prototype.constructor = @; ↩ @}
+// Path.prototype.cached = λ(){_$ ← @._$(); @._$ = λ(){↩ _$}; t ← @['=']; @['='] = λ(ι){_$ = ι; t(ι)}}
 
 // create_getattr ← (λ(){
 // 	proxy_boiler ← {getOwnPropertyDescriptor:λ(){}, getPropertyDescriptor:λ(){}, getOwnPropertyNames:λ(){↩[]}, getPropertyNames:λ(){↩[]}, defineProperty:λ(){}, delete:λ(){↩false}, fix:λ(){}, inspect:λ(){↩'[MAGIC-GET-ATTR]'}}
@@ -272,3 +272,13 @@ exports.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably
 // create_getattr(λ(n){@.$[n]},λ(n,ι){
 // 			magic magic
 // 			}),
+
+// if (global.$) {
+// keyinfo ← λ(key){
+// 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
+// 	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+// $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
+// 	// t ← key.split(/(?=\.\w)/); key = t[0]; ns ← t.slice(1).join('')
+// 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
+// $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
+// }
