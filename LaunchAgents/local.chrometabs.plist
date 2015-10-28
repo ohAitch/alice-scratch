@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Disabled</key>
+	<false/>
+	<key>EnableGlobbing</key>
+	<false/>
+	<key>Label</key>
+	<string>local.chrometabs</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Applications/Google Chrome.app/Contents/MacOS/Google Chrome</string>
+		<string>http://gmail.com/</string>
+		<string>https://www.facebook.com/</string>
+		<string>http://alice0meta.github.io/note/#do%20an%20eccentric%20heel%20drop%20exercise</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StartCalendarInterval</key>
+	<array>
+		<dict>
+			<key>Hour</key>
+			<integer>7</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+</dict>
+</plist>
