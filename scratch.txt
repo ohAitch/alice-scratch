@@ -70,11 +70,12 @@ namegen ← ζ2_gen2fn(λ*(){
 	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
-# 0 requests remaining on alice0meta@gmail.com
-# 48 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
-do_it() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=KqsDmZ77kW' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
-
-pdf_to_image() { convert -verbose -density 150 -trim "$1" -quality 100 -sharpen 0x1.0 "${1%.*}.png"; }
+# # 0 requests remaining on alice0meta@gmail.com
+# # 46 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
+# # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
+# ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
+tesseract ← require('node-tesseract')
+fs('../ep').find('>').map(λ(f){tesseract.process(bash_encode(f),λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 ------------------------------------- dunno ------------------------------------
 

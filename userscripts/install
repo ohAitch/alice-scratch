@@ -1,15 +1,7 @@
 #!/usr/bin/env ζ₂
 arg ← {ι: process.argv[2]}
 
-// ---- hacky copypaste --- //
-bash_encode ← λ(){↩ ζ2_A(arguments).map(λ(ι){↩ ι.replace(/\W/g,"\\$&")}).join(" ")}
-osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
-osa_parse_array ← λ(ι){↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))}
-osa ← λ(ι){child_process.exec(osa_gen(ι))}
-osa_v ← λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
-osa_encode ← λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'}
-diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})}
-// ------------------------ //
+diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})} //! hacky copypaste
 
 gen ← λ(ι){name←;
 	t ← multiline(λ(){/*
@@ -20,17 +12,17 @@ gen ← λ(ι){name←;
 		// @grant       none
 		// ==/UserScript==
 		*/})
-		.replace("NAME",name=path.basename(ι,".js"))
-		.replace("REST",fs(ι).$.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
-		.replace("FILE",'file://'+fs(ι).resolve())
-	u ← "/tmp/userscript_"+Math.random().toString(36).slice(2,10)+".user.js"
-	fs(u).$ = t
-	t ← λ(){osa('tell application "chrome" to open location '+osa_encode('file://'+u))}
+		.replace('NAME',name=path.basename(ι,'.js'))
+		.replace('REST',fs(ι).$.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
+		.replace('FILE','file://'+fs(ι).resolve())
+	user_js ← '/tmp/userscript_'+Math.random().toString(36).slice(2,10)+'.user.js'
+	fs(user_js).$ = t
+	t ← λ(){osa('tell application "chrome" to open location '+osa_encode('file://'+user_js))}
 	↩ [name, t]}
 	
 if (arg.ι) gen(arg.ι)[1]()
 else {
-	ιs ← fs('.').find(">").filter(λ(ι){↩ /\.js$/.λ(ι)}).map(gen)
+	ιs ← fs('.').find('>').filter(λ(ι){↩ /\.js$/.λ(ι)}).map(gen)
 	print('press any key to install')
 	t ← λ*(){for(;;){
 		if (!ιs.length) ↩ -1

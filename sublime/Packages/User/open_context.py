@@ -32,7 +32,7 @@ def open(v,app=None,focus=True):
 			t = "cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear"
 		else:
 			dir,base = os.path.dirname(v), os.path.basename(v)
-			t = "cd '"+dir+"'; clear; set -- '"+base+"'; ({ sleep 0.01; printf \"\\b${green}/${purple}"+base+" ${reset}\"; } &)"
+			t = "cd "+bash_encode(dir)+"; clear; set -- "+bash_encode(base)+"; ({ sleep 0.01; printf \"\\b${green}/${purple}\""+bash_encode(base)+"\" ${reset}\"; } &)"
 		os.system("osascript -e 'tell application \"terminal\"' -e 'do script "+osa_encode(t)+"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 	else:
 		print([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])

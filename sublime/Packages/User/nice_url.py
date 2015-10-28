@@ -25,7 +25,9 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 			v = re.sub(r'^http://youtube\.com/watch\?v=([^&]+)' ,'http://youtu.be/\\1' ,v)
 			v = re.sub(r'^http://en\.wikipedia\.org/','http://wikipedia.org/',v)
 			v = re.sub(r'^(http://docs\.google\.com/document/d/[\w_]+)/edit','\\1',v)
-			v = re.sub(r'^http://facebook\.com/(\w+)(?:\?fref=nf)?','http://fb.com/\\1',v)
+			v = re.sub(r'^http://facebook\.com/','http://fb.com/',v)
+			v = re.sub(r'^(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?','\\1',v)
+			# https://www.facebook.com/kaya.stechly?fref=pb&hc_location=friends_tab
 			v = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)','http://google.com/mail/#all/\\1',v)
 
 			if re.match(r'^file:///',v): v = re.sub(r'(?<!\\) ','\\ ',v)
@@ -38,6 +40,10 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 
 # http://smile.amazon.com/gp/product/B0044DEESS/ref=as_li_ss_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=B0044DEESS&linkCode=as2&tag=ajo-20&l=as2&o=1&a=B0044DEESS&sa-no-redirect=1
 # http://amazon.com/gp/product/B0044DEESS/
+
+# actually
+# http://smile.amazon.com/Thinking-Pencil-Henning-Nelms/dp/0898150523?sa-no-redirect=1
+# Thinking Pencil http://amzn.to/1jxKp9q
 
 # http://mail.google.com/mail/u/0/#search/working+with+or+volunteering+for+giv/1471d4aa606b592f
 # http://google.com/mail/#all/1471d4aa606b592f
