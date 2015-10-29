@@ -10,28 +10,28 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		for reg in view.sel():
-			v = o = view.substr(reg)
+			ι = o = view.substr(reg)
 			
-			v = re.sub(r'^/','file:///',v)
-			v = re.sub(r'^~','file:///~',v)
+			ι = re.sub(r'^/','file:///',ι)
+			ι = re.sub(r'^~','file:///~',ι)
 			
-			v = re.sub(r'^file:///Users/ali/','file:///~/',v)
-			v = re.sub(r'^file:///~/ali/books/papers/','file:///~/papers/',v)
-			v = re.sub(r'^file:///~/ali/books/','file:///~/books/',v)
+			ι = re.sub(r'^file:///Users/ali/','file:///~/',ι)
+			ι = re.sub(r'^file:///~/ali/books/papers/','file:///~/papers/',ι)
+			ι = re.sub(r'^file:///~/ali/books/','file:///~/books/',ι)
 			
-			v = re.sub(r'^https://','http://',v)
-			v = re.sub(r'^http://www\.','http://',v)
-			v = re.sub(r'^http://youtube\.com/watch\?v=([^&]+)&','http://youtu.be/\\1?',v)
-			v = re.sub(r'^http://youtube\.com/watch\?v=([^&]+)' ,'http://youtu.be/\\1' ,v)
-			v = re.sub(r'^http://en\.wikipedia\.org/','http://wikipedia.org/',v)
-			v = re.sub(r'^(http://docs\.google\.com/document/d/[\w_]+)/edit','\\1',v)
-			v = re.sub(r'^http://facebook\.com/','http://fb.com/',v)
-			v = re.sub(r'^(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?','\\1',v)
+			ι = re.sub(r'^https://','http://',ι)
+			ι = re.sub(r'^http://www\.','http://',ι)
+			ι = re.sub(r'^http://youtube\.com/watch\?ι=([^&]+)&','http://youtu.be/\\1?',ι)
+			ι = re.sub(r'^http://youtube\.com/watch\?ι=([^&]+)' ,'http://youtu.be/\\1' ,ι)
+			ι = re.sub(r'^http://en\.wikipedia\.org/','http://wikipedia.org/',ι)
+			ι = re.sub(r'^(http://docs\.google\.com/document/d/[\w_]+)/edit','\\1',ι)
+			ι = re.sub(r'^http://facebook\.com/','http://fb.com/',ι)
+			ι = re.sub(r'^(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?','\\1',ι)
 			# https://www.facebook.com/kaya.stechly?fref=pb&hc_location=friends_tab
-			v = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)','http://google.com/mail/#all/\\1',v)
+			ι = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)','http://google.com/mail/#all/\\1',ι)
 
-			if re.match(r'^file:///',v): v = re.sub(r'(?<!\\) ','\\ ',v)
-			if v is not o: view.replace(edit, reg, v)
+			if re.match(r'^file:///',ι): ι = re.sub(r'(?<!\\) ','\\ ',ι)
+			if ι is not o: view.replace(edit, reg, ι)
 
 ############ todo ############
 
