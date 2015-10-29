@@ -1,5 +1,5 @@
 // @match       https://*.google.com/*
-// @require     https://code.jquery.com/jquery-latest.js
+// @require     https://code.jquery.com/jquery-2.1.4.min.js
 // @require     file:///~/ali/scratch/remember.txt.js
 
 if ($('#searchform').length && $('input[title="Search"]').length) {
