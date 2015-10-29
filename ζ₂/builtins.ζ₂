@@ -234,6 +234,13 @@ exports.email = λ(){
 		.map(λ(ι){osa('tell application "chrome" to open location '+osa_encode(ι))})
 	osa('tell application "chrome" to activate') }
 
+// chrome_js  = λ(ι){  osa ('tell application "google chrome" to execute window 1\'s active tab javascript '+osa_encode(ζ2_compile(ι)))}
+// chrome_jsᵥ = λ(ι){↩ osaᵥ('tell application "google chrome" to execute window 1\'s active tab javascript '+osa_encode(ζ2_compile(ι)))}
+// chrome_jquery = λ(ι){chrome_js("(λ(f){if (window.jQuery) f(); else {t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; t.onload = f; document.getElementsByTagName('head')[0].appendChild(t)}})(λ(){$ ← window.$; "+ι+"})")}
+// chrome_jqueryᵥ = λ(ι){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); if ((r=chrome_jsᵥ("(λ(f){if (window.jQuery) ↩ f(); else {t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; document.getElementsByTagName('head')[0].appendChild(t); ↩ '"+$null+"'}})(λ(){"+ι+"})"))===$null) while ((r=chrome_jsᵥ("(λ(f){if (window.jQuery) ↩ f(); else ↩ '"+$null+"'})(λ(){"+ι+"})"))===$null); ↩ r}
+// https://projectnaptha.com/ chrome_jquery("$('a:contains(\"xkcd\")')[0].click()")
+// https://projectnaptha.com/ chrome_jqueryᵥ("↩ $('a').map(λ(){↩ $(this).attr('href')}).toArray()")
+
 // ----------------------------- deprecated bits ---------------------------- //
 
 DEPRECATED ← λ(f,name){↩ λ(){console.trace('[ζ₂] DEPRECATED '+(name||f.name)); ↩ f.apply(@,arguments)}}
