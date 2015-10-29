@@ -31,6 +31,8 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 			ι = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)','http://google.com/mail/#all/\\1',ι)
 
 			if re.match(r'^file:///',ι): ι = re.sub(r'(?<!\\) ','\\ ',ι)
+
+			ι = re.sub(r'^"(.*)"$',r'“\1”',ι) #! not actually for urls
 			if ι is not o: view.replace(edit, reg, ι)
 
 ############ todo ############

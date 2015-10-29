@@ -68,7 +68,7 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 		t=($(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
 		[[ $t != "" ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
-	[ -n "$t" ] && echo "no “main” command found" || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
+	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
 
 ####### prentice knows #######
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
@@ -78,6 +78,7 @@ l(){ ls -AG "$@"; }
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 
 #### system configuration ####
+# -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
 # # for v in /* ~/* ~/Library/LaunchAgents/*; do [ -h "$v" ] && printf "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
 # ln -sf ~/ali/github/scratch/.bashrc/.bashrc ~/ali/books ~/ali/github/scratch/spotiman ~

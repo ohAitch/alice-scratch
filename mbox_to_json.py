@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, os, mailbox, email, quopri, json, HTMLParser
-html_parser = HTMLParser.HTMLParser()
+import sys, os, mailbox, email, quopri, json
 MBOX = sys.argv[1]
 OUT_DIR = sys.argv[2]
 
