@@ -217,7 +217,7 @@ exports.pipe_in_out = λ(f){
 ;(λ(){
 //! bug: splits on semicolons inside osa_encode'd strings
 osa_gen ← λ(ι){↩ "osascript -ss "+ι.split(/; */).map(λ(ι){↩ "-e "+bash_encode(ι)}).join(" ")}
-osa_parse_array ← λ(ι){if (ι!=='') ↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"/.λ(ι)? ι : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+osa_parse_array ← λ(ι){if (ι!=='') ↩ JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 exports.osa = λ(ι){child_process.exec(osa_gen(ι))}
 exports.osaᵥ = λ(ι){↩ osa_parse_array(child_process.execSync(osa_gen(ι))+'')}
 })()
