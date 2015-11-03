@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 """bandcamp-dl
 Usage:
@@ -16,13 +17,14 @@ Options:
   -a --artist=<artist>      The artist's slug (from the URL)
   -b --album=<album>        The album's slug (from the URL)
   -t --template=<template>  Output filename template.
-                            [default: %{artist}/%{album}/%{track} - %{title}]
+                            [default: %{artist} - %{album} - %{track} %{title}]
   -d --base-dir=<dir>       Base location of which all files are downloaded.
   -f --full-album           Download only if all tracks are availiable.
   -o --overwrite           Overwrite tracks that already exist. Default is False.
 """
 
 # taken from https://github.com/iheanyi/bandcamp-dl/tree/83b409a94b3b9eebfd495b6873376d579c615095
+# some changes
 
 from slimit.parser import Parser
 import slimit.ast as ast
@@ -77,7 +79,7 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import TIT2
 from mutagen.easyid3 import EasyID3
 import os
-from slugify import slugify
+import re
 
 class BandcampDownloader():
 
@@ -100,10 +102,11 @@ class BandcampDownloader():
 
     def template_to_path(self, track):
         path = self.template
-        path = path.replace("%{artist}", slugify(track['artist']))
-        path = path.replace("%{album}", slugify(track['album']))
+        path = path.replace("%{artist}", track['artist'])
+        path = path.replace("%{album}", track['album'])
         path = path.replace("%{track}", str(track['track']).zfill(2))
-        path = path.replace("%{title}", slugify(track['title']))
+        path = path.replace("%{title}", track['title'])
+        path = re.sub('/','⟩',path)
         path = u"{0}/{1}.{2}".format(self.directory, path, "mp3")
 
         return path
@@ -130,7 +133,7 @@ class BandcampDownloader():
             dirname = self.create_directory(filename)
 
             if not self.overwrite and os.path.isfile(filename):
-                print "Skipping track {} - {} as it's already downloaded, use --overwrite to overwrite existing files".format(track['track'], track['title'])
+                print "Skipping track {} - {} as it's already downloaded".format(track['track'], track['title'])
                 continue
 
             if not track.get('url'):
@@ -145,12 +148,12 @@ class BandcampDownloader():
                 print e
                 print "Downloading failed.."
                 return False
-        try:
-            tmp_art_file = wgetter.download(album['art'], outdir=dirname)
-            os.rename(tmp_art_file, dirname + "/cover.jpg")
-        except Exception as e:
-            print e
-            print "Couldn't download album art."
+        # try:
+        #     tmp_art_file = wgetter.download(album['art'], outdir=dirname)
+        #     os.rename(tmp_art_file, dirname + "/cover.jpg")
+        # except Exception as e:
+        #     print e
+        #     print "Couldn't download album art."
 
         return True
 
@@ -286,7 +289,7 @@ if __name__ == '__main__':
         url = arguments['<url>']
 
     album = bandcamp.parse(url)
-    basedir = arguments['--base-dir'] or '/Users/ali/Downloads' # os.getcwd()
+    basedir = arguments['--base-dir'] or '/Users/ali/Downloads/music' # os.getcwd()
 
     if not album:
         print "The url {} is not a valid bandcamp page.".format(url)

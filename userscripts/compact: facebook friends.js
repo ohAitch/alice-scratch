@@ -16,14 +16,14 @@ $('body').append('<button id="compact" style="z-index:1000; position:fixed; top:
 $('#load_friends').click(load_friends)
 $('#compact').click(function(){
 	load_friends(function(){
+		$('u:contains("Acquaintance")').closest('li').remove()
+
 		$('.fbChatSidebar').remove()
 		$('#pagelet_timeline_medley_friends ~').remove()
 		$('#pagelet_timeline_medley_friends')//.css('border','none').css('background','none')
 		$('#pagelet_timeline_medley_friends').css('width','1425px').css('margin-left','-120px')
 		$('#pagelet_timeline_medley_friends li').css('width','176px')
 		$('.FriendButton').parent().parent().parent().remove()
-
-		$('u:contains("Acquaintance")').closest('li').remove()
 
 		for(;;){
 			var ls = $('.uiList[data-pnref="friends"]')

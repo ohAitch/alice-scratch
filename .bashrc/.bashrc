@@ -8,7 +8,7 @@ beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; if [[ $E = 0 ]]; then afplay ~/ali
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
 
 ###### interactive only ######
-shopt -s autocd; shopt -s no_empty_cmd_completion
+shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=5000
 export PS1='$(E=$?; echo \[$([[ $E = 0 ]] && echo $green || echo $red)\]$([[ $E = 0 || $E = 1 ]] || echo "$E. ")$(this)\[$reset\]" ")'
 __rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
@@ -54,6 +54,9 @@ im_dateify(){
 	for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); $echo mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
 im_grayscale(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
+chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
+l(){ ls -AG "$@"; }
+lyrics(){ chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell application "Spotify" to {artist,name} of current track')"; osascript -e 'tell application "chrome" to activate'; }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
@@ -69,10 +72,6 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 		[[ $t != "" ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
-
-####### prentice knows #######
-chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
-l(){ ls -AG "$@"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
