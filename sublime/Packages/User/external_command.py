@@ -31,4 +31,5 @@ class Listener(sublime_plugin.EventListener):
 class ExecEditCommand(sublime_plugin.TextCommand):
 	def run(self,edit,v): view = self.view; exec(v)
 
+# sublime_eval('view.run_command("exec_edit",{"v":"view.insert(edit,view.sel()[0].begin(),\\"\\\\n\\")"})')
 # setTimeout(λ(){ sublime_eval("import re\nt = view.substr(sublime.Region(0,view.size()))\nt = re.search(r'---+ percolation ---+[\\s\\S]*?---+ ready ---+[\\s\\S]*?(\\n)\\n*---+ queue ---+[\\s\\S]*?(\\n[ \\t]+)(.+)',t)\nview.run_command('exec_edit',{'v':'view.erase(edit,sublime.Region('+repr(t.start(2))+','+repr(t.end(3))+'))\\nview.insert(edit,'+repr(t.end(1))+','+repr(t.group(3)+'\\n')+')'})") },500)

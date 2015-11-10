@@ -48,6 +48,7 @@ def github_url_of_file_in_repo(fl):
 	return 'https://github.com/'+urllib.parse.quote(user+'/'+t.group(1)+'/blob/master/'+t.group(2))
 
 def omnibox(ι): return ι if re.match(IS_URL_REGEX,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8"))
+# def omnibox(ι): return ι if re.match(IS_URL_REGEX,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8"))+"&btnI=I"
 
 class OpenContextCommand(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,edges=True):

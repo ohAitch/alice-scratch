@@ -156,3 +156,8 @@ OO┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─┐┌─
 OO│ ││ ││ ││ ││ ││ ││ ││ ││ │└─┘│ ││ ││ │└┘└┘┌┐│ ││ ││ ││ │└┘O
 OO└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘└─┘OOO└─┘└─┘└─┘OOOO└┘└─┘└─┘└─┘└─┘OOO
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+------------------------------------- 100Hz ------------------------------------
+Can you imagine having to program using 100Hz CPUs, no matter how many of them you had?  You`d also need a hundred billion processors just to get anything done in realtime.
+
+Object.defineProperty(String.prototype,'Λ',{configurable:true, get:λ(){↩ eval('(λ(a,b,c){ι ← a; ↩ eval('+util.inspect(@+'')+')})')}})

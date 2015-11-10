@@ -30,6 +30,7 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 			ι = re.sub(r'^(http://)(?:smile\.)(amazon.com/)',r'\1\2',ι)
 			ι = re.sub(r'^(http://amazon.com/.*)\?sa-no-redirect=1$',r'\1',ι)
 			ι = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)',r'http://google.com/mail/#all/\1',ι)
+			ι = re.sub(r'^(http://dropbox.com/.*)\?dl=0$',r'\1',ι)
 
 			if re.match(r'^file:///',ι): ι = re.sub(r'(?<!\\) ',r'\ ',ι)
 

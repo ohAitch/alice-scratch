@@ -25,11 +25,12 @@ ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 clear(){ /usr/bin/clear && printf '\e[3J'; }
 …(){ bash -s; }
 alias pwf='echo "$(home_link "$PWD/$1")"'
-bookmarks(){
-	if [[ $1 = t ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]}).join("\n")' | sb
-	elif [[ $1 = l ]]; then ζ₂ -e 'ι ← osaᵥ("tell application \"chrome\"; get {URL,title} of tabs of windows; end tell"); r ← _.zip(ι[0][0],ι[1][0]).map(λ(ι){↩ ι[1]+" "+ι[0]})[-1]; copy(r); r'; echo '<copied>'
-	else ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb
+alias ct=chrome_tabs; chrome_tabs(){
+	local GET='t ← osaᵥ("tell application \"chrome\" \n get {title,URL} of tabs of windows \n end tell"); title ← t[0]; url ← t[1]'
+	if [ -n "$1" ]; then ζ₂ -e "$GET"'; r ← title[0]['"$1"']+" "+url[0]['"$1"']; p(r); r'; echo '<copied>'
+	else ζ₂ -e "$GET"'; _.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).join("\n")}).join("\n\n")' | sb
 	fi; }
+bookmarks(){ ζ₂ -e '(λ λ(v){↩ v instanceof Array? v.map(λ).join("\n") : v.children? (v.name+"\n"+v.children.map(λ).join("\n")).replace(/\n/g,"\n  ") : v.url === "http://transparent-favicon.info/favicon.ico"? v.name : v.url? (!v.name || v.url === v.name? v.url : v.name+" "+v.url) : JSON.stringify(v)})(JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children)' | sb; }
 d(){ ( shopt -s nullglob; cd ${1:-.}; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell application "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ (-q qlmanage -p "$@" &); }
@@ -57,6 +58,15 @@ im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v";
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$@"; }
 l(){ ls -AG "$@"; }
 lyrics(){ chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell application "Spotify" to {artist,name} of current track')"; osascript -e 'tell application "chrome" to activate'; }
+comic_rotate(){
+	mkdir \#rotated; for v in *; do if [[ $v != \#rotated ]]; then cp -r "$v" \#rotated; fi; done
+	cd \#rotated; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
+pastebin(){
+	local v=$(cat)
+	local key=3ff038bde0c45a53dc24af9cb1dfa996 # more keys taken from github: 253ce2f0a45140ee0a44ca99aa492260 1322796dd09ccbcfac63455fa3cb4699
+	chrome $(curl -s --data "api_option=paste&api_paste_private=1&api_paste_name=wat.txt&api_paste_expire_date=N&api_paste_format=text&api_dev_key=$key&" --data-urlencode "api_paste_code=$v" http://pastebin.com/api/api_post.php | sed -e 's/com\//com\/raw?i=/')
+	osascript -e 'tell application "chrome" to activate'
+	}
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
