@@ -1,10 +1,9 @@
-require("./index").__ζ2_extend__(global)
 argv ← process.argv.slice(2)
 
 ζ2_compile_file ← λ(ι){
 	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
 	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
-		'require("zeta-two").__ζ2_extend__(global);'+
+		'require("zeta-two")(global);'+
 		ζ2_compile(t[2]) }
 
 if (argv.length === 0) {
@@ -17,9 +16,9 @@ if (argv.length === 0) {
 		eval(ζ2_compile(fs(process.argv.splice(2,1)[0]).$).replace(/^#!.*/,''))
 	break; case '-c':
 		out ← fs(argv[-1])
-		argv.slice(1,-1).map(fs).map(λ(fl){
-			if (fl.stat().isDirectory()) print('directory compilation not implemented:',fl+'')
-			else out.join(fl.name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fl.$)
+		argv.slice(1,-1).map(λ(ι){
+			if (fs(ι).dir()) print('directory compilation not implemented:',fs(ι)+'')
+			else fs(out+'/'+fs(ι).name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fs(ι).$)
 			})
 	break; case '-e': t ← eval(ζ2_compile(argv[1])); t !== undefined && print(t)
 	break; case '-ef': t ← pipe_in_out(λ(ι){↩ eval(ζ2_compile(argv[1]))}); t !== undefined && print(t)
