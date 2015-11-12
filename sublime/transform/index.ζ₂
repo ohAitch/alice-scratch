@@ -75,7 +75,7 @@ main ← λ(){
 	out ← fs(arg.out).find('*').filter(λ(v){↩ roots.some(λ(r){↩ v.indexOf(r) === 0})}).filter(λ(v){↩ !fs(v).dir()})
 	_.difference(out,written.map(λ(v){↩ v.replace(arg.in,arg.out)}))
 		.filter(λ(v){ ↩ !/Package Control\./.test(v.replace(arg.out,'')) })
-		.map(λ(v){ fs(v).unlink() })
+		.map(λ(ι){ fs.unlinkSync(ι) })
 	}
 
 switch (arg.cmd) {
