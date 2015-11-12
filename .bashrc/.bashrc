@@ -67,6 +67,8 @@ pastebin(){
 	chrome $(curl -s --data "api_option=paste&api_paste_private=1&api_paste_name=wat.txt&api_paste_expire_date=N&api_paste_format=text&api_dev_key=$key&" --data-urlencode "api_paste_code=$v" http://pastebin.com/api/api_post.php | sed -e 's/com\//com\/raw?i=/')
 	osascript -e 'tell application "chrome" to activate'
 	}
+alias grep='grep --exclude-dir node_modules'
+alias egrep='egrep --exclude-dir node_modules'
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."

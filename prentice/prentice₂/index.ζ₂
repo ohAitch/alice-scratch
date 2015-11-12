@@ -1,0 +1,6 @@
+#!/usr/bin/env ζ₂
+
+// blessed ← require('blessed')
+
+// https://www.npmjs.com/package/blessed A high-level terminal interface library for node.js
+// https://www.npmjs.com/package/tty.js A terminal for your browser

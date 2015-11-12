@@ -24,7 +24,7 @@ natural ← require('natural') // https://www.npmjs.com/package/natural
 
 // ---------------------------------- util ---------------------------------- //
 
-EDGE ← λ(){throw Error('¬'+(arguments.length? '\n'+ζ2_A(arguments).map(λ(v){↩ util.inspect(v)}).join('\n') : ''))}
+EDGE ← λ(){throw Error('¬'+(arguments.length? '\n'+A(arguments).map(λ(v){↩ util.inspect(v)}).join('\n') : ''))}
 ANY ← {}
 is_obj ← λ(v,template){t←;
 	↩ template === ANY || (

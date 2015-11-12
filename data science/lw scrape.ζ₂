@@ -5,7 +5,7 @@ jsdom ← require('jsdom')
 
 scrape_index_for_posts ← λ λ(ι){
 	print(ι)
-	jsdom.env(ι,λ(e,ι){e&&err(e); $ ← jquery(ι)
+	jsdom.env(ι,λ(e,ι){if (e) throw e; $ ← jquery(ι)
 		posts ← $('.post > h2 a').toArray().map(λ(ι){↩ 'http://lesswrong.com'+$(ι).attr('href')})
 		fs('./posts/'+ι.replace(/\//g,'⟩')).$ = posts.join('\n')+'\n'
 		next ← $('a[rel="nofollow,next"]:contains("Next")').attr('href')
@@ -18,7 +18,7 @@ cache_post ← λ(ι,i){
 	print(i,ι); fs(out).$ = bashᵥ('curl -s '+bash_encode(ι)); }
 
 scrape_post_for_comments ← λ(ι,out,cb){
-	jsdom.env(fs(ι).$,λ(e,t){e&&err(e); $ ← jquery(t)
+	jsdom.env(fs(ι).$,λ(e,t){if (e) throw e; $ ← jquery(t)
 		parse_id ← λ(ι){↩ ι.replace(/^.*_/,'')}
 		fs(out).$ = JSON.stringify({
 			url: ι.replace(/^.*\//,'').replace(/⟩/g,'/').replace(/\?all=true$/,''),
@@ -43,6 +43,6 @@ scrape_post_for_comments ← λ(ι,out,cb){
 q ← fs('comments').find('>').map(λ(ι){↩ JSON.parse(fs(ι).$)})
 // errors ← q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})
 // fs('comment_error.json').$ = JSON.stringify(errors,null,'  ')
-r ← (q.forEach(λ(ι){ι.comments.forEach(λ(c){c.url = ι.url})}), q.ζ2_mapcat(λ(ι){↩ ι.comments}))//.map(λ(ι){↩ [ι.id,ι.url,ι.author,ι.time,ι.net_votes,ι.vote_ratio,ι.body,ι.children.join(' ')]})
+r ← (q.forEach(λ(ι){ι.comments.forEach(λ(c){c.url = ι.url})}), q.mapcat(λ(ι){↩ ι.comments}))//.map(λ(ι){↩ [ι.id,ι.url,ι.author,ι.time,ι.net_votes,ι.vote_ratio,ι.body,ι.children.join(' ')]})
 // csv.stringify(r,λ(e,ι){fs('comments.csv').$ = ι})
 fs('comments.json').$ = JSON.stringify(r,null,'  '),0

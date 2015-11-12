@@ -13,6 +13,7 @@ Native ← λ(v,body){@.native = v; _(@).extend(body)}
 	Object.defineProperty(Native.prototype,'inspect',{configurable:true, enumerable:false, value:
 		λ(){↩ util.inspect(_(_(@).clone()).extend({native: magic_native}), {colors:true})}
 		})
+now ← λ(){↩ Date.now() / 1000}
 
 // ----------------------------- getDatabaseoid ----------------------------- //
 
@@ -20,7 +21,7 @@ getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){
 			console.error('[spotiman] logging on ...')
-			spotify ← node_spotify({appkeyFile: fs('~/.spotiman/spotify_appkey.key').resolve()})
+			spotify ← node_spotify({appkeyFile:'/Users/ali/.spotiman/spotify_appkey.key'})
 			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
 			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
@@ -65,9 +66,9 @@ getDatabaseoid ← λ(cb){
 switch (process.argv[2]) {
 default: print('invalid args:',process.argv)
 break; case undefined:
-time ← ζ2_now()
+time ← now()
 getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
-	print('[spotiman] loaded db in',round((ζ2_now() - time)*100)/100+'s')
+	print('[spotiman] loaded db in',round((now() - time)*100)/100+'s')
 
 	global.tags = tags; global.tracks = tracks; ζ2_repl_start()
 

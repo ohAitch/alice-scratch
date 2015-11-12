@@ -34,7 +34,7 @@ rigid_interface ← (λ(){
 		preview:null,
 		}
 
-	print ← λ(){a ← ζ2_A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+Δ.line); pos_set()}
+	print ← λ(){a ← A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+Δ.line); pos_set()}
 	preview ← λ(ι){
 		if (ι === null) t ← null
 		else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
