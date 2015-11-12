@@ -11,70 +11,70 @@ arg ← {
 
 // this is my first attempt at stringifying json nicely.
 // i do not think it will be my last.
-json_pretty_stringify ← λ(v){
+json_pretty_stringify ← λ(ι){
 	seen ← []
 	T ← '  ' // tab
 	wrap_width ← 150
-	join_collection ← λ(v,a,b){
-		if (v.length === 0) ↩ a+b
+	join_collection ← λ(ι,a,b){
+		if (ι.length === 0) ↩ a+b
 		len ← a.length + b.length
-			+ (v.length-1) * ', '.length
-			+ v.map(λ(v){↩ v.length}).reduce(λ(a,b){↩ a+b})
-		// assert( len === (a+v.join(', ')+b).length )
+			+ (ι.length-1) * ', '.length
+			+ ι.map(λ(ι){↩ ι.length}).reduce(λ(a,b){↩ a+b})
+		// assert( len === (a+ι.join(', ')+b).length )
 		↩ len <= wrap_width?
-			a+v.join(', ')+b :
-			a+'\n'+T+v.join(',\n'+T)+'\n'+b }
-	stringify_object ← λ(v){
-		seen.push(v)
-		t ← _.pairs(v).filter(λ(v){↩ v[1]!==undefined && typeof(v[1])!=='function'})
-			.map(λ(v){↩ JSON.stringify(v[0])+': '+stringify_indent(v[1])})
+			a+ι.join(', ')+b :
+			a+'\n'+T+ι.join(',\n'+T)+'\n'+b }
+	stringify_object ← λ(ι){
+		seen.push(ι)
+		t ← _.pairs(ι).filter(λ(ι){↩ ι[1]!==undefined && typeof(ι[1])!=='function'})
+			.map(λ(ι){↩ JSON.stringify(ι[0])+': '+stringify_indent(ι[1])})
 		seen.pop()
 		↩ join_collection(t,'{','}') }
-	stringify_array ← λ(v){
-		seen.push(v)
-		t ← v.map(stringify_indent)
+	stringify_array ← λ(ι){
+		seen.push(ι)
+		t ← ι.map(stringify_indent)
 		for (i←0;i<t.length;i++) t[i]===undefined && (t[i] = 'null')
 		seen.pop()
 		↩ join_collection(t,'[',']') }
-	stringify_indent ← λ(v){↩ stringify(v).replace(/\n/g,'\n'+T) }
-	stringify ← λ(v){
-		if (seen.indexOf(v) !== -1)
+	stringify_indent ← λ(ι){↩ stringify(ι).replace(/\n/g,'\n'+T) }
+	stringify ← λ(ι){
+		if (seen.indexOf(ι) !== -1)
 			throw TypeError('Converting circular structure to JSON')
-		if (v == null) ↩ 'null'
-		switch (typeof(v)==='object'? Object.prototype.toString.call(v) : typeof(v)) {
-			case 'string': case '[object String]': ↩ JSON.stringify(v)
-			case 'boolean': case '[object Boolean]': ↩ v+''
-			case 'number': case '[object Number]': ↩ v+''
+		if (ι == null) ↩ 'null'
+		switch (typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι)) {
+			case 'string': case '[object String]': ↩ JSON.stringify(ι)
+			case 'boolean': case '[object Boolean]': ↩ ι+''
+			case 'number': case '[object Number]': ↩ ι+''
 			case 'function': ↩ 'null'
-			case '[object Array]': ↩ stringify_array(v)
-			default: ↩ stringify_object(v)
+			case '[object Array]': ↩ stringify_array(ι)
+			default: ↩ stringify_object(ι)
 		} }
-	↩ stringify(v)}
+	↩ stringify(ι)}
 
 transform_json ← λ(str){↩ plist.build(JSON.parse(str))}
 
 transform_snippets ← λ(str){
 	ζ0_SUB_Fs ← λ(s,f){↩ s.split(f).slice(1).join(f)}
 	ζ0_SUB_Ts ← λ(s,t){↩ s.split(t)[0]}
-	↩ str.split('\n\n').map(λ(v){
-		↩ '<snippet><content><![CDATA['+ζ0_SUB_Fs(v,'\n')+'\n'+']]></content><tabTrigger>'+ζ0_SUB_Ts(v,'\n')+'</tabTrigger></snippet>'
+	↩ str.split('\n\n').map(λ(ι){
+		↩ '<snippet><content><![CDATA['+ζ0_SUB_Fs(ι,'\n')+'\n'+']]></content><tabTrigger>'+ζ0_SUB_Ts(ι,'\n')+'</tabTrigger></snippet>'
 		}) }
 
 main ← λ(){
-	written ← []; R ← λ(v){written.push(v); ↩ v}
-	fs(arg.in).find('*').filter(λ(v){↩ !fs(arg.in+'/'+v).dir()}).map(λ(v){t←;
-		;(t=v.match(/^(.*)\.json$/))?
-			(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+v).$))
-		:(t=v.match(/^(.*)\.snippet-magic$/))?
-			transform_snippets(fs(arg.in+'/'+v).$).map(λ(v,i){
-				fs(arg.out+'/'+R(t[1]+i+'.sublime-snippet')).$ = v
+	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
+	fs(arg.in).find('*').filter(λ(ι){↩ !fs(arg.in+'/'+ι).dir()}).map(λ(ι){t←;
+		;(t=ι.match(/^(.*)\.json$/))?
+			(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
+		:(t=ι.match(/^(.*)\.snippet-magic$/))?
+			transform_snippets(fs(arg.in+'/'+ι).$).map(λ(ι,i){
+				fs(arg.out+'/'+R(t[1]+i+'.sublime-snippet')).$ = ι
 				})
-		: (fs(arg.out+'/'+R(v)).$ = fs(arg.in+'/'+v).$)
+		: (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
 		})
-	roots ← fs(arg.in).find('>').map(λ(v){↩ v.replace(arg.in,arg.out)})
-	out ← fs(arg.out).find('*').filter(λ(v){↩ roots.some(λ(r){↩ v.indexOf(r) === 0})}).filter(λ(v){↩ !fs(v).dir()})
-	_.difference(out,written.map(λ(v){↩ v.replace(arg.in,arg.out)}))
-		.filter(λ(v){ ↩ !/Package Control\./.test(v.replace(arg.out,'')) })
+	roots ← fs(arg.in).find('>').map(λ(ι){↩ ι.replace(arg.in,arg.out)})
+	out ← fs(arg.out).find('*').filter(λ(ι){↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(λ(ι){↩ !fs(ι).dir()})
+	_.difference(out,written.map(λ(ι){↩ ι.replace(arg.in,arg.out)}))
+		.filter(λ(ι){ ↩ !/Package Control\./.test(ι.replace(arg.out,'')) })
 		.map(λ(ι){ fs.unlinkSync(ι) })
 	}
 
