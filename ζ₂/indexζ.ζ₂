@@ -6,14 +6,6 @@ argv ← process.argv.slice(2)
 	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
 		'require("zeta-two").__ζ2_extend__(global);'+
 		ζ2_compile(t[2]) }
-ζ2_compile_inverse ← λ(ι){
-	↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g,
-		λ(ι,name,s,eq){switch(ι){
-			case 'function': ↩ 'λ'
-			case 'return': ↩ '↩'
-			case 'this': ↩ '@'
-			default: ↩ eq==='='? name+s+'←' : name+s+'←;'
-		}}) }
 
 if (argv.length === 0) {
 		ζ2_repl_start()
