@@ -93,20 +93,8 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool FALSE
 
-############ bleh ############
-
-# export PATH="$PATH:$HOME/.rvm/bin"; [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load RVM #! terrible place
-# export PATH="$PATH:$(echo ~/go/bin):$(echo ~/Library/Haskell/bin):/Applications/Racket v6.1.1/bin"
-# export GOPATH=~/go #! terrible place
-# export GITHUB_TOKEN=$(cat ~/.auth/github)
-# export NVM_DIR="/Users/ali/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
-# alias tagtime='TTSETTINGS=~/ali/misc/settings.json tagtime'
-# b(){ say -v Zarvox "beep"; }
+######### deprecated #########
 # ar_zip(){ ditto -ckv --keepParent "$1" "${2%/}.zip"; }
-# beeg(){ t=$(curl -X GET -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)"); echo "$t" | jq .roadall | sb & }
-# beep(){ curl -X PUT -g "https://www.beeminder.com/api/v1/users/me/goals/$1.json?auth_token=$(cat ~/.auth/beeminder)&roadall=$(p)"; }
-# npmi(){ mv package.json $(D npm_inc_tmp); cd npm_inc_tmp; npm version patch; mv package.json ..; cd ..; rmdir npm_inc_tmp; }
 # D(){ [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM(){ [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
 # exists(){ type "$1" &>/dev/null; }
@@ -118,16 +106,6 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # vol(){ osascript -e "set volume output volume $1"; }
 # async(){ ( nohup bash -cl "$*" > ~/nohup.out & ) }
 # cd $(dirname $(realpath "${BASH_SOURCE[0]}"))
-
-# # Add an "alert" alias for long running commands.  Use like so:
-# #   sleep 10; alert
-# alias alert='notify-send --urgency=low -i "$([[ $? = 0 ]] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-# # here's a way to easily modify your macros key:
-# { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
-# # How to make the tagtime daemon automatically start on bootup in OSX:
-# sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
-
-# not
-# for t in $(find . -type f); do echo $t; done
-# instead
-# find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done
+# here's a way to easily modify your macros key: { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
+# How to make the tagtime daemon automatically start on bootup in OSX: sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
+# not [for t in $(find . -type f); do echo $t; done], instead [find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done]
