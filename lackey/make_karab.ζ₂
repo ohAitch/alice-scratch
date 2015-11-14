@@ -38,20 +38,21 @@ make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
 	split_keys ← /F.|.[LR]|./g.λ
 	Key ← λ(ι){↩ 'KeyCode::'+(ι.length > 2? ι : /^\d$/.test(ι)? 'KEY_'+ι : /^[a-z]$/.test(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
 	Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "^L":"ModifierFlag::CONTROL_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
-	Mod_1 ← λ(_(Mod.ι).invert())
+	Mod['⁻¹'] = λ(_(Mod.ι).invert())
 	kc_hex ← λ(ι){↩ ι.split('').map(λ(ι){↩ as_char_as_hex(ι).split('').map(λ(ι){↩ [Key(ι),Mod('⌥L')]})})}
 	shells ← []
 	shell ← λ(ι){id ← Key('VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36)); shells.push([id,ι]); ↩ id}
-	autogen_to_xml ← λ(ι){↩ {autogen: ι._.flatten().map(λ(ι,i,a){↩ ι+(Mod_1[ι]&&Mod_1[a[i+1]]?'|':/^__.*__$/.test(ι)?' ':',')}).join('')}}
+	autogen_to_xml ← λ(ι){↩ {autogen: ι._.flatten().map(λ(ι,i,a){↩ ι+(Mod['⁻¹'][ι]&&Mod['⁻¹'][a[i+1]]?'|':/^__.*__$/.test(ι)?' ':',')}).join('')}}
 	autogens ← [
 		['__KeyToKey__',Key('⇪'),Mod('^'),Key('⇥'),Mod('^'),Mod('⇧L')],
-		['__KeyToKey__',Key('⇪'),Mod(' '),shell('osascript -e '+bash_encode('tell application "chrome" to open location "chrome:newtab"'))],
+		['__KeyToKey__',Key('⇪'),Mod(' '),shell('osascript -e '+bash_encode('tell app "chrome" to open location "chrome:newtab"'))],
 		['__KeyToKey__',Key('LAUNCHPAD'),Key('DASHBOARD')],
 		['__KeyToKey__',Key('MISSION_CONTROL'),Key('w'),Mod('⌘')],
 		['__KeyToKey__',Key('3'),'⌘⇧' .split('').map(Mod),shell('screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
 		['__KeyToKey__',Key('4'),'⌘⇧' .split('').map(Mod),shell('screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
 		['__KeyToKey__',Key('3'),'⌘⇧^'.split('').map(Mod),shell('screencapture     -cr')],
 		['__KeyToKey__',Key('4'),'⌘⇧^'.split('').map(Mod),shell('screencapture -io -cr')],
+		// ['__KeyToKey__',Key('w'),Mod('⌘'),shell('osascript -e \'tell app "System Events" to display alert "⌘w" message "tsk" giving up after 1.5\'')],
 	].concat(chords.map(λ(t){hots ← t[0]; out ← t[1]
 		hots = hots.replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')
 		mds ← split_keys(hots).filter(Mod)

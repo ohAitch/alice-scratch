@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-exr() { chmod a+x "$1"; "$@"; }
-ζr() { ζ₂ -c "$1" .; exr "${1/.ζ₂/.js}" "${@:2}"; rm "${1/.ζ₂/.js}"; }
+-q(){ "$@" &>/dev/null; }
+ζr(){ -q pushd $(dirname "$1"); ζ₂ -c "$1" .; -q popd; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; E=$?; rm "${1/.ζ₂/.js}"; return $E; }
 
-cp lackey.icns ~/Library/Keyboard\ Layouts/
-ζr make_keylayout.ζ₂ ~/Library/Keyboard\ Layouts/lackey.keylayout
+cp lackey.icns ~/Library/Keyboard\ Layouts/ &&
+ζr make_keylayout.ζ₂ ~/Library/Keyboard\ Layouts/lackey.keylayout &&
 
-ζr make_karab.ζ₂ default.lackey ~/Library/Application\ Support/Karabiner/private.xml
-/Applications/Karabiner.app/Contents/Library/bin/karabiner reloadxml
-/Applications/Karabiner.app/Contents/Library/bin/karabiner enable lackey1
+ζr make_karab.ζ₂ default.lackey ~/Library/Application\ Support/Karabiner/private.xml &&
+/Applications/Karabiner.app/Contents/Library/bin/karabiner reloadxml &&
+/Applications/Karabiner.app/Contents/Library/bin/karabiner enable lackey1 &&
 /Applications/Karabiner.app/Contents/Library/bin/karabiner enable lackey2
