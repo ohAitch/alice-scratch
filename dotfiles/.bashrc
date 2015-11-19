@@ -4,7 +4,6 @@ shopt -s globstar
 -q(){ "$@" &>/dev/null; }
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
-# bash_encode(){ sed "s/'/'\\\\''/g"; }
 beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; afplay $([[ $E = 0 ]] && echo "$__dirname/win.wav" || echo "$__dirname/error.wav"); return $E; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
 _chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
@@ -88,7 +87,10 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
 
 ######## external only #######
+alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
+](){ [[ $1 = ⌘q ]] || { alert "could not p"; exit 1; }; osascript -e 'tell app "system events" to keystroke "q" using command down'; }
 _lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | _encodeURIComponent)"; }
+_in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ₂ -ef 'osa_encode((ι).split("\n").map(bash_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"

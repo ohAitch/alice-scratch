@@ -21,10 +21,10 @@ getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){
 			console.error('[spotiman] logging on ...')
-			spotify ← node_spotify({appkeyFile:'/Users/ali/.spotiman/spotify_appkey.key'})
+			spotify ← node_spotify({appkeyFile:fs('~/.auth/spotify_appkey.key').path})
 			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
-			auth ← JSON.parse(fs('~/.spotiman/auth.json').$); spotify.login(auth.username, auth.password)
+			auth ← JSON.parse(fs('~/.auth/spotify').$); spotify.login(auth.username, auth.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
 			console.error('[spotiman] polling for loading ...')
