@@ -1,10 +1,11 @@
+__dirname=$(dirname $(realpath "${BASH_SOURCE[0]}"))
 ########### private ##########
 shopt -s globstar
 -q(){ "$@" &>/dev/null; }
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
 # bash_encode(){ sed "s/'/'\\\\''/g"; }
-beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; if [[ $E = 0 ]]; then afplay ~/ali/github/scratch/.bashrc/win.wav; else afplay ~/ali/github/scratch/.bashrc/error.wav; fi; return $E; }
+beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; afplay $([[ $E = 0 ]] && echo "$__dirname/win.wav" || echo "$__dirname/error.wav"); return $E; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
 _chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
 _pastebin(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/com\//com\/raw?i=/'; }
@@ -96,7 +97,7 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
 # # for v in /* ~/* ~/Library/LaunchAgents/*; do [ -h "$v" ] && printf "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
-# ln -sf ~/ali/github/scratch/.bashrc/.bashrc ~/ali/books ~/ali/github/scratch/spotiman ~
+# ln -sf ~/ali/github/scratch/{spotiman,dotfiles/{.bashrc,.keyrc}} ~/ali/books ~
 # ln -sf ~/books/\#papers ~/papers
 # ln -sf ~/books/TheHourglassGrimoire/TheHourglassGrimoire.html ~/the-hourglass-grimoire
 # ln -sf ~/ali/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
@@ -115,7 +116,6 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # unmute(){ osascript -e "set volume output muted false"; }
 # vol(){ osascript -e "set volume output volume $1"; }
 # async(){ ( nohup bash -cl "$*" > ~/nohup.out & ) }
-# cd $(dirname $(realpath "${BASH_SOURCE[0]}"))
 # here's a way to easily modify your macros key: { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
 # How to make the tagtime daemon automatically start on bootup in OSX: sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
 # not [for t in $(find . -type f); do echo $t; done], instead [find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done]
