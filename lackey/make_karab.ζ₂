@@ -11,18 +11,20 @@ arg ← {
 as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
 
 parse_lackey ← λ(src){
-	chords ← []
-	t ← (src+'\n').replace(/(^|\n)#.*/g,'').replace(/\n+/g,'\n')
-		.replace(/(?:^|\n)(\S+) : (\S+)(?=\n)/g,λ(m,a,b){chords.push([b,a]); ↩ ''})
-		.match(/(---+.*---+).*\n((?:\|.+\|\n)+)(---+.*)\n/g).mapcat(λ(ι){
+	mappings ← []
+	t ← (src+'\n').replace(/\n{2,}/g,'\n')
+		.replace(/(?:^|\n)#.*/g,'')
+		.replace(/(?:^|\n)((?!--|│ ).+?) {2,}(.+)/g,λ(ˣ,a,b){mappings.push([a,b]); ↩ ''})
+		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).mapcat(λ(ι){
 			// 2d regexes would be wonderful here
-			transpose_str ← λ(ι){↩ _.zip.apply(_,ι.map(λ(ι){↩ ι.split('')})).map(λ(ι){↩ ι.join('')})}
+			transpose_str ← λ(ι){↩ _.zip.apply(_,ι).map(λ(ι){↩ ι.join('')})}
 			ι = ι.split('\n').slice(0,-1)
 			t ← transpose_str(ι)
-			↩ ι[-1].match(/---+/g).map('length'.λ).map(λ(len){r ← t.splice(0,len); t.splice(0,2); ↩ r}).map(transpose_str) })
-		.map(λ(board_str){↩ {
-			hots: (board_str[0].match(/^-+ (\S+) -+$/)||[,''])[1],
-			keys: board_str.slice(1,-1).map(/^\|(.+)\|$/.λ).map(1..λ).map(/\S\S?/g.λ),
+			↩ ι[-1].match(/└─+┘/g).map('length'.λ).map(λ(len){r ← t.splice(0,len); t.splice(0,"│ │".slice(1,-1).length); ↩ r}).map(transpose_str) })
+		.map(λ(board_str){
+			↩ {
+			hots: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
+			keys: board_str.slice(1,-1).map(/^│(.+)│$/.λ).map(1..λ).map(/\S\S?/g.λ),
 			} })
 	t = _(_(_(t).indexBy('hots')).omit('','⇧')).values()
 	h ← _(t).indexBy('hots')['homoiconic']
@@ -32,51 +34,41 @@ parse_lackey ← λ(src){
 	t.map(λ(ι){ι.keys = _.zip(h.keys,ι.keys).filter(λ(ι){↩ ι[1] !== '_'})})
 	kc ← _(t).indexBy('hots')['keycode']
 	t = _(t).without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.hots+k[0],k[1]]})})
-	↩ {keycodes: kc.keys._.object(), chords: chords.concat(t)} }
+	mappings = mappings.concat(t)
+	mappings.forEach(λ(ι){ι[0] = ι[0].replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')})
+	↩ {keycodes:kc.keys._.object(), mappings:mappings} }
 
-make_xml ← λ(t){keycodes ← t.keycodes; chords ← t.chords
-	split_keys ← /F.|.[LR]|./g.λ
-	Key ← λ(ι){↩ 'KeyCode::'+(ι.length > 2? ι : /^\d$/.test(ι)? 'KEY_'+ι : /^[a-z]$/.test(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
-	Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "^L":"ModifierFlag::CONTROL_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
-	Mod['⁻¹'] = λ(_(Mod.ι).invert())
-	kc_hex ← λ(ι){↩ ι.split('').map(λ(ι){↩ as_char_as_hex(ι).split('').map(λ(ι){↩ [Key(ι),Mod('⌥L')]})})}
+wat ← []
+
+make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
+	compile_keystring ← λ(ι){t←;
+		Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "^L":"ModifierFlag::CONTROL_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
+		if (t={FnF3:'a0', FnF4:'83', DASHBOARD:'82'}[ι]) {md ← []; ky ← ['RawValue::0x'+t]}
+		else {t ← /F.|.[LR]|./g.λ(ι); i ← t.map(Mod).concat([undefined]).indexOf(undefined); md ← t.slice(0,i); ky ← t.slice(i)}
+		if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
+		else md.push(' ')
+		if (!{1:1,2:1}[ky.length]) throw Error('[lackey] invalid keystring: '+util.inspect(ι))
+		Key ← λ(ι){↩ 'KeyCode::'+(ι.length > 2? ι : /^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
+		↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 	shells ← []
-	shell ← λ(ι){id ← Key('VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36)); shells.push([id,ι]); ↩ id}
-	autogen_to_xml ← λ(ι){↩ {autogen: ι._.flatten().map(λ(ι,i,a){↩ ι+(Mod['⁻¹'][ι]&&Mod['⁻¹'][a[i+1]]?'|':/^__.*__$/.test(ι)?' ':',')}).join('')}}
-	autogens ← [
-		['__KeyToKey__',Key('⇪'),Mod('^'),Key('⇥'),Mod('^'),Mod('⇧L')],
-		['__KeyToKey__',Key('⇪'),Mod(' '),shell('osascript -e '+bash_encode('tell app "chrome" to open location "chrome:newtab"'))],
-		['__KeyToKey__',Key('LAUNCHPAD'),Key('DASHBOARD')],
-		['__KeyToKey__',Key('MISSION_CONTROL'),Key('w'),Mod('⌘')],
-		['__KeyToKey__',Key('3'),'⌘⇧' .split('').map(Mod),shell('screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
-		['__KeyToKey__',Key('4'),'⌘⇧' .split('').map(Mod),shell('screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png')],
-		['__KeyToKey__',Key('3'),'⌘⇧^'.split('').map(Mod),shell('screencapture     -cr')],
-		['__KeyToKey__',Key('4'),'⌘⇧^'.split('').map(Mod),shell('screencapture -io -cr')],
-		// ['__KeyToKey__',Key('w'),Mod('⌘'),shell('osascript -e \'tell app "System Events" to display alert "⌘w" message "tsk" giving up after 1.5\'')],
-	].concat(chords.map(λ(t){hots ← t[0]; out ← t[1]
-		hots = hots.replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')
-		mds ← split_keys(hots).filter(Mod)
-		chs ← split_keys(hots).filter(λ(ι){↩ !Mod(ι)})
-		if (!((chs.length === 1 || chs.length === 2) && (chs.length+mds.length >= 2))) throw Error('[lackey] invalid hotstring: '+hots)
-		↩ [
-			{1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[chs.length],
-			chs.map(Key),
-			mds.map(Mod), mds.length? Mod(' ') : [],
-			kc_hex(out),
-			]
-		}))
-	autogens_terminal ← [
-		['__KeyToKey__',Key('⌘R'),Key('^L')],
-		]
+	shell ← λ(ι){id ← 'KeyCode::VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36); shells.push([id,ι]); ↩ id}
+	compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] (.+)$/.λ(ι)) {only ← t[1].toUpperCase(); ι = t[2]}; t ← compile_keystring(ι); ↩ {only:only, ι:t.cmd+' '+t.ι} }
+	compile_output ← λ(ι){t←; ↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) : (t=/^> (.*)/.λ(ι))? compile_keystring(t[1]).ι : ι._.map(λ(ι){↩ as_char_as_hex(ι)._.map(λ(ι){↩ compile_keystring('⌥L'+ι).ι})})._.flatten().join('') }
+	autogens ← mappings.map(λ(ι){from ← compile_trigger(ι[0]); to ← compile_output(ι[1]); ↩ {only:from.only, ι:{autogen:from.ι+','+to+','} } })
 	↩ builder.create({root: {
-		'#list': shells.map(λ(ι){↩ {vkopenurldef: {name:ι[0], url:{'@type':'shell', '#cdata':ι[1]}}}}).concat([
-			{item: {name:'lackey1', identifier:'lackey1',                  '#list':autogens         .reverse().map(autogen_to_xml)}},
-			{item: {name:'lackey2', identifier:'lackey2', only:'TERMINAL', '#list':autogens_terminal.reverse().map(autogen_to_xml)}},
-			]),
+		'#list': [].concat(
+			// curl -s https://raw.githubusercontent.com/tekezo/Karabiner/master/src/core/server/Resources/appdef.xml | ζ₂ -ef '/[^>]+(?=<\/appname>)/g.λ(ι).sort().join("  ")' | sb
+			[{appdef: {appname: 'SPOTIFY', equal: 'com.spotify.client'}}],
+			[{appdef: {appname: 'PATH_FINDER', equal: 'com.cocoatech.PathFinder'}}],
+			[{appdef: {appname: 'PHOTO_BOOTH', equal: 'com.apple.PhotoBooth'}}],
+			_(autogens._.groupBy('only')).values().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} }),
+			shells.map(λ(ι){↩ {vkopenurldef: {name:ι[0], url:{'@type':'shell', '#cdata':ι[1]}}}})
+			),
 		}}).end({pretty:true}) }
 
 // --------- main --------- //
 fs(arg.out).$ = make_xml(parse_lackey(fs(arg.lackey).$))
+t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; bashᵥ(t+' reloadxml'); wat.map(λ(ι){bashᵥ(t+' enable '+ι)})
 
 // mild todo:
 // if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
