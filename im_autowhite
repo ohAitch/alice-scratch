@@ -28,12 +28,12 @@ getAverage() {
 	diff=`convert xc: -format "%[fx:(100-$ave)]" info:`
 	}
 
-tmpA="/tmp/autowhite_1_$$.mpc"
-tmpM="/tmp/autowhite_M_$$.mpc"
-tmpT="/tmp/autowhite_T_$$.mpc"
-tmpR="/tmp/autowhite_R_$$.mpc"
-tmpG="/tmp/autowhite_G_$$.mpc"
-tmpB="/tmp/autowhite_B_$$.mpc"
+tmpA="/tmp/autowhite_1__"
+tmpM="/tmp/autowhite_M__"
+tmpT="/tmp/autowhite_T__"
+tmpR="/tmp/autowhite_R__"
+tmpG="/tmp/autowhite_G__"
+tmpB="/tmp/autowhite_B__"
 
 main() {
 	[ "$1" != "" ] || exit 1
