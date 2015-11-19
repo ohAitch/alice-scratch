@@ -104,7 +104,8 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # ln -sf ~/books/TheHourglassGrimoire/TheHourglassGrimoire.html ~/the-hourglass-grimoire
 # ln -sf ~/ali/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
 # -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
-# defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool FALSE
+# defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
+# defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
 
 ######### deprecated #########
 # ar_zip(){ ditto -ckv --keepParent "$1" "${2%/}.zip"; }

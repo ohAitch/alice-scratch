@@ -7,7 +7,7 @@ parse_lackey ← λ(src){
 	mappings ← []
 	t ← (src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
-		.replace(/(?:^|\n)((?!--|│ ).+?) {2,}(.+)/g,λ(ˣ,a,b){mappings.push([a,b]); ↩ ''})
+		.replace(/(?:^|\n)(?![│┌└]) *((?:\[\w+\])? *\S+) +(.+)/g,λ(ˣ,a,b){mappings.push([a,b]); ↩ ''})
 		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).mapcat(λ(ι){
 			// 2d regexes would be wonderful here
 			transpose_str ← λ(ι){↩ _.zip.apply(_,ι).map(λ(ι){↩ ι.join('')})}
@@ -43,18 +43,18 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 		if (!{1:1,2:1}[ky.length]) throw Error('[lackey] invalid keystring: '+util.inspect(ι))
 		Key ← λ(ι){↩ 'KeyCode::'+(ι.length > 2? ι : /^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
 		↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
+	appdef_fix ← λ(ι){ι = ι.toLowerCase(); ↩ _.contains(['terminal','vlc','x11','system_preferences','skype','preview','quicktime','itunes','finder'],ι)? ι.toUpperCase() : {chrome:'GOOGLE_CHROME', sublime:'SUBLIMETEXT', activity_monitor:'Activity_Monitor', atom:'Atom', dock:'Dock'}[ι] || ι}
 	shells ← []
 	shell ← λ(ι){ι = 'bash -ci '+bash_encode(ι); id ← 'KeyCode::VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36); shells.push([id,ι]); ↩ id}
-	compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] (.+)$/.λ(ι)) {only ← t[1].toUpperCase(); ι = t[2]}; t ← compile_keystring(ι); ↩ {only:only, ι:t.cmd+' '+t.ι} }
+	compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] +(.+)$/.λ(ι)) {only ← appdef_fix(t[1]); ι = t[2]}; t ← compile_keystring(ι); ↩ {only:only, ι:t.cmd+' '+t.ι} }
 	compile_output ← λ(ι){t←; ↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) : (t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι : ι._.map(λ(ι){↩ as_char_as_hex(ι)._.map(λ(ι){↩ compile_keystring('⌥L'+ι).ι})})._.flatten().join('') }
 	autogens ← mappings.map(λ(ι){from ← compile_trigger(ι[0]); to ← compile_output(ι[1]); ↩ {only:from.only, ι:{autogen:from.ι+','+to+','} } })
 	↩ xmlbuilder.create({root: {
 		'#list': [].concat(
-			// curl -s https://raw.githubusercontent.com/tekezo/Karabiner/master/src/core/server/Resources/appdef.xml | ζ₂ -ef '/[^>]+(?=<\/appname>)/g.λ(ι).sort().join("  ")' | sb
-			[{appdef: {appname: 'SPOTIFY', equal: 'com.spotify.client'}}],
-			[{appdef: {appname: 'PATH_FINDER', equal: 'com.cocoatech.PathFinder'}}],
-			[{appdef: {appname: 'PHOTO_BOOTH', equal: 'com.apple.PhotoBooth'}}],
-			_(autogens._.groupBy('only')).values().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} }),
+			_.pairs({
+				'spotify':'com.spotify.client', 'path_finder':'com.cocoatech.PathFinder', 'photo_booth':'com.apple.PhotoBooth',
+				}).map(λ(ι){↩ {appdef:{appname:ι[0],equal:ι[1]}}}),
+			_(autogens._.groupBy('only')).values().reverse().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} }),
 			shells.map(λ(ι){↩ {vkopenurldef: {name:ι[0], url:{'@type':'shell', '#cdata':ι[1]}}}})
 			),
 		}}).end({pretty:true}) }
