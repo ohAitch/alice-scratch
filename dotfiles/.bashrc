@@ -78,7 +78,6 @@ date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this(){ home_link "$PWD"; }
 x(){ E=$?; if [[ $E = 0 ]]; then is_term || beep $E; exit; fi; is_term || { osascript -e 'tell app "terminal" to activate'; beep $E; }; return $E; }
 rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
-ζr(){ -q pushd $(dirname "$1"); ζ₂ -c "$1" .; -q popd; chmod +x "${1/.ζ₂/.js}"; "${1/.ζ₂/.js}" "${@:2}"; E=$?; rm "${1/.ζ₂/.js}"; return $E; }
 ↩(){
 	local t=$(while :; do
 		t=($(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
@@ -111,7 +110,7 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # ar_zip(){ ditto -ckv --keepParent "$1" "${2%/}.zip"; }
 # D(){ [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 # RM(){ [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
-# exists(){ type "$1" &>/dev/null; }
+# exists(){ -q type "$1"; }
 # T(){ tee /tmp/lastL; } #! should use mktemp
 # L(){ cat /tmp/lastL; }
 # mute(){ osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }

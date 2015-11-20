@@ -16,7 +16,7 @@ make_it ← λ(){↩ fs(__dirname+'lackey.keylayout.template').$
 			↩ '<key code="'+k+'" '+(ι instanceof Array? 'action="'+ι[0] : 'output="&#x'+('000'+(typeof(ι)==='string'? ι.charCodeAt(0) : ι)).slice(-4)+';')+'"/>'
 			}).filter(λ(ι){↩ ι}).join('\n')+'\n</keyMap>'}).join('\n') ) }
 
-;(fs('~/Library/Keyboard Layouts/lackey.keylayout').$ === make_it()) || (print('!! ~/Library/Keyboard Layouts/lackey.keylayout does not match'),process.exit(1))
+;(fs('~/Library/Keyboard Layouts/lackey.keylayout').$ === make_it()) || (print('!! ~/Library/Keyboard Layouts/lackey.keylayout does not match'), process.exitCode = 1)
 // t ← make_it()
 // if (!(fs('~/Library/Keyboard Layouts/lackey.keylayout').$ === t)) {
 // 	id += 1; t = make_it()

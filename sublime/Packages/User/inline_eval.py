@@ -38,7 +38,7 @@ class InlineCompileZetaJsCommand(sublime_plugin.TextCommand):
 		sel = expand_empty_region_to_whole_buffer(view, sel)
 		sel = expand_empty_regions_to_lines(view, sel)
 		for i in range(len(sel))[::-1]:
-			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','--ζj'])
+			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','-ef','ζ2_compile(ι)'])
 			view.replace(edit, sel[i], r)
 
 class InlineCompileJsZetaCommand(sublime_plugin.TextCommand):
@@ -47,5 +47,5 @@ class InlineCompileJsZetaCommand(sublime_plugin.TextCommand):
 		sel = expand_empty_region_to_whole_buffer(view, sel)
 		sel = expand_empty_regions_to_lines(view, sel)
 		for i in range(len(sel))[::-1]:
-			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','--jζ'])
+			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','-ef','ζ2_compile["⁻¹"](ι)'])
 			view.replace(edit, sel[i], r)

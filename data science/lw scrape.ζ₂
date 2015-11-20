@@ -38,7 +38,7 @@ scrape_post_for_comments ← λ(ι,out,cb){
 // scrape_index_for_posts('http://lesswrong.com/new/')
 // scrape_index_for_posts('http://lesswrong.com/r/discussion/new/')
 // fs('posts.txt').$.trim().split('\n').map(λ(ι){↩ ι+'?all=true'}).map(cache_post); print('<done>')
-// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exit(1)} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
+// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
 
 q ← fs('comments').find('>').map(λ(ι){↩ JSON.parse(fs(ι).$)})
 // errors ← q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})

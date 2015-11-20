@@ -55,7 +55,7 @@ rigid_interface ← (λ(){
 		break; case /* ⌘→ */ '\x05': pos_set(Δ.line.length)
 		break; case /* ⇥  */ '\t': on_tab(Δ.line,Δ.pos,line_splice)
 		break; case /* ↩  */ '\n':
-			if (Δ.line === '') {stdout('<reboot>\n\n'); process.exit(44)} // hack
+			if (Δ.line === '') {stdout('<reboot>\n\n'); process.exitCode = 44; process.exit()} // hack
 			preview(null); Δ.line = ''; Δ.pos = 0; stdout('\n'+PROMPT); do_command(line_a); ↩
 		}; line_a === Δ.line || do_command('<pre> '+Δ.line) }
 

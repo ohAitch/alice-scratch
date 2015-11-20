@@ -1,4 +1,6 @@
 #!/usr/bin/env ζ₂
+// translate sane stuff into weird sublime formats and put it in the sublime places
+// then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 
 plist ← require('plist','1.2.0')
 arg ← {
@@ -62,7 +64,7 @@ transform_snippets ← λ(str){
 
 main ← λ(){
 	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
-	fs(arg.in).find('*').filter(λ(ι){↩ !fs(arg.in+'/'+ι).dir()}).map(λ(ι){t←;
+	fs(arg.in).find('*').filter(λ(ι){↩ !fs(ι).dir()}).map(λ(ι){t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
 			(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
 		:(t=ι.match(/^(.*)\.snippet-magic$/))?
@@ -73,7 +75,7 @@ main ← λ(){
 		})
 	roots ← fs(arg.in).find('>').map(λ(ι){↩ ι.replace(arg.in,arg.out)})
 	out ← fs(arg.out).find('*').filter(λ(ι){↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(λ(ι){↩ !fs(ι).dir()})
-	_.difference(out,written.map(λ(ι){↩ ι.replace(arg.in,arg.out)}))
+	_.difference(out,written.map(λ(ι){↩ arg.out+'/'+ι}))
 		.filter(λ(ι){ ↩ !/Package Control\./.test(ι.replace(arg.out,'')) })
 		.map(λ(ι){ fs.unlinkSync(ι) })
 	}

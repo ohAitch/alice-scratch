@@ -1,14 +1,14 @@
 #!/usr/bin/env ζ₂
 chokidar ← require('chokidar','1.0.5')
 
-pad ← λ(v,s){↩ v+s.slice(v.length)}
 arg ← {
 	dir: fs('~/ali/scratch').path,
 	}
 
+pad ← λ(ι,s){↩ ι+s.slice(ι.length)}
 
-chokidar.watch(dir,{persistent:true, ignoreInitial:true}).on('all', λ(ev,fl){if ({add:1,change:1,unlink:1}[ev] && !fl.match(/\/\.history\//)) {
-	now ← moment().toISOString(); short_ ← fl.slice(dir.length)
-	print(pad(ev,' '.repeat(6)),now,'.'+short_)
-	fs(dir+'/.history/'+now+' '+(ev==='unlink'?'-':'+')+' '+short_.replace(/\//g,'::')).$ = ev==='unlink'? '' : fs(fl).$
+chokidar.watch(arg.dir,{persistent:true, ignoreInitial:true}).on('all', λ(ev,fl){t←; if ((t={add:1,change:1,unlink:1})[ev] && !fl.match(/\/\.history\//)) {
+	now ← moment().toISOString(); short_ ← fl.slice(arg.dir.length)
+	print(pad(ev,' '.repeat(_(t).keys()._.map('length')._.max())),now,'.'+short_)
+	fs(arg.dir+'/.history/'+now+' '+(ev==='unlink'?'-':'+')+' '+short_.replace(/\//g,'::')).$ = ev==='unlink'? '' : fs(fl).$
 }})
