@@ -30,6 +30,4 @@ if (argv.length === 0) {
 			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
 	break; case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
-	break; case '--ζj': pipe_in_out(ζ2_compile)
-	break; case '--jζ': pipe_in_out(ζ2_compile_inverse)
 }
