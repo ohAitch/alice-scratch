@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ₂
 
-plist ← require('plist')
+plist ← require('plist','1.2.0')
 arg ← {
 	cmd: process.argv[2],
 	in: process.argv[3],

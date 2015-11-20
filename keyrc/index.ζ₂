@@ -1,5 +1,6 @@
 #!/usr/bin/env ζ₂
-xmlbuilder ← require('xmlbuilder')
+bashᵥ(__dirname+'/keylayout/index.ζ₂')
+xmlbuilder ← require('xmlbuilder','4.1.0')
 
 as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
 

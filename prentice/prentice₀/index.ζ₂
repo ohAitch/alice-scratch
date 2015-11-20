@@ -16,11 +16,7 @@ hmm
 if we had a core architecture that was good enough for representing all of the stuff we want to represent, then we could build off that and not be super confused
 */
 
-child_process ← require('child_process')
-// path ← require('path')
-util ← require('util')
-
-natural ← require('natural') // https://www.npmjs.com/package/natural
+natural ← require('natural','0.2.1') // https://www.npmjs.com/package/natural
 
 // ---------------------------------- util ---------------------------------- //
 

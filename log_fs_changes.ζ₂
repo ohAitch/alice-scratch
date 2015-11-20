@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ₂
-chokidar ← require('chokidar')
+chokidar ← require('chokidar','1.0.5')
 
 pad ← λ(v,s){↩ v+s.slice(v.length)}
 

@@ -1,7 +1,5 @@
 #!/usr/bin/env ζ₂
-
-util ← require('util')
-node_spotify ← require('node-spotify')
+node_spotify ← require('node-spotify','0.7.0')
 
 // ----------------------------------- aux ---------------------------------- //
 

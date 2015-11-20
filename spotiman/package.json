@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "node-spotify": "0.7.0",
-    "zeta-two": "^0.5.35"
-  }
-}
