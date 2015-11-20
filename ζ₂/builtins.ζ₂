@@ -18,6 +18,19 @@ def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ @[name] = ι()})}
 ].map(λ(ι){def_lazy(ι[2]||E,ι[1]||ι[0],λ(){↩ require(ι[0])})})
 _ ← E._
 
+E._require_lazy = λ(require){↩ λ(ι,version){
+	// try {↩ require_(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ...}
+	// ι === 'underscore'? E._ : ι === 'moment'? E.moment
+	if (arguments.length === 1) ↩ require(ι)
+	else {
+		cache ← fs('~/.npm/'+ι+'/'+version).path
+		fs(cache+'/ι').exists() || (
+			print('[lazy require] installing',ι+'@'+version),
+			fs(cache).exists() || bashᵥ('cd ~; npm cache add '+bash_encode(ι+'@'+version)),
+			bashᵥ('cd '+bash_encode(cache)+' && npm i '+bash_encode(ι+'@'+version)+' && mv node_modules/'+bash_encode(ι)+' ι && rmdir node_modules'),
+			print('[lazy require] done') )
+		↩ require(cache+'/ι')}
+	}}
 Array.from? console.warn('Array.from polyfill is not needed') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
 ;(λ(){
 fmt ← λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{depth:null})}
@@ -79,6 +92,7 @@ E.ζ2_repl_start = λ(opts){
 		if (!err && ret !== undefined) {self.context.__ = ret; self.outputStream.write(self.writer(ret)+'\n')}
 		self.displayPrompt()
 		})
+	self.context.require = _require_lazy(self.context.require)
 	module.exports(self.context)
 	↩ self}
 
