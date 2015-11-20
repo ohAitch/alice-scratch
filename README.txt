@@ -1,6 +1,6 @@
 ✨: new and magical
 
-ζ₂: practical util lib
+ζ: practical util lib
 
 α: parser stuff and some interesting utils
 
