@@ -233,6 +233,8 @@ def_lazy(ˡ,'Path',λ(){
 		fs.writeFileSync(@.path,ι) }
 	↩ Path })
 
+require.extensions['.ζ₂'] = λ(module,ι){module._compile(ζ2_compile(fs.readFileSync(ι,'utf8').replace(/^((?:#!.*\n)?)/,'$1require = _require_lazy(require);')),ι)}
+
 E.ζtoken = {}
 λ prop_extend(from,to){Object.getOwnPropertyNames(from).forEach(λ(ι){Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι))})}
 prop_extend(E,global)

@@ -11,10 +11,8 @@ if (argv.length === 0) {
 		ζ2_repl_start()
 } else switch (argv[0]) {
 	default:
-		// this is lame.
-		// we looked at https://github.com/jashkenas/coffeescript/blob/master/src/command.coffee and http://nodejs.org/api/process.html
-		// for a better thing to do, but then we gave up.
-		eval(ζ2_compile(fs(process.argv.splice(2,1)[0]).$).replace(/^#!.*/,''))
+	  process.argv = ['ζ₂'].concat(argv)
+	  Module._load(path.resolve(argv[0]), null, true)
 	break; case '-c':
 		out ← fs(argv[-1])
 		argv.slice(1,-1).map(λ(ι){
