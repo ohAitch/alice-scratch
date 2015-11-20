@@ -5,7 +5,7 @@ var ζ2_compile = function(ι){
 		function(ι,name,s,semi){
 			return {'λ':'function', 'λ λ':'function λ','λ*':'function*', 'λ* λ':'function* λ', '↩':'return ', '↩ ':'return '}[ι]
 				|| (semi===';'? 'var '+name+s+';' : 'var '+name+s+'=')})
-		.replace(/([^'"])@(?![-'"\w])/g,'$1this')}
+		.replace(/([^'"])@(?![-'"\w\/])/g,'$1this')}
 
 var t = function(ι){eval(ζ2_compile(require('fs').readFileSync(__dirname+'/'+ι+'.ζ₂')+''))}
 t('builtins')

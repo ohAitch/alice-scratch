@@ -1,15 +1,9 @@
 #!/usr/bin/env ζ₂
-
-util ← require('util')
-_ ← global._ // wat
-
 // ------------------------------ general util ------------------------------ //
-
 partition ← λ(n,v){t←[]; for (i←0;i<v.length;i+=n) t.push(_.range(n).map(λ(t){↩ v[i+t]})); ↩ t}
 co_ ← λ(f,cb){iter ← typeof(f)==="function"? f() : f; (λ λ(e,v){t ← e? iter.throw(e) : iter.next(v); t.done? cb&&cb(null,t.value) : t.value(λ)})()}
 
 // --------------------------------- parsing -------------------------------- //
-
 pluralize ← λ(v){↩ v+'s'}
 depluralize ← λ(v){↩ v.replace(/s$/,'')}
 parse_noun ← λ(v){↩ {'newline':'\n'}[v] || v}
@@ -28,7 +22,6 @@ parse_sentences ← λ(v){t ← v.split(/\.(?: |$)/); if (t[-1] === '') t.pop();
 	})}
 
 // ---------------------------------- input --------------------------------- //
-
 __SPECIAL__ = λ λ(v){
 	t ← parse_sentences(v); t.length > 1 && err('too many sentences')
 	cb ← λ.cb; λ.cb = null; cb(null,t[0]) }
@@ -37,7 +30,6 @@ get_input ← λ(cb){__SPECIAL__.cb = cb}
 mock_input ← λ(v,cb){print('\x1b[32mζ₊\x1b[39m > '+v); ;(λ λ(){__SPECIAL__.cb? (__SPECIAL__(v),cb()) : λ.in(0.01)})()}
 
 // -------------------------------------------------------------------------- //
-
 // corpus ← fs('corpus/all').find('>').map(λ(v){↩ 'corpus/all/'+v})
 // corpus ← corpus.map(λ(v){↩ [v, _.memoize(λ(){↩ fs_(v).$})]})
 

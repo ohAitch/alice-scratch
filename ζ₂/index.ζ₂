@@ -2,8 +2,8 @@ argv ← process.argv.slice(2)
 
 ζ2_compile_file ← λ(ι){
 	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
-	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?=\s)/,'#!/usr/bin/env node --harmony')+
 		'require("zeta-two")(global);'+
+	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?!\S)/,'#!/usr/bin/env node --harmony')+
 		ζ2_compile(t[2]) }
 
 if (argv.length === 0) {

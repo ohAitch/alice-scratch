@@ -10,15 +10,15 @@ P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ(t){name ← t[0]; ι
 	r(global); patches.push(r)
 	})}
 
-def ← λ(o,name,get,set){set || (set = λ(t){delete @[name]; @[name] = t}); Object.defineProperty(o,name,{configurable:true, get:get, set:set}); ↩ o}
-lazy ← λ(name,ι){↩ {get:λ(){↩ @[name] = ι()}}}
-def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ o[name] = ι()})}
+def ← λ(o,name,get,set){set || (set = λ(ι){delete @[name]; @[name] = ι}); Object.defineProperty(o,name,{configurable:true, get:get, set:set}); ↩ o}
+lazy ← λ(name,ι){↩ {get:λ(){↩ @[name] = ι()}}} //! def_lazy doesn't use this because def doesn't take this in as a format. but ... bleh?
+def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ @[name] = ι()})}
 
-;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['net'],['os'],['path'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['priorityqueuejs',,ˡ],['rwlock',,ˡ],
-	].map(λ(ι){def_lazy(ι[2]||E,ι[1]||ι[0],λ(){↩ require(ι[0])})})
+;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['path'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['priorityqueuejs',,ˡ],['rwlock',,ˡ],
+].map(λ(ι){def_lazy(ι[2]||E,ι[1]||ι[0],λ(){↩ require(ι[0])})})
 _ ← E._
 
-Array.from? console.warn('Array.from polyfill is done') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
+Array.from? console.warn('Array.from polyfill is not needed') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
 ;(λ(){
 fmt ← λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{depth:null})}
 sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 --data-binary @-', {input:ι})); if (t !== null) ↩ t}
@@ -30,8 +30,8 @@ E.sb = λ(ι){↩ arguments.length === 0? sublime_view_substr() : child_process.
 })()
 E.email = λ(){
 	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
-		.map(λ(ι){osa('tell application "chrome" to open location '+osa_encode(ι))})
-	osa('tell application "chrome" to activate') }
+		.map(λ(ι){osa('tell app "chrome" to open location '+osa_encode(ι))})
+	osa('tell app "chrome" to activate') }
 E.A = λ(ι){↩ Array.prototype.slice.call(ι)}
 E.print = λ(){a ← A(arguments); process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n'); ↩ a[-1]}
 _(E).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).extend({ln:E.log, ln2:E.log2, ln10:E.log10})
@@ -50,9 +50,9 @@ P({ 'Number.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}              
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
 E.pipe_in_out = λ(f){
 	read_all ← λ(θ/*Readable*/,cb){t ← []; θ.resume(); θ.setEncoding('utf8'); θ.on('data',λ(ι){t.push(ι)}); θ.on('end',λ(){cb(null,t.join(''))})}
-	read_all(process.stdin, λ(e,ι){process.stdout.write(f(ι))}) }
+	read_all(process.stdin, λ(e,ι){process.stdout.write(f(ι)+'')}) }
 E.ζ2_compile = ζ2_compile
-E.ζ2_compile_inverse = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
+E.ζ2_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
 E.ζ2_repl_start = λ(opts){
 	//! aaaaa why does this break if i remove useGlobal:true ?
 	repl._builtinLibs = []
@@ -68,7 +68,7 @@ E.ζ2_repl_start = λ(opts){
 			if (code.match(/^>/)) code = '__SPECIAL__('+util.inspect(code.slice(1))+')' // hack: for apprentice
 			try {t ← vm.createScript(ζ2_compile(code)+'\n', {filename:'repl', displayErrors:false})}
 			catch (e) {
-				if (e.name === 'SyntaxError' && /^(Unexpected end of input|Unexpected token)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.displayPrompt(); ↩}
+				if (e.name === 'SyntaxError' && /^(Unexpected end of input|Unexpected token)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('     '); ↩}
 				typeof(e.stack)==='string' && (e.stack = e.stack.replace(/(\n    at )[\s\S]*/,'$1<repl>')); err = e; break}
 			try {ret ← @.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(self.context,{displayErrors:false})}
 			catch (e) {typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([\s\S]*)at repl:(.*)[\s\S]*?$/,'$1at <repl:$2>')); err = e; break}
@@ -94,20 +94,22 @@ E.bash_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''"
 E.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
 E.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
 
-E.chrome_js = λ(ι){osa('tell application "google chrome" to tell active tab of front window to set URL to '+osa_encode('javascript:'+ζ2_compile(ι+"; undefined")))}
-E.chrome_jsᵥ = λ(ι){osaᵥ('tell application "google chrome" to tell active tab of front window to set URL to '+osa_encode('javascript:'+ζ2_compile("ι ← eval("+JSON.stringify(ζ2_compile(ι))+"); t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"))); ↩ JSON.parse(osaᵥ('tell application "google chrome" to execute window 1\'s active tab javascript '+osa_encode("document.querySelectorAll('#applescript_hack')[0].textContent"))||'""')}
-E.chrome_jquery = λ(ι){chrome_js("(λ(f){if (window.jQuery) f(); else {t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; t.onload = f; document.getElementsByTagName('head')[0].appendChild(t)}})(λ(){$ ← window.$; "+ι+"})")}
-E.chrome_jqueryᵥ = λ(ι){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); if ((r=chrome_jsᵥ("(λ(f){if (window.jQuery) ↩ f(); else {t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; document.getElementsByTagName('head')[0].appendChild(t); ↩ '"+$null+"'}})(λ(){"+ι+"})"))===$null) while ((r=chrome_jsᵥ("(λ(f){if (window.jQuery) ↩ f(); else ↩ '"+$null+"'})(λ(){"+ι+"})"))===$null); ↩ r}
-// https://projectnaptha.com/ chrome_jquery("$('a:contains(\"xkcd\")')[0].click()")
-// https://projectnaptha.com/ chrome_jqueryᵥ("↩ $('a').map(λ(){↩ $(this).attr('href')}).toArray()")
+c_js ← λ(osa,ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osa('tell app "google chrome" to tell '+tab+' of window 1 to set URL to '+osa_encode('javascript:'+ζ2_compile(ι)))}
+c_js_sandbox ← λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ JSON.parse(osaᵥ('tell app "google chrome" to execute window 1\'s '+tab+' javascript '+osa_encode(ι))||'""')}
+jquery_script ← λ(extra){↩ "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; "+(extra||"")+"; document.getElementsByTagName('head')[0].appendChild(t)"}
+mk_eval ← λ(ι){↩ "eval("+JSON.stringify(ζ2_compile(ι))+")"}
+E.chrome_js = λ(ι,tab){c_js(osa,ι+'; undefined',tab)}
+E.chrome_jsᵥ = λ(ι,tab){c_js(osaᵥ,"t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← "+mk_eval(ι)+"; t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined",tab); ↩ c_js_sandbox("document.querySelectorAll('#applescript_hack')[0].textContent",tab)}
+E.chrome_$ = λ(ι,tab){chrome_js("f ← λ(){"+ι+"}; if (window.jQuery) f(); else {"+jquery_script("t.onload = f")+"}",tab)}
+E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); fst ← 1; while ((r=chrome_jsᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, jquery_script()) : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
 
 P({
 'Function.prototype.P':λ(){ι←@; a ← A(arguments); ↩ λ(){↩ ι.apply(@,arguments.length === 0? a : a.concat(A(arguments)))}},
 'Function.prototype.X':λ(n){ι←@; ↩ λ(){↩ ι.apply(@,A(arguments).slice(0,n))}},
-'Array.prototype.mapcat':λ(f){↩ _(@.map(f)).flatten(true)},
+'Array.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
 'String.prototype.repeat':λ(x){↩ x<=0? '' : Array(x+1).join(@)},
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : _.range(0,x).map(_.constant(@))._.flatten(true)},
-'Function.prototype.inspect':λ(rec,ctx){t ← ζ2_compile_inverse(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
+'Function.prototype.inspect':λ(rec,ctx){t ← ζ2_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 'String.prototype._':{get:λ(){↩ _(@)}},
 'Array.prototype._':{get:λ(){↩ _(@)}},
 'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
@@ -213,14 +215,14 @@ def_lazy(ˡ,'Path',λ(){
 		// async should use like fs.createReadStream(ι.path).pipe(fs.createWriteStream(@.path))
 		if (@.exists() && @.dir()) throw Error('writing to directories not implemented')
 		mkdir_p ← λ ρ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {if (e.code !== 'ENOENT') throw e; ρ(path.dirname(ι)); fs.mkdirSync(ι)}}
-		mkdir_p(path.resolve(@.parent().path))
+		mkdir_p(path.resolve(path.dirname(@.path)))
 		fs.writeFileSync(@.path,ι) }
 	↩ Path })
 
+E.ζtoken = {}
 λ prop_extend(from,to){Object.getOwnPropertyNames(from).forEach(λ(ι){Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι))})}
 prop_extend(E,global)
-E.ζtoken = {}
-module.exports = λ(to){if (to.ζtoken === E.ζtoken) ↩; prop_extend(E,to); patches.forEach(λ(ι){ι(to)})}
+module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.forEach(λ(ι){ι(to)}))}
 
 // -------------------------------- discarded ------------------------------- //
 
