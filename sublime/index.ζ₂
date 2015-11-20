@@ -2,9 +2,9 @@
 
 plist ← require('plist','1.2.0')
 arg ← {
-	cmd: process.argv[2],
-	in: process.argv[3],
-	out: process.argv[4],
+	cmd: process.argv[2] || 'to',
+	in: path.resolve(process.argv[3] || 'Packages'),
+	out: path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path),
 	}
 
 // json ← {read:JSON.parse, show:JSON.stringify} // these names should be used, i think, unless they have text connotations

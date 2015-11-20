@@ -2,8 +2,10 @@
 chokidar ← require('chokidar','1.0.5')
 
 pad ← λ(v,s){↩ v+s.slice(v.length)}
+arg ← {
+	dir: fs('~/ali/scratch').path,
+	}
 
-dir ← process.argv[2]
 
 chokidar.watch(dir,{persistent:true, ignoreInitial:true}).on('all', λ(ev,fl){if ({add:1,change:1,unlink:1}[ev] && !fl.match(/\/\.history\//)) {
 	now ← moment().toISOString(); short_ ← fl.slice(dir.length)

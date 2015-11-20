@@ -1,4 +1,2 @@
 #!/usr/bin/env bash
-
-cd ../keyrc
-./run.sh
+../keyrc/index.ζ₂
