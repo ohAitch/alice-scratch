@@ -1,6 +1,4 @@
 #!/usr/bin/env ζ₂
-util ← require('util')
-
 pipe_in_out(λ(ι){
 
 t←[]; ι.split('').sort()._.uniq(true).map(λ(ι){ι = ι.charCodeAt(0); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι])})
