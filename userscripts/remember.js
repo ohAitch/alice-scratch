@@ -2,7 +2,9 @@
 // @require     https://code.jquery.com/jquery-2.1.4.min.js
 // @require     file:///~/ali/scratch/remember.txt.js
 
-if ($('#searchform').length && $('input[title="Search"]').length) {
+var $in = 'input[title="Search"]'
+
+if ($('#searchform').length && $($in).length) {
 
 // todo: the svg thing should extend off the left side farther than it does
 
@@ -12,16 +14,21 @@ var data = []; remember_txt_js.split('\n').filter(function(v){return !/^$|^\/\//
 
 $('body').append($('<svg xmlns="http://www.w3.org/2000/svg" style="z-index:5000; position:absolute; top:74px; height:30px; width:9px;"><polygon points="0,0 0,9 9,9"></polygon><polygon points="0,9 9,9 9,21 0,21"></polygon><polygon points="0,30 0,21 9,21"></polygon></svg>'))
 
-var update = function(input){
+var update = function(ι){
+	var t = ι
+		.replace(/(\bsite:|\B∈) ?SE\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
+		.replace(/(\bsite:|\B∈) ?git\b/i,'site:github.com')
+	if (!(t === ι)) {$($in).val(t).submit(); return}
+
 	$('.augment').remove()
 	var augments = {}
-	// input.split(/ +/).map(function(v){return data[v]}).filter(function(v){return v}).forEach(function(v){
+	// ι.split(/ +/).map(function(v){return data[v]}).filter(function(v){return v}).forEach(function(v){
 	data.forEach(function(v){
-		if (v[0].every(function(v){return input.indexOf(v) !== -1})) {v = v[1]
+		if (v[0].every(function(v){return ι.indexOf(v) !== -1})) {v = v[1]
 			if (augments[v]) return; augments[v] = true
 			$('#res').prepend('<div class="augment" style="margin-bottom:18px; white-space:nowrap;">'+icon+' <a href="'+v+'"">'+v+'</a></div>')
 			} })
 }
-var input = ""; setInterval(function(){var t; input === (t=$('input[title="Search"]').val()) || update(input = t)},50)
+var input = ""; setInterval(function(){var t; input === (t=$($in).val()) || update(input = t)},50)
 
 }

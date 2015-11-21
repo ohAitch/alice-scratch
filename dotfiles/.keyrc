@@ -77,6 +77,8 @@ FnF4   ] DASHBOARD
 [chrome]  ⌘⇧f    $ alert 'use FnF3 instead' 'tsk' 1.5
 [sublime] ⌘⇧^f   $ alert 'use FnF3 instead' 'tsk' 1.5
 ⇪      $ alert ⇪ 'n/a' 1.5
+# FnF5   $ alert FnF5 'n/a' 1.5
+# FnF6   $ alert FnF6 'n/a' 1.5
 
 # \x09    ⇥, ⇧⇥
 # \x0a    ↩, ⇧↩, ^o

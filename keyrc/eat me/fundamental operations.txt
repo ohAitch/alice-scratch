@@ -1,4 +1,4 @@
-//===---------------------------===// notes //===--------------------------===//
+------------------------------------- notes ------------------------------------
 	anything we do *definitely* needs to be super extensible
 	kill sublime nag?
 	improve run command
@@ -16,6 +16,8 @@ acorn
 preview
 dashboard
 misc system apps
+
+@2015-11-21 huh, we should just run a keylogger
 ------------------------------
 
 NEXT: go through the universe and find all the things we use again. and then maybe delete the X's.
