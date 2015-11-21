@@ -1,5 +1,10 @@
 #!/usr/bin/env ζ₂
-bashᵥ(__dirname+'/keylayout/index.ζ₂')
+// install https://pqrs.org/osx/karabiner/
+// run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh
+// go to System Preferences → Keyboard → Input Sources → + → Others → .keyrc and ensure that the layout is enabled
+// (the system Unicode Hex Input works too but it's worse)
+// run this if ~/.keyrc has changed
+
 xmlbuilder ← require('xmlbuilder','4.1.0')
 
 as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
@@ -15,10 +20,9 @@ parse_lackey ← λ(src){
 			ι = ι.split('\n').slice(0,-1)
 			t ← transpose_str(ι)
 			↩ ι[-1].match(/└─+┘/g).map('length'.λ).map(λ(len){r ← t.splice(0,len); t.splice(0,"│ │".slice(1,-1).length); ↩ r}).map(transpose_str) })
-		.map(λ(board_str){
-			↩ {
+		.map(λ(board_str){↩ {
 			hots: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-			keys: board_str.slice(1,-1).map(/^│(.+)│$/.λ).map(1..λ).map(/\S\S?/g.λ),
+			keys: board_str.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
 			} })
 	t = _(_(_(t).indexBy('hots')).omit('','⇧')).values()
 	h ← _(t).indexBy('hots')['homoiconic']
@@ -68,3 +72,4 @@ t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; bashᵥ(t+' 
 // right command is maybe problematic
 // if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
 // handle chars outside of BMP
+	// U+1F4A9 converts to d83d dca9 in unicode hex input, which is what OS X uses as an official input source across the OS.
