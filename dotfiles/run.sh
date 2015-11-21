@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-../keyrc/index.ζ₂
+../keyrc.ζ

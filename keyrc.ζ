@@ -1,4 +1,4 @@
-#!/usr/bin/env ζ₂
+#!/usr/bin/env ζ
 // install https://pqrs.org/osx/karabiner/
 // run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh
 // go to System Preferences → Keyboard → Input Sources → + → Others → .keyrc and ensure that the layout is enabled

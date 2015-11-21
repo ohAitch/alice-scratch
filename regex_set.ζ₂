@@ -1,8 +1,6 @@
-#!/usr/bin/env ζ₂
-pipe_in_out(λ(ι){
+#!/usr/bin/env ζ -f
 
 t←[]; ι.split('').sort()._.uniq(true).map(λ(ι){ι = ι.charCodeAt(0); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι])})
 x ← λ(ι){ι = String.fromCharCode(ι); ↩ {'-':1,']':1,'/':1}[ι]? '\\'+ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x')}
-↩ t.map(λ(ι){↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1])}).join('')
-
-})
+ι ← t.map(λ(ι){↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1])}).join('')
+process.stdout.write(ι)
