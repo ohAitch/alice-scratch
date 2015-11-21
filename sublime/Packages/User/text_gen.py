@@ -13,7 +13,7 @@ from datetime import datetime
 class MakeDividerCommand(sublime_plugin.TextCommand):
 	def run(self,edit,length):
 		view = self.view
-		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/', 'ζ₂':'/', 'bashrc':'#', 'arc': ';'}
+		e_table_ = {'rb':'#', 'py':'#', 'sh':'#', 'js':'/', 'ζ':'/', 'bashrc':'#', 'arc': ';'}
 		def e_table(v): return e_table_[v] if v in e_table_ else '-'
 		s_table = {
 			'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],

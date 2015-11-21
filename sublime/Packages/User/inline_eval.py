@@ -26,7 +26,7 @@ class InlineEvalZetaCommand(sublime_plugin.TextCommand):
 		view = self.view; sel = view.sel()
 		sel = expand_empty_regions_to_lines(view, sel)
 		vs = json.dumps([view.substr(v) for v in sel])
-		r = subprocess.check_output(['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','--es',vs]).decode('utf-8')
+		r = subprocess.check_output(['/usr/local/bin/node','--harmony','/usr/local/bin/ζ','--es',vs]).decode('utf-8')
 		r = re.sub(r'\x1b\[.*?m','',r) #! hack
 		r = r.split('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 		for i in range(len(sel))[::-1]:
@@ -38,7 +38,7 @@ class InlineCompileZetaJsCommand(sublime_plugin.TextCommand):
 		sel = expand_empty_region_to_whole_buffer(view, sel)
 		sel = expand_empty_regions_to_lines(view, sel)
 		for i in range(len(sel))[::-1]:
-			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','-ef','ζ2_compile(ι)'])
+			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ','-p','ζ_compile(ι)'])
 			view.replace(edit, sel[i], r)
 
 class InlineCompileJsZetaCommand(sublime_plugin.TextCommand):
@@ -47,5 +47,5 @@ class InlineCompileJsZetaCommand(sublime_plugin.TextCommand):
 		sel = expand_empty_region_to_whole_buffer(view, sel)
 		sel = expand_empty_regions_to_lines(view, sel)
 		for i in range(len(sel))[::-1]:
-			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ₂','-ef','ζ2_compile["⁻¹"](ι)'])
+			r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ','-p','ζ_compile["⁻¹"](ι)'])
 			view.replace(edit, sel[i], r)

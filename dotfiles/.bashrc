@@ -8,7 +8,6 @@ beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; afplay $([[ $E = 0 ]] && echo "$__
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
 _chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
 _pastebin(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/com\//com\/raw?i=/'; }
-_encodeURIComponent(){ ζ₂ -ef 'ι = ι.replace(/\n$/,""); encodeURIComponent(ι)'; }
 
 ###### interactive only ######
 shopt -s no_empty_cmd_completion
@@ -28,13 +27,13 @@ ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 clear(){ /usr/bin/clear && printf '\e[3J'; }
 …(){ bash -s; }
 alias pwf='echo "$(home_link "$PWD/$1")"'
-alias ct=chrome_tabs; chrome_tabs(){ ζ₂ -e '
+alias ct=chrome_tabs; chrome_tabs(){ ζ -e '
 	t ← osaᵥ("tell app \"chrome\" \n get {title,URL} of tabs of windows \n end tell"); title ← t[0]; url ← t[1]
 	i ← '"$(echo "$1" | jq -R .)"'
 	if (i) {i = parseInt(i); t ← title[0][i]+" "+url[0][i]; p(t); print(t+"\n<copied>")}
 	else sb(_.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).join("\n")}).join("\n\n"))
-	undefined'; }
-bookmarks(){ ζ₂ -e '
+	'; }
+bookmarks(){ ζ -p '
 	ι ← JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children
 	;(λ λ(ι){↩ ι instanceof Array? ι.map(λ).join("\n") :
 		ι.children? (ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
@@ -46,7 +45,7 @@ del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder
 ql(){ (-q qlmanage -p "$@" &); }
 man(){ /usr/bin/man "$@" | col -bfx | sb; }
 imgur(){
-	local img=$(osascript -ss -e 'tell app "path finder" to set v to selection' -e 'item 1 of v' | ζ₂ -ef '"/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")');
+	local img=$(osascript -ss -e 'tell app "path finder" to set v to selection' -e 'item 1 of v' | ζ -p '"/"+ι.match(/(fsFolder|fsFile) "((\\"|.)*?)"/g).map(λ(ι){↩ ι.replace(/^\S+ "(.*)"$/,"$1")}).reverse().join("/")');
 	local v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$img" "https://api.imgur.com/3/upload" | jq -r .data.link | googl)#imgur"; echo "$v" | p; echo "copied: $v"; }
 im_to_png(){ for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
 im_pdf_to_png() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 "${v%.*}.png"; done; }
@@ -80,7 +79,7 @@ x(){ E=$?; if [[ $E = 0 ]]; then is_term || beep $E; exit; fi; is_term || { osas
 rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 ↩(){
 	local t=$(while :; do
-		t=($(for t in {run,index,main}{,.sh,.ζ₂,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
+		t=($(for t in {run,index,main}{,.sh,.ζ,.js,.py}; do [ -f "$t" ] && echo "$t"; done))
 		[[ $t != "" ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
@@ -88,8 +87,8 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 ######## external only #######
 alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
 ](){ [[ $1 = ⌘q ]] || { alert "could not p"; exit 1; }; osascript -e 'tell app "system events" to keystroke "q" using command down'; }
-_lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | _encodeURIComponent)"; }
-_in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ₂ -ef 'osa_encode((ι).split("\n").map(bash_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
+_lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | ζ -p 'encodeURIComponent(ι)')"; }
+_in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(bash_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"

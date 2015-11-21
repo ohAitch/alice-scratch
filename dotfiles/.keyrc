@@ -71,7 +71,7 @@ FnF4   ] DASHBOARD
 [terminal] ⌘R      ] ^L
 [spotify] ⌘l       $ _lyrics
 [path_finder] ⌘⇧t  $ _in_new_terminal osascript -e 'tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'
-[photo_booth] ⌘q   $ ] ⌘q; ζ₂ -e 'fs("~/Pictures/Photo Booth Library/Pictures").find(">").forEach(λ(ι){t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
+[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'fs("~/Pictures/Photo Booth Library/Pictures").find(">").forEach(λ(ι){t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
 
           ⌘^f    $ alert 'use FnF3 instead' 'tsk' 1.5
 [chrome]  ⌘⇧f    $ alert 'use FnF3 instead' 'tsk' 1.5

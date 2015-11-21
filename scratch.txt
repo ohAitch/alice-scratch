@@ -172,4 +172,4 @@ Can you imagine having to program using 100Hz CPUs, no matter how many of them y
 Object.defineProperty(String.prototype,'Λ',{configurable:true, get:λ(){↩ eval('(λ(a,b,c){ι ← a; ↩ eval('+util.inspect(@+'')+')})')}})
 
 ----------------------------------- writing! -----------------------------------
-ζ₂ -e 'T ← 10; sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('\''curl -s -X PUT 127.0.0.1:34289 --data-binary @-'\'', {input:ι})); if (t !== null) ↩ t}; i←0; (λ(){sublime_eval('\''view.run_command("exec_edit",{"v":"view.insert(edit,view.sel()[0].begin(),\\"\\\\n'\''+("000"+(++i)*T).slice(-4)+'\'' -- \\")"})'\'')}).every(T); void 0'
+ζ -e 'T ← 10; sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('\''curl -s -X PUT 127.0.0.1:34289 --data-binary @-'\'', {input:ι})); if (t !== null) ↩ t}; i←0; (λ(){sublime_eval('\''view.run_command("exec_edit",{"v":"view.insert(edit,view.sel()[0].begin(),\\"\\\\n'\''+("000"+(++i)*T).slice(-4)+'\'' -- \\")"})'\'')}).every(T)'
