@@ -1,4 +1,4 @@
-#!/usr/bin/env ζ₂
+#!/usr/bin/env ζ
 node_spotify ← require('node-spotify','0.7.0')
 
 // ----------------------------------- aux ---------------------------------- //
@@ -68,7 +68,7 @@ time ← now()
 getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
 	print('[spotiman] loaded db in',round((now() - time)*100)/100+'s')
 
-	global.tags = tags; global.tracks = tracks; ζ2_repl_start()
+	global.tags = tags; global.tracks = tracks; ζ_repl_start()
 
 	// spotify.logout(λ(){rimraf('cache'); rimraf('settings'); exit maybe}) // will log you out
 })

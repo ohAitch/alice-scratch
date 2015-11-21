@@ -1,5 +1,4 @@
-#!/usr/bin/env ζ₂
-
+#!/usr/bin/env ζ
 crypto ← require('crypto')
 
 err ← λ(v){throw Error(A(arguments).join(' '))}

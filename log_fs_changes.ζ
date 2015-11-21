@@ -1,4 +1,4 @@
-#!/usr/bin/env ζ₂
+#!/usr/bin/env ζ
 chokidar ← require('chokidar','1.0.5')
 
 arg ← {

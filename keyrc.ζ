@@ -71,5 +71,3 @@ t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; bashᵥ(t+' 
 // mild todo:
 // right command is maybe problematic
 // if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
-// handle chars outside of BMP
-	// U+1F4A9 converts to d83d dca9 in unicode hex input, which is what OS X uses as an official input source across the OS.

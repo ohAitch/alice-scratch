@@ -1,4 +1,4 @@
-#!/usr/bin/env ζ₂
+#!/usr/bin/env ζ
 jquery ← require('jquery')
 jsdom ← require('jsdom')
 // csv ← require('csv')

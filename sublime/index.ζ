@@ -1,4 +1,4 @@
-#!/usr/bin/env ζ₂
+#!/usr/bin/env ζ
 // translate sane stuff into weird sublime formats and put it in the sublime places
 // then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 
