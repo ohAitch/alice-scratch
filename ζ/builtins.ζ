@@ -6,11 +6,11 @@ E ← {} // exports
 patches ← []
 P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ(t){name ← t[0]; ι ← t[1]
 	name = name.split('.'); last ← name.pop()
-	r ← λ(G){t ← name.reduce(λ(r,ι){↩ r[ι]},G); typeof(ι)==='function'? ((ι.name && (ι.super = t[last])), t[last] = ι) : def(t,last,ι.get)}
+	r ← λ(G){t ← name.reduce(λ(r,ι){↩ r[ι]},G); typeof(ι)==='function'? ((ι.name && (ι.super = t[last])), t[last] = ι) : def(t,last,ι)}
 	r(global); patches.push(r)
 	})}
 
-def ← λ(o,name,get,set){set || (set = λ(ι){delete @[name]; @[name] = ι}); Object.defineProperty(o,name,{configurable:true, get:get, set:set}); ↩ o}
+def ← λ(o,name,get,set){ι ← typeof(get)==='function'? {get:get, set:set || (set = λ(ι){delete @[name]; @[name] = ι})} : get; ι.configurable = true; Object.defineProperty(o,name,ι); ↩ o}
 lazy ← λ(name,ι){↩ {get:λ(){↩ @[name] = ι()}}} //! def_lazy doesn't use this because def doesn't take this in as a format. but ... bleh?
 def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ @[name] = ι()})}
 def_pipeable ← λ(o,name,ι){↩ def(o, name, λ(){if (global.__special_pipe_ι === undefined) ↩ ι; else {t ← global.__special_pipe_ι; global.__special_pipe_ι = undefined; ↩ ι(t)}})}
@@ -20,6 +20,7 @@ def_pipeable ← λ(o,name,ι){↩ def(o, name, λ(){if (global.__special_pipe_�
 _ ← E._
 global.stream = E.stream
 
+def_pipeable(E,'_',_)
 E._require_lazy = λ(require){↩ λ Λ(ι,version){
 	if (arguments.length === 1) {try {↩ require(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ↩ Λ(ι,0,e)}}
 	else {
@@ -60,12 +61,12 @@ P({ 'Number.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}              
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
 E.ζ_compile = ζ_compile
-E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
+E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)|\.__special_pipe\(\),/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','.__special_pipe(),':'⟩'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
 E.ζ_repl_start = λ(opts){
 	//! aaaaa why does this break if i remove useGlobal:true ?
 	repl._builtinLibs = []
 	rRpc ← repl.REPLServer.prototype.complete; repl.REPLServer.prototype.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
-	self ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:{split:λ(){↩ ['ζ ']}, valueOf:λ(){↩ '\x1b[32mζ\x1b[39m '}}}).extend(opts))
+	self ← repl.start({useGlobal:true, ignoreUndefined:true, prompt:{split:λ(){↩ ['ζ ']}, valueOf:λ(){↩ '\x1b[32mζ\x1b[39m '}}} ⟩ _.extend(opts))
 	self.removeAllListeners('line')
 	self.on('line',λ(cmd){
 		err←; ret←;
@@ -128,7 +129,7 @@ E.sublimeᵥ = λ(ι){t ← JSON.parse(execᵥ('curl -s -X PUT 127.0.0.1:34289 -
 // clearInterval(q)
 
 P({
-'Object.prototype.__special_pipe':{get:λ(){'use strict'; global.__special_pipe_ι = @}},
+'Object.prototype.__special_pipe':{value:λ(){'use strict'; global.__special_pipe_ι = @}},
 'Function.prototype.P':λ(){ι←@; a ← A(arguments); ↩ λ(){↩ ι.apply(@,arguments.length === 0? a : a.concat(A(arguments)))}},
 'Function.prototype.X':λ(n){ι←@; ↩ λ(){↩ ι.apply(@,A(arguments).slice(0,n))}},
 'Array.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
