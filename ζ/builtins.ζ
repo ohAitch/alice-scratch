@@ -13,33 +13,30 @@ P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ(t){name ← t[0]; ι
 def ← λ(o,name,get,set){set || (set = λ(ι){delete @[name]; @[name] = ι}); Object.defineProperty(o,name,{configurable:true, get:get, set:set}); ↩ o}
 lazy ← λ(name,ι){↩ {get:λ(){↩ @[name] = ι()}}} //! def_lazy doesn't use this because def doesn't take this in as a format. but ... bleh?
 def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ @[name] = ι()})}
+def_pipeable ← λ(o,name,ι){↩ def(o, name, λ(){if (global.__special_pipe_ι === undefined) ↩ ι; else {t ← global.__special_pipe_ι; global.__special_pipe_ι = undefined; ↩ ι(t)}})}
 
 ;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['path'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['priorityqueuejs',,ˡ],['rwlock',,ˡ],
 ].map(λ(ι){def_lazy(ι[2]||E,ι[1]||ι[0],λ(){↩ require(ι[0])})})
 _ ← E._
+global.stream = E.stream
 
-E._require_lazy = λ(require){↩ λ(ι,version){
-	// try {↩ require_(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ...}
-	// ι === 'underscore'? E._ : ι === 'moment'? E.moment
-	if (arguments.length === 1) ↩ require(ι)
+E._require_lazy = λ(require){↩ λ Λ(ι,version){
+	if (arguments.length === 1) {try {↩ require(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ↩ Λ(ι,0,e)}}
 	else {
+		if (!version) throw arguments[2] //! todo
 		cache ← fs('~/.npm/'+ι+'/'+version).path
 		fs(cache+'/ι').exists() || (
 			print('[lazy require] installing',ι+'@'+version),
-			fs(cache).exists() || bashᵥ('cd ~; npm cache add '+bash_encode(ι+'@'+version)),
-			bashᵥ('cd '+bash_encode(cache)+' && npm i '+bash_encode(ι+'@'+version)+' && mv node_modules/'+bash_encode(ι)+' ι && rmdir node_modules'),
+			fs(cache).exists() || execᵥ('cd ~; npm cache add '+sh_encode(ι+'@'+version)),
+			execᵥ('cd '+sh_encode(cache)+' && npm i '+sh_encode(ι+'@'+version)+' && mv node_modules/'+sh_encode(ι)+' ι && rmdir node_modules'),
 			print('[lazy require] done') )
 		↩ require(cache+'/ι')}
 	}}
 Array.from? console.warn('Array.from polyfill is not needed') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
 ;(λ(){
-fmt ← λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{depth:null})}
-sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('curl -s -X PUT 127.0.0.1:34289 --data-binary @-', {input:ι})); if (t !== null) ↩ t}
-sublime_view_substr ← λ(a,b){↩ sublime_eval('r = view.substr(view.full_line(sublime.Region('+(a||'0')+','+(b||'view.size()')+')))')}
-E.p = λ(ι){ι !== undefined || (ι = '')
-	if (arguments.length === 0) ↩ child_process.execSync('pbpaste').toString()
-	else {t ← child_process.spawn('pbcopy'); t.stdin.setEncoding('utf8'); ι.pipe? ι.pipe(t.stdin) : t.stdin.end(fmt(ι))} }
-E.sb = λ(ι){↩ arguments.length === 0? sublime_view_substr() : child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin.end(fmt(ι))}
+write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? ι : util.inspect(ι,{depth:null}))}
+def_pipeable(E,'p',λ(ι){↩ arguments.length === 0? execᵥ('pbpaste') : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)})
+def_pipeable(E,'sb',λ(ι){↩ arguments.length === 0? sublimeᵥ('view.substr(sublime.Region(0,view.size()))') : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)})
 })()
 E.email = λ(){
 	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
@@ -61,16 +58,14 @@ E.λ = λ(ι){r ← λ(m){↩ ι[m]}; r.ι = ι; ↩ r}
 P({ 'String.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}                                         ; r.ι = @; ↩ r}} })
 P({ 'Number.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}                                         ; r.ι = @; ↩ r}} })
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
-E.pipe_in_out = λ(f){
-	read_all ← λ(θ/*Readable*/,cb){t ← []; θ.resume(); θ.setEncoding('utf8'); θ.on('data',λ(ι){t.push(ι)}); θ.on('end',λ(){cb(null,t.join(''))})}
-	read_all(process.stdin, λ(e,ι){process.stdout.write(f(ι)+'')}) }
-E.ζ2_compile = ζ2_compile
-E.ζ2_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
-E.ζ2_repl_start = λ(opts){
+P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
+E.ζ_compile = ζ_compile
+E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
+E.ζ_repl_start = λ(opts){
 	//! aaaaa why does this break if i remove useGlobal:true ?
 	repl._builtinLibs = []
 	rRpc ← repl.REPLServer.prototype.complete; repl.REPLServer.prototype.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
-	self ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:{split:λ(){↩ ['ζ₂ ']}, valueOf:λ(){↩ '\x1b[32mζ₂\x1b[39m '}}}).extend(opts))
+	self ← repl.start(_({useGlobal:true, ignoreUndefined:true, prompt:{split:λ(){↩ ['ζ ']}, valueOf:λ(){↩ '\x1b[32mζ\x1b[39m '}}}).extend(opts))
 	self.removeAllListeners('line')
 	self.on('line',λ(cmd){
 		err←; ret←;
@@ -79,7 +74,7 @@ E.ζ2_repl_start = λ(opts){
 			if (code === '') break
 			if (/(^\{[\s\S]*\}$)|(^λ\()/.test(code)) code = '('+code+')'
 			if (code.match(/^>/)) code = '__SPECIAL__('+util.inspect(code.slice(1))+')' // hack: for apprentice
-			try {t ← vm.createScript(ζ2_compile(code)+'\n', {filename:'repl', displayErrors:false})}
+			try {t ← vm.createScript(ζ_compile(code)+'\n', {filename:'repl', displayErrors:false})}
 			catch (e) {
 				if (e.name === 'SyntaxError' && /^(Unexpected end of input|Unexpected token)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('     '); ↩}
 				typeof(e.stack)==='string' && (e.stack = e.stack.replace(/(\n    at )[\s\S]*/,'$1<repl>')); err = e; break}
@@ -96,36 +91,55 @@ E.ζ2_repl_start = λ(opts){
 	module.exports(self.context)
 	↩ self}
 
-E.osa = λ(ι){child_process.exec('osascript -ss -e '+bash_encode(ι))}
-E.osaᵥ = λ(ι){
-	osa_parse_array ← λ(ι){↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
-	↩ osa_parse_array(child_process.execSync('osascript -ss -e '+bash_encode(ι))+'')}
-E.bash = λ(ι){child_process.exec('bash -c '+bash_encode(ι))}
-E.bashᵥ = λ(ι){↩ (child_process.execSync('bash -c '+bash_encode(ι))+'').replace(/\n$/,'')}
-
 E.regex_encode = λ(ι){↩ ι.replace(/([.*+?^=!:${}()\[\]|\/\\])/g, '\\$1')}
-E.bash_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(' ')}
+E.sh_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(' ')}
 E.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
 E.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
 
-c_js ← λ(osa,ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osa('tell app "google chrome" to tell '+tab+' of window 1 to set URL to '+osa_encode('javascript:'+ζ2_compile(ι)))}
+E.exec = λ(ι,opts){child_process.exec(ι,opts)}
+E.execᵥ = λ(ι,opts){↩ (child_process.execSync(ι,opts)+'').replace(/\n$/,'')}
+
+E.osa = λ(ι){exec('osascript -ss -e '+sh_encode(ι))}
+E.osaᵥ = λ(ι){
+	osa_parse_array ← λ(ι){↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+	↩ osa_parse_array(execᵥ('osascript -ss -e '+sh_encode(ι)))}
+
+c_js ← λ(osaₓ,ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osaₓ('tell app "google chrome" to tell '+tab+' of window 1 to set URL to '+osa_encode('javascript:'+ζ_compile(ι)))}
 c_js_sandbox ← λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ JSON.parse(osaᵥ('tell app "google chrome" to execute window 1\'s '+tab+' javascript '+osa_encode(ι))||'""')}
 jquery_script ← λ(extra){↩ "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; "+(extra||"")+"; document.getElementsByTagName('head')[0].appendChild(t)"}
-mk_eval ← λ(ι){↩ "eval("+JSON.stringify(ζ2_compile(ι))+")"}
 E.chrome_js = λ(ι,tab){c_js(osa,ι+'; undefined',tab)}
-E.chrome_jsᵥ = λ(ι,tab){c_js(osaᵥ,"t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← "+mk_eval(ι)+"; t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined",tab); ↩ c_js_sandbox("document.querySelectorAll('#applescript_hack')[0].textContent",tab)}
+E.chrome_jsᵥ = λ(ι,tab){c_js(osaᵥ,"t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← eval("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined",tab); ↩ c_js_sandbox("document.querySelectorAll('#applescript_hack')[0].textContent",tab)}
 E.chrome_$ = λ(ι,tab){chrome_js("f ← λ(){"+ι+"}; if (window.jQuery) f(); else {"+jquery_script("t.onload = f")+"}",tab)}
 E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); fst ← 1; while ((r=chrome_jsᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, jquery_script()) : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
 
+E.sublimeᵥ = λ(ι){t ← JSON.parse(execᵥ('curl -s -X PUT 127.0.0.1:34289 --data-binary @-',{input:ι})); if (t !== null) ↩ t}
+// sublimeᵥ('window.focus_view(window.views()[-1])')
+// sublimeᵥ('view.insert(view.sel()[0].begin(),"\\n")')
+// T ← 10; i←0; (λ(){sublimeᵥ('\''view.insert(view.sel()[0].begin(),"\\n")'\'')}).every(T)
+// sublime_set_buffer ← λ(ι){L ← 900; ιL ← Buffer(ι).length; if (ιL <= L) sublimeᵥ('view.replace(sublime.Region(0,view.size()),'+util.inspect(ι)+')'); else {fst ← true; Buffer(ι).partition(L).map(λ(ι){↩ ι+''}).reduce(λ(r,ι){r.push([ι, r[-1][0].length + r[-1][1]]); ↩ r},[['',0]]).slice(1).map(λ(t){ι ← t[0]; i ← t[1]; sublimeᵥ((fst?(fst=false,'if view.size() > '+ιL+': view.erase(sublime.Region('+ιL+',view.size()))\n'):'')+'view.replace(sublime.Region('+i+','+(i+ι.length)+'),'+util.inspect(ι)+')')})}}
+// Array.prototype.sum = λ(){↩ @.reduce(λ(a,b){↩ a+b},0)}
+// board ← _.range(20).map(λ(v){↩ _.range(40).map(λ(){↩ Math.random()<0.5})})
+// tick ← λ(board){
+// 	t ← λ(x,y){↩ (board[y]||[])[x]}
+// 	↩ board.map(λ(v,y){↩ v.map(λ(v,x){
+// 		n ← _.range(-1,2).map(λ(yi){↩ _.range(-1,2).map(λ(xi){↩ (t(x+xi,y+yi)?1:0)}).sum()}).sum()
+// 		↩ n===3 || (v && n===4)})})}
+// q ← (λ(){sublime_set_buffer(board.map(λ(ι){↩ ι.map(λ(ι){↩ ι?'O':' '}).join('')}).join('\n')); board = tick(board)}).every(0)
+// clearInterval(q)
+
 P({
+'Object.prototype.__special_pipe':{get:λ(){'use strict'; global.__special_pipe_ι = @}},
 'Function.prototype.P':λ(){ι←@; a ← A(arguments); ↩ λ(){↩ ι.apply(@,arguments.length === 0? a : a.concat(A(arguments)))}},
 'Function.prototype.X':λ(n){ι←@; ↩ λ(){↩ ι.apply(@,A(arguments).slice(0,n))}},
 'Array.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
 'String.prototype.repeat':λ(x){↩ x<=0? '' : Array(x+1).join(@)},
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : _.range(0,x).map(_.constant(@))._.flatten(true)},
-'Function.prototype.inspect':λ(rec,ctx){t ← ζ2_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
+'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 'String.prototype._':{get:λ(){↩ _(@)}},
 'Array.prototype._':{get:λ(){↩ _(@)}},
+// 'String.prototype.::-1':{get:λ(){↩ (@+'').split('').reverse().join('')}},
+// 'Array.prototype.::-1':{get:λ(){↩ @._.clone().reverse()}},
+// '(Buffer|Array|String).prototype.partition':λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r},
 'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 'RegExp.prototype.genex_0':λ(){
 	parse ← λ(ι){
@@ -144,6 +158,7 @@ P({
 		t←; λs.size() === 0? (P = false) : !(λs.peek().time < now())? poll.in(0.1) : (t=λs.deq(), t.canceled || t.ι.in(), λ()); R&&R()
 		}) })() } })}
 	↩ λ(time){t ← {time:time, ι:@}; ↩ time < now()? (t.ι.in(), {clear:λ(){}}) : (enq(t), {clear:λ(){t.canceled = true}})} }),
+'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})},
 })
 P(/(Array|String|Buffer).prototype.-[01234]/.genex_0().map(λ(ι){i ← parseInt(ι[ι.length-1]); ↩ [ι, {get:λ(){↩ @.length<i? undefined : @[@.length-i]}, set:λ(ι){↩ @.length<i? ι : (@[@.length-i] = ι)}}]}))
 
@@ -200,7 +215,7 @@ def_lazy(ˡ,'Path',λ(){
 		sel = sel.trim()
 		if (sel === '') ↩;
 
-		ERR ← λ(){throw Error('[ζ₂] selector is not supported: '+sel)}
+		ERR ← λ(){throw Error('[ζ] selector is not supported: '+sel)}
 
 		sel_a ← (' '+sel).replace(/(^|[^>* ])( +(?![>* ]))/g,'$1 * ').trim().split(/ +/)
 		if (!sel_a.every(λ(ι){↩ ι.match(/^>|\*|\.\S+|#\S+$/)})) ERR()
@@ -223,7 +238,7 @@ def_lazy(ˡ,'Path',λ(){
 	// misc
 	Path.prototype.toString = λ(){↩ path.resolve(@.path).replace(RegExp('^'+regex_encode(process.env.HOME)+'(?=/)'),'~')}
 	// content manipulation
-	Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.dir()? (console.trace('[ζ₂] DEPRECATED dir_$'), fs.readdirSync(t).map(λ(ι){↩ t+'/'+ι})) : fs.readFileSync(t)+''}
+	Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.dir()? (console.trace('[ζ] DEPRECATED dir_$'), fs.readdirSync(t).map(λ(ι){↩ t+'/'+ι})) : fs.readFileSync(t)+''}
 	Path.prototype['='] = λ(ι){
 		// string: text file, Array: directory, etc
 		// async should use like fs.createReadStream(ι.path).pipe(fs.createWriteStream(@.path))
@@ -233,7 +248,7 @@ def_lazy(ˡ,'Path',λ(){
 		fs.writeFileSync(@.path,ι) }
 	↩ Path })
 
-require.extensions['.ζ₂'] = λ(module,ι){module._compile(ζ2_compile(fs.readFileSync(ι,'utf8').replace(/^((?:#!.*\n)?)/,'$1require = _require_lazy(require);')),ι)}
+require.extensions['.ζ'] = λ(module,ι){module._compile(ζ_compile(fs.readFileSync(ι,'utf8').replace(/^((?:#!.*\n)?)/,'$1require = _require_lazy(require);')),ι)}
 
 E.ζtoken = {}
 λ prop_extend(from,to){Object.getOwnPropertyNames(from).forEach(λ(ι){Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι))})}
@@ -249,9 +264,9 @@ module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.
 // create_getattr(λ(n){@.$[n]},λ(n,ι){
 // 			magic magic
 // 			}),
-// E.ζ2_bit_reverse_i = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
+// E.ζ_bit_reverse_i = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
 // Path.prototype.parent = λ(){↩ fs(path.dirname(@.path))}
-// // Path.prototype.slice = λ(i){↩ ζ2_def({},'$',λ(){},λ(ι){path_open(@,λ(){t ← Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
+// // Path.prototype.slice = λ(i){↩ ζ_def({},'$',λ(){},λ(ι){path_open(@,λ(){t ← Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
 // Path.prototype.splice = λ(idx,rm,ι){path_open(@,λ(fd){t←;
 // 	ι = Buffer(ι)
 // 	rm === ι.length || (t = Buffer(fs.statSync(@.path).size - (idx+rm)), fs.readSync(fd,t,0,t.length,idx+rm))

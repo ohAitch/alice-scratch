@@ -1,33 +1,41 @@
+ζ_compile_file ← λ(ι){
+	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
+	↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?!\S)/,'#!/usr/bin/env node --harmony')+
+		'require("zeta-lang")(global); require = _require_lazy(require)'+
+		ζ_compile(t[2]) }
+evalζ ← λ(code,ι){t ← _require_lazy(require); ↩ (λ(){require ← t; ↩ eval(ζ_compile(code))})()}
+read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}
+
 argv ← process.argv.slice(2)
 
-ζ2_compile_file ← λ(ι){
-	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
-	↩ t[1].replace(/^#!\/usr\/bin\/env ζ₂(?!\S)/,'#!/usr/bin/env node --harmony')+
-		'require("zeta-two")(global); require = _require_lazy(require)'+
-		ζ2_compile(t[2]) }
-evalζ2 ← λ(code,ι){t ← _require_lazy(require); ↩ (λ(){require ← t; ↩ eval(ζ2_compile(code))})()}
-
+;(λ main(){
 if (argv.length === 0) {
-		ζ2_repl_start()
+		process.argv = ['ζ','<repl>'].concat(argv)
+		ζ_repl_start()
 } else switch (argv[0]) {
 	default:
-	  process.argv = ['ζ₂'].concat(argv)
+		process.argv = ['ζ'].concat(argv)
 	  Module._load(path.resolve(argv[0]), null, true)
-	break; case '-c':
-		out ← fs(argv[-1])
-		argv.slice(1,-1).map(λ(ι){
-			if (fs(ι).dir()) print('directory compilation not implemented:',fs(ι)+'')
-			else fs(out+'/'+fs(ι).name().replace(/\.ζ₂$/,'.js')).$ = ζ2_compile_file(fs(ι).$)
-			})
-	break; case '-e': t ← evalζ2(argv[1]); t !== undefined && print(t)
-	break; case '-ef': t ← pipe_in_out(evalζ2.P(argv[1])); t !== undefined && print(t)
-	break; case '--es':
+	break; case '-v': case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '-p': case '--print': _p ← true
+	;      case '-e': case '--eval':
+		process.argv = ['ζ','<eval>'].concat(argv.slice(1))
+		t ← λ(ι){t ← evalζ(argv[1],ι); _p && t !== undefined && print(t)}
+		fs.fstatSync(0).mode & 0x1000? read_stdin(t) : t()
+	break; case '-f': argv = argv.slice(1); read_stdin(λ(ι){global.ι = ι; main()})
+	break; case '--es': //! bad name
 		JSON.parse(argv[1]).map(λ(ι){
 			;(λ __special_es__u7h7zxgvi__(){
-				try {t ← evalζ2(ι); t !== undefined && process.stdout.write(t+'')}
+				try {t ← evalζ(ι); t !== undefined && process.stdout.write(t+'')}
 				catch (e) {print(typeof(e.stack)==='string'? e.stack.replace(/(\n    at )(?:eval \(eval at )?__special_es__u7h7zxgvi__[\s\S]*/,'$1<eval>') : '<error> '+e)}
 				})()
 			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
 			})
-	break; case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
+	break; case '-c':
+		out ← fs(argv[-1])
+		argv.slice(1,-1).map(λ(ι){
+			if (fs(ι).dir()) print('directory compilation not implemented:',fs(ι)+'')
+			else fs(out+'/'+fs(ι).name().replace(/\.ζ$/,'.js')).$ = ζ_compile_file(fs(ι).$)
+			})
 }
+})()
