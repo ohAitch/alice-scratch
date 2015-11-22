@@ -21,17 +21,17 @@ parse_lackey ← λ(src){
 			t ← transpose_str(ι)
 			↩ ι[-1].match(/└─+┘/g).map('length'.λ).map(λ(len){r ← t.splice(0,len); t.splice(0,"│ │".slice(1,-1).length); ↩ r}).map(transpose_str) })
 		.map(λ(board_str){↩ {
-			hots: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
+			root: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
 			keys: board_str.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
 			} })
-	t = _(_(_(t).indexBy('hots')).omit('','⇧')).values()
-	h ← _(t).indexBy('hots')['homoiconic']
+	t = _(_(_(t).indexBy('root')).omit('','⇧')).values()
+	h ← _(t).indexBy('root')['homoiconic']
 	h_keys ← _.clone(h.keys)
 	t.map(λ(ι){if (ι.keys.length < h_keys.length) ι.keys = [].concat([h_keys[0].map(λ(){↩ '_'})],ι.keys,[h_keys[-1].map(λ(){↩ '_'})]); ι.keys = _(ι.keys).flatten(true)})
 	t = _(t).without(h)
 	t.map(λ(ι){ι.keys = _.zip(h.keys,ι.keys).filter(λ(ι){↩ ι[1] !== '_'})})
-	kc ← _(t).indexBy('hots')['keycode']
-	t = _(t).without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.hots+k[0],k[1]]})})
+	kc ← _(t).indexBy('root')['keycode']
+	t = _(t).without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.root+k[0],k[1]]})})
 	mappings = mappings.concat(t)
 	mappings.forEach(λ(ι){ι[0] = ι[0].replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')})
 	↩ {keycodes:kc.keys._.object(), mappings:mappings} }
@@ -40,7 +40,7 @@ wat ← []
 
 make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 	compile_keystring ← λ(ι){t←;
-		Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "^L":"ModifierFlag::CONTROL_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
+		Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
 		if (t={FnF3:'a0', FnF4:'83', DASHBOARD:'82'}[ι]) {md ← []; ky ← ['RawValue::0x'+t]}
 		else {t ← /F.|.[LR]|./g.λ(ι); i ← t.map(Mod).concat([undefined]).indexOf(undefined); md ← t.slice(0,i); ky ← t.slice(i)}
 		if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
@@ -50,7 +50,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 		↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 	appdef_fix ← λ(ι){ι = ι.toLowerCase(); ↩ _.contains(['terminal','vlc','x11','system_preferences','skype','preview','quicktime','itunes','finder'],ι)? ι.toUpperCase() : {chrome:'GOOGLE_CHROME', sublime:'SUBLIMETEXT', activity_monitor:'Activity_Monitor', atom:'Atom', dock:'Dock'}[ι] || ι}
 	shells ← []
-	shell ← λ(ι){ι = 'bash -ci '+bash_encode(ι); id ← 'KeyCode::VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36); shells.push([id,ι]); ↩ id}
+	shell ← λ(ι){ι = 'bash -ci '+sh_encode(ι); id ← 'KeyCode::VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36); shells.push([id,ι]); ↩ id}
 	compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] +(.+)$/.λ(ι)) {only ← appdef_fix(t[1]); ι = t[2]}; t ← compile_keystring(ι); ↩ {only:only, ι:t.cmd+' '+t.ι} }
 	compile_output ← λ(ι){t←; ↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) : (t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι : ι._.map(λ(ι){↩ as_char_as_hex(ι)._.map(λ(ι){↩ compile_keystring('⌥L'+ι).ι})})._.flatten().join('') }
 	autogens ← mappings.map(λ(ι){from ← compile_trigger(ι[0]); to ← compile_output(ι[1]); ↩ {only:from.only, ι:{autogen:from.ι+','+to+','} } })
@@ -66,7 +66,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 
 // --------- main --------- //
 fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_lackey(fs('~/.keyrc').$))
-t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; bashᵥ(t+' reloadxml'); wat.map(λ(ι){bashᵥ(t+' enable '+ι)})
+t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; execᵥ(t+' reloadxml'); wat.map(λ(ι){execᵥ(t+' enable '+ι)})
 
 // mild todo:
 // right command is maybe problematic

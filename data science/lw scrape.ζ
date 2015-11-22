@@ -15,7 +15,7 @@ scrape_index_for_posts ← λ λ(ι){
 cache_post ← λ(ι,i){
 	out ← './post_cache/'+ι.replace(/\//g,'⟩')
 	if (fs(out).exists()) ↩;
-	print(i,ι); fs(out).$ = bashᵥ('curl -s '+bash_encode(ι)); }
+	print(i,ι); fs(out).$ = execᵥ('curl -s '+sh_encode(ι)); }
 
 scrape_post_for_comments ← λ(ι,out,cb){
 	jsdom.env(fs(ι).$,λ(e,t){if (e) throw e; $ ← jquery(t)

@@ -6,7 +6,7 @@ import urllib
 FIND_URL_REGEX = r'\b((https?|file)://|mailto:)(?:\\ |\S)+([.,)\]}](?=\.)|(?<!["”.,+)\]}])(?<!"["”.,+)\]}]))'
 IS_URL_REGEX = r'^((https?|file)://|mailto:)'
 
-def bash_encode(ι): return re.escape(ι)
+def sh_encode(ι): return re.escape(ι)
 def osa_encode(ι): return '"'+re.sub(r'"',r'\\"',re.sub(r'\\',r'\\\\',ι))+'"'
 
 # the github/google search text combo is weird. work on improving that?
@@ -32,7 +32,7 @@ def open(v,app=None,focus=True):
 			t = "cd "+re.sub(r' ','\\\\\\\\ ',v)+"; clear"
 		else:
 			dir,base = os.path.dirname(v), os.path.basename(v)
-			t = "cd "+bash_encode(dir)+"; clear; set -- "+bash_encode(base)+"; ({ sleep 0.01; printf \"\\b${green}/${purple}\""+bash_encode(base)+"\" ${reset}\"; } &)"
+			t = "cd "+sh_encode(dir)+"; clear; set -- "+sh_encode(base)+"; ({ sleep 0.01; printf \"\\b${green}/${purple}\""+sh_encode(base)+"\" ${reset}\"; } &)"
 		os.system("osascript -e 'tell application \"terminal\"' -e 'do script "+osa_encode(t)+"' -e 'end tell'"+("; osascript -e 'tell application \"terminal\" to activate'" if focus else ""))
 	else:
 		print([v for v in ["open", app and "-a", app, not focus and "-g", v] if v])

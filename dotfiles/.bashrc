@@ -88,7 +88,7 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
 ](){ [[ $1 = ⌘q ]] || { alert "could not p"; exit 1; }; osascript -e 'tell app "system events" to keystroke "q" using command down'; }
 _lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | ζ -p 'encodeURIComponent(ι)')"; }
-_in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(bash_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
+_in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(sh_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"

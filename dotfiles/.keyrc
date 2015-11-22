@@ -4,7 +4,7 @@
 │  ⇥ q w e r t y u i o p [ ] \ │ │ 300C0D0E0F111020221F23211E2A │
 │  ⇪ a s d f g h j k l ; '  ↩  │ │  6E000102030504262825292724  │
 │  ⇧L z x c v b n m , . /  ⇧R  │ │  38 060708090B2D2E2B2F2C 3C  │
-│ Fn^L⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │ │ 3F3B3A37   31   363D7B7E7D7C │
+│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │ │ 3F3B3A37   31   363D7B7E7D7C │
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
 │ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
@@ -68,7 +68,7 @@ FnF4   ] DASHBOARD
 ⌘⇧^4   $ screencapture -io -cr
 ⌘⌥^i   $ osascript -e 'id of app (path to frontmost application as text)' | p; alert "id copied" "" 1.5
 
-[terminal] ⌘R      ] ^L
+[terminal] ⌘R      ] ^
 [spotify] ⌘l       $ _lyrics
 [path_finder] ⌘⇧t  $ _in_new_terminal osascript -e 'tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'
 [photo_booth] ⌘q   $ ] ⌘q; ζ -e 'fs("~/Pictures/Photo Booth Library/Pictures").find(">").forEach(λ(ι){t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'

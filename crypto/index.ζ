@@ -5,7 +5,6 @@ err ← λ(v){throw Error(A(arguments).join(' '))}
 
 Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
 Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(λ(v){↩ [(v&0x01)>>0,(v&0x02)>>1,(v&0x04)>>2,(v&0x08)>>3,(v&0x10)>>4,(v&0x20)>>5,(v&0x40)>>6,(v&0x80)>>7]})}
-Buffer.prototype.partition = Array.prototype.partition = String.prototype.partition = λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r}
 Buffer.prototype.str = λ(){↩ @.toString('binary')}
 Buffer.prototype.clone = λ(){↩ Buffer.concat([@, Buffer(0)])}
 String.prototype.buf = λ(){↩ Buffer(@+'','binary')}

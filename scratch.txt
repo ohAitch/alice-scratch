@@ -76,7 +76,7 @@ namegen ← gen2fn(λ*(){
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
 # ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
 tesseract ← require('node-tesseract')
-fs('../ep').find('>').map(λ(f){tesseract.process(bash_encode(f),λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+fs('../ep').find('>').map(λ(f){tesseract.process(sh_encode(f),λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 ------------------------------------- dunno ------------------------------------
 
@@ -93,7 +93,7 @@ $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
-minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | bash_encode)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | bash_encode)'"; done; }
+minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | sh_encode)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | sh_encode)'"; done; }
 q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3"; }
 
 ----------------------------- osx screen brightness ----------------------------
@@ -170,6 +170,3 @@ OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 Can you imagine having to program using 100Hz CPUs, no matter how many of them you had?  You`d also need a hundred billion processors just to get anything done in realtime.
 
 Object.defineProperty(String.prototype,'Λ',{configurable:true, get:λ(){↩ eval('(λ(a,b,c){ι ← a; ↩ eval('+util.inspect(@+'')+')})')}})
-
------------------------------------ writing! -----------------------------------
-ζ -e 'T ← 10; sublime_eval ← λ(ι){t ← JSON.parse(child_process.execSync('\''curl -s -X PUT 127.0.0.1:34289 --data-binary @-'\'', {input:ι})); if (t !== null) ↩ t}; i←0; (λ(){sublime_eval('\''view.run_command("exec_edit",{"v":"view.insert(edit,view.sel()[0].begin(),\\"\\\\n'\''+("000"+(++i)*T).slice(-4)+'\'' -- \\")"})'\'')}).every(T)'
