@@ -30,16 +30,17 @@ alias pwf='echo "$(home_link "$PWD/$1")"'
 alias ct=chrome_tabs; chrome_tabs(){ ζ -e '
 	t ← osaᵥ("tell app \"chrome\" \n get {title,URL} of tabs of windows \n end tell"); title ← t[0]; url ← t[1]
 	i ← '"$(echo "$1" | jq -R .)"'
-	if (i) {i = parseInt(i); t ← title[0][i]+" "+url[0][i]; p(t); print(t+"\n<copied>")}
-	else sb(_.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).join("\n")}).join("\n\n"))
+	if (i) {i = parseInt(i); t ← title[0][i]+" "+url[0][i]; t ⟩ p; print(t+"\n<copied>")}
+	else _.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).join("\n")}).join("\n\n") ⟩ sb
 	'; }
-bookmarks(){ ζ -p '
+bookmarks(){ ζ -e '
 	ι ← JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children
 	;(λ λ(ι){↩ ι instanceof Array? ι.map(λ).join("\n") :
 		ι.children? (ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
 		ι.url === "http://transparent-favicon.info/favicon.ico"? ι.name :
 		ι.url? (!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
-			JSON.stringify(ι)})(ι)' | sb; }
+			JSON.stringify(ι)})(ι) ⟩ sb
+	'; }
 d(){ ( shopt -s nullglob; cd ${1:-.}; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ (-q qlmanage -p "$@" &); }

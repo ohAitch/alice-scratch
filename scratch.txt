@@ -100,7 +100,7 @@ q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp
 https://github.com/gillstrom/osx-brightness
 
 -------------------------------- de-duplication --------------------------------
-_(fs('.').find('*').map(λ(ι){↩ [ι,fs(ι).$]})._.groupBy(1)).values().map(λ(ι){↩ ι._.map(0)}).filter(λ(ι){↩ ι.length > 1})
+fs('.').find('*').map(λ(ι){↩ [ι,fs(ι).$]})._.groupBy(1)⟩_.values().map(λ(ι){↩ ι._.map(0)}).filter(λ(ι){↩ ι.length > 1})
 
 ------------- http://thirdfoundation.github.io/#/design/chesscraft -------------
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO

@@ -2,6 +2,7 @@
 
 col ← λ(ι){↩ ι+' '.repeat(100-ι.length)}
 
-sb(JSON.parse(fs(execᵥ(__dirname+'/latest.sh')).$).map(λ(ι){
+JSON.parse(fs(execᵥ(__dirname+'/latest.sh')).$).map(λ(ι){
 	↩ col(ι.artists._.map('name').join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+(t=ι.createTime._.map(0),t.join(', ')+(t.length>1?',':''))
-	}).join('\n'))
+	}).join('\n')
+⟩ sb

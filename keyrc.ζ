@@ -24,14 +24,14 @@ parse_lackey ← λ(src){
 			root: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
 			keys: board_str.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
 			} })
-	t = _(_(_(t).indexBy('root')).omit('','⇧')).values()
-	h ← _(t).indexBy('root')['homoiconic']
+	t = (t._.indexBy('root')⟩_.omit('','⇧')⟩_.values())
+	h ← t._.indexBy('root')['homoiconic']
 	h_keys ← _.clone(h.keys)
-	t.map(λ(ι){if (ι.keys.length < h_keys.length) ι.keys = [].concat([h_keys[0].map(λ(){↩ '_'})],ι.keys,[h_keys[-1].map(λ(){↩ '_'})]); ι.keys = _(ι.keys).flatten(true)})
-	t = _(t).without(h)
+	t.map(λ(ι){if (ι.keys.length < h_keys.length) ι.keys = [].concat([h_keys[0].map(λ(){↩ '_'})],ι.keys,[h_keys[-1].map(λ(){↩ '_'})]); ι.keys = ι.keys._.flatten(true)})
+	t = t._.without(h)
 	t.map(λ(ι){ι.keys = _.zip(h.keys,ι.keys).filter(λ(ι){↩ ι[1] !== '_'})})
-	kc ← _(t).indexBy('root')['keycode']
-	t = _(t).without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.root+k[0],k[1]]})})
+	kc ← t._.indexBy('root')['keycode']
+	t = t._.without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.root+k[0],k[1]]})})
 	mappings = mappings.concat(t)
 	mappings.forEach(λ(ι){ι[0] = ι[0].replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')})
 	↩ {keycodes:kc.keys._.object(), mappings:mappings} }
@@ -59,7 +59,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 			_.pairs({
 				'spotify':'com.spotify.client', 'path_finder':'com.cocoatech.PathFinder', 'photo_booth':'com.apple.PhotoBooth',
 				}).map(λ(ι){↩ {appdef:{appname:ι[0],equal:ι[1]}}}),
-			_(autogens._.groupBy('only')).values().reverse().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} }),
+			(autogens._.groupBy('only')⟩_.values().reverse().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} })),
 			shells.map(λ(ι){↩ {vkopenurldef: {name:ι[0], url:{'@type':'shell', '#cdata':ι[1]}}}})
 			),
 		}}).end({pretty:true}) }

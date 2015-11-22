@@ -5,11 +5,11 @@ node_spotify ← require('node-spotify','0.7.0')
 
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
 is_playlist ← λ(v){↩ v.type === undefined || v.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
-Native ← λ(v,body){@.native = v; _(@).extend(body)}
-	Object.defineProperty(Native.prototype,'toJSON',{configurable:true, enumerable:false, value: λ(){↩ _(@).omit('native')} })
+Native ← λ(v,body){@.native = v; @⟩_.extend(body)}
+	Object.defineProperty(Native.prototype,'toJSON',{configurable:true, enumerable:false, value: λ(){↩ @⟩_.omit('native')} })
 	magic_native ← {inspect:λ(x,opts){t ← '<native>'; ↩ true/*opts.colors*/? '\x1b[36m'+t+'\x1b[39m' : t}}
 	Object.defineProperty(Native.prototype,'inspect',{configurable:true, enumerable:false, value:
-		λ(){↩ util.inspect(_(_(@).clone()).extend({native: magic_native}), {colors:true})}
+		λ(){↩ util.inspect((@⟩_.clone()⟩_.extend({native: magic_native})), {colors:true})}
 		})
 now ← λ(){↩ Date.now() / 1000}
 
@@ -28,7 +28,7 @@ getDatabaseoid ← λ(cb){
 			console.error('[spotiman] polling for loading ...')
 			t ← spotify.playlistContainer.getPlaylists()
 			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
-				t = _(t.filter(is_playlist).map(λ(v){↩ v.getTracks()})).flatten(true)
+				t = t.filter(is_playlist).mapcat(λ(v){↩ v.getTracks()})
 				poll(λ(){↩ t.every(λ(v){↩ v.isLoaded})},cb)
 				}) }
 		↩ λ(cb){login(λ(e,spotify){waitForAllLoaded(spotify,λ(){cb(e,spotify)})})}
@@ -44,14 +44,14 @@ getDatabaseoid ← λ(cb){
 		createTime: [],
 		}) ) } })()
 	tag_track ← λ(tag,v,native){
-		!_(v.tags).contains(tag.name) && v.tags.push(tag.name)
+		!v.tags._.contains(tag.name) && v.tags.push(tag.name)
 		v.createTime.push([tag.name, moment(native.createTime)])
 		↩ v }
 
 	loginAndWaitForAllLoaded(λ(e,spotify){
 		console.error('[spotiman] massaging data ...')
 		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
-		d ← _(_(t).countBy('name')).pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]})
+		d ← (t._.countBy('name')⟩_.pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]}))
 		if (d.length) print('[spotiman] oh no! duplicate tags!',d)
 		if (d.length) t = t.filter(λ(v){↩ d.indexOf(v.name) === -1})
 		t = t.filter(λ(v){↩ v.owner.canonicalName === spotify.sessionUser.canonicalName}) // it's unclean and hacky to do this
