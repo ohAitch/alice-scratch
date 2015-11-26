@@ -9,65 +9,81 @@ xmlbuilder ← require('xmlbuilder','4.1.0')
 
 as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
 
-parse_lackey ← λ(src){
-	mappings ← []
-	t ← (src+'\n').replace(/\n{2,}/g,'\n')
+parse_keyrc ← λ(src){
+	homoiconic←; h_shape←; keycode←;
+	transpose_str ← λ(ι){↩ _.zip.apply(_,ι.split('\n')).map(λ(ι){↩ ι.join('')}).join('\n')}
+	parse_boards ← λ(ι){
+		ι ← ι.mapcat(λ(ι){
+			↩ transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
+				root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
+				keys: ι.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
+				} }) })
+		// h←; h_shape || (
+		// 	h = 
+		// 	)
+		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(λ(ι){↩ ι.map(λ(){↩ '_'})}))
+		ι.filter(λ(ι){↩ ι.keys.length === 4}).map(λ(ι){ι.keys = [].concat([h_shape[0]],ι.keys,[h_shape[-1]])})
+		ι.map(λ(ι){ι.keys = ι.keys._.flatten(true)})
+		ι = ι._.without(homoiconic)
+		ι.map(λ(ι){ι.keys = _.zip(homoiconic.keys,ι.keys).filter(λ(ι){↩ ι[1] !== '_'})})
+		keycode || (keycode = ι._.indexBy('root')['[keycode]'])
+		ι = ι._.without(keycode)
+		ι = ι.mapcat(λ(ι){↩ ι.keys.map(λ(k){k[0] = ι.root+k[0]; ↩ k})})
+		↩ ι}
+	tₐ ← []
+	tₑ ← parse_boards(
+		(src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
-		.replace(/(?:^|\n)(?![│┌└]) *((?:\[\w+\])? *\S+) +(.+)/g,λ(ˣ,a,b){mappings.push([a,b]); ↩ ''})
-		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).mapcat(λ(ι){
-			// 2d regexes would be wonderful here
-			transpose_str ← λ(ι){↩ _.zip.apply(_,ι).map(λ(ι){↩ ι.join('')})}
-			ι = ι.split('\n').slice(0,-1)
-			t ← transpose_str(ι)
-			↩ ι[-1].match(/└─+┘/g).map('length'.λ).map(λ(len){r ← t.splice(0,len); t.splice(0,"│ │".slice(1,-1).length); ↩ r}).map(transpose_str) })
-		.map(λ(board_str){↩ {
-			root: (board_str[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-			keys: board_str.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
-			} })
-	t = (t._.indexBy('root')⟩_.omit('','⇧')⟩_.values())
-	h ← t._.indexBy('root')['homoiconic']
-	h_keys ← _.clone(h.keys)
-	t.map(λ(ι){if (ι.keys.length < h_keys.length) ι.keys = [].concat([h_keys[0].map(λ(){↩ '_'})],ι.keys,[h_keys[-1].map(λ(){↩ '_'})]); ι.keys = ι.keys._.flatten(true)})
-	t = t._.without(h)
-	t.map(λ(ι){ι.keys = _.zip(h.keys,ι.keys).filter(λ(ι){↩ ι[1] !== '_'})})
-	kc ← t._.indexBy('root')['keycode']
-	t = t._.without(kc).mapcat(λ(ι){↩ ι.keys.map(λ(k){↩ [ι.root+k[0],k[1]]})})
-	mappings = mappings.concat(t)
+		.replace(/(?:^|\n)(?![│┌└]) *((?:\[\w+\])? *\S+) +(.+)/g,λ(ˣ,a,b){tₐ.push([a,b]); ↩ ''})
+		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(λ(ι){↩ ι.replace(/\n$/,'')}) )
+	mappings ← [].concat(tₐ,tₑ)
+	t ← mappings._.indexBy(λ(ι){↩ ι[0]+'\n'+ι[1]})
+	parse_boards([multiline(λ(){/*
+		┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
+		│ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
+		│  _ q w e r t y u i o p [ ] \ │ │  _ Q W E R T Y U I O P { } | │
+		│  _ a s d f g h j k l ; '  _  │ │  _ A S D F G H J K L : "  _  │
+		│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
+		└──────────────────────────────┘ └──────────────────────────────┘
+		*/})]).map(λ(ι){↩ ι[0]+'\n'+ι[1]}).map(λ(ι){delete t[ι]})
+	mappings = _(t).values()
 	mappings.forEach(λ(ι){ι[0] = ι[0].replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')})
-	↩ {keycodes:kc.keys._.object(), mappings:mappings} }
+	↩ {keycodes:keycode.keys._.object(), mappings:mappings} }
 
 wat ← []
 
 make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
+	qq ← []
 	compile_keystring ← λ(ι){t←;
 		Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
-		if (t={FnF3:'a0', FnF4:'83', DASHBOARD:'82'}[ι]) {md ← []; ky ← ['RawValue::0x'+t]}
+		if (t=/^FnF(.)$/.λ(ι)) {md ← []; t = '03C 02C a0 83 16C 15C 14C 10C 13C 07C 01C 00C'.split(' ')[parseInt(t[1],16)-1]; ky ← [(t[2]?'Consumer':'')+'KeyCode::RawValue::0x'+t.slice(0,2)]}
+		else if (ι==='DASHBOARD') {md ← [' ']; ky ← ['KeyCode::'+ι]}
 		else {t ← /F.|.[LR]|./g.λ(ι); i ← t.map(Mod).concat([undefined]).indexOf(undefined); md ← t.slice(0,i); ky ← t.slice(i)}
 		if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
 		else md.push(' ')
 		if (!{1:1,2:1}[ky.length]) throw Error('[lackey] invalid keystring: '+util.inspect(ι))
-		Key ← λ(ι){↩ 'KeyCode::'+(ι.length > 2? ι : /^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
+		Key ← λ(ι){↩ ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
 		↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 	appdef_fix ← λ(ι){ι = ι.toLowerCase(); ↩ _.contains(['terminal','vlc','x11','system_preferences','skype','preview','quicktime','itunes','finder'],ι)? ι.toUpperCase() : {chrome:'GOOGLE_CHROME', sublime:'SUBLIMETEXT', activity_monitor:'Activity_Monitor', atom:'Atom', dock:'Dock'}[ι] || ι}
 	shells ← []
 	shell ← λ(ι){ι = 'bash -ci '+sh_encode(ι); id ← 'KeyCode::VK_OPEN_URL_'+(Math.random()*pow(2,50)).toString(36); shells.push([id,ι]); ↩ id}
 	compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] +(.+)$/.λ(ι)) {only ← appdef_fix(t[1]); ι = t[2]}; t ← compile_keystring(ι); ↩ {only:only, ι:t.cmd+' '+t.ι} }
 	compile_output ← λ(ι){t←; ↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) : (t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι : ι._.map(λ(ι){↩ as_char_as_hex(ι)._.map(λ(ι){↩ compile_keystring('⌥L'+ι).ι})})._.flatten().join('') }
-	autogens ← mappings.map(λ(ι){from ← compile_trigger(ι[0]); to ← compile_output(ι[1]); ↩ {only:from.only, ι:{autogen:from.ι+','+to+','} } })
+	autogens ← mappings.map(λ(ι){from ← compile_trigger(ι[0]); to ← compile_output(ι[1]); ↩ {only:from.only, ι:from.ι+','+to+',' } })
+	print(qq)
 	↩ xmlbuilder.create({root: {
-		'#list': [].concat(
-			_.pairs({
-				'spotify':'com.spotify.client', 'path_finder':'com.cocoatech.PathFinder', 'photo_booth':'com.apple.PhotoBooth',
-				}).map(λ(ι){↩ {appdef:{appname:ι[0],equal:ι[1]}}}),
-			(autogens._.groupBy('only')⟩_.values().reverse().map(λ(ι,i){wat.push('lackey'+i); ↩ {item: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, '#list':ι._.map('ι').reverse()}} })),
-			shells.map(λ(ι){↩ {vkopenurldef: {name:ι[0], url:{'@type':'shell', '#cdata':ι[1]}}}})
-			),
+		appdef: _.pairs({
+			'spotify':'com.spotify.client', 'path_finder':'com.cocoatech.PathFinder', 'photo_booth':'com.apple.PhotoBooth',
+			}).map(λ(ι){↩ {appname:ι[0],equal:ι[1]}}),
+		vkopenurldef: shells.map(λ(ι){↩ {name:ι[0], url:{'@type':'shell', '#text':ι[1]}}}),
+		item: (t=autogens._.groupBy('only'), (_(t).omit('undefined')⟩_.values()).concat([t.undefined])).map(λ(ι,i){wat.push('lackey'+i); ↩ {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, autogen:ι._.map('ι').reverse()} }),
 		}}).end({pretty:true}) }
 
 // --------- main --------- //
-fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_lackey(fs('~/.keyrc').$))
+fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_keyrc(fs('~/.keyrc').$))
 t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; execᵥ(t+' reloadxml'); wat.map(λ(ι){execᵥ(t+' enable '+ι)})
 
 // mild todo:
 // right command is maybe problematic
 // if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
+// 2d regexes would be wonderful for parsing .keyrc

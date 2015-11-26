@@ -1,4 +1,4 @@
-┌───────── homoiconic ─────────┐ ┌────────── keycode ───────────┐
+┌──────── [homoiconic] ────────┐ ┌───────── [keycode] ──────────┐
 │ ⎋ F1F2F3F4F5F6F7F8F9FaFbFc ⌽ │ │ 357A78637660616264656D676F00 │
 │ ` 1 2 3 4 5 6 7 8 9 0 - = ⌫  │ │ 321213141517161A1C191D1B1833 │
 │  ⇥ q w e r t y u i o p [ ] \ │ │ 300C0D0E0F111020221F23211E2A │
@@ -6,6 +6,7 @@
 │  ⇧L z x c v b n m , . /  ⇧R  │ │  38 060708090B2D2E2B2F2C 3C  │
 │ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │ │ 3F3B3A37   31   363D7B7E7D7C │
 └──────────────────────────────┘ └──────────────────────────────┘
+# ⇧L ⇧ / ⌥L ⌥ / ⌘L ⌘ / ⇧R _ / ⌥R _ / ⌘R _ / FnF1 F1 / FnF2 F2 / FnF3 F3 / FnF4 F4 / FnF5 F5 / FnF6 F6 / FnF7 F7 / FnF8 F8 / FnF9 F9 / FnFa Fa / FnFb Fb / FnFc Fc / F1 _ / F2 _ / F3 _ / F4 _ / F5 _ / F6 _ / F7 _ / F8 _ / F9 _ / Fa _ / Fb _ / Fc _
 ┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
 │ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
 │  _ q w e r t y u i o p [ ] \ │ │  _ Q W E R T Y U I O P { } | │
@@ -66,25 +67,25 @@ FnF4   ] DASHBOARD
 ⌘⇧4    $ screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png
 ⌘⇧^3   $ screencapture     -cr
 ⌘⇧^4   $ screencapture -io -cr
-⌘⌥^i   $ osascript -e 'id of app (path to frontmost application as text)' | p; alert "id copied" "" 1.5
+⌘⌥^i   $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
 
 [terminal] ⌘R      ] ^
-[spotify] ⌘l       $ _lyrics
-[path_finder] ⌘⇧t  $ _in_new_terminal osascript -e 'tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'
+[spotify] ⌘l       $ ack; _lyrics
+[path_finder] ⌘⇧t  $ ack; _in_new_terminal osascript -e 'tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'
 [photo_booth] ⌘q   $ ] ⌘q; ζ -e 'fs("~/Pictures/Photo Booth Library/Pictures").find(">").forEach(λ(ι){t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
 
-          ⌘^f    $ alert 'use FnF3 instead' 'tsk' 1.5
-[chrome]  ⌘⇧f    $ alert 'use FnF3 instead' 'tsk' 1.5
-[sublime] ⌘⇧^f   $ alert 'use FnF3 instead' 'tsk' 1.5
-⇪      $ alert ⇪ 'n/a' 1.5
-# FnF5   $ alert FnF5 'n/a' 1.5
-# FnF6   $ alert FnF6 'n/a' 1.5
+          ⌘^f   $ nack
+[chrome]  ⌘⇧f   $ nack
+[sublime] ⌘⇧^f  $ nack
+⇪               $ nack
+FnF5          $ nack
+FnF6          $ nack
 
 # \x09    ⇥, ⇧⇥
 # \x0a    ↩, ⇧↩, ^o
 # \x20    ␣
 
-# meh ≁ ≔≕ ∴ ∓ ′″‴ ∘ ≡≢ ⊕
+# meh ≁ ≔≕ ∴ ∓ ′″‴ ∘ ≡≢ ⊕ ｢｣
 # want ∪∩ ⊨⊢⊥⊤ ∧∨ ÷ ⊄⊅⊈⊉ ∋∌ ☝ ″
 # ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ § ‖ †‡ ※⁜ ‼⁇⁈⁉ ⁞ ≒≓≔≝ ⨀⨁⨂⨸ ≪≫ ⋱ ⌂ ⌕ ◊⟠⧫ ♈♉♊♋♌♍♎♏♐♑♒♓ ‹›⟪⟫⸨⸩
 

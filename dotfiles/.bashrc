@@ -1,17 +1,17 @@
-__dirname=$(dirname $(realpath "${BASH_SOURCE[0]}"))
+__dirname=$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))
 ########### private ##########
 shopt -s globstar
 -q(){ "$@" &>/dev/null; }
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
-beep(){ local E=$?; [[ $1 != '' ]] && E="$1"; afplay $([[ $E = 0 ]] && echo "$__dirname/win.wav" || echo "$__dirname/error.wav"); return $E; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
 _chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
 _pastebin(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/com\//com\/raw?i=/'; }
+_alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
 
 ###### interactive only ######
 shopt -s no_empty_cmd_completion
-shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=5000
+shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
 export PS1='$(E=$?; echo \[$([[ $E = 0 ]] && echo $green || echo $red)\]$([[ $E = 0 || $E = 1 ]] || echo "$E. ")$(this)\[$reset\]" ")'
 __rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 
@@ -86,10 +86,14 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
 
 ######## external only #######
-alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
-](){ [[ $1 = ⌘q ]] || { alert "could not p"; exit 1; }; osascript -e 'tell app "system events" to keystroke "q" using command down'; }
+](){ [[ $1 =~ ^⌘?[a-z]$ ]] || { (-q _alert "not implemented!" "] $1" &); return 1; }; osascript -e 'tell app "system events" to keystroke "'${1/⌘/}'"'"$([[ $1 =~ ⌘[a-z] ]] && echo ' using command down' || echo '')"; }
 _lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | ζ -p 'encodeURIComponent(ι)')"; }
 _in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(sh_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
+
+####### not interactive ######
+beep(){ (afplay $([[ $1 = 0 ]] && echo "$__dirname/done.wav" || echo "$__dirname/fail.wav") &); }
+ack(){ (afplay "$__dirname/ack.wav" &); }
+nack(){ (afplay "$__dirname/nack.wav" &); }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
