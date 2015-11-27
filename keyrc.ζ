@@ -1,9 +1,8 @@
 #!/usr/bin/env ζ
 // install https://pqrs.org/osx/karabiner/
-// run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh
-// go to System Preferences → Keyboard → Input Sources → + → Others → .keyrc and ensure that the layout is enabled
-// (the system Unicode Hex Input works too but it's worse)
-// run this if ~/.keyrc has changed
+// go to System Preferences → Keyboard → Input Sources → + → Others → Unicode Hex Input and ensure that the layout is enabled
+// (alternately, run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh and use the .keyrc layout - it fixes a couple issues)
+// run this program if ~/.keyrc has changed
 
 xmlbuilder ← require('xmlbuilder','4.1.0')
 
@@ -82,6 +81,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 // --------- main --------- //
 fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_keyrc(fs('~/.keyrc').$))
 t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; execᵥ(t+' reloadxml'); wat.map(λ(ι){execᵥ(t+' enable '+ι)})
+fs('/usr/local/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack'
 
 // mild todo:
 // right command is maybe problematic
