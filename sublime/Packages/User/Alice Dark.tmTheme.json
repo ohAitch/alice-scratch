@@ -35,6 +35,7 @@
     {"name": "Magic", "scope": "magic", "settings": {"fontStyle": "bold", "foreground": "#FD9726"}},
     {"name": "Magic", "scope": "smallmagic", "settings": {"foreground": "#FD9726"}},
     {"name": "Link", "scope": "link", "settings": {"foreground": "#73ACE6"}},
+    {"scope": "link_quiet", "settings": {"foreground": "#2f3536"}},
     {"name": "Storage", "scope": "storage", "settings": {"fontStyle": "", "foreground": "#F92672"}},
     {"name": "Storage type", "scope": "storage.type", "settings": {"fontStyle": "italic", "foreground": "#66D9EF"}},
     {"name": "Class name", "scope": "entity.name.class", "settings": {"fontStyle": "underline", "foreground": "#A6E22E"}},

@@ -1,6 +1,5 @@
 import sublime, sublime_plugin
-import subprocess
-import re
+import subprocess, re
 
 # todo: understand urls magically like open_context.py does.
 # actually parse the query string
@@ -11,14 +10,15 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 		view = self.view
 		for reg in view.sel():
 			ι = o = view.substr(reg)
+
+			# ι = re.sub(r'^/','file:/',ι)
+			# ι = re.sub(r'^~','file:/~',ι)
 			
-			ι = re.sub(r'^/','file:///',ι)
-			ι = re.sub(r'^~','file:///~',ι)
+			# ι = re.sub(r'^file:/Users/ali/','file:/~/',ι)
+			# ι = re.sub(r'^file:/~/ali/books/papers/','file:/~/papers/',ι)
+			# ι = re.sub(r'^file:/~/ali/books/','file:/~/books/',ι)
 			
-			ι = re.sub(r'^file:///Users/ali/','file:///~/',ι)
-			ι = re.sub(r'^file:///~/ali/books/papers/','file:///~/papers/',ι)
-			ι = re.sub(r'^file:///~/ali/books/','file:///~/books/',ι)
-			
+			# ι = re.sub(r'^file:///','file:/',ι)
 			ι = re.sub(r'^https://','http://',ι)
 			ι = re.sub(r'^(http://)www\.',r'\1',ι)
 			ι = re.sub(r'^http://youtube\.com/watch\?ι=([^&]+)&',r'http://youtu.be/\1?',ι)
@@ -32,7 +32,7 @@ class NiceUrlCommand(sublime_plugin.TextCommand):
 			ι = re.sub(r'^http://mail\.google\.com/mail/u/0/\??#(?:inbox|label/\w+)/(\w+)',r'http://google.com/mail/#all/\1',ι)
 			ι = re.sub(r'^(http://dropbox.com/.*)\?dl=0$',r'\1',ι)
 
-			if re.match(r'^file:///',ι): ι = re.sub(r'(?<!\\) ',r'\ ',ι)
+			# if re.match(r'^file:/',ι): ι = re.sub(r'(?<!\\) ',r'%20',ι)
 
 			ι = re.sub(r'^"(.*)"$',r'“\1”',ι) #! not actually for urls
 			if ι is not o: view.replace(edit, reg, ι)

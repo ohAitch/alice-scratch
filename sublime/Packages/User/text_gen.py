@@ -1,6 +1,5 @@
 import sublime, sublime_plugin
-import re
-import time
+import re, time
 from datetime import datetime
 # from datetime import timedelta
 

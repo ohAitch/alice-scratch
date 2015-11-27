@@ -23,9 +23,9 @@
 	{ "keys": ["super+alt+down"], "command": "swap_line_down" },
 
 	{ "keys": ["super+;"], "command": "open_context", "args": {"type": "terminal"}},
-	{ "keys": ["super+shift+;"], "command": "open_context", "args": {"type": "browser"}},
+	// { "keys": ["super+shift+;"], "command": "open_context", "args": {"type": "github"}},
 	// { "keys": ["ctrl+super+;"], "command": "open_context", "args": {"type": "terminal", "focus": false}},
-	{ "keys": ["ctrl+super+shift+;"], "command": "open_context", "args": {"type": "browser", "focus": false}},
+	// { "keys": ["ctrl+super+shift+;"], "command": "open_context", "args": {"type": "browser", "focus": false}},
 
 	{ "keys": ["super+shift+minus"], "command": "make_divider", "args": {"length": 30}},
 	{ "keys": ["super+shift+equals"], "command": "make_divider", "args": {"length": 80}},
@@ -50,7 +50,7 @@
 	{ "keys": ["super+alt+;"], "command": "inline_eval_zeta"},
 
 	{ "keys": ["super+l"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} }, // overwrites { "keys": ["super+l"], "command": "expand_selection", "args": {"to": "line"} },
-	{ "keys": ["super+p"], "command": "null" },
+	{ "keys": ["super+p"], "command": "show_overlay", "args": {"overlay": "command_palette"} }, // overwrites { "keys": ["super+p"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
 
 	{ "keys": ["super+b"], "command": "build_dollar" },
 
