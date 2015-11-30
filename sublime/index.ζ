@@ -55,22 +55,11 @@ json_pretty_stringify ← λ(ι){
 
 transform_json ← λ(str){↩ plist.build(JSON.parse(str))}
 
-transform_snippets ← λ(str){
-	ζ0_SUB_Fs ← λ(s,f){↩ s.split(f).slice(1).join(f)}
-	ζ0_SUB_Ts ← λ(s,t){↩ s.split(t)[0]}
-	↩ str.split('\n\n').map(λ(ι){
-		↩ '<snippet><content><![CDATA['+ζ0_SUB_Fs(ι,'\n')+'\n'+']]></content><tabTrigger>'+ζ0_SUB_Ts(ι,'\n')+'</tabTrigger></snippet>'
-		}) }
-
 main ← λ(){
 	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
 	fs(arg.in).find('*').filter(λ(ι){↩ !fs(ι).dir()}).map(λ(ι){t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
 			(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
-		:(t=ι.match(/^(.*)\.snippet-magic$/))?
-			transform_snippets(fs(arg.in+'/'+ι).$).map(λ(ι,i){
-				fs(arg.out+'/'+R(t[1]+i+'.sublime-snippet')).$ = ι
-				})
 		: (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
 		})
 	roots ← fs(arg.in).find('>').map(λ(ι){↩ ι.replace(arg.in,arg.out)})

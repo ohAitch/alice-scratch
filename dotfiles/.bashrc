@@ -5,7 +5,7 @@ shopt -s globstar
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 exp(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; }
-_chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
+_chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; osascript -e 'tell app "chrome" to activate'; }
 _pastebin(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/com\//com\/raw?i=/'; }
 _alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
 
@@ -41,7 +41,7 @@ bookmarks(){ ζ -e '
 		ι.url? (!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
 			JSON.stringify(ι)})(ι) ⟩ sb
 	'; }
-d(){ ( shopt -s nullglob; cd ${1:-.}; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
+d(){ ( shopt -s nullglob; cd "${1:-.}"; for t in .[!.] .??* * .; do du -hs "$t" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$t" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$t"; done ) }
 del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ (-q qlmanage -p "$@" &); }
 man(){ /usr/bin/man "$@" | col -bfx | sb; }
@@ -63,8 +63,8 @@ im_grayscale(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 l(){ ls -AG "$@"; }
 comic_rotate(){
-	mkdir \#rotated; for v in *; do if [[ $v != \#rotated ]]; then cp -r "$v" \#rotated; fi; done
-	cd \#rotated; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
+	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
+	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin | googl)#pastebin"; _chrome "$v"; echo "$v" | tr -d '\n' | p; echo "copied: $v"; }
 
@@ -86,17 +86,18 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
 
 ######## external only #######
-](){ [[ $1 =~ ^⌘?[a-z]$ ]] || { (-q _alert "not implemented!" "] $1" &); return 1; }; osascript -e 'tell app "system events" to keystroke "'${1/⌘/}'"'"$([[ $1 =~ ⌘[a-z] ]] && echo ' using command down' || echo '')"; }
-_lyrics(){ _chrome "https://www.google.com/search?q=lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track' | ζ -p 'encodeURIComponent(ι)')"; }
+](){ osascript -e 'tell app "system events" to keystroke "'"${1/⌘/}"'"'"$([[ $1 =~ ⌘ ]] && echo ' using command down' || echo '')"; }
+_lyrics(){ _chrome "lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track')"; }
 _in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(sh_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
 
 ####### not interactive ######
-beep(){ (afplay $([[ $1 = 0 ]] && echo "$__dirname/done.wav" || echo "$__dirname/fail.wav") &); }
+beep(){ (afplay "$__dirname/$([[ $1 = 1 ]] && echo "fail.wav" || echo "done.wav")" &); }
 ack(){ (afplay "$__dirname/ack.wav" &); }
 nack(){ (afplay "$__dirname/nack.wav" &); }
 
 ############# wat ############
 export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
+alias python3='unset PYTHONPATH; python3'
 
 #### system configuration ####
 # -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
@@ -125,3 +126,5 @@ export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
 # here's a way to easily modify your macros key: { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
 # How to make the tagtime daemon automatically start on bootup in OSX: sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
 # not [for t in $(find . -type f); do echo $t; done], instead [find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done]
+
+# ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]

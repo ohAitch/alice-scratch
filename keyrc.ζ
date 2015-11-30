@@ -3,6 +3,7 @@
 // go to System Preferences → Keyboard → Input Sources → + → Others → Unicode Hex Input and ensure that the layout is enabled
 // (alternately, run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh and use the .keyrc layout - it fixes a couple issues)
 // run this program if ~/.keyrc has changed
+// if remapping the power key, install https://github.com/pkamb/PowerKey and set it to the script ~/Documents/keyrc_power_key.sh (after having run this program at least once)
 
 xmlbuilder ← require('xmlbuilder','4.1.0')
 
@@ -81,7 +82,7 @@ make_xml ← λ(t){keycodes ← t.keycodes; mappings ← t.mappings
 // --------- main --------- //
 fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_keyrc(fs('~/.keyrc').$))
 t ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'; execᵥ(t+' reloadxml'); wat.map(λ(ι){execᵥ(t+' enable '+ι)})
-fs('/usr/local/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack'
+fs('~/Documents/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack'; fs.chmodSync(fs('~/Documents/keyrc_power_key.sh').path,511)
 
 // mild todo:
 // right command is maybe problematic
