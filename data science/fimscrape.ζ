@@ -1,0 +1,51 @@
+#!/usr/bin/env ζ
+arg ← { cmd:process.argv[2] }
+
+// ------- settings ------- //
+date ← '2015-11-29'; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(moment().format('YYYY-MM-DD'))+';')
+total_stories ← 305948; process.argv[1] === '<eval>' && code.replace(/\d+/, execᵥ('curl -s https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(λ(ι){↩ parseInt(ι.match(/\d+/)[0])})._.max() + 3000)
+sm_out ← 'story_meta '+date+'.txt'
+st_out ← 'story_text '+date
+
+// ------------------------ //
+story_meta ← λ(i){
+	clean ← λ(ι){
+		ι = ι.story
+		ι = _(ι).pick('id','title','short_description','description','date_modified','author','categories','likes','dislikes','chapters')
+		ι.short_description === ι.description && (ι = _(ι).omit('short_description'))
+		;['short_description','description'].map(λ(m){ι[m] === '' && (ι = _(ι).omit(m))})
+		ι.likes === -1 && (ι = _(ι).omit('likes','dislikes'))
+		ι.author = ι.author.id
+		ι.categories = _(ι.categories).pairs()._.filter(1)._.map(0)
+		ι.chapters && (ι.chapters = ι.chapters._.map('id'))
+		↩ ι}
+	t←; ↩ i < story_meta.cache.length? story_meta.cache[i] : (
+		print('fetching story metadata #'+i+'/'+total_stories),
+		t = execᵥ('curl -s '+sh_encode('http://www.fimfiction.net/api/story.php?story='+i)),
+		t === '{"error":"Invalid story id"}'? '' : JSON.stringify(clean(JSON.parse(t))) )}
+story_meta.cache = !fs(sm_out).exists()? [] : fs(sm_out).$.split('\n')
+
+// ---- story metadata ---- //
+if (arg.cmd==='meta'){
+
+C ← story_meta.cache
+cache_to_disk ← λ(){print('caching to disk'); if (/\n/.test(C.join(''))) throw Error('bad newline'); fs('/tmp/fimscrape').$ = C.join('\n'); fs.renameSync('/tmp/fimscrape',sm_out)}
+while (C.length < total_stories) {C.push(story_meta(C.length)); if (C.length % 100 === 0 || C.length === total_stories) cache_to_disk()}
+print('<done!>')
+
+}
+
+// ------ story texts ----- //
+if (arg.cmd==='text'){
+
+ch_i ← 0
+meta ← (λ(){t ← story_meta.cache._.filter().map(λ(ι){↩ JSON.parse(ι)})._.filter('chapters')
+	t.map(λ(ι){ι.chapters = ι.chapters.map(λ(ι){↩ [ch_i++,ι]})})
+	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ _(t).values()._.sortBy('id').reverse()})()
+story_text ← λ(ι){↩ ι.chapters.map(λ(ι){
+	print('fetching story chapters #'+ι[0]+'/'+ch_i)
+	↩ execᵥ('curl -s '+sh_encode('http://www.fimfiction.net/download_chapter.php?chapter='+ι[1]))})}
+while (meta.length) {t ← meta.pop(); fs(st_out+'/'+t.id).$ = JSON.stringify(story_text(t),null,'  ')}
+print('<done!>')
+
+}
