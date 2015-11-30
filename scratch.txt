@@ -170,3 +170,21 @@ OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 Can you imagine having to program using 100Hz CPUs, no matter how many of them you had?  You`d also need a hundred billion processors just to get anything done in realtime.
 
 Object.defineProperty(String.prototype,'Λ',{configurable:true, get:λ(){↩ eval('(λ(a,b,c){ι ← a; ↩ eval('+util.inspect(@+'')+')})')}})
+
+------------------------------ python data science -----------------------------
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+
+q = mpimg.imread('/Users/ali/Downloads/a.png')
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+x = q[:,:,0].ravel()
+y = q[:,:,1].ravel()
+z = q[:,:,2].ravel()
+ax.scatter(x, y, z)
+ax.set_xlabel('R Label')
+ax.set_ylabel('G Label')
+ax.set_zlabel('B Label')
+plt.show()
