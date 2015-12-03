@@ -6,13 +6,27 @@
 # could do this in a way that routes everything through ζ (except things where the flat 80ms cost is too much?) but should architect it in a way that doesn't tie you into ζ; like, if i define “p” in ζ but can export it to a self-contained bash function that would be amazing
 # ”
 
+# maybe `require('wav'` should be a link to http://npmjs.com/package/wav
+
+# `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
+
 import sublime, sublime_plugin
 import os, subprocess, re, urllib, json
 
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
 
-def ζ(ι): return subprocess.check_output(['/usr/bin/env','/usr/local/bin/node','--harmony','/usr/local/bin/ζ','-e',ι]).decode('utf-8')
+costs = {}
+
+def ζ(cmd,ι,stdin=None):
+	costs['ζ'] = costs['ζ']+1 if 'ζ' in costs else 1
+	args = ['/usr/bin/env','/usr/local/bin/node','--harmony','/usr/local/bin/ζ',cmd,ι]
+	if stdin:
+		t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		t = t.communicate(bytes(stdin,'UTF-8'))
+		# ignore stderr
+		return t[0].decode('utf-8')
+	else: return subprocess.check_output(args).decode('utf-8')
 
 def sh_encode(ι): return re.escape(ι)
 def osa_encode(ι): return '"'+re.sub(r'"',r'\\"',re.sub(r'\\',r'\\\\',ι))+'"'
@@ -36,18 +50,19 @@ def expand_empty_regions_to_urls_or_lines(view,ι): return merge_overlapping_reg
 def expand_empty_regions_to_lines(view,regions): return merge_overlapping_regions([expand_empty_region_to_line(view,ι) for ι in regions])
 def expand_empty_region_to_whole_buffer(view,regions): return [sublime.Region(0,view.size())] if len(view.sel()) == 1 and view.sel()[0].empty() else view.sel()
 
-def echo_string_pipe_process__check_output(string,args):
-	t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-	t = t.communicate(bytes(string,'UTF-8'))
-	# ignore stderr
-	return t[0].decode('utf-8')
-
 def open(ι,app=None,focus=True,view=None):
 	print("#OPEN",ι)
 	if not focus: subprocess.call(['bash','-ci','ack'])
 
 	if app is None and re.match(r'^file:',ι):
-		t = urllib.parse.unquote(re.sub(r'^file:(//)?','',ι))
+		t = re.sub(r'^file:(//)?','',ι)
+		t = urllib.parse.unquote(t)
+		t = urllib.parse.quote(t.encode('utf-8'))
+		ι = 'file:'+t
+
+		t = re.sub(r'^file:(//)?','',ι)
+		t = urllib.parse.unquote(t)
+
 		if view and view.file_name() and t[0] != '/': t = os.path.normpath(os.path.join(os.path.dirname(view.file_name()),t)); ι = 'file:'+urllib.parse.quote(t.encode('utf-8'))
 		if os.path.isdir(t): app = "Path Finder"
 		elif os.path.splitext(t)[1] in ['.pdf','.m4a','.epub']: pass
@@ -60,21 +75,22 @@ def open(ι,app=None,focus=True,view=None):
 		os.system("osascript -e "+sh_encode('tell app "terminal" to do script '+osa_encode(t)))
 	else:
 		subprocess.call([ι for ι in ["open", app and "-a", app, not focus and "-g", ι] if ι])
-	if focus and app in ["Path Finder","Terminal"]: os.system("osascript -e 'tell app \""+app+"\" to activate'") # workaround for a bug
+	if focus and app in ["Path Finder","Terminal"]: os.system("osascript -e 'tell app "+osa_encode(app)+" to activate'") # workaround for bugs in those apps
 
 def omnibox(ι): return ι if re.match(IS_URL,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8")) # +"&btnI=I"
 
-class OpenContextCommand(sublime_plugin.TextCommand):
+class open_context(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,mouse=False):
+		global costs; costs = {}
 		view = self.view
 		if type == "github":
-			t = ζ("""
+			t = ζ('-e',"""
 				ι ← fs("""+repr(view.file_name() or '')+""").resolve()
 				root ← ι; while (root !== '/' && !fs(root+'/.git').exists()) root = fs(root).parent()
 				if (root !== '/') {
 					ι = ι.slice((root+'/').length)
 					t ← require('ini','1.3.4').parse(fs(root+'/.git/config').$)['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-					r ← 'http://github.com/'+t[1]+'/'+t[2]+'/blob/'+fs(root+'/.git/HEAD').$.match(/refs\/heads\/(.+)/)[1]+'/'+ι
+					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+fs(root+'/.git/HEAD').$.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
 					process.stdout.write(r) }
 				""")
 			if t:
@@ -87,14 +103,15 @@ class OpenContextCommand(sublime_plugin.TextCommand):
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
 			if mouse and len(ι): view.sel().clear(); view.sel().add(sublime.Region(ι[0].end(),ι[0].end())) # workaround for a bug
 			for ι in ι: open(omnibox(view.substr(ι)),focus=focus,view=view)
+		if len(costs.keys()): print('costs:',costs)
 
-class InlineEvalZetaCommand(sublime_plugin.TextCommand):
+class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view; sel = view.sel()
 		append = len(sel) == 1 and sel[0].empty()
 		sel = expand_empty_regions_to_lines(view, sel)
 		ι = [view.substr(ι) for ι in sel]
-		r = json.loads(subprocess.check_output(['/usr/local/bin/node','--harmony','/usr/local/bin/ζ','-pa',json.dumps(ι)]).decode('utf-8'))
+		r = json.loads(ζ('-pa',json.dumps(ι)))
 		if append:
 			P = '-> '
 			last = sublime.Region(sel[0].end(),sel[0].end())
@@ -106,51 +123,22 @@ class InlineEvalZetaCommand(sublime_plugin.TextCommand):
 			for i in range(len(sel))[::-1]:
 				view.replace(edit, sel[i], r[i])
 
-def compile_stuff(self,edit,f):
-	view = self.view; sel = view.sel()
-	sel = expand_empty_region_to_whole_buffer(view, sel)
-	sel = expand_empty_regions_to_lines(view, sel)
-	for i in range(len(sel))[::-1]:
-		r = echo_string_pipe_process__check_output(view.substr(sel[i]), ['/usr/local/bin/node','--harmony','/usr/local/bin/ζ','-p',f+'(ι)'])
-		view.replace(edit, sel[i], r)
+class inline_compile_zeta_js(sublime_plugin.TextCommand):
+	def run(self,edit):
+		view = self.view; sel = view.sel()
+		sel = expand_empty_region_to_whole_buffer(view, sel)
+		sel = expand_empty_regions_to_lines(view, sel)
+		for reg in [ι for ι in sel][::-1]:
+			ι = view.substr(reg)
+			r = ζ('-p','ζ_compile(ι)',stdin=ι)
+			if r == ι: r = ζ('-p','ζ_compile["⁻¹"](ι)',stdin=ι)
+			view.replace(edit, reg, r)
 
-class InlineCompileZetaJsCommand(sublime_plugin.TextCommand):
-	def run(self,edit): compile_stuff(self,edit,'ζ_compile')
-class InlineCompileJsZetaCommand(sublime_plugin.TextCommand):
-	def run(self,edit): compile_stuff(self,edit,'ζ_compile["⁻¹"]')
-
-class NiceUrlCommand(sublime_plugin.TextCommand):
+class nice_url(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		sel = expand_empty_regions_to_urls_or_lines(view, view.sel())
 		for region in sel:
-			ι = o = view.substr(region)
-
-			ι = re.sub(r'^https://','http://',ι)
-			ι = re.sub(r'^(http://)www\.',r'\1',ι)
-			ι = re.sub(r'^(http://)(?:mail\.)?(google\.com/mail/)u/0/\??#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)',r'\1\2#all/\3',ι)
-			ι = re.sub(r'^(http://)en\.(wikipedia\.org)/',r'\1\2',ι)
-			ι = re.sub(r'^(http://)youtube\.com/watch\?ι=([^&]+)&',r'\1youtu.be/\2?',ι)
-			ι = re.sub(r'^(http://)youtube\.com/watch\?ι=([^&]+)' ,r'\1youtu.be/\2' ,ι)
-			ι = re.sub(r'^(http://)smile\.(amazon.com/)',r'\1\2',ι)
-			ι = re.sub(r'^(http://amazon.com/.*)\?sa-no-redirect=1$',r'\1',ι)
-			ι = re.sub(r'^(http://docs\.google\.com/document/d/[\w_-]+)/edit(?:\?ts=\w+)?$',r'\1',ι)
-			ι = re.sub(r'^(http://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$',r'\1',ι)
-			ι = re.sub(r'^(http://dropbox.com/.*)\?dl=0$',r'\1',ι)
-			ι = re.sub(r'^(http://)facebook(\.com/)',r'\1\2',ι)
-			ι = re.sub(r'^(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?',r'\1',ι)
-			ι = re.sub(r'^"(.*)"$',r'“\1”',ι) #! not actually for urls
-
-			if ι is not o: view.replace(edit, region, ι)
-
-############ todo ############
-
-# needs: parsing the query string
-# http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408/ref=sr_1_1?s=books&ie=UTF8&qid=1365921208&sr=1-1&keywords=Lower+Your+Taxes%3ABig+Time
-# http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408
-
-# http://smile.amazon.com/Thinking-Pencil-Henning-Nelms/dp/0898150523?sa-no-redirect=1
-# Thinking Pencil http://amzn.to/1jxKp9q
-
-# https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
-# http://goo.gl/0nrUfP
+			ι = view.substr(region)
+			t = ζ('-p','nice_url(ι)',ι)
+			if t is not ι: view.replace(edit, region, t)

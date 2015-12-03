@@ -1,7 +1,6 @@
 [
   {"caption": "niceify url", "command": "nice_url"},
-  {"caption": "ζ → js", "command": "inline_compile_zeta_js"},
-  {"caption": "js → ζ", "command": "inline_compile_js_zeta"},
+  {"caption": "ζ ↔ js", "command": "inline_compile_zeta_js"},
   {"caption": "eval(ζ)", "command": "inline_eval_zeta"},
   {"caption": "make divider (short)", "command": "make_divider", "args": {"length": 30}},
   {"caption": "make divider (long)", "command": "make_divider", "args": {"length": 80}},

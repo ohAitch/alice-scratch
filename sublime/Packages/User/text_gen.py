@@ -24,7 +24,7 @@ s_table = {
 	}
 def data(view): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']
 
-class MakeDividerCommand(sublime_plugin.TextCommand):
+class make_divider(sublime_plugin.TextCommand):
 	def run(self,edit,length):
 		view = self.view
 		test, match, fill, ends = data(view)

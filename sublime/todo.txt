@@ -8,14 +8,14 @@ wtf is up with dictionaries like
     "4": {"name": "punctuation.definition.parameters.begin.js"},
     "5": {"name": "variable.parameter.function.js"},
     "6": {"name": "punctuation.definition.parameters.end.js"}
-  },
-that should really be an array
-  "captures": {"[]1":[
-    {"name": "storage.type.function.js"},
-    {"name": "keyword.operator.js"},
-    {"name": "entity.name.function.js"},
-    {"name": "punctuation.definition.parameters.begin.js"},
-    {"name": "variable.parameter.function.js"},
-    {"name": "punctuation.definition.parameters.end.js"}
-  ]},
+    },
+that should really be like
+  "captures": {"[1:] * .name":[
+    "storage.type.function.js",
+    "keyword.operator.js",
+    "entity.name.function.js",
+    "punctuation.definition.parameters.begin.js",
+    "variable.parameter.function.js",
+    "punctuation.definition.parameters.end.js"
+    ]},
 'course, if we want it to actually output *that* we gotta spruce up our json pretty-printer.

@@ -18,24 +18,24 @@ what if we tried
 	is spotify playing a song?
 	-> true. then, “lyrics of it (the song spotify is playing)”
 <explain>: “is spotify playing a song?”
-	“run applescript “tell application "spotify" to player state as string” = “playing”?”
-<explain>: “run applescript “tell application "spotify" to player state as string” = “playing”?”
-	“eval osaᵥ("tell application \"spotify\" to player state as string") === "playing"”
+	“run applescript “tell app "spotify" to player state as string” = “playing”?”
+<explain>: “run applescript “tell app "spotify" to player state as string” = “playing”?”
+	“eval osaᵥ("tell app \"spotify\" to player state as string") === "playing"”
 <explain>: “lyrics of it (the song spotify is playing)”
 	“get artist, name of it (the song spotify is playing)”.
 	“with those, google those plus “lyrics””.
 <explain>: “get artist, name of it (the song spotify is playing)”
-	“run applescript “tell application "spotify"; get {artist,name} of current track; end tell””
-<explain>: “run applescript “tell application "spotify"; get {artist,name} of current track; end tell””
-	“eval osaᵥ("tell application \"spotify\"; get {artist,name} of current track; end tell")”
+	“run applescript “tell app "spotify" to get {artist,name} of current track””
+<explain>: “run applescript “tell app "spotify" to get {artist,name} of current track””
+	“eval osaᵥ("tell app \"spotify\" to get {artist,name} of current track")”
 <explain>: “with those, google those plus “lyrics””
 	“eval those.join(' ')+" lyrics"”.
 	“with that, eval "http://google.com/search?q=" + encodeURIComponent(that)”
 	“with that, open that in a browser”
 <explain>: “with that, open that in a browser”
-	“run applescript “tell application "chrome" to open location $that””
-<explain>: “run applescript “tell application "chrome" to open location $that””
-	“eval osa("tell application \"chrome\" to open location "+osa_encode(postredirect_url(that)))”
+	“run applescript “tell app "chrome" to open location $that””
+<explain>: “run applescript “tell app "chrome" to open location $that””
+	“eval osa("tell app \"chrome\" to open location "+osa_encode(postredirect_url(that)))”
 
 predictor ← λ(cmd){
 	past_cmds[cmd] || “eval print('...')”

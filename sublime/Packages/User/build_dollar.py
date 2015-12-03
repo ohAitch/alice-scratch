@@ -5,7 +5,7 @@ import re
 def sh_encode(ι): return re.escape(ι)
 def osa_encode(ι): return '"'+re.sub(r'"','\\"',re.sub(r'\\','\\\\\\\\',ι))+'"'
 
-class BuildDollarCommand(sublime_plugin.TextCommand):
+class build_dollar(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")

@@ -22,6 +22,6 @@ def t(view):
 	if view.settings().get('syntax') != ι: view.set_syntax_file(ι)
 	print('[fyi] syntax:',ι)
 
-class SyntaxFixerListener(sublime_plugin.EventListener):
+class _(sublime_plugin.EventListener):
 	def on_load(self, view): t(view)
 	def on_post_save(self, view): t(view)

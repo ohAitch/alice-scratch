@@ -2,8 +2,8 @@
 arg ← { cmd:process.argv[2] }
 
 // ------- settings ------- //
-date ← '2015-11-29'; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(moment().format('YYYY-MM-DD'))+';')
-total_stories ← 305948; process.argv[1] === '<eval>' && code.replace(/\d+/, execᵥ('curl -s https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(λ(ι){↩ parseInt(ι.match(/\d+/)[0])})._.max() + 3000)
+date ← '2015-12-02';    process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(moment().format('YYYY-MM-DD'))+';')
+total_stories ← 306325; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(execᵥ('curl -s https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(λ(ι){↩ parseInt(ι.match(/\d+/)[0])})._.max() + 3000)+';')
 sm_out ← 'story_meta '+date+'.txt'
 st_out ← 'story_text '+date
 

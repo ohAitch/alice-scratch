@@ -28,10 +28,10 @@ clear(){ /usr/bin/clear && printf '\e[3J'; }
 …(){ bash -s; }
 alias pwf='echo "$(home_link "$PWD/$1")"'
 alias ct=chrome_tabs; chrome_tabs(){ ζ -e '
-	t ← osaᵥ("tell app \"chrome\" \n get {title,URL} of tabs of windows \n end tell"); title ← t[0]; url ← t[1]
+	t ← osaᵥ("tell app \"chrome\" to get {title,URL} of tabs of windows"); title ← t[0]; url ← t[1]
 	i ← '"$(echo "$1" | jq -R .)"'
-	if (i) {i = parseInt(i); t ← title[0][i]+" "+url[0][i]; t ⟩ p; print(t+"\n<copied>")}
-	else _.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).join("\n")}).join("\n\n") ⟩ sb
+	if (i) {i = parseInt(i); t ← title[0][i]+" "+nice_url(url[0][i]); t ⟩ p; print(t+"\n<copied>")}
+	else _.zip(title,url).map(λ(ι){↩ _.zip.apply(_,ι)}).map(λ(ι){↩ ι.map(λ(ι){↩ ι.join(" ")}).map(nice_url.X(1)).join("\n")}).join("\n\n") ⟩ sb
 	'; }
 bookmarks(){ ζ -e '
 	ι ← JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children
@@ -67,9 +67,7 @@ comic_rotate(){
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin | googl)#pastebin"; _chrome "$v"; echo "$v" | tr -d '\n' | p; echo "copied: $v"; }
-
-alias grep='grep --exclude-dir node_modules'
-alias egrep='egrep --exclude-dir node_modules'
+grep+(){ ([ -z "$2" ] && cd ~/ali/github; egrep --exclude-dir node_modules -r "$1" "${2:-.}" | sb;) }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
@@ -96,8 +94,8 @@ ack(){ (afplay "$__dirname/ack.wav" &); }
 nack(){ (afplay "$__dirname/nack.wav" &); }
 
 ############# wat ############
-export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
-alias python3='unset PYTHONPATH; python3'
+# export PYTHONPATH="/usr/local/lib/python2.7/site-packages"
+# alias python3='unset PYTHONPATH; python3'
 
 #### system configuration ####
 # -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
