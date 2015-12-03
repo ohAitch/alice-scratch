@@ -3,8 +3,9 @@
 	↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?!\S)/,'#!/usr/bin/env node --harmony')+
 		'require("zeta-lang")(global); require = _require_lazy(require)'+
 		ζ_compile(t[2]) }
-evalζ ← λ(code,ι){t ← _require_lazy(require); ↩ (λ(){require ← t; ↩ eval(ζ_compile(code))})()}
+evalζ ← λ(ι){global.code = ι; global.require_ = _require_lazy(require); ↩ (0,eval)(ζ_compile('require ← require_;'+ι))}
 read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}
+hook_stdout ← λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r}}
 
 argv ← process.argv.slice(2)
 
@@ -19,18 +20,21 @@ if (argv.length === 0) {
 	break; case '-v': case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
 	break; case '-p': case '--print': _p ← true
 	;      case '-e': case '--eval':
-		process.argv = ['ζ','<eval>'].concat(argv.slice(1))
-		t ← λ(ι){t ← evalζ(argv[1],ι); _p && t !== undefined && print(t)}
+		process.argv = ['ζ','<eval>'].concat(argv)
+		t ← λ(ι){global.ι = ι; t ← evalζ(argv[1]); _p && t !== undefined && process.stdout.write(t+'')}
 		fs.fstatSync(0).mode & 0x1000? read_stdin(t) : t()
 	break; case '-f': argv = argv.slice(1); read_stdin(λ(ι){global.ι = ι; main()})
-	break; case '--es': //! bad name
-		JSON.parse(argv[1]).map(λ(ι){
-			;(λ __special_es__u7h7zxgvi__(){
-				try {t ← evalζ(ι); t !== undefined && process.stdout.write(t+'')}
-				catch (e) {print(typeof(e.stack)==='string'? e.stack.replace(/(\n    at )(?:eval \(eval at )?__special_es__u7h7zxgvi__[\s\S]*/,'$1<eval>') : '<error> '+e)}
-				})()
-			process.stdout.write('DukKUhmtGonKdELGvFycnF0WTZXRGiJ2e1P1SBD5yg')
-			})
+	break; case '-pa': //! bad name
+		process.argv = ['ζ','<eval>'].concat(argv)
+		global.i = 0
+		ι ← JSON.parse(argv[1]).map(λ(ι){
+			r ← hook_stdout()
+			t←; e←; (λ __special_es__u7h7zxgvi__(){try {t = evalζ(ι)} catch (e_) {e = e_}})()
+			r = r()
+			t !== undefined && r.push(t+'')
+			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[\s\S]*/,'\n    at <eval>') : '<error> '+e)
+			↩ r.join('')})
+		print(JSON.stringify(ι))
 	break; case '-c':
 		out ← fs(argv[-1])
 		argv.slice(1,-1).map(λ(ι){

@@ -93,7 +93,7 @@ E.ζ_repl_start = λ(opts){
 	↩ self}
 
 E.regex_encode = λ(ι){↩ ι.replace(/([.*+?^=!:${}()\[\]|\/\\])/g, '\\$1')}
-E.sh_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+ι.replace(/'/g,"'\\''")+"'"}).join(' ')}
+E.sh_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+(ι+'').replace(/'/g,"'\\''")+"'"}).join(' ')}
 E.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
 E.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
 
@@ -102,7 +102,7 @@ E.execᵥ = λ(ι,opts){↩ (child_process.execSync(ι,opts)+'').replace(/\n$/,'
 
 E.osa = λ(ι){exec('osascript -ss -e '+sh_encode(ι))}
 E.osaᵥ = λ(ι){
-	osa_parse_array ← λ(ι){↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
+	osa_parse_array ← λ(ι){try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}} // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 	↩ osa_parse_array(execᵥ('osascript -ss -e '+sh_encode(ι)))}
 
 c_js ← λ(osaₓ,ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osaₓ('tell app "google chrome" to tell '+tab+' of window 1 to set URL to '+osa_encode('javascript:'+ζ_compile(ι)))}
@@ -139,6 +139,44 @@ E.sublimeᵥ = λ(ι){fs('/tmp/sublime_external_command').$ = ι; t ← JSON.par
 // 		↩ {X:X,Y:Y,ι:r} } }
 // ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
+E.terminal_do_script = λ(id,ι){osaᵥ('tell app "terminal" to activate'); t ← osaᵥ('tell app "terminal" to name of windows').filter(λ(ι){t ← /⌘(\d+)$/.λ(ι); ↩ t && t[1] === id+''})[0]; osaᵥ('tell app "terminal" to do script '+osa_encode(ι)+' in window 1 whose name = '+osa_encode(t))}
+
+E.nice_url = λ(ι){t←;
+	if (t=/^"(.*)"$/.λ(ι)) ↩ '“'+t[1]+'”' //! bad hack
+
+	// --------- todo --------- //
+
+	// needs: parsing the query string
+	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408/ref=sr_1_1?s=books&ie=UTF8&qid=1365921208&sr=1-1&keywords=Lower+Your+Taxes%3ABig+Time
+	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408
+
+	// http://smile.amazon.com/Thinking-Pencil-Henning-Nelms/dp/0898150523?sa-no-redirect=1
+	// Thinking Pencil http://amzn.to/1jxKp9q
+
+	// https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+	// http://goo.gl/0nrUfP
+
+	// generalize the “fix & to ?” to many different things (goes will with parsing the query string (although you have to be careful - not all query strings can be parsed, right?))
+
+	multiline(λ(){/*
+	\bhttps://         http://
+	\b(http://)www\.   $1
+	\b(http://)(?:mail\.)?(google\.com/mail/)u/0/\??#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
+	\b(http://)en\.(wikipedia\.org)/                 $1$2
+	\b(http://)youtube\.com/watch\?v=([\w-_]+)       $1youtu.be/$2
+	\b(http://youtu.be/[\w-_]+)[?&]feature=youtu.be  $1
+	\b(http://youtu.be/[\w-_]+)&(.*)$                $1?$2
+	 - YouTube( http://youtu.be/)                    $1
+	\b(http://)smile\.(amazon.com/)                  $1$2
+	\b(http://amazon.com/.*)\?sa-no-redirect=1$      $1
+	\b(http://docs\.google\.com/document/d/[\w_-]+)/edit(?:\?ts=\w+)?$    $1
+	\b(http://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
+	\b(http://dropbox.com/.*)\?dl=0$   $1
+	\b(http://)facebook(\.com/)        $1fb$2
+	\b(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?     $1
+	*/}).split(/\n/g).map(λ(t){t = t.split(/  +/g); a ← RegExp(t[0]); b ← t[1]; ι = ι.replace(a,b)})
+	↩ ι}
+
 P({
 'Object.prototype.__special_pipe':{value:λ(){'use strict'; global.__special_pipe_ι = @}},
 'Function.prototype.P':λ(){ι←@; a ← A(arguments); ↩ λ(){↩ ι.apply(@,arguments.length === 0? a : a.concat(A(arguments)))}},
@@ -157,10 +195,10 @@ P({
 'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 'RegExp.prototype.genex_0':λ(){
 	parse ← λ(ι){
-		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:ι.slice(1,-1).split('')} : ι})}
+		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:ι.slice(1,-1).replace().split('')} : ι})}
 		w ← λ(ι){if (!_.isArray(ι)) ↩ ι; t←; r ← []; while ((t=_.indexOf(ι,'|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
 		↩ w(q(ι))}
-	q ← λ(ι){↩ ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce(λ(a,b){↩ a.mapcat(λ(a){↩ b.map(λ(b){↩ a+b})})}) : [ι]}
+	q ← λ(ι){↩ ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce(λ(a,b){↩ a.mapcat(λ(a){↩ b.map(λ(b){↩ a+b})})},['']) : [ι]}
 	↩ q(parse(@.source)) },
 'Function.prototype.in':λ(time){↩ !time || time <= 0? setImmediate(@) : setTimeout(@,time*1000)},
 'Function.prototype.every':λ(time){↩ setInterval(@,time*1000)},
@@ -192,6 +230,7 @@ def_lazy(ˡ,'Path',λ(){
 	Path.prototype.exists = λ(){↩ fs.existsSync(@.path)}
 	Path.prototype.resolve = λ(){↩ path.resolve(@.path)}
 	Path.prototype.name = λ(ext){↩ path.basename(@.path,ext)}
+	Path.prototype.parent = λ(){↩ path.dirname(@.path)}
 	// find
 		// it's really weird how this returns a thing that you can't actually pass to fs()
 		// maybe we'll fix this by returning a more magical, jquery-like thing?
@@ -279,7 +318,6 @@ module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.
 // 			magic magic
 // 			}),
 // E.ζ_bit_reverse_i = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
-// Path.prototype.parent = λ(){↩ fs(path.dirname(@.path))}
 // // Path.prototype.slice = λ(i){↩ ζ_def({},'$',λ(){},λ(ι){path_open(@,λ(){t ← Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
 // Path.prototype.splice = λ(idx,rm,ι){path_open(@,λ(fd){t←;
 // 	ι = Buffer(ι)
@@ -288,3 +326,5 @@ module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.
 // 	rm === ι.length || fs.writeSync(fd,t,0,t.length,idx+ι.length)
 // 	rm > ι.length && fs.ftruncateSync(fd,idx+ι.length+t.length)
 // 	})}
+// catch_ ← λ(f){↩ λ(){try {↩ f.apply(@,arguments)} catch (ι) {if (ι.__catchable) ↩ ι.__catchable; else throw ι}}}
+// _return ← λ(ι){throw {__catchable:ι}}
