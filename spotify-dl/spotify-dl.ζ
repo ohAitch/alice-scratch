@@ -1,0 +1,129 @@
+#!/usr/bin/env ζ
+
+lame ← require('lame','1.2.3')
+async ← require('async','1.5.0')
+
+arg ← {
+	cache_dir: fs('~/ali/misc/music_cache').path,
+	}
+
+rc ← λ(ι){↩ util.inspect(ι,{colors:true})}
+poll ← λ(f,cb){(λ λ(){if (f()) cb(); else λ.in(0.05)})()}
+is_playlist ← λ(ι){↩ ι.type === undefined || ι.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
+getTracks ← λ(ι){↩ _.range(ι.numTracks).map(λ(i){↩ ι.getTrack(i)})}
+getPlaylists ← λ(ι){↩ _.range(ι.numPlaylists).map(λ(i){↩ ι.getPlaylist(i)})._.filter()}
+
+login ← λ(cb){
+	print('[spotify dl] logging on ...')
+	// spotify ← require('./build/Release/nodespotify')()
+	spotify ← require('node-spotify')({appkeyFile:process.env.HOME+'/.auth/spotify_appkey.key', settingsFolder:process.env.HOME+'/.libspotify_cache', cacheFolder:process.env.HOME+'/.libspotify_cache'})
+	spotify.on({ready:λ(e){cb(e,spotify)}})
+	auth ← JSON.parse(fs('~/.auth/spotify').$); spotify.login(auth.username, auth.password)
+	}
+
+player_bufs←;
+
+ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pairs(), λ(t,cb){i ← parseInt(t[0]); tr ← t[1]; ensure_track_cached(spotify,tr,ι.name,i,cb)}, cb)}
+ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
+	is_local ← ι.link.match(/^spotify:local/) // testing
+	if (ι.availability !== 1) {cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
+	ar ← ι.artists._.map('name').map(λ(ι){↩ ι.replace(/, +/g,',')}).join(', '); al ← ι.album.name; tr ← ι.name
+	ι.album.browse(λ(e,t){
+		// ai ← parseInt(t.tracks._.invert()[ι.link])+1; al ← t.tracks.length
+		ai ← parseInt(t.tracks._.map('link')._.invert()[ι.link])+1; aL ← t.tracks.length
+		tf ← λ(ι){↩ ι.replace(/ +- +/g,'-')}
+		basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
+		out ← arg.cache_dir+'/'+basename_encode(tf(ar)+' - '+tf(al)+' - '+(ai+'').replace(/^(.)$/,'0$1')+' '+tf(tr)+'.mp3')
+		if (fs(out).exists()) {cb&&cb.in(); ↩}
+		player_bufs = []
+		spotify.player.play(ι)
+		q ← (λ(){
+			process.stdout.write('\x0d[spotify dl] '+rc(p_name).replace(/'/g,'')+'\x1b[33m'+(p_i+'').replace(/./g,λ('₀₁₂₃₄₅₆₇₈₉'))+'\x1b[39m @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
+			spotify.player.resume()
+			}).every(0.1)
+		spotify.player.on({endOfTrack: λ(){(λ(){
+			clearInterval(q); print()
+			data ← Buffer.concat(player_bufs); player_bufs = null
+			t ← new lame.Encoder({channels:2, bitDepth:16, sampleRate:44100, bitRate:256, outSampleRate:22050, mode:lame.STEREO})
+			t.end(data)
+			out_s ← fs.createWriteStream(out)
+			t.pipe(out_s)
+			out_s.on('finish',λ(){
+				execᵥ('mid3v2 -a '+sh_encode(ar)+' -A '+sh_encode(al)+' -t '+sh_encode(tr)+' -T '+sh_encode(ai+'/'+aL)+' '+sh_encode(out))
+				cb&&cb.in()
+			})
+			}).in(1)}}) }) }
+
+login(λ(e,spotify){
+	spotify.useNodejsAudio(λ(e,ι){if (e) throw e; player_bufs.push(ι); ↩ true})
+	print('[spotify dl] loading playlists ...')
+	ι ← getPlaylists(spotify.playlistContainer)
+	poll(λ(){↩ ι.filter(is_playlist).every(λ(ι){↩ ι.isLoaded})},λ(){
+		playlists ← ι.filter(is_playlist)
+		playlists._.indexBy('name')['[from mage]'] || (λ(){throw '‽'})() // testing
+		playlists = playlists.filter(λ(ι){↩ ι.owner.canonicalName === spotify.sessionUser.canonicalName})
+		playlists = playlists._.sortBy('numTracks')
+		async.mapSeries(playlists,
+			λ(ι,cb){ poll(λ(){↩ getTracks(ι).every(λ(ι){↩ ι.isLoaded})},λ(){ensure_playlist_cached(spotify,ι,cb)}) },
+			λ(e,ι){print('[spotify dl] done.') ;(λ(){process.exit()}).in(1.5)
+			})
+		})
+	})
+
+// the only thing we know about that might have made it work instead of not working is `xcode-select --install`
+
+// ffi ← require('ffi','2.0.0')
+// ref ← require('ref','1.3.1')
+// ref_struct ← require('ref-struct','1.0.2')
+
+// // https://github.com/node-ffi/node-ffi/wiki/Node-FFI-Tutorial
+// // https://www.npmjs.com/package/ref
+// // https://www.npmjs.com/package/ref-struct
+// // https://developer.spotify.com/docs/libspotify/12.1.45/structsp__session__config.html
+
+// p_fix ← λ Λ(ι){Object.defineProperty(ι,'ᵖ',{get:λ(){↩ @.ᵖ = Λ(ref.refType(ι))}, set:λ(ι){Object.defineProperty(@,'ᵖ',{value:ι, writable:true, enumerable:true, configurable:true})}, configurable:true}); ↩ ι}
+// _(ref.types).values().map(p_fix); //(λ(){o ← ref_struct; ref_struct = λ(){↩ p_fix(o.apply(@,arguments))}})()
+
+// t ← ref.types; int ← t.int; char ← t.char; size_t ← t.size_t; bool ← t.bool; void_ ← t.void
+
+// // sp_error ← void_
+// // sp_session ← void_
+// // sp_session_config ← ref_struct({
+// // 	api_version: int,
+// // 	cache_location: char.ᵖ,
+// // 	settings_location: char.ᵖ,
+// // 	application_key: void_.ᵖ,
+// // 	application_key_size: size_t,
+// // 	user_agent: char.ᵖ,
+// // 	callbacks: void_.ᵖ/*sp_session_callbacks.ᵖ*/,
+// // 	userdata: void_.ᵖ,
+// // 	compress_playlists: bool,
+// // 	dont_save_metadata_for_playlists: bool,
+// // 	initially_unload_playlists: bool,
+// // 	device_id: char.ᵖ,
+// // 	proxy: char.ᵖ,
+// // 	proxy_username: char.ᵖ,
+// // 	proxy_password: char.ᵖ,
+// // 	ca_certs_filename: char.ᵖ,
+// // 	tracefile: char.ᵖ,
+// // 	})
+
+// // libspotify ← ffi.Library('libspotify',{
+// // 	sp_session_create: [sp_error, [sp_session_config.ᵖ, sp_session.ᵖ.ᵖ]],
+// // 	})
+
+// // a ← ref.alloc(sp_session_config.ᵖ)
+// // b ← ref.alloc(sp_session.ᵖ.ᵖ)
+// // t ← libspotify.sp_session_create(a,b)
+// // print(t)
+
+// TimeVal ← ref_struct({
+//   'tv_sec': 'long',
+//   'tv_usec': 'long'
+// });
+// TimeValPtr ← ref.refType(TimeVal);
+
+// lib ← new ffi.Library(null, { 'gettimeofday': [ 'int', [ TimeValPtr, "pointer" ] ]});
+// tv ← new TimeVal();
+// lib.gettimeofday(tv.ref(), null);
+// console.log("Seconds since epoch: " + tv.tv_sec);
