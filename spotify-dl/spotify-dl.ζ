@@ -12,6 +12,20 @@ poll ← λ(f,cb){(λ λ(){if (f()) cb(); else λ.in(0.05)})()}
 is_playlist ← λ(ι){↩ ι.type === undefined || ι.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
 getTracks ← λ(ι){↩ _.range(ι.numTracks).map(λ(i){↩ ι.getTrack(i)})}
 getPlaylists ← λ(ι){↩ _.range(ι.numPlaylists).map(λ(i){↩ ι.getPlaylist(i)})._.filter()}
+mp3_info_to_basename ← λ(ι){
+	Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
+	ι = ι.map(λ(ι){↩ basename_encode((ι+'').replace(/ +- +/g,'-'))})
+	↩ ι[0]+' - '+ι[1]+' - '+ι[2].replace(/⟩.*/,'').replace(/^(.)$/,'0$1')+' '+ι[3] }
+mp3_set_id3 ← λ(fl,ι){ s ← sh_encode
+	Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
+	execᵥ('mid3v2 -a '+s(ι[0])+' -A '+s(ι[1])+' -t '+s(ι[2])+' -T '+s(ι[3])+' '+s(fl)) }
+// E.mp3_clean = λ(fl){
+// 	get id3 tags [artist, album, i, name] from file // execᵥ('mid3v2 '+sh_encode(fl)); ['TPE1','TALB','TRCK','TIT2'].map(λ(ι){↩ (RegExp('^'+ι+'=(.*)','m').λ(id3)||[])[1]})
+// 	read filename to look for [artist, album, i, name] // (t=path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1).concat([t])
+// 	if filename contained things id3 is missing: write those to id3 (and print)
+// 	if id3 contained things filename is missing: move the file (and print)
+// 	if mp3_info_to_basename(id3) !== filename: ↩ {conflict:true, file:, id3:}
+// 	}
 
 login ← λ(cb){
 	print('[spotify dl] logging on ...')
@@ -27,13 +41,15 @@ ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pai
 ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 	is_local ← ι.link.match(/^spotify:local/) // testing
 	if (ι.availability !== 1) {cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
-	ar ← ι.artists._.map('name').map(λ(ι){↩ ι.replace(/, +/g,',')}).join(', '); al ← ι.album.name; tr ← ι.name
 	ι.album.browse(λ(e,t){
-		// ai ← parseInt(t.tracks._.invert()[ι.link])+1; al ← t.tracks.length
-		ai ← parseInt(t.tracks._.map('link')._.invert()[ι.link])+1; aL ← t.tracks.length
-		tf ← λ(ι){↩ ι.replace(/ +- +/g,'-')}
-		basename_encode ← λ(ι){↩ ι.replace(/\//g,'⟩')}
-		out ← arg.cache_dir+'/'+basename_encode(tf(ar)+' - '+tf(al)+' - '+(ai+'').replace(/^(.)$/,'0$1')+' '+tf(tr)+'.mp3')
+		metadata ← {
+			artist: ι.artists._.map('name').map(λ(ι){↩ ι.replace(/, +/g,',')}).join(', '),
+			album: ι.album.name,
+			// i: (parseInt(t.tracks._.invert()[ι.link])+1)+'/'+t.tracks.length,
+			i: (parseInt(t.tracks._.map('link')._.invert()[ι.link])+1)+'/'+t.tracks.length,
+			name: ι.name,
+			}
+		out ← arg.cache_dir+'/'+mp3_info_to_basename(metadata)+'.mp3'
 		if (fs(out).exists()) {cb&&cb.in(); ↩}
 		player_bufs = []
 		spotify.player.play(ι)
@@ -48,10 +64,7 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 			t.end(data)
 			out_s ← fs.createWriteStream(out)
 			t.pipe(out_s)
-			out_s.on('finish',λ(){
-				execᵥ('mid3v2 -a '+sh_encode(ar)+' -A '+sh_encode(al)+' -t '+sh_encode(tr)+' -T '+sh_encode(ai+'/'+aL)+' '+sh_encode(out))
-				cb&&cb.in()
-			})
+			out_s.on('finish',λ(){ mp3_set_id3(out, metadata); cb&&cb.in(); })
 			}).in(1)}}) }) }
 
 login(λ(e,spotify){

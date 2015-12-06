@@ -93,7 +93,6 @@ $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
-minfo() { for v in "$@"; do t=$(mid3v2 "$v"); echo mv "'$(echo "$v" | sh_encode)' '$(echo $(echo "$t" | grep TPE1 | sed 's/^....=//') - $(echo "$t" | grep TALB | sed 's/^....=//') - $(echo "$t" | grep TIT2 | sed 's/^....=//').mp3 | sh_encode)'"; done; }
 q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3"; }
 
 ----------------------------- osx screen brightness ----------------------------
