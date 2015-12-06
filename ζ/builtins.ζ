@@ -10,7 +10,7 @@ P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ(t){name ← t[0]; ι
 	r(global); patches.push(r)
 	})}
 
-def ← λ(o,name,get,set){ι ← typeof(get)==='function'? {get:get, set:set || (set = λ(ι){delete @[name]; @[name] = ι})} : get; Object.defineProperty(o,name,_({configurable:true}).extend(ι)); ↩ o}
+def ← λ(o,name,get,set){Object.defineProperty(o,name,_({configurable:true}).extend(typeof(get)==='function'? {get:get, set:set || λ(ι){Object.defineProperty(@,name,{value:ι, writable:true, enumerable:true, configurable:true})}} : get)); ↩ o}
 lazy ← λ(name,ι){↩ {get:λ(){↩ @[name] = ι()}}} //! def_lazy doesn't use this because def doesn't take this in as a format. but ... bleh?
 def_lazy ← λ(o,name,ι){↩ def(o, name, λ(){↩ @[name] = ι()})}
 def_pipeable ← λ(o,name,ι){↩ def(o, name, λ(){if (global.__special_pipe_ι === undefined) ↩ ι; else {t ← global.__special_pipe_ι; global.__special_pipe_ι = undefined; ↩ ι(t)}})}
@@ -24,14 +24,15 @@ def_pipeable(E,'_',_)
 E._require_lazy = λ(require){↩ λ Λ(ι,version){
 	if (arguments.length === 1) {try {↩ require(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ↩ Λ(ι,0,e)}}
 	else {
-		if (!version) throw arguments[2] //! todo
+		if (!version) throw Error(arguments[2]) //! todo
 		cache ← fs('~/.npm/'+ι+'/'+version).path
-		fs(cache+'/ι').exists() || (
-			print('[lazy require] installing',ι+'@'+version),
-			fs(cache).exists() || execᵥ('cd ~; npm cache add '+sh_encode(ι+'@'+version)),
-			execᵥ('cd '+sh_encode(cache)+' && npm i '+sh_encode(ι+'@'+version)+' && mv node_modules/'+sh_encode(ι)+' ι && rmdir node_modules'),
-			print('[lazy require] done') )
-		↩ require(cache+'/ι')}
+		try {↩ require(cache+'/node_modules/'+ι)}
+		catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e
+			print('[lazy require] installing',ι+'@'+version)
+			fs(cache).exists() || execᵥ('cd ~; npm cache add '+sh_encode(ι+'@'+version))
+			fs(cache+'/package.json').$ = JSON.stringify({description:"-",repository:1,license:"ISC"}); fs(cache+'/README').$ = ''; execᵥ('cd '+sh_encode(cache)+' && npm i '+sh_encode(ι+'@'+version)); fs(cache+'/package.json').$ = fs(cache+'/README').$ = null
+			print('[lazy require] done')
+			↩ require(cache+'/node_modules/'+ι)} }
 	}}
 Array.from? console.warn('Array.from polyfill is not needed') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
 ;(λ(){
@@ -39,10 +40,6 @@ write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? 
 def_pipeable(E,'p',λ(ι){↩ arguments.length === 0? execᵥ('pbpaste') : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)})
 def_pipeable(E,'sb',λ(ι){↩ arguments.length === 0? sublimeᵥ('view.substr(sublime.Region(0,view.size()))') : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)})
 })()
-E.email = λ(){
-	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
-		.map(λ(ι){osa('tell app "chrome" to open location '+osa_encode(ι))})
-	osa('tell app "chrome" to activate') }
 E.A = λ(ι){↩ Array.prototype.slice.call(ι)}
 E.print = λ(){a ← A(arguments); process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n'); ↩ a[-1]}
 _(E).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).extend({ln:E.log, ln2:E.log2, ln10:E.log10})
@@ -93,7 +90,7 @@ E.ζ_repl_start = λ(opts){
 	↩ self}
 
 E.regex_encode = λ(ι){↩ ι.replace(/([.*+?^=!:${}()\[\]|\/\\])/g, '\\$1')}
-E.sh_encode = λ(){↩ A(arguments).map(λ(ι){↩ "'"+(ι+'').replace(/'/g,"'\\''")+"'"}).join(' ')}
+E.sh_encode = λ(ι){↩ "'"+(ι+'').replace(/'/g,"'\\''")+"'"}
 E.basename_encode = λ(ι){↩ ι.replace(/\//g,'⟩')}
 E.osa_encode = λ(ι){↩ '"'+ι.replace(/["\\]/g,'\\$&')+'"'} // probably incomplete
 
@@ -108,74 +105,15 @@ E.osaᵥ = λ(ι){
 c_js ← λ(osaₓ,ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osaₓ('tell app "google chrome" to tell '+tab+' of window 1 to set URL to '+osa_encode('javascript:'+ζ_compile(ι)))}
 c_js_sandbox ← λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ JSON.parse(osaᵥ('tell app "google chrome" to execute window 1\'s '+tab+' javascript '+osa_encode(ι))||'""')}
 jquery_script ← λ(extra){↩ "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; "+(extra||"")+"; document.getElementsByTagName('head')[0].appendChild(t)"}
+// E.chrome_js_sandboxᵥ = λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'; ↩ osaᵥ('tell app "google chrome" to execute window 1\'s '+tab+' javascript '+osa_encode(ζ_compile(ι)))}
 E.chrome_js = λ(ι,tab){c_js(osa,ι+'; undefined',tab)}
 E.chrome_jsᵥ = λ(ι,tab){c_js(osaᵥ,"t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← eval("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined",tab); ↩ c_js_sandbox("document.querySelectorAll('#applescript_hack')[0].textContent",tab)}
 E.chrome_$ = λ(ι,tab){chrome_js("f ← λ(){"+ι+"}; if (window.jQuery) f(); else {"+jquery_script("t.onload = f")+"}",tab)}
 E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); fst ← 1; while ((r=chrome_jsᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, jquery_script()) : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
 
 E.sublimeᵥ = λ(ι){fs('/tmp/sublime_external_command').$ = ι; t ← JSON.parse(execᵥ('curl -s -X PUT 127.0.0.1:34289')); if (t !== null) ↩ t}
-// sublimeᵥ('window.focus_view(window.views()[-1])')
-// T ← 10; i←0; (λ(){sublimeᵥ('view.insert(edit,view.sel()[0].begin(),"\\n")')}).every(T)
-// sublime_set_buffer ← λ(ι){sublimeᵥ('view.replace(edit,sublime.Region(0,view.size()),'+util.inspect(ι)+')')}
-// braille_table ← _.range(0x100).map(λ(ι){↩ String.fromCharCode('⠀'.charCodeAt(0)+ι)})
-// braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
-// life ← λ(ι){
-// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer(_.range(ι.X*ι.Y).map(λ(){↩ Math.random()<0.5 ?1:0})); ↩ ι} // 115,46
-// 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
-// 		r ← Buffer(ι)
-// 		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
-// 		for(y←1;y<Y-1;y++) for(x←1;x<X-1;x++) {
-// 			n ← ι[(y-1)*X+x-1] + ι[(y-1)*X+x] + ι[(y-1)*X+x+1] + ι[y*X+x-1] + ι[y*X+x+1] + ι[(y+1)*X+x-1] + ι[(y+1)*X+x] + ι[(y+1)*X+x+1]
-// 			r[y*X+x] = (n===2? ι[y*X+x] : n===3? 1 : 0) }
-// 		for(y←0;y<Y;y+=Y-1) for(x←0;x<X;x++) {
-// 			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
-// 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
-// 		for(x←0;x<X;x+=X-1) for(y←1;y<Y-1;y++) {
-// 			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
-// 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
-// 		// for(y←0;y<Y;y++) for(x←0;x<X;x++) {
-// 		// 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
-// 		// 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
-// 		↩ {X:X,Y:Y,ι:r} } }
-// ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
 E.terminal_do_script = λ(id,ι){osaᵥ('tell app "terminal" to activate'); t ← osaᵥ('tell app "terminal" to name of windows').filter(λ(ι){t ← /⌘(\d+)$/.λ(ι); ↩ t && t[1] === id+''})[0]; osaᵥ('tell app "terminal" to do script '+osa_encode(ι)+' in window 1 whose name = '+osa_encode(t))}
-
-E.nice_url = λ(ι){t←;
-	if (t=/^"(.*)"$/.λ(ι)) ↩ '“'+t[1]+'”' //! bad hack
-
-	// --------- todo --------- //
-
-	// needs: parsing the query string
-	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408/ref=sr_1_1?s=books&ie=UTF8&qid=1365921208&sr=1-1&keywords=Lower+Your+Taxes%3ABig+Time
-	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408
-
-	// http://smile.amazon.com/Thinking-Pencil-Henning-Nelms/dp/0898150523?sa-no-redirect=1
-	// Thinking Pencil http://amzn.to/1jxKp9q
-
-	// https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
-	// http://goo.gl/0nrUfP
-
-	// generalize the “fix & to ?” to many different things (goes will with parsing the query string (although you have to be careful - not all query strings can be parsed, right?))
-
-	multiline(λ(){/*
-	\bhttps://         http://
-	\b(http://)www\.   $1
-	\b(http://)(?:mail\.)?(google\.com/mail/)u/0/\??#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
-	\b(http://)en\.(wikipedia\.org)/                 $1$2
-	\b(http://)youtube\.com/watch\?v=([\w-_]+)       $1youtu.be/$2
-	\b(http://youtu.be/[\w-_]+)[?&]feature=youtu.be  $1
-	\b(http://youtu.be/[\w-_]+)&(.*)$                $1?$2
-	 - YouTube( http://youtu.be/)                    $1
-	\b(http://)smile\.(amazon.com/)                  $1$2
-	\b(http://amazon.com/.*)\?sa-no-redirect=1$      $1
-	\b(http://docs\.google\.com/document/d/[\w_-]+)/edit(?:\?ts=\w+)?$    $1
-	\b(http://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
-	\b(http://dropbox.com/.*)\?dl=0$   $1
-	\b(http://)facebook(\.com/)        $1fb$2
-	\b(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?     $1
-	*/}).split(/\n/g).map(λ(t){t = t.split(/  +/g); a ← RegExp(t[0]); b ← t[1]; ι = ι.replace(a,b)})
-	↩ ι}
 
 P({
 'Object.prototype.__special_pipe':{value:λ(){'use strict'; global.__special_pipe_ι = @}},
@@ -296,6 +234,7 @@ def_lazy(ˡ,'Path',λ(){
 		// string: text file, Array: directory, etc
 		// async should use like fs.createReadStream(ι.path).pipe(fs.createWriteStream(@.path))
 		if (@.exists() && @.dir()) throw Error('writing to directories not implemented')
+		if (ι == null && @.exists()) {fs.unlinkSync(@.path); ↩}
 		mkdir_p ← λ ρ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {if (e.code !== 'ENOENT') throw e; ρ(path.dirname(ι)); fs.mkdirSync(ι)}}
 		mkdir_p(path.resolve(path.dirname(@.path)))
 		fs.writeFileSync(@.path,ι) }
@@ -303,13 +242,82 @@ def_lazy(ˡ,'Path',λ(){
 
 require.extensions['.ζ'] = λ(module,ι){module._compile(ζ_compile(fs.readFileSync(ι,'utf8').replace(/^((?:#!.*\n)?)/,'$1require = _require_lazy(require);')),ι)}
 
+// ---- things that are more “dotfile” or “library of their own” than “ζ” --- //
+E.email = λ(){
+	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
+		.map(λ(ι){osa('tell app "chrome" to open location '+osa_encode(ι))})
+	osa('tell app "chrome" to activate') }
+E.nice_url = λ(ι){t←;
+	if (t=/^"(.*)"$/.λ(ι)) ↩ '“'+t[1]+'”' //! bad hack
+
+	// --------- todo --------- //
+
+	// needs: parsing the query string
+	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408/ref=sr_1_1?s=books&ie=UTF8&qid=1365921208&sr=1-1&keywords=Lower+Your+Taxes%3ABig+Time
+	// http://amazon.com/Lower-Your-Taxes-Time-2013-2014/dp/0071803408
+
+	// http://smile.amazon.com/Thinking-Pencil-Henning-Nelms/dp/0898150523?sa-no-redirect=1
+	// Thinking Pencil http://amzn.to/1jxKp9q
+
+	// https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+	// http://goo.gl/0nrUfP
+
+	// generalize the “fix & to ?” to many different things (goes will with parsing the query string (although you have to be careful - not all query strings can be parsed, right?))
+
+	multiline(λ(){/*
+	\bhttps://         http://
+	\b(http://)www\.   $1
+	\b(http://)(?:mail\.)?(google\.com/mail/)u/0/[?&]?#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
+	 - Gmail( http://google.com/mail/)               $1
+	 - [\w.]+@gmail.com( http://google.com/mail/)    $1
+	Fwd: (.* http://google.com/mail/)                $1
+	\b(http://)en\.(wikipedia\.org)/                 $1$2
+	\b(http://)youtube\.com/watch[?&]v=([\w-_]+)     $1youtu.be/$2
+	\b(http://youtu.be/[\w-_]+)[?&]feature=youtu.be  $1
+	\b(http://youtu.be/[\w-_]+)&(.*)$                $1?$2
+	 - YouTube( http://youtu.be/)                    $1
+	\b(http://)smile\.(amazon.com/)                  $1$2
+	\b(http://amazon.com/.*)[?&]sa-no-redirect=1$    $1
+	\b(http://docs\.google\.com/document/d/[\w_-]+)/edit(?:[?&]ts=\w+)?$  $1
+	\b(http://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
+	\b(http://dropbox.com/.*)[?&]dl=0$  $1
+	\b(http://)facebook(\.com/)         $1fb$2
+	\b(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?     $1
+	\b(http://fb\.com/\S*)[?&]_rdr      $1
+	*/}).split(/\n/g).map(λ(t){t = t.split(/  +/g); a ← RegExp(t[0]); b ← t[1]; ι = ι.replace(a,b)})
+	↩ ι}
+// sublimeᵥ('window.focus_view(window.views()[-1])')
+// T ← 10; i←0; (λ(){sublimeᵥ('view.insert(edit,view.sel()[0].begin(),"\\n")')}).every(T)
+// sublime_set_buffer ← λ(ι){sublimeᵥ('view.replace(edit,sublime.Region(0,view.size()),'+util.inspect(ι)+')')}
+// braille_table ← _.range(0x100).map(λ(ι){↩ String.fromCharCode('⠀'.charCodeAt(0)+ι)})
+// braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
+// life ← λ(ι){
+// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer(_.range(ι.X*ι.Y).map(λ(){↩ Math.random()<0.5 ?1:0})); ↩ ι} // 115,46
+// 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
+// 		r ← Buffer(ι)
+// 		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
+// 		for(y←1;y<Y-1;y++) for(x←1;x<X-1;x++) {
+// 			n ← ι[(y-1)*X+x-1] + ι[(y-1)*X+x] + ι[(y-1)*X+x+1] + ι[y*X+x-1] + ι[y*X+x+1] + ι[(y+1)*X+x-1] + ι[(y+1)*X+x] + ι[(y+1)*X+x+1]
+// 			r[y*X+x] = (n===2? ι[y*X+x] : n===3? 1 : 0) }
+// 		for(y←0;y<Y;y+=Y-1) for(x←0;x<X;x++) {
+// 			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+// 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
+// 		for(x←0;x<X;x+=X-1) for(y←1;y<Y-1;y++) {
+// 			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+// 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
+// 		// for(y←0;y<Y;y++) for(x←0;x<X;x++) {
+// 		// 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
+// 		// 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
+// 		↩ {X:X,Y:Y,ι:r} } }
+// ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
+
+// ----------------------------------- end ---------------------------------- //
 E.ζtoken = {}
 λ prop_extend(from,to){Object.getOwnPropertyNames(from).forEach(λ(ι){Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι))})}
 prop_extend(E,global)
 module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.forEach(λ(ι){ι(to)}))}
 
 // -------------------------------- discarded ------------------------------- //
-
 // String.prototype.replace_all = λ(find,replace){↩ @.replace(RegExp(regex_encode(find),'g'),replace)}
 // create_getattr ← (λ(){
 // 	proxy_boiler ← {getOwnPropertyDescriptor:λ(){}, getPropertyDescriptor:λ(){}, getOwnPropertyNames:λ(){↩[]}, getPropertyNames:λ(){↩[]}, defineProperty:λ(){}, delete:λ(){↩false}, fix:λ(){}, inspect:λ(){↩'[MAGIC-GET-ATTR]'}}
