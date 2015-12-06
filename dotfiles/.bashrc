@@ -67,7 +67,6 @@ comic_rotate(){
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin | googl)#pastebin"; _chrome "$v"; echo "$v" | tr -d '\n' | p; echo "copied: $v"; }
-grep+(){ ([ -z "$2" ] && cd ~/ali/github; egrep --exclude-dir node_modules -r "$1" "${2:-.}" | sb;) }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
@@ -84,8 +83,7 @@ rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); exp "$t"; "$t" "$@"; }; }
 
 ######## external only #######
-](){ osascript -e 'tell app "system events" to keystroke "'"${1/⌘/}"'"'"$([[ $1 =~ ⌘ ]] && echo ' using command down' || echo '')"; }
-_lyrics(){ _chrome "lyrics $(osascript -e 'tell app "Spotify" to {artist,name} of current track')"; }
+](){ osascript -e 'tell app "system events" to keystroke "'"${1/⌘/}"'"'"$([[ $1 =~ ⌘ ]] && echo ' using command down' || echo '')"; } # you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
 _in_new_terminal(){ local t=("$@"); osascript -e 'tell app "terminal" to do script '"$(printf "$(IFS=$'\n' ; echo "${t[*]}")" | ζ -p 'osa_encode((ι).split("\n").map(sh_encode.X(1)).join(" ")+" &>/dev/null; exit")')"; }
 
 ####### not interactive ######

@@ -40,7 +40,7 @@ def merge_overlapping_regions(ι):
 def expand_empty_region_to_line(view,ι): return view.line(ι) if ι.empty() else ι
 def expand_empty_region_to_url(view,ι,mouse_mode=False):
 	if not ι.empty(): return ι
-	a = max(ι.a-300, 0); b = min(ι.a+300, view.size())
+	a = max(ι.a-500, 0); b = min(ι.a+500, view.size())
 	for t in re.finditer(URL,view.substr(sublime.Region(a,b))):
 		s = a + t.start(); e = a + t.end()
 		if (s < ι.a < e if mouse_mode else s <= ι.a <= e):
