@@ -1,0 +1,358 @@
+//#!/usr/bin/env node
+
+fs ← require('fs')
+
+minimist ← require('minimist')
+sync ← require('sync')
+_ ← require('underscore')
+
+//__sub__ ← λ{__get__(v,b)}
+__slice__ ← λ(v,a,b){return is(b)? v.slice(a,b) : v.slice(a)}
+__sliceλ__ ← λ(a,b){return is(b)? λ{v[a:b]} : λ{v[a:]}}
+
+running_as ← process.argv₁.match(~/[^\/]*\/[^\/]*$/)₀
+print('--- running as:',running_as,'---')
+
+//===---------------------------===// utils //===--------------------------===//
+
+seq ← λ{v isa Array? v : typeof(v)='string'? v.split('') : Object.keys(v).map(λ(k){return [k,vₖ]})}
+Array.prototype.object ←! λ{this.reduce(λ(r,v){r[v₀] ←! v₁; return r},{})}
+memoize_o ← λ(o,f){return λ(v){r ← own(o,v); return is(r)? r : (oᵥ ←! f(v))}}
+merge_o ← λ{$args.map(λ{seq(v)}).m_concat().object()}
+
+void ← undefined
+pad_left ← λ(v,s,l){return s.repeat(l-v.length)+v}
+hex ← λ(v,l){return pad_left(v.toString(16),'0',l)}
+now ← λ{Date.now() / 1000}
+ord ← λ{v.charCodeAt(0)}
+chr ← λ{String.fromCharCode(v)}
+own ← λ(o,m){return Object.prototype.hasOwnProperty.call(o,m)? oₘ : void}
+err ← λ(){print.apply(console, ['#error#:'].concat($args)); throw(Error())}
+extend_function ← λ(f){r ← λ(){r ← f(); r.__proto__ ←! λ.prototype; return r}; r.prototype.__proto__ ←! Function.prototype; return r}
+delset ← λ(o,m,v){if (¬is(v)) delete(oₘ); else oₘ ←! v}
+is ← λ{v≠void}
+i ← λ{parseInt(v)}
+String.prototype.repeat ←! λ{v≤0? '' : new Array(v+1).join(this)}
+Array.prototype.m_concat ←! λ{Array.prototype.concat.apply([],this)}
+Object.defineProperty(Array.prototype,'no',{get:λ{this.length=0}})
+Array.prototype.cartesian ←! λ{this.reduce(λ(a,v){r ← []; a.map(λ(a){seq(v).map(λ(b){r.push(a.concat([b]))})}); return r}, [[]])}
+genex_2a ← λ(re){return _.range(2).map(λ{[128,128].slice(v).map(λ{_.range(v).map(λ{String.fromCharCode(v)})}).cartesian().map(λ{v.join('')})}).m_concat().filter(λ{v.match(re)})} // this of course is "constraint programming"
+set_to_s ← λ(o,f){o.toString ←! o.inspect ←! f}
+EQ ← _.isEqual
+
+//===-----------------------===// lexing tools //===-----------------------===//
+
+reader_or ← extend_function(λ{λ(start,s,line){return (λ[s₀]? λ[s₀](start+s₀,s[1:],line) : void) || (λ['']? λ[''](start,s,line) : void)}})
+reader_or.prototype.get ←! λ(s){return this[s₀]? (this[s₀] isa reader_or? this[s₀].get(s[1:]) : this[s₀]) : void}
+reader_or.prototype.set ←! λ(ss,r){
+	seq(ss).map(λ(s){
+		c ← s=''? '' : s₀; s ← s[1:]
+		if (s ≠ '') (this[c] isa reader_or? this[c] : this[c] ←! new reader_or().set([''],own(this,c))).set([s],r)
+		else delset(this,c,r)
+	}.bind(this)); return this}
+reader_or.prototype.reduce_l ←! λ(s){r ← []; line ← 1; while (s ≠ '') {t ← this('',s,line); r.push(t₀); s ←! t₁; line ←! t₂} return r}
+reader_or.prototype.reduce   ←! λ(s){r ← [];           while (s ≠ '') {t ← this('',s     ); r.push(t₀); s ←! t₁            } return r}
+
+//===------------------------===// characters //===------------------------===//
+
+js_valid_symbol ← new (λ(){
+	//! _short should be short
+	_short ← ")0 !1 @2 #3 %5 ^6 &7 *8 (9 ∀A 'b {B ,C :c .d =E →e ≥ge >gt `k [L ≤le <lt -m ¬n ≠N |o +p ?q …r /s ~t ←w ǂǂ".split(' ').concat([' _']).map(λ{[v₀,v[1:]]})
+	encode_short ← _short.map(λ{[v₀,'ǂ'+v₁]}).object()
+	decode_short ← _short.map(λ{[v₁,v₀]}).object()
+	is_start ← memoize_o(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]}).object(),λ(v){try {eval('var '+v )} catch (e) {return false} return true})
+	is_part  ← memoize_o(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]}).object(),λ(v){try {eval('var a'+v)} catch (e) {return false} return true})
+	encode_char ← memoize_o(encode_short, λ(v){return is_part(v)? v : 'ǂu'+hex(ord(v),4)})
+
+	keywords ← ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
+
+	decoder ← new reader_or()
+	decoder.set([''],λ(_,s){return [s₀,s[1:]]})
+	decoder.set(['ǂu'],λ(_,s){return [chr(parseInt(s[:4],16)),s[4:]]})
+	seq(decode_short).map(λ(kv){k ← kv₀; v ← kv₁; decoder.set(['ǂ'+k],λ(_,s){return [v,s]})})
+
+	this.is_part ←! is_part
+	this.encode ←! memoize_o(keywords.map(λ{[v,'ǂ'+v]}).object(),λ(v){r ← seq(v).map(encode_char).join(''); return (¬is_start(r₀)?'ǂ':'')+r})
+	this.decode ←! memoize_o(keywords.map(λ{['ǂ'+v,v]}).object(),λ{decoder.reduce(v₀='ǂ'? v[1:] : v).join('')})
+	})
+unicode ← λ(table){return {
+	subscripts:   table.map(λ{v₀}).filter(λ{v≠'_'}),
+	midscripts:   table.map(λ{v₁}),
+	superscripts: table.map(λ{v₂}).filter(λ{v≠'_'}),
+	subscript:   λ{table.map(λ{[[v₁,v₀], [v₂,v₀]]}).m_concat().filter(λ{v₁≠'_'}).object()ᵥ},
+	midscript:   λ{table.map(λ{[[v₀,v₁], [v₂,v₁]]}).m_concat().filter(λ{v₁≠'_'}).object()ᵥ},
+	superscript: λ{table.map(λ{[[v₀,v₂], [v₁,v₂]]}).m_concat().filter(λ{v₁≠'_'}).object()ᵥ},
+	}}('₀0⁰ ₁1¹ ₂2² ₃3³ ₄4⁴ ₅5⁵ ₆6⁶ ₇7⁷ ₈8⁸ ₉9⁹ ₊+⁺ ₋-⁻ ₌=⁼ ₍(⁽ ₎)⁾ ₐaᵃ _bᵇ _cᶜ _dᵈ ₑeᵉ _fᶠ _gᵍ ₕhʰ ᵢiⁱ ⱼjʲ ₖkᵏ ₗlˡ ₘmᵐ ₙnⁿ ₒoᵒ ₚpᵖ ᵣrʳ ₛsˢ ₜtᵗ ᵤuᵘ ᵥvᵛ _wʷ ₓxˣ _yʸ _zᶻ _Aᴬ _Bᴮ _Dᴰ _Eᴱ _Gᴳ _Hᴴ _Iᴵ _Jᴶ _Kᴷ _Lᴸ _Mᴹ _Nᴺ _Oᴼ _Pᴾ _Rᴿ _Tᵀ _Uᵁ _Vⱽ _Wᵂ'.split(' '))
+
+//===---------------------===// load.α hack utils //===--------------------===//
+
+pr ← λ(){if (running_as = 'bin/load.js') print.apply(this,['##'].concat($args)); return $args₀}
+printable ← λ{λᵥ}
+S ← λ{new Symbol(v)}
+
+//===---------------------------===// repr //===---------------------------===//
+
+repr_js ← λ{v.repr_js? v.repr_js() : v+''}
+repr    ← λ{v.repr   ? v.repr   () : v+''}
+
+String.prototype.repr_js ←! λ(){v ← this.valueOf(); return (v.match(~/'/g)||[]).length ≤ (v.match(~/"/g)||[]).length? //?
+	"'"+seq(v).map(λ{{"'":"\\'",'\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+"'" :
+	'"'+seq(v).map(λ{{'"':'\\"','\n':'\\n','\t':'\\t','\\':'\\\\'}ᵥ || (printable(v)? v : '\\u'+hex(ord(v),4))}).join('')+'"'}
+String.prototype.repr ←! String.prototype.repr_js
+
+RegExp.prototype.repr_js ←! λ{this+''}
+RegExp.prototype.repr ←! λ{'~'+this+''}
+
+Array.prototype.repr_js ←! λ{'['+this.map(repr_js).join(', ')+']'}
+Array.prototype.repr    ←! λ{'['+this.map(repr   ).join(', ')+']'}
+
+//===------------------===// lexer: [char] → [token] //===-----------------===//
+
+//! list of characters → list of tokens, which are symbols, quotes, and spaces (symbols and quotes need to know their [line,cell,col])
+
+tokenize ← λ(s){
+	seq(s).map(λ{printableᵥ ←! true})
+	r ← []
+	pos ← [1,1,1]; any ← void; first_type ← void
+	spos ← λ(v){if (¬v.SPACE) v.pos ←! pos; return v}
+	increment_pos ← λ(s){
+		seq(s).map(λ(v){
+			if (v='\n') pos ←! [pos₀+1,1,1]
+			else if (v='\t') pos ←! [pos₀,pos₁+1,1]
+			else pos ←! [pos₀,pos₁,pos₂+1]
+			}) }
+	start_any ← λ(){any ←! s₀; first_type ←! js_valid_symbol.is_part(s₀); s ←! s[1:]}
+	end_any ← λ(){r.push(spos(S(any))); increment_pos(any); any ←! void}
+	while (s≠'') {
+		t ← reader_macros.map(λ(v){t←void; return (t←!s.match(v₀))? [t,v₁(t)] : void}).filter(λ{v})₀
+		if (t) {m ← t₀; v ← t₁; if (is(any)) end_any(); r.push(spos(v)); s ←! s[m₀.length:]; increment_pos(m₀)}
+		else {if (is(any)) {if (js_valid_symbol.is_part(s₀) = first_type) {any += s₀; s ←! s[1:]} else {end_any(); start_any()}} else start_any()}
+	}
+	pr('tokens:',r.join(' ')) //!
+	err('.')
+	return r}
+
+subscript_ops ← genex_2a(~/^-?[\da-z]$/).map(λ{seq(v).map(unicode.subscript)}).filter(λ{v.every(λ{v})}).map(λ{v.join('')})
+
+// give tokens nice properties
+SPACE ← {SPACE:1}; set_to_s(SPACE, λ{'␣'})
+Symbol ← λ(name){this.name ←! name}; set_to_s(Symbol.prototype, λ{'`'+this.name+'@'+this.pos})
+Quote ← λ(value){this.quote ←! value}; set_to_s(Quote.prototype, λ{'`'+repr_js(this.quote)+'@'+this.pos})
+
+reader_macros ← [
+[~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/, λ{SPACE}],
+[~/^(['"])((.*?[^\\])?(\\\\)*)\1/, λ{new Quote(v₂.match(~/\\u....|\\x..|\\.|./g).map(λ(v){return v.length>2? chr(parseInt(v[2:],16)) : v.length=2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v₁] || err('bad escape: '+v) : v}).join(''))}],
+[~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/, λ{new Quote(eval('/'+v₁+'/'+v₂))}],
+[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(~/([()\[\]{}?])/g,'\\$1')+')'), λ{S(v₁)}],
+[~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/, λ{new Quote(parseFloat(v₀))}],
+]
+
+//===-------===// token macros: [token] → macro-form-unresolved //===------===//
+
+//! ---[1] we group tokens, which does the transformation:
+// list of tokens → macro-form-with-unresolved-operators, which is a symbol, quote, space, or list of macro-form-with-unresolved-operators
+// ---[2] we walk the form-tree and alias some tokens and do the transformations for new and λ, which leaves the datatype the same
+
+// documentation from "precedence table.txt": \[…*\] (…*) {…*}        λ        new        ; && ||        \[ ( {
+
+token_macro_expand ← λ(tokens){
+	groups_expand ← λ(tokens){
+		group_expand ← λ(g,l){
+			check ← λ(){if (l.no) err('group is not closed @'+g.pos)} //! this is bad at telling the user which group was unclosed
+			check()
+			r ← [g]; while(true){
+				if (l₀.name) {
+					if (l₀.name = groups[g.name]) return [r,l[1:]]
+					if (own(groups,l₀.name)) {t ← (λ)(l₀,l[1:]); r.push(t₀); l ←! t₁; check(); continue}
+					}
+				r.push(l₀); l ←! l[1:]; check()}}
+		r ← group_expand(S('('),tokens.concat([S(')')])); if (¬r₁.no) err(r); return r₀}
+	walk ← λ(v,f){return (λ(v,i,l,f){
+		if (v isa Array) {for (j←0;j<v.length;) j ←! (λ)(v[j],j,v,f); return i+1}
+		else return f(v,i,l) })(v,0,void,f)}
+	tokens ←! groups_expand(tokens)
+	walk(tokens,λ(v,i,l){w ← l[i+1]
+		if (v.name && aliases[v.name]) {lᵢ.name ←! aliases[v.name]; return i+1}
+		else if (v.name='new' && w.name) {l.splice(i,2,v,new Quote(w)); return i+1}
+		else if (v.name='new' && w.SPACE && l[i+2].name) {l.splice(i,3,v,new Quote(l[i+2])); return i+2} //! augh
+		else if (v.name='λ' && w isa Array && w₀.name='(') {l.splice(i,2,v,new Quote((λ{v isa Array? v.map(λ).filter(λ{¬v.SPACE}) : v})(w))); return i+2}
+		else if (v.name='λ' && w isa Array && w₀.name='{') {l.splice(i,1,v,new Quote([S('('), S('v')])); return i+2}
+		else return i+1 })
+	return tokens}
+
+groups ← {'(':')','[':']','{':'}'}
+aliases ← {';':',','&&':'&','||':'|'}
+
+//===-------===// operators: macro-form-unresolved → macro-form //===------===//
+
+//! macro-form-with-unresolved-operators → macro-form, which is a symbol, quote, or list of macro-form
+
+//! currently, the operator keying does not allow me to distinguish .*. .* *. but that can be changed later
+
+//! CURRENT: implement operators
+//! btw go down to precedence table notes
+
+// remember that we ignore anything inside quote, but we do still get rid of spaces inside quote
+
+operator_expand ← λ(form){
+	if (form isa Array) {
+		r ← form₀
+		l ← form[1:]
+		last ← void
+
+	} }
+
+operators ← {}
+
+ANY ← {ANY:1}; set_to_s(ANY, λ{'.'})
+
+def_operator ← λ(prec_l,prec_r,bnf){
+	bnf ←! bnf.match(~/[\[\].`_]|(\\.|[^\[\].`_])+/g)
+	bnf ←! (λ(l){r ← []; while(true){
+		if (l₀=']') return [r,l[1:]]
+		if (l₀='[') {t ← (λ)(l[1:]); r.push(t₀); l ←! t₁; continue}
+		r.push(l₀); l ←! l[1:]}})(bnf.concat([']']))₀
+	bnf ←! bnf.map(λ{v isa Array? v.map(λ) : v='.'? ANY : v='_'? SPACE : v='`'? [SPACE] : v.replace(~/\\(.)/g,'$1')})
+	left_eat ← void; left_space ← void
+	if (left_eat←!bnf₀.ANY) bnf ←! bnf[1:]
+	if (EQ(bnf₀,[SPACE])) {left_space ←! [true,false]; bnf ←! bnf[1:]}
+	else if (bnf₀.SPACE) {left_space ←! [true]; bnf ←! bnf[1:]}
+	else left_space ←! left_eat? [false] : [true,false]
+	op ← bnf₀; bnf ←! bnf[1:]
+	;(op='ᵥ'? subscript_ops : [op]).map(λ(op){
+		left_space.map(λ(left_space){
+			operators[(left_space?' ':'')+op] ←! {prec_l:prec_l, prec_r:prec_r, left_eat:left_eat, op:op, right:bnf}
+			}) }) }
+
+;[	'400 401 .`\\.. .ᵥ .\\[ .(',
+	'390 391 ¬. -.',
+	'380 381 .*. ./. .%.',
+	'370 371 .+. .-.',
+	'350 350 .=. .≠. .<. .>. .≤. .≥.',
+	'340 341 .&. .|.',
+	'331 330 .?.:.',
+	'321 322 .+=.',
+	'323 320 .←. .←!.',
+	'300 301 \\`. ~. ~@.',
+	'290 291 ¬_.',
+	'280 281 ._*_. ._/_. ._%_.',
+	'270 271 ._+_. ._-_.',
+	'260 260 ._isa_.',
+	'250 250 ._=_. ._≠_. ._<_. ._>_. ._≤_. ._≥_.',
+	'240 241 ._&_. ._|_.',
+	'231 230 .?_._:_.',
+	'221 222 ._+=_.',
+	'223 220 ._←_. ._←!_.',
+	'210 211 λ.`. if`.[`:]`.[[`,]`else`.] while`.[`:]`. return[`.] try`.[[`,]`catch`.][[`,]`finally`.] new.`.',
+	'200 201 \\`_. ~_. ~@_.',
+	'100 100 , :',
+	].map(λ(v){t ← v.split(' '); t[2:].map(λ(v){def_operator(i(t₀),i(t₁),v)})})
+
+//===-------------===// repr_js: macro-form → javascript //===-------------===//
+
+//! we're done with our current architecture pass, so we cut it short super quickly by just having a list of "macros" that output javascript (probably javascript, maybe another layer to make it easy to output javascript)
+// macro-form → repr_js
+
+repr_js_file ← λ(form){
+	err('rjf¬im')
+}
+
+//===--------------------------===// <edge> //===--------------------------===//
+
+read ← λ(s){return pr(operator_expand(pr(token_macro_expand(tokenize(s)))))}
+compile_f ← λ(_in,out){fs.writeFileSync(out,repr_js_file(read(fs.readFileSync(_in).toString())))}
+compile_f(process.argv₂,process.argv₃)
+
+//===-----------------------===// architecture //===-----------------------===//
+
+// OFFICIAL STATUS: this was a good attempt. It wasn't good enough. It's close enough to finish that it's probably worth finishing, but we need to start again, backwards, and more do-what-I-mean than let's-guess-at-a-slim-formalization-that-might-be-close
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+/////  THE FOLLOWING IS TOTALLY EATEN          /////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
+/* okay. clarification / rethinking time.
+
+[1] lexer (tokenize). (lexers are nice. lexers provide a simple, consistent tokenization.)
+list of characters → list of tokens, which are symbols, quotes, and spaces (symbols and quotes need to know their [line,cell,col])
+
+[2] arbitrary token manipulations (token macros). (this can be part of the lexer, but it's cleaner for it not to be)
+we have two of these:
+---[1] we group tokens, which does the transformation:
+list of tokens → macro-form-with-unresolved-operators, which is a symbol, quote, space, or list of macro-form-with-unresolved-operators
+---[2] we walk the form-tree and alias some tokens and do the transformations for new and λ, which leaves the datatype the same
+
+[3] operators (operators). (this is a pretty encompassing type of parsing; most of the work gets done here. We could probably subsume token macros into this by extending this to full bnf.)
+macro-form-with-unresolved-operators → macro-form, which is a symbol, quote, or list of macro-form
+
+[4] we're done with our current architecture pass, so we cut it short super quickly by just having a list of "macros" that output javascript (probably javascript, maybe another layer to make it easy to output javascript)
+macro-form → repr_js
+*/
+
+/* gee. let's do this again, paying attention to quotation and what λ new and all the other macros get passed.
+ooh. hm. "all the macros" are getting passed things with [line,cell,col] information so that they can output javascript
+'cause the current architecture is "skin over base language"
+
+[1] tokenize. (a simple, consistent tokenization is nice.)
+list of characters → list of tokens
+token: symbol | self-eval | space
+symbol & self-eval: need to know own [line,cell,col]
+
+[2] grouping. (this can be part of the lexer, but it's maybe cleaner for it not to be)
+list of tokens → group
+group: symbol | self-eval | space | list of group
+
+[3] token macros. (this can be part of the lexer, but it's maybe cleaner for it not to be)
+group → macro-form-unop
+macro-form-unop: symbol | self-eval | op-quote | space | list of form-mac-unop
+
+[4] operators. (this is a pretty encompassing type of parsing; most of the work gets done here. We might be able to subsume token macros into this by extending this to more full bnf.)
+macro-form-unop → macro-form
+macro-form: symbol | self-eval | list of macro-form
+
+eeeeep. it all goes wrong here? namely, macro-forms things like [( x y] and now we're passing them to compiler macros.
+
+( x y )   IS A sexp ‹( x y›
+[ x y ]   IS A sexp ‹[ x y›
+{ x : y } IS A sexp ‹{ x : y›
+x + y     IS A sexp ‹+ x y›
+x(y)      IS A sexp ‹‹( y› x›
+
+[5] repr_js. we're done with our current architecture pass, so we cut it short super quickly with a bunch of compiler-macros that output javascript
+macro-form → list of characters
+*/
+
+/*
+[0]   1[2]   3[4:5]   {6:7}   (8)   9(0)   λ{1}   λ(2,3){4}   new 5()   v.v   8ᵥ   ¬9   0+1   2=3≠4   5?6:7   `8   9 + 0   if 1 : 2; else 3;   while 4:5
+---------- tokenize ----------
+␣ `[@20,1,1 `0@20,1,2 `]@20,1,3 ␣ `1@20,1,7 `[@20,1,8 `2@20,1,9 `]@20,1,10 ␣ `3@20,1,14 `[@20,1,15 `4@20,1,16 `:@20,1,17 `5@20,1,18 `]@20,1,19 ␣ `{@20,1,23 `6@20,1,24 `:@20,1,25 `7@20,1,26 `}@20,1,27 ␣ `(@20,1,31 `8@20,1,32 `)@20,1,33 ␣ `9@20,1,37 `(@20,1,38 `0@20,1,39 `)@20,1,40 ␣ `λ@20,1,44 `{@20,1,45 `1@20,1,46 `}@20,1,47 ␣ `λ@20,1,51 `(@20,1,52 `2@20,1,53 `,@20,1,54 `3@20,1,55 `)@20,1,56 `{@20,1,57 `4@20,1,58 `}@20,1,59 ␣ `new@20,1,63 ␣ `5@20,1,67 `(@20,1,68 `)@20,1,69 ␣ `v@20,1,73 `.@20,1,74 `v@20,1,75 ␣ `8@20,1,79 `ᵥ@20,1,80 ␣ `¬@20,1,84 `9@20,1,85 ␣ `0@20,1,89 `+@20,1,90 `1@20,1,91 ␣ `2@20,1,95 `=@20,1,96 `3@20,1,97 `≠@20,1,98 `4@20,1,99 ␣ `5@20,1,103 `?@20,1,104 `6@20,1,105 `:@20,1,106 `7@20,1,107 ␣ ``@20,1,111 `8@20,1,112 ␣ `9@20,1,116 ␣ `+@20,1,118 ␣ `0@20,1,120 ␣ `if@20,1,124 ␣ `1@20,1,127 ␣ `:@20,1,129 ␣ `2@20,1,131 `;@20,1,132 ␣ `else@20,1,134 ␣ `3@20,1,139 `;@20,1,140 ␣ `while@20,1,144 ␣ `4@20,1,150 `:@20,1,151 `5@20,1,152
+---------- grouping ----------
+-------- token macros --------
+---------- operators ---------
+----------- repr_js ----------
+*/
+//===---------------------------===// todo //===---------------------------===//
+
+// keep in mind that the basic idea was always just "write a really nice preprocessor" http://publications.gbdirect.co.uk/c_book/chapter7///how_the_preprocessor_works.html
+
+/* PRECEDENCE_TABLE.TXT notes
+
+[last=void] [next=op]
+
+[last item is full] [next item is left-wall]: recurse back up to whatever is eating many thing in sequence?
+[last item is full] [next item is maybe left-wall]: ??? not sure ???
+[last item is full] [next item is left-eaty]:
+	if its left-priority > our right-priority: recurse to next item
+	elif its left-priority < our right-priority: recurse upwards
+	else: this is that =≠<>≤≥ thingy! or something like it!
+[last item is full] [next item is void]: why marvelous, just let the above level handle this end
+[last item is want] [next item is not-an-op]: eat it
+[last item is want] [next item can be left-wall and have lower priority than us]: recurse to next item!
+[last item is want] [next item is any other op]: error!
+[last item is want] [next item is void]: oh no, you don''t get your satisfaction! but this is still not a problem.
+[last item is void] [next item is left-wall]: marvelous, no problem, just do whatever the thing that is eating things says
+[last item is void] [next item is maybe left-wall]: next item is definitely left-wall
+[last item is void] [next item is left-eaty]: oh my well you don''t get to eat anything then! this is not actually a problem. we can just pass you void/undefined.
+i think we can figure out left-priorities by just going on ahead and recursing to the item. because all of these things are pure! recursing to the item is cheap and stuff.

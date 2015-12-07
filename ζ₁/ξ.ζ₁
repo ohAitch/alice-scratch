@@ -1,0 +1,94 @@
+#!/usr/bin/env ζ₁
+
+‹ξ/do_s
+
+‹ξ/js_var fs ‹require 'fs'››
+‹ξ/js_var path ‹require 'path'››
+‹ξ/js_var _ ‹require 'underscore'››
+
+‹ξ/js_var cat ‹η/fn ‹a b› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof a Array› a ‹ξ/array a›› 'concat'› ‹ξ/js_if_e ‹ξ/js_instanceof b Array› b ‹ξ/array b››››››
+‹ξ/assign ‹ι ‹ι Array 'prototype'› 'v_join'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹ι ‹ι ‹ι Array 'prototype'› 'concat'› 'apply'› ‹ξ/array› ‹‹ι this 'map'› ‹η/fn ‹t› ‹ξ/return ‹‹ι ‹ξ/js_if_e ‹ξ/js_instanceof t Array› t ‹ξ/array t›› 'concat'› ‹ξ/array v›››››› 'slice'› 0 ‹ξ/- 0 1›››››
+‹ξ/assign ‹ι ‹ι String 'prototype'› 'repeat'› ‹η/fn ‹v› ‹ξ/return ‹‹ι ‹‹new Array› ‹η/+ v 1›› 'join'› this››››
+
+// ---------- dup in φ ----------
+‹ξ/js_var seq ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'split'› ''››››
+‹ξ/js_var js_valid_symbol ‹ξ/object ‹is_part ‹η/fn ‹v› ‹ξ/return ‹ξ/js_not ‹ξ/js_not ‹‹ι v 'match'› ~/[ -~ξηφλ≠]/››››››››
+‹ξ/js_var increment_pos ‹η/fn ‹pos s›
+	‹‹ι ‹seq s› 'map'› ‹η/fn ‹v›
+		‹ξ/js_if_s ‹ξ/= v '\n'› ‹ξ/assign pos ‹ξ/array ‹η/+ ‹ι pos 0› 1› 1 1››
+		‹ξ/js_if_s ‹ξ/= v '\t'› ‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹η/+ ‹ι pos 1› 1› 1››
+			‹ξ/assign pos ‹ξ/array ‹ι pos 0› ‹ι pos 1› ‹η/+ ‹ι pos 2› 1›››
+		››
+	››
+	‹ξ/return pos› ››
+
+‹ξ/assign printable ‹η/fn ‹v› ‹ξ/return ‹‹ι js_valid_symbol 'is_part'› v››››
+‹ξ/assign ord ‹η/fn ‹v› ‹ξ/return ‹‹ι v 'charCodeAt'› 0››››
+‹ξ/assign pad_left ‹η/fn ‹v s l› ‹ξ/return ‹η/~ ‹‹ι s 'repeat'› ‹ξ/- l ‹ι v 'length'››› v››››
+‹ξ/assign hex ‹η/fn ‹v l› ‹ξ/return ‹pad_left ‹‹ι v 'toString'› 16› '0' l››››
+
+‹ξ/assign ‹ι ‹ι String 'prototype'› 'repr_js'› ‹η/fn ‹› ‹ξ/js_var v ‹η/~ this ''››
+‹ξ/js_var q ‹ξ/js_if_e ‹ξ/js_not ‹ξ/js_> ‹ι ‹ξ/js_or ‹‹ι v 'match'› ~/'/g› ‹ξ/array›› 'length'› ‹ι ‹ξ/js_or ‹‹ι v 'match'› ~/"/g› ‹ξ/array›› 'length'››› '\'' '"'››
+‹ξ/js_var a ‹ξ/object ‹'\n''\\n'›‹'\t''\\t'›‹'\\''\\\\'››› ‹ξ/assign ‹ι a q› ‹η/~ '\\' q››
+‹ξ/return ‹η/~ ‹η/~ q ‹‹ι ‹‹ι ‹seq v› 'map'› ‹η/fn ‹v› ‹ξ/return ‹ξ/js_or ‹ι a v› ‹ξ/js_if_e ‹printable v› v ‹ξ/js_if_e ‹ξ/js_not ‹ξ/js_> ‹ξ/assign v ‹ord v›› 0xff›› ‹η/~ '\\x' ‹hex v 2›› ‹η/~ '\\u' ‹hex v 4›››››››› 'join'› ''›› q››
+››
+
+‹ξ/js_var repr_js ‹η/fn ‹v› ‹ξ/js_var t 0› ‹ξ/return
+	‹ξ/js_if_e ‹η/typeof_string ‹ι v 's'›› ‹ξ/js_if_e ‹ι v 'pos'› ‹ξ/array ‹ξ/object ‹v ‹ι v 'pos'››› ‹ι v 's'›› ‹ι v 's'››
+	‹ξ/js_if_e ‹η/typeof_string ‹ι v 'v'›› ‹‹ι ‹ι v 'v'› 'repr_js'››
+	‹ξ/js_if_e ‹ξ/≠ ‹ι v 'v'› undefined› ‹η/~ ‹ι v 'v'› ''›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/create_symbol'› ‹cat ‹cat 'ξ_create_symbol(' ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/as_sexp'      › ‹cat ‹cat 'ξ_as_sexp('       ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/isa_symbol'   › ‹cat ‹cat 'ξ_isa_symbol('    ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/isa_sexp'     › ‹cat ‹cat 'ξ_isa_sexp('      ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/object'› ‹cat ‹cat '{' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› ‹η/fn ‹v› ‹ξ/return ‹cat ‹cat ‹repr_js ‹ι v 0›› ':'› ‹repr_js ‹ι v 1›››››› 'v_join'› ','›› '}'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/array'› ‹cat ‹cat '[' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ','›› ']'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/member_bare'› ‹cat ‹cat ‹repr_js ‹ι v 1›› '.'› ‹repr_js ‹ι v 2›››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/member_val'› ‹cat ‹cat ‹cat ‹repr_js ‹ι v 1›› '['› ‹repr_js ‹ι v 2››› ']'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_typeof'› ‹cat 'typeof ' ‹repr_js ‹ι v 1›››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/return'› ‹cat ‹cat 'return(' ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/throw'› ‹cat ‹cat 'throw(' ‹repr_js ‹ι v 1››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_not'› ‹cat '!' ‹repr_js ‹ι v 1›››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_and'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '&&'› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_or'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '||'› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_>'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '>'› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/-'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '-'› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/='› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '==='› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/≠'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '!=='› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/assign'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› ' = '› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/fn'› ‹cat ‹cat ‹cat ‹cat 'function ξ_λ(' ‹‹ι ‹‹ι ‹ι v 1› 'map'› repr_js› 'v_join'› ','›› '){'› ‹repr_js ‹ι v 2››› '}'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/do_s'› ‹cat ‹cat '{' ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ';'›› '}'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_e'› ‹cat ‹cat ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '? '› ‹repr_js ‹ι v 2››› ' : '› ‹repr_js ‹ι v 3››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_if_s'› ‹cat ‹cat ‹cat ‹cat 'if (' ‹repr_js ‹ι v 1››› ') '› ‹ξ/assign t ‹repr_js ‹ι v 2›››› ‹ξ/js_if_e ‹ξ/= ‹ι v 'length'› 3› '' ‹cat ‹η/~ ‹ξ/js_if_e ‹ξ/= ‹ι ‹‹ι ‹ι ‹‹ι t 'slice'› ‹ξ/- 0 1›› 0› 'slice'› ‹ξ/- 0 1›› 0› '}'› '' ';'› ' else '› ‹repr_js ‹ι v 3›››››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_while_s'› ‹cat ‹cat ‹cat 'while (' ‹repr_js ‹ι v 1››› ') '› ‹repr_js ‹ι v 2›››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_var'› ‹cat ‹cat ‹cat 'var ' ‹repr_js ‹ι v 1››› ' = '› ‹repr_js ‹ι v 2›››
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_+'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› '+'› ‹repr_js ‹ι v 2››› ')'›
+	‹ξ/js_if_e ‹ξ/= ‹ι ‹ι v 0› 's'› 'ξ/js_instanceof'› ‹cat ‹cat ‹cat ‹cat '(' ‹repr_js ‹ι v 1››› ' instanceof '› ‹repr_js ‹ι v 2››› ')'›
+		‹cat ‹cat ‹cat ‹repr_js ‹ι v 0›› '('› ‹‹ι ‹‹ι ‹‹ι v 'slice'› 1› 'map'› repr_js› 'v_join'› ','›› ')'›
+	››››››››››››››››››››››››››››››
+›››
+
+‹ξ/js_var pos_positive_diff ‹η/fn ‹a b› ‹ξ/return ‹ξ/js_if_e ‹ξ/= ‹ι a 0› ‹ι b 0›› ‹ξ/js_if_e ‹ξ/= ‹ι a 1› ‹ι b 1›› ‹ξ/js_if_e ‹ξ/= ‹ι a 2› ‹ι b 2›› ‹ξ/array 0 0 0› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 2› ‹ι b 2›› ‹ξ/array 0 0 ‹ξ/- ‹ι a 2› ‹ι b 2››› ‹ξ/array 0 0 0››› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 1› ‹ι b 1›› ‹ξ/array 0 ‹ξ/- ‹ι a 1› ‹ι b 1›› ‹ξ/- ‹ι a 2› 1›› ‹ξ/array 0 0 0››› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 0› ‹ι b 0›› ‹ξ/array ‹ξ/- ‹ι a 0› ‹ι b 0›› ‹ξ/- ‹ι a 1› 1› ‹ξ/- ‹ι a 2› 1›› ‹ξ/array 0 0 0››››››
+
+‹ξ/js_var pos_max ‹η/fn ‹a b› ‹ξ/return ‹ξ/js_if_e ‹ξ/= ‹ι a 0› ‹ι b 0›› ‹ξ/js_if_e ‹ξ/= ‹ι a 1› ‹ι b 1›› ‹ξ/js_if_e ‹ξ/= ‹ι a 2› ‹ι b 2›› a ‹ξ/js_if_e ‹ξ/js_> ‹ι a 2› ‹ι b 2›› a b›› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 1› ‹ι b 1›› a b›› ‹ξ/js_if_e ‹ξ/js_> ‹ι a 0› ‹ι b 0›› a b›››››
+
+‹ξ/js_var expand_pos ‹η/fn ‹v›
+	‹ξ/js_var pos ‹ξ/array 1 1 1››
+	‹ξ/return ‹‹ι ‹‹ι v 'map'› ‹η/fn ‹v›
+		‹ξ/js_if_s ‹η/typeof_string v› ‹ξ/do_s
+			‹ξ/assign pos ‹increment_pos pos v››
+			‹ξ/return v›
+		› ‹ξ/do_s
+			‹ξ/assign v ‹ι v 'v'››
+			‹ξ/js_var t ‹pos_positive_diff v pos››
+			‹ξ/assign pos ‹pos_max v pos››
+			‹ξ/return ‹η/~ ‹η/~ ‹‹ι '\n' 'repeat'› ‹ι t 0›› ‹‹ι '\t' 'repeat'› ‹ι t 1››› ‹‹ι ' ' 'repeat'› ‹ι t 2››››
+		››
+	›› 'join'› ''››
+››
+
+‹ξ/js_var repr_js_file ‹η/fn ‹v› ‹ξ/return ‹expand_pos ‹cat "#!/usr/bin/env node\nvar symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_as_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_as_sexp = function(v){v.__proto__ = sexp_32075946; return v}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}\n" ‹‹ι ‹‹ι v 'map'› repr_js› 'v_join'› ';'››››››
+‹ξ/js_var η_s ‹η/fn ‹in_› ‹ξ/return ‹repr_js_file in_››››
+‹ξ/assign ‹ι module 'exports'› η_s›
+
+›

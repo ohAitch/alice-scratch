@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+var symbol_41286509 = function(){}; symbol_41286509.prototype.symbol_41286509 = true; var sexp_32075946 = []; sexp_32075946.sexp_32075946 = true; ;['concat','slice','filter','map'].map(function(v){sexp_32075946[v] = function(){return ξ_as_sexp(Array.prototype[v].apply(this,arguments))}}); var ξ_create_symbol = function(v){var t = new symbol_41286509(); t.name = v; return t}; var ξ_as_sexp = function(v){v.__proto__ = sexp_32075946; return v}; var ξ_isa_symbol = function(v){return v&&v.symbol_41286509}; var ξ_isa_sexp = function(v){return v&&v.sexp_32075946}
+var 
+
+          fs = require('fs');var 
+          path = require('path');var 
+
+          ξ = require('./ξ');var 
+          η = require('./η');var 
+          φ = require('./φ');if ((
+
+                      process.argv[1]=== __filename)) {var 
+	          in_ =      process.argv.slice(2,(0-1));var 
+	          out =         process.argv.slice((0-1))[0];
+	    in_.map(function ξ_λ(in_){ fs.writeFileSync(((           out+'/')+    path.basename(   in_,'.\u03b6\u2081')),ξ(η(φ(( fs.readFileSync(   in_)+' ')))),{          mode:493})})}

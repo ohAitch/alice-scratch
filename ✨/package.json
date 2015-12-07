@@ -1,0 +1,23 @@
+{
+  "name": "sparkle",
+  "author": "Comely Naiad <comely.naiad@gmail.com>",
+  "description": "a view of javascript",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alice0meta/lang-alpha.git"
+  },
+  "dependencies": {
+    "moment": "^2.8.3",
+    "priorityqueuejs": "^0.2.0",
+    "regenerate": "^0.6.2",
+    "rimraf": "^2.2.8",
+    "rwlock": "^4.0.0",
+    "underscore": "^1.7.0",
+    "unicode-7.0.0": "^0.1.5",
+    "zeta-two": "^0.5.11"
+  },
+  "bin": {
+    "✨": "./index.js"
+  }
+}

@@ -1,0 +1,84 @@
+# i have always wished there was some good way of doing units, like `16 newtons` or `6 meters` (could not super-smart primitive wrappers do the trick?)
+# consider aliasing :: to prototype
+# fat arrow => binds the function to the current value of this #notes-from-coffeescript
+# #don't-forget chained comparisons (e.g. a == b == c)
+# ruby &:symbol is super cute
+# #don't-forget nullsafing
+# #don't-forget destructuring includes `[open, contents..., close] =` and `[first, ..., last] =` and you've even got `{name, age, height} =` and also stuff in function calls like `a.b(c...)` <-> `a.b.apply(a,c)`
+#don't-forget it looks like both alignment and indentation are totally redundant
+# generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
+# concatenation oughta be * but that is hard because reasons. what about ~ ?
+# custom numerical types are awesome. e.g. efficient computation with units, working conveniently with image data in hardware-friendly formats (see: julia)
+# play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
+# #old-version---don't-forget-if-it-has-anything-important "separators. which symbols and where should they be. : separatorless style works very well with atomically-delimited style. but the - general problem is that humans need delimiters? or - that the ways we express ourselves in text trip over each other and need delimiting?"
+# useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
+# the true magic of mathematica is that things are handled with term rewriting whenever possible, and that pattern-matching is very good and very well developed, and that the builtin functions are plentiful and well-designed
+
+------- important but probably not in the scope of ✨ -------
+
+# powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
+pattern matching (ocaml?)
+	what are the patterns that can be matched?
+		are they just json&spreads?
+		this would go quite nicely with algebraic datatypes, wouldn't it
+			wow, javascript is so imperative
+	how can they be matched?
+		is it just ordered-choice?
+			with ordered-choice, there are also "when" clauses to allow arbitrary logic matches
+		also has [a-z]
+	http://en.wikipedia.org/wiki/Perl_6_rules (? http://pegjs.org/ https://github.com/ingydotnet/pegex-js)
+haskell magic
+algebraic datatypes (ocaml?)
+http://elm-lang.org/ http://elm-lang.org/blog/Introducing-Elm-Reactor.elm
+so what *is* up with static typing?
+	* well, it's a type of static annotation so that you can do static analysis
+	* also it's a way of writing programs so that they're extra amenable to static analysis
+	-> but we are guessing that those two things should be replaced with hints and questions
+	* and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
+	-> now that is an interesting idea. but i think we need experience implementing ✨ before we're ready to implement ✨ with this feature.
+
+----- eh - not ready for these yet -----
+
+async: now investigating F# and Haskell! see http://wiki.haskell.org/MonadPlus_reform_proposal http://reddit.com/r/haskell/comments/1q6o2a/the_f_computation_expression_zoo_why_computation/ http://stackoverflow.com/questions/19586825/computation-expressions-for-a-haskell-programmer http://stackoverflow.com/questions/5996239/is-fs-implementation-of-monads-unique-with-respect-to-the-amount-of-keywords-a http://en.wikibooks.org/wiki/F_Sharp_Programming/Computation_Expressions#Monad_Primer http://github.com/visionmedia/co http://tomasp.net/academic/papers/async/async.pdf http://learnyouahaskell.com/functors-applicative-functors-and-monoids#functors-redux http://en.wikibooks.org/wiki/Haskell/Practical_monads http://wiki.haskell.org/How_to_write_a_Haskell_program http://mrob.com/pub/comp/hypercalc/hypercalc-javascript.html . (also, c# await is nice)
+haskell lens
+
+-------- bah. in-list. -------
+
+http://www.cs.utep.edu/cheon/cs3360/pages/haskell-syntax.html
+i want the word "clique" to be a meaningful macro or smth
+copy python-style print sometime: print([object, ...], *, sep=' ', end='\n', file=sys.stdout)
+:keywords slash interned-strings are best enum. but they *need* better typo/wrongness detection (for the sake of fail-fast)
+
+-------------------------- list comprehension syntaxes -------------------------
+
+[for <n> in <c> [while <t>] [if <t>]]
+
+F#
+[for x in collection do ... yield expr]
+
+javascript
+js> [2*x for each (x in [0,1,2,3,4,5,6,7]) if (x*x<5)]
+The sequence of integers can be obtained by prototyping the Number object,
+Number.prototype.__iterator__=function(){for (var i=0; i<this; i++) yield i}
+var s = [2*x for (x in 100) if (x*x<5)]
+
+Perl 6
+my @s = ($_ * 2 if $_ ** 2 > 3 for ^100);
+my @s = gather { for ^100 { take 2 * $_ if $_ ** 2 > 3 } };
+
+<unsure>
+0..100 | Where {$_ * $_ -gt 3} | ForEach {$_ * 2}
+var s = from x in Enumerable.Range(0, 100) where x*x > 3 select x*2;
+
+python
+S = [2 * x for x in range(101) if x ** 2 > 3]
+>>> s = {v for v in 'ABCDABCD' if v not in 'CB'}
+>>> s = {key: val for key, val in enumerate('ABCD') if val not in 'CB'}
+
+scala
+val s = for (x <- Stream.from(0) if x*x > 3) yield 2*x
+
+Monad comprehension: In Haskell, a monad comprehension is a generalization of the list comprehension to other monads in functional programming.
+
+do have zip function . else, list comprehensions are sadder
+tho in clojure map autozips, kinda?

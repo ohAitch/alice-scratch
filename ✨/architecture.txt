@@ -1,0 +1,56 @@
+it's no longer clear which next piece to build. maybe try architecting this deliberately, now that we've tried building a prototype?
+
+maybe try json? json is way simpler than js and might make this easier
+
+--------------------------------------------------------------------------------
+
+// Underscore.js 1.8.2
+// (modified for testing purposes)
+"string"; "string //";
+["magic", 7]
+var xmq = "power";
+;(function() {
+  // Establish the root object, `window` in the browser, or `exports` on the server.
+  var root = this;
+})()
+
+--------------------------------------------------------------------------------
+
+"careful" is not the right concept. we're really interested in "components" - escapes are a component of strings; values are a component of arrays.
+
+thinking about this more, it might be good to take a substantial source file including enough interesting things to be an interesting program on its own, and then go through it and figure out which questions i should be asked and what i should say, and then take that result as (mostly-?) fixed and try to engineer a system that will do it.
+
+------------------------------
+
+language parsing for eighty-twentiers
+
+have the parser ask you how to parse things
+answer the parser's questions
+every so often it'll be all "how do i parse this", which is entirely fine.
+if you give it bad answers hopefully it will have some way of not going crazy
+the goal would be to err on the side of giving it limited answers and having it cope with that.
+- wait, that doesn't work super well
+
+is this a string?
+⋈ yes
+delimited by " on both sides?
+⋈ yes
+-> may silently misparse things and never notice confusion
+
+any escape characters other than \ ?
+⋈ nope
+how do i treat whitespace?
+
+--------------------------------- json grammar ---------------------------------
+this is probably not useful :(
+
+value
+	string
+	/-?⟨\d|[1-9]\d+⟩/ /\.\d+/? /[eE][-+]?\d+/?
+	/{/ ⟨ string /:/ value ⟨ /,/ string /:/ value ⟩* ⟩? /}/
+	/[/ ⟨ value ⟨ /,/ value ⟩* ⟩? /]/
+	/true/
+	/false/
+	/null/
+string
+	" /\\"|\\\\|\\\/|\\b|\\f|\\n|\\r|\\t|\\u[0-9a-fA-F]{4}|[^"\\⟨control character⟩]/* "
