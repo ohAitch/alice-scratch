@@ -36,11 +36,14 @@ login ← λ(cb){
 	}
 
 player_bufs←;
+quiet_skipping ← true
 
 ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pairs(), λ(t,cb){i ← parseInt(t[0]); tr ← t[1]; ensure_track_cached(spotify,tr,ι.name,i,cb)}, cb)}
 ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
-	is_local ← ι.link.match(/^spotify:local/) // testing
-	if (ι.availability !== 1) {cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
+	prettyname ← '\x1b[32m'+p_name+'\x1b[33m'+(p_i+'').replace(/./g,λ('₀₁₂₃₄₅₆₇₈₉'))+'\x1b[39m'
+	if (ι.availability !== 1) {
+		!quiet_skipping && !/^spotify:local/.λ(ι.link) && print('[spotify dl] skipping '+prettyname)
+		cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
 	ι.album.browse(λ(e,t){
 		metadata ← {
 			artist: ι.artists._.map('name').map(λ(ι){↩ ι.replace(/, +/g,',')}).join(', '),
@@ -51,14 +54,15 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 			}
 		out ← arg.cache_dir+'/'+mp3_info_to_basename(metadata)+'.mp3'
 		if (fs(out).exists()) {cb&&cb.in(); ↩}
+		quiet_skipping = false
 		player_bufs = []
 		spotify.player.play(ι)
 		q ← (λ(){
-			process.stdout.write('\x0d[spotify dl] '+rc(p_name).replace(/'/g,'')+'\x1b[33m'+(p_i+'').replace(/./g,λ('₀₁₂₃₄₅₆₇₈₉'))+'\x1b[39m @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
+			process.stdout.write('\x0d[spotify dl] '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
 			spotify.player.resume()
 			}).every(0.1)
 		spotify.player.on({endOfTrack: λ(){(λ(){
-			clearInterval(q); print()
+			clearInterval(q); print('\x0d[spotify dl] '+prettyname+' \x1b[31;1m✓\x1b[0m            ')
 			data ← Buffer.concat(player_bufs); player_bufs = null
 			t ← new lame.Encoder({channels:2, bitDepth:16, sampleRate:44100, bitRate:256, outSampleRate:22050, mode:lame.STEREO})
 			t.end(data)
