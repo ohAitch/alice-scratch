@@ -5,7 +5,7 @@
   "version": "0.7.81",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alice0meta/lang-alpha.git"
+    "url": "https://github.com/alice0meta/scratch.git"
   },
   "dependencies": {
     "moment": "^2.8.3",
