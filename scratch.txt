@@ -30,7 +30,16 @@ $ = jQuery; copy($('#articles section > .row-fluid').toArray().map(function(v){
 		}).join('\n'))
 
 ------------------------------------ git ops -----------------------------------
-next time we merge git repos, let us document the steps here
+------------ merge -----------
+to_path=~/ali/github/scratch
+from='lang-alpha'
+from_url='git@github.com:alice0meta/lang-alpha.git'
+
+cd "$to_path"
+git remote add "$from" "$from_url"
+git fetch "$from"
+git merge "$from/master"
+git remote remove "$from"
 
 ----- split out subfolder ----
 

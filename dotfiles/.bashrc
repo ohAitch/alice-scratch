@@ -18,7 +18,7 @@ __rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then exp "$1"; 
 64e(){ base64; }
 64d(){ base64 -D; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then echo 'r = view.substr(view.full_line(sublime.Region(0,view.size())))' | curl -s -X PUT 127.0.0.1:34289 --data-binary @- | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then printf 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/sublime_external_command; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 opencp(){ sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
 killcp(){ sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
 f(){ open -a 'Path Finder' "${1:-.}"; osascript -e 'tell app "path finder" to activate'; }
