@@ -26,8 +26,8 @@ is_obj ← λ(v,template){t←;
 	↩ template === ANY || (
 	typeof(template)!=='object'? v === template :
 		_.isEqual(_.keys(t=_(v).omit()).sort(), _.keys(template).sort()) &&
-		_.pairs(t).every(λ(t){k←t[0];v←t[1]; ↩ is_obj(v,template[k])}) ) }
-assert_obj ← λ(v,template){if (!is_obj(v,template)) EDGE(v)}
+		_.pairs(t).every(([k,v]) => is_obj(v,template[k])) ) }
+assert_obj ← λ(v,template){is_obj(v,template) || EDGE(v)}
 partition ← λ(n,v){t←[]; for (i←0;i<v.length;i+=n) t.push(_.range(n).map(λ(t){↩ v[i+t]})); ↩ t}
 
 sublime_open ← λ(v){child_process.exec('"'+'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'+'" "'+v+'"')}

@@ -1,6 +1,6 @@
 ζ_compile_file ← λ(ι){
 	t ← ι.match(/^(#!.*\n)?([\s\S]*)$/)
-	↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?!\S)/,'#!/usr/bin/env node --harmony')+
+	↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?!\S)/,fs('bootstrap.js').$.match(/^.*/)[0])+
 		'require("zeta-lang")(global); require = _require_lazy(require)'+
 		ζ_compile(t[2]) }
 evalζ ← λ(ι){global.code = ι; global.require_ = _require_lazy(require); ↩ (0,eval)(ζ_compile('require ← require_;'+ι))}

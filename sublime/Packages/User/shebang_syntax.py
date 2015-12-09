@@ -17,11 +17,12 @@ def detect_syntax(view):
 		else: ι = os.path.splitext(view.file_name())[1]
 	return data[ι] if ι in data else view.settings().get('syntax')
 
-def t(view):
-	ι = detect_syntax(view)
-	if view.settings().get('syntax') != ι: view.set_syntax_file(ι)
-	print('[fyi] syntax:',ι)
-
+def t(view): t = detect_syntax(view); t == view.settings().get('syntax') or view.set_syntax_file(t)
 class _(sublime_plugin.EventListener):
 	def on_load(self, view): t(view)
 	def on_post_save(self, view): t(view)
+
+class get_syntax(sublime_plugin.TextCommand):
+	def run(self,edit):
+		view = self.view
+		print('[fyi] syntax:',view.settings().get('syntax'))

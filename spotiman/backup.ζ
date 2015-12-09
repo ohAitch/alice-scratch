@@ -1,5 +1,6 @@
-#!/usr/bin/env ζ
-node_spotify ← require('node-spotify','0.7.0')
+#!/usr/bin/env /Users/ali/ali/github/scratch/spotiman/spotify-dl/node --harmony /Users/ali/ali/github/scratch/spotiman/spotify-dl/node_modules/zeta-lang/bootstrap.js
+
+node_spotify ← require('./spotify-dl/node_modules/node-spotify')
 
 // ----------------------------------- aux ---------------------------------- //
 

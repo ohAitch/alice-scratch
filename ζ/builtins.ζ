@@ -1,12 +1,57 @@
+// todo:
+// http://es6-features.org/#BlockScopedVariables
+// http://es6-features.org/#ExpressionBodies & http://es6-features.org/#StatementBodies
+// http://es6-features.org/#DefaultParameterValues
+// http://es6-features.org/#RestParameter
+// http://es6-features.org/#SpreadOperator
+// http://es6-features.org/#StringInterpolation
+// http://es6-features.org/#CustomInterpolation
+// http://es6-features.org/#RawStringAccess
+// http://es6-features.org/#UnicodeStringRegExpLiteral
+// http://es6-features.org/#RegularExpressionStickyMatching
+// http://es6-features.org/#PropertyShorthand
+// http://es6-features.org/#ComputedPropertyNames
+// http://es6-features.org/#MethodProperties
+// http://es6-features.org/#ArrayMatching
+// http://es6-features.org/#ObjectMatchingShorthandNotation
+// http://es6-features.org/#ObjectMatchingDeepMatching
+// http://es6-features.org/#ParameterContextMatching
+// http://es6-features.org/#FailSoftDestructuring
+// http://es6-features.org/#ClassDefinition
+// http://es6-features.org/#ClassInheritance
+// http://es6-features.org/#ClassInheritanceFromExpressions
+// http://es6-features.org/#BaseClassAccess
+// http://es6-features.org/#StaticMembers
+// http://es6-features.org/#GetterSetter
+// http://es6-features.org/#SymbolType
+// http://es6-features.org/#GlobalSymbols
+// http://es6-features.org/#IteratorForOfOperator
+// http://es6-features.org/#GeneratorFunctionIteratorProtocol
+// http://es6-features.org/#GeneratorFunctionDirectUse
+// http://es6-features.org/#GeneratorMatching
+// http://es6-features.org/#GeneratorControlFlow
+// http://es6-features.org/#SetDataStructure
+// http://es6-features.org/#MapDataStructure
+// http://es6-features.org/#WeakLinkDataStructures
+// http://es6-features.org/#TypedArrays
+// http://es6-features.org/#ObjectPropertyAssignment
+// http://es6-features.org/#ArrayElementFinding
+// http://es6-features.org/#StringRepeating
+// http://es6-features.org/#StringSearching
+// http://es6-features.org/#PromiseUsage
+// http://es6-features.org/#PromiseCombination
+// http://es6-features.org/#Proxying
+// http://es6-features.org/#Reflection
+
 // Algebraic JavaScript Specification https://github.com/fantasyland/fantasy-land is cute and might be relevant to further builtin design
 // todo: module.exports seems to be calling itself twice on things and this is bad
 
 E ← {} // exports
 ˡ ← {} // local
 patches ← []
-P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ(t){name ← t[0]; ι ← t[1]
+P ← λ(ι){(_.isArray(ι)? ι : _(ι).pairs()).forEach(λ([name,ι]){
 	name = name.split('.'); last ← name.pop()
-	r ← λ(G){t ← name.reduce(λ(r,ι){↩ r[ι]},G); typeof(ι)==='function'? ((ι.name && (ι.super = t[last])), t[last] = ι) : def(t,last,ι)}
+	r ← λ(G){t ← name.reduce((r,ι) => r[ι], G); typeof(ι)==='function'? ((ι.name && (ι.super = t[last])), t[last] = ι) : def(t,last,ι)}
 	r(global); patches.push(r)
 	})}
 
@@ -34,7 +79,6 @@ E._require_lazy = λ(require){↩ λ Λ(ι,version){
 			print('[lazy require] done')
 			↩ require(cache+'/node_modules/'+ι)} }
 	}}
-Array.from? console.warn('Array.from polyfill is not needed') : (Array.from = λ(ι){r ← []; while (t = ι.next(), !t.done) r.push(t.value); ↩ r})
 ;(λ(){
 write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? ι : util.inspect(ι,{depth:null}))}
 def_pipeable(E,'p',λ(ι){↩ arguments.length === 0? execᵥ('pbpaste') : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)})
@@ -43,7 +87,7 @@ def_pipeable(E,'sb',λ(ι){↩ arguments.length === 0? sublimeᵥ('view.substr(s
 E.A = λ(ι){↩ Array.prototype.slice.call(ι)}
 E.print = λ(){a ← A(arguments); process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n'); ↩ a[-1]}
 _(E).extend(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).extend({ln:E.log, ln2:E.log2, ln10:E.log10})
-E.multiline = λ(ι){ι = ι.toString().split('\n').slice(1,-1); t ← _.min(ι.map(λ(ι){↩ ι.match(/^\t*/)[0].length})); ι = ι.map(λ(ι){↩ ι.slice(t)}); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
+E.multiline = λ(ι){ι = ι.toString().split('\n').slice(1,-1); t ← _.min(ι.map(ι => ι.match(/^\t*/)[0].length)); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
 def_lazy(E,'moment',λ(){
 	_moment ← require('moment')
 	moment ← λ(ι){↩ typeof(ι)==='number' && arguments.length===1? _moment(ι*1000) : _moment.apply(@,arguments)}
@@ -53,10 +97,10 @@ def_lazy(E,'moment',λ(){
 	moment.fn.inspect = λ(depth,opts){t ← @.toString(); ↩ true/*opts.colors*/? '\x1b[35m'+t+'\x1b[39m' : t}
 	↩ moment})
 E.λ = λ(ι){r ← λ(m){↩ ι[m]}; r.ι = ι; ↩ r}
-P({ 'String.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}                                         ; r.ι = @; ↩ r}} })
-P({ 'Number.prototype.λ':{get:λ(){m←@; r ← λ(ι){↩ ι[m]}                                         ; r.ι = @; ↩ r}} })
-P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
-P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← λ(ι){↩ ι === undefined || ι === null? ι : ι.match(θ)}; r.ι = @; ↩ r}} })
+P({ 'String.prototype.λ':{get:λ(){m←@; r ← ι => ι[m]                                         ; r.ι = @; ↩ r}} })
+P({ 'Number.prototype.λ':{get:λ(){m←@; r ← ι => ι[m]                                         ; r.ι = @; ↩ r}} })
+P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
+P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
 E.ζ_compile = ζ_compile
 E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)|\.__special_pipe\(\),/g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','.__special_pipe(),':'⟩'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
 E.ζ_repl_start = λ(opts){
@@ -122,21 +166,21 @@ P({
 'Array.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
 'String.prototype.repeat':λ(x){↩ x<=0? '' : Array(x+1).join(@)},
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : _.range(0,x).map(_.constant(@))._.flatten(true)},
-'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
+// 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 'String.prototype._':{get:λ(){↩ _(@)}},
-'Array.prototype._':{get:λ(){↩ _(@)}},
+'Array.prototype._': {get:λ(){↩ _(@)}},
 // 'String.prototype.::-1':{get:λ(){↩ (@+'').split('').reverse().join('')}},
 // 'Array.prototype.::-1':{get:λ(){↩ @._.clone().reverse()}},
 'Buffer.prototype.partition':λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r},
-'Array.prototype.partition':λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r},
+'Array.prototype.partition': λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r},
 'String.prototype.partition':λ(len){r←[]; for(i←0;i<@.length;i+=len) r.push(@.slice(i,i+len)); ↩ r},
-'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
+// 'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 'RegExp.prototype.genex_0':λ(){
 	parse ← λ(ι){
 		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:ι.slice(1,-1).replace().split('')} : ι})}
 		w ← λ(ι){if (!_.isArray(ι)) ↩ ι; t←; r ← []; while ((t=_.indexOf(ι,'|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
 		↩ w(q(ι))}
-	q ← λ(ι){↩ ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce(λ(a,b){↩ a.mapcat(λ(a){↩ b.map(λ(b){↩ a+b})})},['']) : [ι]}
+	q ← ι => ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b) => a.mapcat(a => b.map(b => a+b)),['']) : [ι]
 	↩ q(parse(@.source)) },
 'Function.prototype.in':λ(time){↩ !time || time <= 0? setImmediate(@) : setTimeout(@,time*1000)},
 'Function.prototype.every':λ(time){↩ setInterval(@,time*1000)},
@@ -148,6 +192,7 @@ P({
 		t←; λs.size() === 0? (P = false) : !(λs.peek().time < now())? poll.in(0.1) : (t=λs.deq(), t.canceled || t.ι.in(), λ()); R&&R()
 		}) })() } })}
 	↩ λ(time){t ← {time:time, ι:@}; ↩ time < now()? (t.ι.in(), {clear:λ(){}}) : (enq(t), {clear:λ(){t.canceled = true}})} }),
+'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})},
 'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})},
 })
 P(/(Array|String|Buffer).prototype.-[01234]/.genex_0().map(λ(ι){i ← parseInt(ι[ι.length-1]); ↩ [ι, {get:λ(){↩ @.length<i? undefined : @[@.length-i]}, set:λ(ι){↩ @.length<i? ι : (@[@.length-i] = ι)}}]}))
@@ -183,12 +228,12 @@ def_lazy(ˡ,'Path',λ(){
 		WALK ← λ*(t,mode){
 			switch (mode) {
 				default: throw '↯'
-				break; case '>': yield* seq(fs.readdirSync(t).map(λ(ι){↩ t+'/'+ι}))
+				break; case '>': yield* seq(fs.readdirSync(t).map(ι => t+'/'+ι))
 				break; case '*':
 					root ← t+'/'
 					//! bad - should use directed Dijkstra's from all roots with edge length equal to the number of files in a dir
 					// sample impl:
-						// all ← λ(ι){try {↩ fs.readdirSync(ι).map(λ(t){↩ ι+'/'+t}) } catch (e) {↩ []}}
+						// all ← λ(ι){try {↩ fs.readdirSync(ι).map(t => ι+'/'+t) } catch (e) {↩ []}}
 						// root ← '.'
 						// dist ← {}; dist[root] = 0
 						// next ← [root] // should be pqueue
@@ -209,7 +254,7 @@ def_lazy(ˡ,'Path',λ(){
 		ERR ← λ(){throw Error('[ζ] selector is not supported: '+sel)}
 
 		sel_a ← (' '+sel).replace(/(^|[^>* ])( +(?![>* ]))/g,'$1 * ').trim().split(/ +/)
-		if (!sel_a.every(λ(ι){↩ ι.match(/^>|\*|\.\S+|#\S+$/)})) ERR()
+		if (!sel_a.every(ι => ι.match(/^>|\*|\.\S+|#\S+$/))) ERR()
 		//! should be: if (!sel_a.every(λ(ι){↩ ι.match(/^(>|\*|\.\S+|#\S+)$/)})) ERR()
 
 		r ← seq([@.path_])
@@ -245,7 +290,7 @@ require.extensions['.ζ'] = λ(module,ι){module._compile(ζ_compile(fs.readFile
 // ---- things that are more “dotfile” or “library of their own” than “ζ” --- //
 E.email = λ(){
 	sb().split(/\n{3,}/g).map(λ(ι){t ← ι.split('\n'); ↩ ('mailto:'+t[0]+'?subject='+t[1]+'&body='+t.slice(2).join('\n')).replace(/\n/g,'%0A')})
-		.map(λ(ι){osa('tell app "chrome" to open location '+osa_encode(ι))})
+		.map(ι => osa('tell app "chrome" to open location '+osa_encode(ι)))
 	osa('tell app "chrome" to activate') }
 E.nice_url = λ(ι){t←;
 	if (t=/^"(.*)"$/.λ(ι)) ↩ '“'+t[1]+'”' //! bad hack
@@ -284,7 +329,7 @@ E.nice_url = λ(ι){t←;
 	\b(http://)facebook(\.com/)         $1fb$2
 	\b(http://fb\.com/[\w.]+)([?&]fref=\w+)?([?&]hc_location=[\w_]+)?     $1
 	\b(http://fb\.com/\S*)[?&]_rdr      $1
-	*/}).split(/\n/g).map(λ(t){t = t.split(/  +/g); a ← RegExp(t[0]); b ← t[1]; ι = ι.replace(a,b)})
+	*/}).split(/\n/g).map(λ(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
 	↩ ι}
 // sublimeᵥ('window.focus_view(window.views()[-1])')
 // T ← 10; i←0; (λ(){sublimeᵥ('view.insert(edit,view.sel()[0].begin(),"\\n")')}).every(T)
@@ -313,9 +358,9 @@ E.nice_url = λ(ι){t←;
 
 // ----------------------------------- end ---------------------------------- //
 E.ζtoken = {}
-λ prop_extend(from,to){Object.getOwnPropertyNames(from).forEach(λ(ι){Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι))})}
+prop_extend ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι => Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι)))}
 prop_extend(E,global)
-module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.forEach(λ(ι){ι(to)}))}
+module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_extend(E,to), patches.forEach(ι => ι(to)))}
 
 // -------------------------------- discarded ------------------------------- //
 // String.prototype.replace_all = λ(find,replace){↩ @.replace(RegExp(regex_encode(find),'g'),replace)}

@@ -89,6 +89,7 @@ login(λ(e,spotify){
 
 // the only thing we know about that might have made it work instead of not working is `xcode-select --install`
 
+// these are all outdated for node v5, of course
 // ffi ← require('ffi','2.0.0')
 // ref ← require('ref','1.3.1')
 // ref_struct ← require('ref-struct','1.0.2')
