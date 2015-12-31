@@ -1,13 +1,12 @@
-// @match       *://*.youtube.com/*
-// @match       *://*.vimeo.com/*
+// @match       *://*/*
 
-var get_video = function(){
-	var t = document.getElementsByTagName('video')
-	if (t.length === 0) console.error('no videos')
-	if (t.length > 1) console.warn('too many videos: '+t.length)
-	return t[0] }
+var get_viaudeo = ()=>{
+	var vs = document.getElementsByTagName('video'); var as = document.getElementsByTagName('audio')
+	if (vs.length + as.length === 0) console.warn('no (vi|au)dios')
+	if (!(vs.length === 1 || (vs.length === 0 && as.length === 1))) console.warn('too many (vi|au)dios: '+vs.length+', '+as.length)
+	return vs[0] || as[0] }
 
-Object.defineProperty(window,'rate',{
-	get: function(){return get_video().playbackRate},
-	set: function(ι){get_video().playbackRate = ι},
+Object.getOwnPropertyDescriptor(window,'rate') === undefined && Object.defineProperty(window,'rate',{configurable:true,
+	get: () => get_viaudeo().playbackRate,
+	set: ι => {get_viaudeo().playbackRate = ι},
 	})
