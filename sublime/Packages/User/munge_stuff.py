@@ -16,11 +16,8 @@ import os, subprocess, re, urllib, json
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
 
-costs = {}
-
 def ζ(cmd,ι,stdin=None):
-	costs['ζ'] = costs['ζ']+1 if 'ζ' in costs else 1
-	args = ['/usr/bin/env','/usr/local/bin/node','--harmony','/usr/local/bin/ζ',cmd,ι]
+	args = ['/usr/local/bin/ζ',cmd,ι]
 	if stdin:
 		t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		t = t.communicate(bytes(stdin,'UTF-8'))
@@ -51,7 +48,7 @@ def expand_empty_regions_to_lines(view,regions): return merge_overlapping_region
 def expand_empty_region_to_whole_buffer(view,regions): return [sublime.Region(0,view.size())] if len(view.sel()) == 1 and view.sel()[0].empty() else view.sel()
 
 def open(ι,app=None,focus=True,view=None):
-	print("#OPEN",ι)
+	print("#OPEN",ι,'∈',app)
 	if not focus: subprocess.call(['bash','-ci','ack'])
 
 	if app is None and re.match(r'^file:',ι):
@@ -69,19 +66,21 @@ def open(ι,app=None,focus=True,view=None):
 		else: app = "Sublime Text"
 
 	if app is "Terminal":
-		dir,base = [ι,None] if os.path.isdir(ι) else [os.path.dirname(ι), os.path.basename(ι)]
-		t = "cd "+sh_encode(dir)+"; clear"
-		if base: t += "; set -- "+sh_encode(base)+'; ({ sleep 0.01; printf "\\b${green}/${purple}"'+sh_encode(base)+'" ${reset}"; } &)'
-		os.system("osascript -e "+sh_encode('tell app "terminal" to do script '+osa_encode(t)))
+		subprocess.Popen(['bash','-ci','ack'])
+		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
+		var [dir,base] = fs(ι).exists() && fs(ι).dir()? [ι] : [fs(ι).parent(), path.basename(ι)]
+		unbusy ← _.zip(...osaᵥ('tell app "terminal" to {name,id} of (windows whose busy = false)')).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]})[1]
+		fs('/tmp/__·').$ = 'cd '+sh_encode(dir)+(!unbusy? '; clear' : '')+(base? '; set -- '+sh_encode(base)+'; ({ sleep 0.01; printf "\\033[1G\\033[2K\\033[F\\033[2K${green}$(this)/${purple}$1 ${reset}"; } &)' : '')
+		osa('tell app "terminal" \\n do script "·"'+(unbusy? ' in (window 1 whose id = '+osa_encode(unbusy)+')' : '')+'\\n'+(focus?'activate \\n':'')+'end tell')
+		""")
 	else:
 		subprocess.call([ι for ι in ["open", app and "-a", app, not focus and "-g", ι] if ι])
-	if focus and app in ["Path Finder","Terminal"]: os.system("osascript -e 'tell app "+osa_encode(app)+" to activate'") # workaround for bugs in those apps
+	if focus and app in ["Path Finder"]: os.system("osascript -e 'tell app "+osa_encode(app)+" to activate'") # workaround for bugs in those apps
 
 def omnibox(ι): return ι if re.match(IS_URL,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8")) # +"&btnI=I"
 
 class open_context(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,mouse=False):
-		global costs; costs = {}
 		view = self.view
 		if type == "github":
 			t = ζ('-e',"""
@@ -103,7 +102,6 @@ class open_context(sublime_plugin.TextCommand):
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
 			if mouse and len(ι): view.sel().clear(); view.sel().add(sublime.Region(ι[0].end(),ι[0].end())) # workaround for a bug
 			for ι in ι: open(omnibox(view.substr(ι)),focus=focus,view=view)
-		if len(costs.keys()): print('costs:',costs)
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
@@ -138,7 +136,10 @@ class nice_url(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		sel = expand_empty_regions_to_urls_or_lines(view, view.sel())
-		for region in sel:
-			ι = view.substr(region)
+		for reg in [ι for ι in sel][::-1]:
+			ι = view.substr(reg)
 			t = ζ('-p','nice_url(ι)',ι)
-			if t is not ι: view.replace(edit, region, t)
+			if t is not ι: view.replace(edit, reg, t)
+
+class _(sublime_plugin.EventListener):
+	def on_post_save(self,view): view.substr(sublime.Region(0,2)) == '#!' and subprocess.Popen(['chmod','+x',view.file_name()])

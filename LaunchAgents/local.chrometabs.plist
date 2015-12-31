@@ -6,6 +6,8 @@
 	<false/>
 	<key>EnableGlobbing</key>
 	<false/>
+	<key>ExitTimeOut</key>
+	<integer>600</integer>
 	<key>Label</key>
 	<string>local.chrometabs</string>
 	<key>ProgramArguments</key>

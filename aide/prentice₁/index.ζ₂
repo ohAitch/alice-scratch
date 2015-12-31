@@ -34,7 +34,7 @@ rigid_interface ← (λ(){
 		preview:null,
 		}
 
-	print ← λ(){a ← A(arguments); stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+Δ.line); pos_set()}
+	print ← λ(…a){stdout('[0G[2K'+(a.length <= 1 && a[0] == null? '' : sprint(a)+'\n')+PROMPT+Δ.line); pos_set()}
 	preview ← λ(ι){
 		if (ι === null) t ← null
 		else if (height(ι) > 20) {t ← ι.split('\n'); r ← []; while (height(r.join('\n')) <= 20) r.push(t.pop()); r.pop(); t ← PREVIEW_MORE_PROMPT+'\n'+r.reverse().join('\n')}
@@ -62,10 +62,10 @@ rigid_interface ← (λ(){
 	show ← λ(){print(Δ.preview)}
 	hide ← λ(){stdout(Δ.preview === null? '[0G[2K' : '['+(height(Δ.preview)+height(PROMPT+Δ.line)-1)+'A[0G[J')}
 	start ← λ(){
-		t ← fs(DATA_FILE).$; t && _.extend(Δ, _(JSON.parse(t)).pick(_.keys(Δ)))
+		t ← fs(DATA_FILE).$; t && _(Δ).assign(_(JSON.parse(t)).pick(_.keys(Δ)))
 		process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(Δ,null,'  ')})
 		show(); diy_stdin(on_key) }
-	↩ {start:start, print:print, preview:preview} })()
+	↩ {start,print,preview} })()
 
 // -------------------------------------------------------------------------- //
 
@@ -163,7 +163,7 @@ we could go through the process of _, with an eye for paul's model https://mediu
 // 	}
 // }
 
-// global.primitive = {eval: λ(ι){eval(ι)}, print: print}
+// global.primitive = {eval: λ(ι){eval(ι)}, print}
 // do_command_ ← λ(ι){t←;
 // 	if ((t=ι.match(/^(\S+) ?([\s\S]*)/)) && primitive[t[1]]) primitive[t[1]](t[2])
 // 	else predict_sequence(ι).map(do_command_)

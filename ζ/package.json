@@ -2,19 +2,20 @@
   "name": "zeta-lang",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "description": "js plus batteries",
-  "version": "0.8.9",
+  "version": "0.8.209",
   "repository": {
     "type": "git",
     "url": "https://github.com/alice0meta/scratch.git"
   },
   "dependencies": {
-    "moment": "^2.8.3",
-    "priorityqueuejs": "^0.2.0",
-    "rwlock": "^4.0.0",
-    "underscore": "^1.7.0"
+    "harmony-reflect": "^1.4.2",
+    "moment": "^2.10.6",
+    "priorityqueuejs": "^1.0.0",
+    "underscore": "^1.8.3",
+    "urijs": "^1.17.0"
   },
-  "main": "./bootstrap.js",
+  "main": "./index.sh",
   "bin": {
-    "ζ": "./bootstrap.js"
+    "ζ": "./index.sh"
   }
 }

@@ -14,7 +14,7 @@ $('#newsletter-ad').parent().remove()
 if (location.host === 'stackexchange.com') {
 	$('#question-list > :not([data-sid^="math."])'/*:not([href^="physics."])'*/).remove()
 } else if (!(location.host === 'math.stackexchange.com' /*|| location.host === 'physics.stackexchange.com'*/)) {
-	if (location.pathname === '/' || location.pathname === '/questions' || location.pathname === '/unanswered') {
+	if (location.pathname in {'/':0, '/questions':0, '/unanswered':0}) {
 		$('#mainbar').remove()
 	} else {
 		$('#sidebar > .sidebar-linked').remove()

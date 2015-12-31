@@ -6,11 +6,11 @@ node_spotify ← require('./spotify-dl/node_modules/node-spotify')
 
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
 is_playlist ← λ(v){↩ v.type === undefined || v.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
-Native ← λ(v,body){@.native = v; _(@).extend(body)}
+Native ← λ(v,body){@.native = v; _(@).assign(body)}
 	Object.defineProperty(Native.prototype,'toJSON',{configurable:true, enumerable:false, value:λ(){↩ _(@).omit('native')} })
 	magic_native ← {inspect:λ(x,opts){t ← '<native>'; ↩ true/*opts.colors*/? '\x1b[36m'+t+'\x1b[39m' : t}}
 	Object.defineProperty(Native.prototype,'inspect',{configurable:true, enumerable:false, value:
-		λ(){↩ util.inspect((@⟩_.clone()⟩_.extend({native: magic_native})), {colors:true})}
+		λ(){↩ util.inspect(_(_(@).clone()).assign({native: magic_native}), {colors:true})}
 		})
 now ← λ(){↩ Date.now() / 1000}
 
@@ -18,15 +18,14 @@ now ← λ(){↩ Date.now() / 1000}
 
 getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
-		login ← λ(cb){
-			console.error('[spotiman] logging on ...')
+		login ← λ(cb){t←;
+			print('[spotiman] logging on ...')
 			spotify ← node_spotify({appkeyFile:process.env.HOME+'/.auth/spotify_appkey.key', settingsFolder:process.env.HOME+'/.libspotify_cache', cacheFolder:process.env.HOME+'/.libspotify_cache'})
-			global.spotify = spotify
 			spotify.on({ready:λ(e){cb(e,spotify)}})
-			auth ← JSON.parse(fs('~/.auth/spotify').$); spotify.login(auth.username, auth.password)
+			spotify.login((t=JSON.parse(fs('~/.auth/spotify').$),t.username),t.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
-			console.error('[spotiman] polling for loading ...')
+			print('[spotiman] loading playlists ...')
 			t ← spotify.playlistContainer.getPlaylists()
 			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
 				t = t.filter(is_playlist).mapcat(λ(v){↩ v.getTracks()})
@@ -50,7 +49,6 @@ getDatabaseoid ← λ(cb){
 		↩ v }
 
 	loginAndWaitForAllLoaded(λ(e,spotify){
-		console.error('[spotiman] massaging data ...')
 		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
 		d ← (t._.countBy('name')⟩_.pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]}))
 		if (d.length) print('[spotiman] oh no! duplicate tags!',d)
@@ -62,23 +60,11 @@ getDatabaseoid ← λ(cb){
 
 // ---------------------------------- main ---------------------------------- //
 
-// switch (process.argv[2]) {
-// default: print('invalid args:',process.argv)
-// break; case undefined:
-// time ← now()
-// getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
-// 	print('[spotiman] loaded db in',round((now() - time)*100)/100+'s')
-
-// 	global.tags = tags; global.tracks = tracks; ζ_repl_start()
-
-// 	// spotify.logout(λ(){rimraf('cache'); rimraf('settings'); exit maybe}) // will log you out
-// })
-// break; case 'backup': // terrible name, really
 getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
 	fs('~/ali/history/auto/spotify/'+moment().toString()+'.json').$ = JSON.stringify(tracks,null,'\t')
+	print('[spotiman] done.')
 	process.exit() //! augh
 	})
-// }
 
 // future:
 // spotify_web_api ← require('spotify-web-api-node','2.2.0')

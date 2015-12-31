@@ -1,10 +1,8 @@
-#!/usr/bin/env ζ
-
-lame ← require('lame','1.2.3')
+lame ← require('lame')
 async ← require('async','1.5.0')
 
 arg ← {
-	cache_dir: fs('~/ali/misc/music_cache').path,
+	cache_dir: '~/ali/misc/music_cache',
 	}
 
 rc ← λ(ι){↩ util.inspect(ι,{colors:true})}
@@ -16,12 +14,19 @@ mp3_info_to_basename ← λ(ι){
 	Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
 	ι = ι.map(λ(ι){↩ basename_encode((ι+'').replace(/ +- +/g,'-'))})
 	↩ ι[0]+' - '+ι[1]+' - '+ι[2].replace(/⟩.*/,'').replace(/^(.)$/,'0$1')+' '+ι[3] }
-mp3_set_id3 ← λ(fl,ι){ s ← sh_encode
-	Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
-	execᵥ('mid3v2 -a '+s(ι[0])+' -A '+s(ι[1])+' -t '+s(ι[2])+' -T '+s(ι[3])+' '+s(fl)) }
+mp3_id3 ← λ(fl){s ← sh_encode; fl = fs(fl).path
+	r ← {}; Object.defineProperty(r,'$',{
+		get:λ(){
+			t ← execᵥ('mid3v2 '+s(fl))
+			t = ['TPE1','TALB','TRCK','TIT2'].map(λ(ι){↩ (RegExp('^'+ι+'=(.*)','m').λ(t)||[])[1]})
+			↩ {artist:t[0], album:t[1], i:t[2], name:t[3]} },
+		set:λ(ι){
+			Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
+			execᵥ('mid3v2 -a '+s(ι[0])+' -A '+s(ι[1])+' -T '+s(ι[2])+' -t '+s(ι[3])+' '+s(fl)) },
+		configurable:true}); ↩ r}
 // E.mp3_clean = λ(fl){
-// 	get id3 tags [artist, album, i, name] from file // execᵥ('mid3v2 '+sh_encode(fl)); ['TPE1','TALB','TRCK','TIT2'].map(λ(ι){↩ (RegExp('^'+ι+'=(.*)','m').λ(id3)||[])[1]})
-// 	read filename to look for [artist, album, i, name] // (t=path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1).concat([t])
+// 	get id3 tags [artist, album, i, name] from file // mp3_id3(fl).$
+// 	read filename to look for [artist, album, i, name] // […(t=path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1), t]
 // 	if filename contained things id3 is missing: write those to id3 (and print)
 // 	if id3 contained things filename is missing: move the file (and print)
 // 	if mp3_info_to_basename(id3) !== filename: ↩ {conflict:true, file:, id3:}
@@ -40,7 +45,7 @@ quiet_skipping ← true
 
 ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pairs(), λ(t,cb){i ← parseInt(t[0]); tr ← t[1]; ensure_track_cached(spotify,tr,ι.name,i,cb)}, cb)}
 ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
-	prettyname ← '\x1b[32m'+p_name+'\x1b[33m'+(p_i+'').replace(/./g,λ('₀₁₂₃₄₅₆₇₈₉'))+'\x1b[39m'
+	prettyname ← '\x1b[32m'+p_name+'\x1b[33m'+(p_i+'')._.map(λ('₀₁₂₃₄₅₆₇₈₉')).join('')+'\x1b[39m'
 	if (ι.availability !== 1) {
 		!quiet_skipping && !/^spotify:local/.λ(ι.link) && print('[spotify dl] '+prettyname+' \x1b[31;1mskipped\x1b[0m')
 		cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
@@ -66,9 +71,7 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 			data ← Buffer.concat(player_bufs); player_bufs = null
 			t ← new lame.Encoder({channels:2, bitDepth:16, sampleRate:44100, bitRate:256, outSampleRate:22050, mode:lame.STEREO})
 			t.end(data)
-			out_s ← fs.createWriteStream(out)
-			t.pipe(out_s)
-			out_s.on('finish',λ(){ mp3_set_id3(out, metadata); cb&&cb.in(); })
+			t.pipe(fs.createWriteStream(fs(out).path)).on('finish',λ(){ mp3_id3(out).$ = metadata; cb&&cb.in() })
 			}).in(1)}}) }) }
 
 login(λ(e,spotify){
@@ -78,7 +81,8 @@ login(λ(e,spotify){
 	poll(λ(){↩ ι.filter(is_playlist).every(λ(ι){↩ ι.isLoaded})},λ(){
 		playlists ← ι.filter(is_playlist)
 		playlists._.indexBy('name')['[from mage]'] || (λ(){throw '‽'})() // testing
-		playlists = playlists.filter(λ(ι){↩ ι.owner.canonicalName === spotify.sessionUser.canonicalName})
+		playlists = playlists.filter(ι => ι.owner.canonicalName === spotify.sessionUser.canonicalName)
+		playlists = playlists.filter(ι => !/^history:/.λ(ι.name)) // hack
 		playlists = playlists._.sortBy('numTracks')
 		async.mapSeries(playlists,
 			λ(ι,cb){ poll(λ(){↩ getTracks(ι).every(λ(ι){↩ ι.isLoaded})},λ(){ensure_playlist_cached(spotify,ι,cb)}) },
@@ -100,7 +104,7 @@ login(λ(e,spotify){
 // // https://developer.spotify.com/docs/libspotify/12.1.45/structsp__session__config.html
 
 // p_fix ← λ Λ(ι){Object.defineProperty(ι,'ᵖ',{get:λ(){↩ @.ᵖ = Λ(ref.refType(ι))}, set:λ(ι){Object.defineProperty(@,'ᵖ',{value:ι, writable:true, enumerable:true, configurable:true})}, configurable:true}); ↩ ι}
-// _(ref.types).values().map(p_fix); //(λ(){o ← ref_struct; ref_struct = λ(){↩ p_fix(o.apply(@,arguments))}})()
+// _(ref.types).values().map(p_fix); //(λ(){o ← ref_struct; ref_struct = λ(…a){↩ p_fix(o.apply(@,a))}})()
 
 // t ← ref.types; int ← t.int; char ← t.char; size_t ← t.size_t; bool ← t.bool; void_ ← t.void
 

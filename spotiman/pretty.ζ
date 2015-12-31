@@ -1,8 +1,8 @@
 #!/usr/bin/env ζ
 
-col ← λ(ι){↩ ι+' '.repeat(100-ι.length)}
+col ← λ(ι){↩ ι+' '.repeat(max(0,100-ι.length))}
 
-JSON.parse(fs(fs('~/ali/history/auto/spotify').find('>').sort()[-1]).$).map(λ(ι){
+t ← JSON.parse(fs(fs('~/ali/history/auto/spotify').find('>').sort()[-1]).$).map(λ(ι){
 	↩ col(ι.artists._.map('name').join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+(t=ι.createTime._.map(0),t.join(', ')+(t.length>1?',':''))
 	}).join('\n')
-⟩ sb
+sb(t)

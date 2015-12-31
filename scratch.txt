@@ -1,7 +1,7 @@
 ----------------------------------- that game ----------------------------------
-secret ← _.shuffle(fs_('google-10000-english-usa.txt').$.split('\n').map(λ(v){↩ v.toLowerCase()}))[0]
+secret ← fs_('google-10000-english-usa.txt').$.split('\n').map(ι => ι.toLowerCase())._.shuffle()[0]
 guess_a ← ''; guess_b ← '';
-all_words_dict ← fs_('/usr/share/dict/words').$.split('\n').map(λ(v){↩ v.toLowerCase()})._.indexBy()
+all_words_dict ← fs_('/usr/share/dict/words').$.split('\n').map(ι => ι.toLowerCase())._.indexBy()
 global.__SPECIAL__ = λ(word){word = word.toLowerCase(); print('\x1b[3A\x1b[0E'); if (!all_words_dict[word]) print('"'+word+'" is not a word'); else if ((guess_a && word <= guess_a) || (guess_b && guess_b <= word)) print('<no progress>'); else if (secret < word) {guess_b = word; print('"'+guess_a+'" < secret < "'+guess_b+'"')} else if (word < secret) {guess_a = word; print('"'+guess_a+'" < secret < "'+guess_b+'"')} else print('you are a winner')}
 console.log('\n'.repeat(30))
 
@@ -75,8 +75,8 @@ gen2fn ← λ(f){t ← f(); ↩ λ(){↩ t.next().value}}
 namegen ← gen2fn(λ*(){
 	long ← 'bekas cahlo caris cekla dedna dekik emiak eseik gazok gihza girim gumlu halbo hanka henuh kadut kagzi kakki kamor kehul kisar kizak kofur kohig lopra mesat mesip mezid motka nahso nalic nirsu omiac radil ratis repgi resra rukan siral sorzo tarak tilke zalsi zehaz zekhu zeluz zephu zifin zirez zohip zokmi zonri zusci'.split(' ')
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
-	short = _.shuffle(short.mapcat(λ(v){↩ _.range(10).map(λ(i){↩ v+' '+i})}))
-	to ← round(long.length/2); yield* _.shuffle(long.concat(short.slice(0,to))); yield* short.slice(to)
+	short = short.mapcat(ι => _.range(10).map(ι => ι+' '+i))._.shuffle()
+	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
@@ -98,7 +98,7 @@ keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
 	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
-	// t ← key.split(/(?=\.\w)/); key = t[0]; ns ← t.slice(1).join('')
+	// var [key,…ns] = key.split(/(?=\.\w)/); ns = ns.join('')
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
@@ -108,7 +108,7 @@ q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp
 https://github.com/gillstrom/osx-brightness
 
 -------------------------------- de-duplication --------------------------------
-fs('.').find('*').map(λ(ι){↩ [ι,fs(ι).$]})._.groupBy(1)⟩_.values().map(λ(ι){↩ ι._.map(0)}).filter(λ(ι){↩ ι.length > 1})
+fs('.').find('*').map(ι => [ι,fs(ι).$])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
 
 ------------- http://thirdfoundation.github.io/#/design/chesscraft -------------
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO

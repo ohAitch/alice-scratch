@@ -221,7 +221,7 @@ def_operator ← λ(prec_l,prec_r,bnf){
 	op ← bnf₀; bnf ←! bnf[1:]
 	;(op='ᵥ'? subscript_ops : [op]).map(λ(op){
 		left_space.map(λ(left_space){
-			operators[(left_space?' ':'')+op] ←! {prec_l:prec_l, prec_r:prec_r, left_eat:left_eat, op:op, right:bnf}
+			operators[(left_space?' ':'')+op] ←! {prec_l, prec_r, left_eat, op, right:bnf}
 			}) }) }
 
 ;[	'400 401 .`\\.. .ᵥ .\\[ .(',

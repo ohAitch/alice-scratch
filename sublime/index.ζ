@@ -28,7 +28,7 @@ json_pretty_stringify ← λ(ι){
 			a+'\n'+T+ι.join(',\n'+T)+'\n'+b }
 	stringify_object ← λ(ι){
 		seen.push(ι)
-		t ← _.pairs(ι).filter(λ(ι){↩ ι[1]!==undefined && typeof(ι[1])!=='function'})
+		t ← ι._.pairs().filter(λ(ι){↩ ι[1]!==undefined && typeof(ι[1])!=='function'})
 			.map(λ(ι){↩ JSON.stringify(ι[0])+': '+stringify_indent(ι[1])})
 		seen.pop()
 		↩ join_collection(t,'{','}') }
@@ -59,13 +59,13 @@ main ← λ(){
 	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
 	fs(arg.in).find('*').filter(λ(ι){↩ !fs(ι).dir()}).map(λ(ι){t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
-			(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
-		: (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
+			(fs(R(arg.out+'/'+t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
+		: (fs(R(arg.out+'/'+ι)).$ = fs(arg.in+'/'+ι).$)
 		})
 	roots ← fs(arg.in).find('>').map(λ(ι){↩ ι.replace(arg.in,arg.out)})
 	out ← fs(arg.out).find('*').filter(λ(ι){↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(λ(ι){↩ !fs(ι).dir()})
-	_.difference(out,written.map(λ(ι){↩ arg.out+'/'+ι}))
-		.filter(λ(ι){ ↩ !/Package Control\./.test(ι.replace(arg.out,'')) })
+	_.difference(out,written)
+		.filter(λ(ι){ ↩ !/Package Control\./.λ(ι.replace(arg.out,'')) })
 		.map(λ(ι){ fs(ι).$ = null })
 	}
 

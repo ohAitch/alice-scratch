@@ -1,7 +1,7 @@
 import sublime, sublime_plugin
 import threading, http.server, json, os, codecs, re
 
-PORT = 34289
+PORT = 34289 #↩ {"PORT":34289}
 
 def window_(): return sublime.active_window()
 def view_():   return sublime.active_window().active_view()
@@ -14,7 +14,7 @@ def exec_edit_(ι): view_().run_command("exec_edit",{'ι':ι}); return ee_r
 class server_h(http.server.BaseHTTPRequestHandler):
 	def log_request(self,code='-',size='-'): pass
 	def do_PUT(self):
-		ι = codecs.open('/tmp/sublime_external_command','r','utf8').read()
+		ι = codecs.open('/tmp/fs_ipc_'+str(PORT),'r','utf8').read()
 		ι = re.sub('(\n|;|$)',r' = ι\1',ι[::-1],1)[::-1]
 		ι = (exec_edit_ if re.search(r'\bview\.(insert|erase|replace)\b',ι) else exec_)(ι)
 		self.send_response(200)

@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 crypto ← require('crypto')
 
-err ← λ(v){throw Error(A(arguments).join(' '))}
+err ← λ(…a){throw Error(a.join(' '))}
 
 Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
 Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(ι => _.range(8).map(i => (ι & 1<<i) >> i))}
@@ -9,7 +9,7 @@ Buffer.prototype.str = λ(){↩ @.toString('binary')}
 Buffer.prototype.clone = λ(){↩ Buffer.concat([@, Buffer(0)])}
 String.prototype.buf = λ(){↩ Buffer(@+'','binary')}
 Array.prototype.windows = λ(len){r←[]; for(i←0;i<=@.length-len;i++) r.push(@.slice(i,i+len)); ↩ r}
-Array.prototype.transpose = λ(){↩ _.zip.apply(_,@)}
+Array.prototype.transpose = λ(){↩ _.zip(…@)}
 
 hex ← {}
 hex.read = λ(str){↩ Buffer(str.match(/../g).map(λ(v){↩ parseInt(v,16)}))}
@@ -46,7 +46,7 @@ endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat(_.range(c
 
 bad_keygen ← λ(len){↩ Buffer(_.range(len).map(rand.P(0,0xff)))}
 
-solve_single_byte_xor ← λ(buf){↩ _.range(0x100).map(λ(key){↩ {key:key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
+solve_single_byte_xor ← λ(buf){↩ _.range(0x100).map(λ(key){↩ {key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
 
 mt19937 ← λ(seed){
 	mt ← [0].repeat(624)
@@ -159,8 +159,8 @@ mt19937_untemper ← λ(x){
 // print(decode_ecb_postfix__prefix_safe(encryption_oracle)+'') // 12
 
 // k_v ← {} // 13
-// k_v.read = λ(v){↩ v.split('&').map(λ(v){↩ v.split('=')})._.object()}
-// k_v.show = λ(v){↩ _.pairs(v).map(λ(v){↩ v[0]+'='+v[1]}).join('&')}
+// k_v.read = λ(v){↩ v.split('&').map(λ(v){↩ v.split('=')})._.object()}.join('&')}
+// k_v.show = λ(v){↩ v._.map(λ(v,k){↩ k+'='+v}).join('&')}
 // 13
 // profile_for ← λ(v){↩ k_v.show({email:v.replace(/[=&]/g,''), uid:10, role:'user'})}
 // encrypt_profile ← λ λ(v){λ.key || (λ.key = bad_keygen(16)); ↩ bad_encrypt_ecb(Buffer(profile_for(v)), λ.key)}
@@ -285,7 +285,7 @@ mt19937_untemper ← λ(x){
 // data ← ['SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==','Q29taW5nIHdpdGggdml2aWQgZmFjZXM=','RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==','RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=','SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk','T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==','T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=','UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==','QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=','T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl','VG8gcGxlYXNlIGEgY29tcGFuaW9u','QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==','QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=','QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==','QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=','QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=','VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==','SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==','SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==','VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==','V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==','V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==','U2hlIHJvZGUgdG8gaGFycmllcnM/','VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=','QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=','VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=','V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=','SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==','U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==','U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=','VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==','QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu','SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=','VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs','WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=','SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0','SW4gdGhlIGNhc3VhbCBjb21lZHk7','SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=','VHJhbnNmb3JtZWQgdXR0ZXJseTo=','QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4='].map(base64.read).map(λ(v){↩ endecrypt_aes_128_ctr(v,key,Buffer(8).fill(0))})
 // // statistical
 // print(data.map(λ(v){↩ v.toArray()}).transpose().map(λ(v){t←;
-// 	↩ A((t=_.object(_.zip(t=_.pairs(v).filter(λ(v){↩ v[1]!==undefined}), solve_single_byte_xor(Buffer(t._.map(1))).out.toArray()).map(λ(v){↩ [v[0][0],v[1]]})),t.length=v.length,t))
+// 	↩ (t=_.zip(t=v._.pairs().filter(λ(v){↩ v[1]!==undefined}), solve_single_byte_xor(Buffer(t._.map(1))).out.toArray()).map(λ(v){↩ [v[0][0],v[1]]})._.object(),t.length=v.length,Array.prototype.slice.call(t))
 // 	}).transpose().map(λ(v){↩ Buffer(v.filter(λ(v){↩ v!==undefined}))+''}))
 // // solution
 // key2 ← xor(data[37],Buffer('He, too, has been changed in his turn,'))

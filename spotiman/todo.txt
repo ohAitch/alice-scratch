@@ -18,13 +18,13 @@ think about the prompt at the beginning and figure out what we want to do with t
 				print('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
 				p.addTracks(ts.slice(0,500).map(function(v){return v.original}),0)
 				}
-			var pl = _.indexBy(playlists(),'name')
-			var tr = _.indexBy(tracks(),'link')
+			var pl = playlists()._.indexBy('name')
+			var tr = tracks()._.indexBy('link')
 			var get_tracks = function(p){return p.getTracks().map(function(v){return tr[v.link]})}
 
 			var t = tracks().filter(function(v){return is(v.playlists['meh pile']) && Object.keys(v.playlists).length>=2})
 			
-			//t = _.sortBy(t.map(function(v){return Object.keys(v.playlists).length>=2}))
+			//t = t.map(function(v){return Object.keys(v.playlists).length>=2})._.sortBy()
 			//print(pl.clbuttic.removeTracks(t))
 			//t = t.filter(function(v){return Object.keys(v.playlists).length>=2})
 			t.map(function(v,i){print(i,v.unique_name)})
@@ -39,7 +39,7 @@ think about the prompt at the beginning and figure out what we want to do with t
 			is:local
 			[playlist]
 			]
-	> 	aaaaaa tracks.map(λ(v){v=__.clone(v);v.tags=__(v.tags).without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name].concat(v.tags).join('    ')})
+	> 	aaaaaa tracks.map(λ(v){v=v._.clone();v.tags=v.tags._.without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name, …v.tags].join('    ')})
 	> 	i want to say:
 	> 		# god i don't know. i'm sad.
 	> 		tracks where createTime * 0 group max size > 1
