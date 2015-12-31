@@ -25,7 +25,7 @@ then i think we have a good model.
 
 http://fb.com/strohl89/posts/10153433406284598 ?
 
-mv ./etc/sudoers{,.bak}
+//2015-12-26// mv ./etc/sudoers{,.bak}
 
 // ------------------- thing generation #fail #unfinished ------------------- //
 	// so i tried generating some cities. but i failed. i will try again later!
@@ -491,28 +491,28 @@ mv ./etc/sudoers{,.bak}
 	https://github.com/alice0meta/TagTime/raw/master/resources/tray%402x.png
 	https://github.com/alice0meta/TagTime/raw/master/resources/whoosh.wav
 
-// --------------------- #notes on filesystem selectors --------------------- //
-
-	*
-	⟨x⟩ > ⟨children⟩
-	⟨x⟩ ⟨descendants⟩
-	.⟨ext⟩
-	:file
-	:dir
-	⟨selector1⟩, ⟨selector2⟩
-	⟨filename⟩
-
-	unresolved interesting things:
-	existence
-	normalization (remove excess . ..)
-	absolute path (canonical form *does* use ~/)
-	links, symbolic and hard
-
-	fs('/bin')
-	fs('./file.txt') = fs('file.txt')
-	fs('~/Library/')
-
-	// a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
+//2015-12-26// // --------------------- #notes on filesystem selectors --------------------- //
+//2015-12-26// 
+//2015-12-26// 	*
+//2015-12-26// 	⟨x⟩ > ⟨children⟩
+//2015-12-26// 	⟨x⟩ ⟨descendants⟩
+//2015-12-26// 	.⟨ext⟩
+//2015-12-26// 	:file
+//2015-12-26// 	:dir
+//2015-12-26// 	⟨selector1⟩, ⟨selector2⟩
+//2015-12-26// 	⟨filename⟩
+//2015-12-26// 
+//2015-12-26// 	unresolved interesting things:
+//2015-12-26// 	existence
+//2015-12-26// 	normalization (remove excess . ..)
+//2015-12-26// 	absolute path (canonical form *does* use ~/)
+//2015-12-26// 	links, symbolic and hard
+//2015-12-26// 
+//2015-12-26// 	fs('/bin')
+//2015-12-26// 	fs('./file.txt') = fs('file.txt')
+//2015-12-26// 	fs('~/Library/')
+//2015-12-26// 
+//2015-12-26// 	// a file is a key-value pair in a sort of fuzzy-keyed dict with many types, but primarily "key array" and "byte array, usually interpreted as string"
 
 ################################################################################
 ##################################### ready ####################################

@@ -1,0 +1,264 @@
+let’s design a proper fucking filesystem api
+get persistence right, ACID, whatever
+let’s do it so that it’s done and we’re done
+
+here’s a list of everything we know about that works with files
+hey future alice: you’re gonna be pretty immersed in the things you’ve done already. only go ahead if you can get over that.
+
+in the line of jquery, we would be removing duplicates all over the place
+
+https://api.jquery.com/has-selector/ - or /.. ?
+of course there are globs, like, instead of fs('comments').find('>') you could just say fs('comments/*')
+maybe you could even say fs('comments/**')
+
+read $unixpath (as utf8)
+	q ← fs('corpus/test.js').$
+	jsdom.env(fs(ι).$,...)
+	// represented as a Path, it has properties path_ and $/val/value/deref
+write to $unixpath from $utf8
+	fs('../'+date.replace(/-/g,'/')+'/'+slug+'.html').$ = text
+	print(i,ι); fs(out).$ = execᵥ('curl -s '+sh_encode(ι));
+write to $bashpath.png from $image
+	(merge weather images @ hour 0, index 9 10 11 12) (″ @ hour 48) → @test.png
+$unixpath|bashpath is json (parsing empty file as null). read $unixpath|bashpath.
+	t ← fs(DATA_FILE).$; t && Δ._.assign(JSON.parse(t)._.pick(Δ._.keys()))
+	ι = JSON.parse(fs(ι).$)
+	JSON.parse(fs('~/.auth/spotify').$)
+	ι ← JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children
+	// maybe we can also pass it a type/format/view/mixin! eesh, maybe we need to fit it into the prototype system instead of just using a mixin…
+$unixpath is json. write to $unixpath from $json
+	process.on('exit',λ(){fs(DATA_FILE).$ = JSON.stringify(Δ,null,'  ')})
+	fs(out).$ = JSON.stringify(...)
+write to $(unix|bash)path.json from $json
+	fs('comments.json').$ = JSON.stringify(r,null,'  '),0
+	fs('~/ali/history/auto/spotify/'+moment().toString()+'.json').$ = JSON.stringify(tracks,null,'\t')
+	fs(cache+'/package.json').$ = JSON.stringify({description:"-",repository:1,license:"ISC"})
+read $bashpath whose contents are obviously xml | do stuff with the parsed xml
+	read lackey.keylayout; $('keyMapSet').@ = ['foo']
+read $unixpath as lines
+	story_meta.cache = (t=fs(sm_out).$.split('\n'), t[-1]==='' && t.pop(), t)
+	fs('posts.txt').$.trim().split('\n')
+	var [title,date,…text] = fs(fl).$.split('\n'); text = text.join('\n')
+write to $unixpath from lines
+	fs('./posts/'+basename_encode(ι)).$ = posts.join('\n')+'\n' // perhaps this should encode the lines?
+atomic write to $unixpath from lines
+	fs('/tmp/fimscrape').$ = C.join('\n'); fs.renameSync('/tmp/fimscrape',sm_out)
+read $unixpath as base64
+	f10 ← base64.read(fs('data/10.txt').$)
+read $unixpath as bytes
+	tea ← Buffer(fs('data/tea.txt').$)
+read $unixpath as lines * as base64
+	data ← fs('data/20.txt').$.trim().split('\n').map(base64.read).map(λ(v){↩ endecrypt_aes_128_ctr(v,key,Buffer(8).fill(0))})
+write $bashpath from $utf8
+	fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_keyrc(fs('~/.keyrc').$))
+write $unixpath from $csv (async okay)
+	csv.stringify(r,λ(e,ι){fs('comments.csv').$ = ι})
+read $bashpath.json
+	TAGTIME_V=$(jq .version package.json -r)
+read $bashpath.json (lazily)
+	let auth = read ./arc/fb_auth.json   or error
+	read auth from ./arc/fb_auth.json   or error        (note: should be lazy) <...> auth.id+'|'+auth.secret
+write to $bashpath.json from ($json from $bashpath as plist) // and be pretty
+	break; case 'from': fs(arg.in+'.json').$ = json_pretty_stringify(plist.parse(fs(arg.in).$),null,'\t')
+append / @($bashpath) += $utf8
+	Path.prototype.append = function(v){fs.appendFileSync(this._path,v)}
+unlink $bashpathfile
+	fs(cache+'/package.json').$ = fs(cache+'/README').$ = null
+	rmds(){ rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE; }
+read-and-unlink $bashpathfile
+	t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null
+	alias ·='eval "$(cat /tmp/__·)"; rm /tmp/__·;'
+// del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+// unlinking is dangerous
+// writing is too but typically you unlink more files at a time than you write
+// really we should use an algorithm more like Trash
+// maybe - use this for anything that's *not* in /tmp ?
+write to ($bashpath as binary) from (read-and-unlink $bashpath as base64)
+	fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+read and write symlinks
+	for v in /-* ~/-* ~/Library/LaunchAgents/-*; do [ -h "$v" ] && printf "$v"$'\t'; readlink "$v"; done
+	ln -sf ~/books/#misc/page_cache ~/pg
+rw impls
+	Path.prototype._$ = λ(){t ← @.path; ↩ !@.exists()? '' : @.dir()? (console.trace('[ζ] DEPRECATED dir_$'), fs.readdirSync(t).map(λ(ι){↩ t+'/'+ι})) : fs.readFileSync(t)+''}
+	Path.prototype['='] = λ(ι){
+		// string: text file, Array: directory, etc
+		// async should use like fs.createReadStream(ι.path).pipe(fs.createWriteStream(@.path))
+		if (@.exists() && @.dir()) throw Error('writing to directories not implemented')
+		if (ι == null) {@.exists() && fs.unlinkSync(@.path); ↩}
+		mkdir_p ← λ ρ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {if (e.code !== 'ENOENT') throw e; ρ(path.dirname(ι)); fs.mkdirSync(ι)}}
+		mkdir_p(path.resolve(path.dirname(@.path)))
+		fs.writeFileSync(@.path,ι) }
+	// Path.prototype.slice = λ(i){↩ ζ_def({},'$',λ(){},λ(ι){path_open(@,λ(){t ← Buffer(ι); fs.writeSync(@.fd,t,0,t.length,i); fs.ftruncateSync(@.fd,i + Buffer.byteLength(ι))})})}
+	Path.prototype.splice = λ(idx,rm,ι){path_open(@,λ(fd){t←;
+		ι = Buffer(ι)
+		rm === ι.length || (t = Buffer(fs.statSync(@.path).size - (idx+rm)), fs.readSync(fd,t,0,t.length,idx+rm))
+		fs.writeSync(fd,ι,0,ι.length,idx)
+		rm === ι.length || fs.writeSync(fd,t,0,t.length,idx+ι.length)
+		rm > ι.length && fs.ftruncateSync(fd,idx+ι.length+t.length)
+		})}
+copy $bashpath to $bashpath
+	(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
+write '' to $bashpath
+	(event = "unlink"? touch : copy file to) "./.history/$now $(event = "unlink"? "-" : "+") $(file as filename)"
+
+? synchronize datasource 1 with datasource 2
+	while (meta.length) {t ← meta.pop(); fs(st_out+'/'+t.id).$ = JSON.stringify(story_text(t),null,'  ')}
+	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+	fs("~/Pictures/Photo Booth Library/Pictures").find(">").forEach(λ(ι){t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})
+	working directory find file descendants | [replace non-basename & exec to filename utility which copies] for v in *; do cp -r "$v" '#rotated'; done; cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done;
+	build() { install || ↩ 1; rm bin/app; cp package.json resources node_modules *.html -> bin/app; ζ₂ -c *.ζ₂ bin/app; }
+	cp -r bin/app TagTime.app/Contents/Resources/
+	make ~/Library/Keyboard\ Layouts/lackey.icns equal ./lackey.icns
+	make ~/Library/Keyboard\ Layouts/lackey.keylayout equal make_keylayout() \n if any write happened: print 'foo'
+? transform-move $bashpath
+	[strip extension & parse. change basename. replace non-basename.] fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+	[change basename. replace non-basename.] t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])
+	[strip extension & parse. replace non-basename.] (fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
+	[strip extension & parse. replace non-basename.] replace $in with $out in all writes/deletions. <...> ≈/\.json$/ -> write @file as plist to file without extension
+	[replace non-basename.] : (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
+	[replace non-basename.] replace $in with $out in all writes/deletions. <...> else -> write @file to file
+	[unlink.] .map(λ(ι){ fs(ι).$ = null })
+	[replace extension. exec to filename utility which copies, so unlink.] convert "$v" "${v%.*}.png" && rm "$v"
+	[replace .js extension & parse. replace non-basename.] else fs(out+'/'+fs(ι).name('.ζ')+'.js').$ = ζ_compile_file(fs(ι).$)
+	[change basename before extension.] t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); $echo mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"
+
+if modifying the first two bytes of a file, check if they’re now #! and chmod +x it if so.
+	fs('~/Documents/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack'; fs.chmod(fs('~/Documents/keyrc_power_key.sh').path,0o777)
+for children of $unixname: read it as json
+	fs('comments').find('>').map(λ(ι){↩ JSON.parse(fs(ι).$)})
+($unixpath find descendants with name = $utf8)[0] // with good performance
+	guess ← fs(process.env.HOME+'/ali').findˢ('#'+place).next().value
+$unixpath exists?
+	if (context.length === 2 && context[1].type === 'ur_answer' && fs(context[1].v+'/'+context[0].v[1]).exists())
+	if (fs(out).exists()) ↩;
+	[ -d node_modules ] || npm install
+	t="atom-shell-v$ATOMSH_V-darwin-x64.zip"; [ -f "$t" ] || { curl -LO "$ATOMSH_ROOT/$t"; rm Atom.app; }
+unixpaths are actually bashpaths - s/^~(?:\/|$)/${process.env.HOME}/
+	sublime_open(fs('~/ali/scratch/planspad').path)
+	Path ← λ Path(path_){@.path_ = (path_+'').replace(/^~(?=\/|$)/,process.env.HOME); @.path = path.normalize(@.path_+'/.')}
+	Path.prototype.toString = λ(){↩ path.resolve(@.path).replace(RegExp('^'+regex_encode(process.env.HOME)+'(?=/|$)'),'~')} // that really shouldn't be “resolve”
+globs probably aren’t unixpaths, but they’re fun!
+	~/{,Desktop,Downloads}/.DS_STORE* ~/ali/**/.DS_STORE
+	{run,index,main}{,.sh,.ζ,.js,.py}
+	ln -sf ~/ali/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/ali/books ~
+they can even do the same thing as …
+	mv ./etc/sudoers{,.bak}
+change working directory // change a pronoun (typical pronouns: global, working directory, jQuery $, ι)
+	process.chdir(fs('~/ali/scratch').path)
+basename_encode
+	fs('.history/'+moment(time).toISOString()+' '+(type==='unlink'?'X':'=')+' '+basename_encode(fl)).$ = type==='unlink'? '' : fs(fl).$
+watch files ∈ path
+	fsʷ.on('.', λ(fl,{type,dir,time}){if (dir) ↩; ... })
+	watch files ∈ (. - ./.history/):
+working directory find children (basenames)
+	ιs ← /* if is filename context */ fs('.').find('>').map(λ(ι){↩ ι.slice(2)})
+$unixpath find children (full names)
+	corpus ← fs('corpus/all').find('>').map(λ(v){↩ 'corpus/all/'+v})
+$bashpath find .64 children (basenames / names relative to bashpath)
+	fs.readdirSync(from).filter(/\.64$/.λ)
+$unixpaths | map find .js children (full names)
+	schelling_places.map(ι => fs(ι).find('> .js'))._.flatten(false)
+$unixpath find children (basenames)
+	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]})
+	t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]
+for children in $unixpath, read it as json // with good performance
+	for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts._.map('content').filter(/<\/a>/.λ).join(' '); t !== '' && r.push(t)}
+working directory find descendants (full names) (with their contents)
+	fs('.').find('*').map(λ(ι){↩ [ι,fs(ι).$]})._.groupBy(1)._.values().map(λ(ι){↩ ι._.map(0)}).filter(λ(ι){↩ ι.length > 1})
+$unixpath find children (full names) | sort | [-1] | read it as json.
+	JSON.parse(fs(fs('~/ali/history/auto/spotify').find('>').sort()[-1]).$)
+basename w/o extension of $unixpath
+	path.basename(ι,'.mp3') // path.basename(ι).replace(/\.[^.]*$/,'')
+	.replace('NAME',name=path.basename(ι,'.js'))
+send Buffer to Duplex to file
+	t ← getDuplex(); t.end(data); t.pipe(fs.createWriteStream(fs(out).path)).on('finish',λ(){ mp3_id3(out).$ = metadata; cb&&cb.in() })
+in $bashpath: find descendants of working-dir that are files
+	fs(arg.in).find('*').filter(λ(ι){↩ !fs(ι).dir()}).map(λ(ι){↩ ι.slice(arg.in.length).replace(/^\//,'')})
+	for files ∈ in *:
+resolve-dirname / resolve-(absolute path of “compilation unit”)
+	var t = ι => eval(ζ_compile(require('fs').readFileSync(__dirname+'/'+ι+'.ζ')+''))
+	break; case '-v': case '--version': print(JSON.parse(fs(__dirname+'/package.json').$).version)
+	__dirname=$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}")); ack(){ (afplay "$__dirname/ack.wav" &); }
+(resolve $PWD) absolute path of $bashpath
+	Module._load(path.resolve(argv[0]), null, true)
+	path.resolve(process.argv[3] || 'Packages')
+	path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path)
+	.replace('FILE','file://'+fs(ι).resolve())
+resolve-symlinks $bashpath
+	Path.prototype.realpath = function(){return fs.realpathSync(this._path)}
+	beep ← λ(){/*if (shown) */new Audio((@rc).ping_sound as file .realpath()).play()}
+resolve $bashpath in $bashpath
+	(fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
+	: (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
+	roots ← fs('.').find('>').map(λ(ι){↩ arg.out+'/'+ι})
+if extension is .json, do something with the basename w/o extension, else do something else
+	(t=ι.match(/^(.*)\.json$/))?
+$bashpath find descendants which are files (name relative to bashpath)
+	out ← fs(arg.out).find('*').filter(λ(ι){↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(λ(ι){↩ !fs(ι).dir()})
+in $bashpath: path in $bashpath | filter | delete
+	_.difference(out,written)
+		.filter(λ(ι){ ↩ !/Package Control\./.test(ι.replace(arg.out,'')) })
+		.map(λ(ι){ fs(ι).$ = null })
+	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
+mktemp
+	user_js ← '/tmp/userscript_'+Math.random().toString(36).slice(2,10)+'.user.js'
+		fs(user_js).$ = t
+		osa_encode('file://'+user_js)
+read stdin to Buffer (to utf8)
+	fs.fstatSync(0).mode & 0x1000? read_stdin(t) : t()
+is dir?
+	fs(ι).dir()
+	Path.prototype.dir = λ(){try{↩ fs.statSync(@.path).isDirectory()} catch(e){if (!(e.code==='ENOENT')) throw e; ↩ false}}
+rename $bashpath to $bashpath
+	fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])
+fs('.').parents().children('{run,index,main}{,.sh,.ζ,.js,.py}')[0]
+	local t=$(while :; do t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py})); [[ $t != "" ]] && echo "$PWD/$t" || [[ $PWD != '/' ]] && { cd ..; continue; }; break; done)
+$unixpath-set | sort stat.birthtime | [-1]
+	ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
+	/tmp/subl\ stdin\ * | .sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
+rm -r
+	rm node_modules; build || ↩ 1
+
+past difficulty: it’s really weird how this returns a thing that you can’t actually pass to fs(). maybe we’ll fix this by returning a more magical, jquery-like thing?
+past difficulty: does not handle uniqueness in selections
+past difficulty: wtf is up with selectors only being a .find() thing and not a fs() thing? and not returning selections so they’re not chainable?
+past difficulty: doesn’t normalize everything properly or reliably
+past difficulty: doesn’t follow symlinks (note: when you do follow symlinks, know that not all symlinks lead places)
+
+notes on filesystem selectors
+	//	*                          *
+	//	⟨x⟩ > ⟨children⟩           foo/*
+	//	⟨x⟩ ⟨descendants⟩          foo/**
+	//	.⟨ext⟩                     .bar
+	//	⟨selector1⟩, ⟨selector2⟩   {foo,bar}
+	//	⟨filename⟩                 foobar
+	//	:file                      
+	//	:dir                       
+	unresolved interesting things:
+	set-normalization to [those which exist. uniq.]
+	normalization (remove excess . ..)
+	(canonical form *does* use ~/)
+	links, symbolic and hard (and consistent sane behavior in the presence of them)
+
+<more>
+	export ping_file ← file dirty.getDataPath()+'/pings.log'
+		ping_file is an array of {time :: unix time, period :: float, tags :: str}, parsed out of its lines:
+			// 2014-03-26/19:51:56-07:00(p22.5)? a b c \(a: comment\)
+			read:
+				≈/^(\d+)([^\[]+)/ -> {time:it[1], period:(@rc).period, tags:it[2].trim()}
+				≈/^(?=....-)([^\sp]+)⟨p(\S+)⟩? (.*)$/ -> {time:it[1], period:it[2] || 45, tags:it[3].trim() unless ='<unanswered>'}
+			show: (.time as 'YYYY-MM-DD/HH:mm:ssZ')+('p'+.period unless .period=45)+' '+(.tags || '<unanswered>')
+		ping_file ~= [next]
+		let pings = @ping_file
+			somehow we must watch ping_file for changes, as hard as this problem is
+			including changes from main.js of this program
+			but not including our own changes
+		i want to display a view of a slice of @ping_file
+		i want the slice to start at the first ping with .tags==null and go until the end or max length
+		recent_tags ping ← pings[:(index of ping in pings)][::-1].dropWhile(.tags == null)[0]?.tags
+		↩ generate_actions(name, @ping_file -! tagdsl_read.P(tagdsl)(.tags), datapoints_read(it))
+
+	.lackey files are formatted like <read function>; read default.lackey → boxes, chords
+
+	read plist: npm::plist.parse(it)
+	show plist: npm::plist.build(it)
