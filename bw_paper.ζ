@@ -3,10 +3,10 @@
 var [,,in_,out] = process.argv
 
 pixels.read(in_,'gray',λ(e,ι){
-	q ← _.range(ι.Y).map(y => ι.ι.slice(y*ι.X,(y+1)*ι.X))
+	q ← ι.Y.map(y => ι.ι.slice(y*ι.X,(y+1)*ι.X))
 	g ← λ(x,y){↩ q[max(0,min(y,ι.Y-1))][max(0,min(x,ι.X-1))]}
-	G ← 64; D ← [0.7, 0.95]
-	avgs ← _.range(ceil(ι.Y/G)).map(yᵇ => _.range(ceil(ι.X/G)).map(xᵇ => {t ← _.range(G).mapcat(yᵒ => _.range(G).map(xᵒ => g(xᵇ*G + xᵒ, yᵇ*G + yᵒ))); ↩ t.reduce(λ(a,b){↩ a+b}) / t.length}))
-	r ← {X:ι.X, Y:ι.Y, ι:_.range(ι.Y).mapcat(y => _.range(ι.X).map(x => round(max(0,min(1, (g(x,y)/avgs[floor(y/G)][floor(x/G)] - D[0]) / (D[1] - D[0]) )) * 0xff)))}
+	G ← 64; D ← [0.65, 0.95] // should really look at the variance or smth
+	avgs ← ceil(ι.Y/G).map(yₐ => ceil(ι.X/G).map(xₐ => {t ← G.mapcat(yₒ => G.map(xₒ => g(xₐ*G + xₒ, yₐ*G + yₒ))); ↩ t.reduce((a,b) => a+b) / t.length}))
+	r ← {X:ι.X, Y:ι.Y, ι:ι.Y.mapcat(y => ι.X.map(x => round(max(0,min(1, (g(x,y)/avgs[floor(y/G)][floor(x/G)] - D[0]) / (D[1] - D[0]) )) * 0xff)))}
 	pixels.show(r,'gray',out)
 	})

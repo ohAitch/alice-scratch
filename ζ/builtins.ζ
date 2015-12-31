@@ -145,8 +145,10 @@ P({
 'Function.prototype.P':λ(…a1){ι←@; ↩ λ(…a2){↩ ι.apply(@, a1.concat(a2))}},
 'Function.prototype.X' :{get:λ(){ι←@; ↩ λ(a  ){↩ ι.call(@,a  )}}},
 'Function.prototype.XX':{get:λ(){ι←@; ↩ λ(a,b){↩ ι.call(@,a,b)}}},
-'Array.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
-'Array.prototype.repeat':λ(x){↩ x<=0? [] : _.range(x).map(ˣ=> @)._.flatten(true)},
+'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i); ↩ r},
+'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
+'Array.prototype.mapcat': λ(f){↩ @.map(f)._.flatten(true)},
+'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(ˣ=> @)},
 // 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 'Object.prototype._':{get:λ(){↩ _(@)}},
 // 'String.prototype.::-1':{get:λ(){↩ (@+'').split('').reverse().join('')}},
@@ -339,10 +341,10 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 // sublimeᵥ('window.focus_view(window.views()[-1])')
 // T ← 10; i←0; (λ(){sublimeᵥ('view.insert(edit,view.sel()[0].begin(),"\\n")')}).every(T)
 // sublime_set_buffer ← λ(ι){sublimeᵥ('view.replace(edit,sublime.Region(0,view.size()),'+util.inspect(ι)+')')}
-// braille_table ← _.range(0x100).map(λ(ι){↩ String.fromCharCode('⠀'.charCodeAt(0)+ι)})
+// braille_table ← 0x100.map(ι => String.fromCharCode('⠀'.charCodeAt(0)+ι))
 // braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 // life ← λ(ι){
-// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer(_.range(ι.X*ι.Y).map(λ(){↩ Math.random()<0.5 ?1:0})); ↩ ι} // 115,46
+// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ Math.random()<0.5 ?1:0})); ↩ ι} // 115,46
 // 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
 // 		r ← Buffer(ι)
 // 		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
@@ -362,15 +364,14 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 // ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
 E.pixels = {}
-E.pixels.read = λ(ι,type='rgba',cb){_require_lazy(require)('get-pixels','3.2.3')(ι,λ(e,ι){
+E.pixels.read = λ(ι,type='rgba',cb){_require_lazy(require)('get-pixels','3.2.3')(fs(ι).path,λ(e,ι){
 	;(ι.shape[2] === 4 && ι.stride._.isEqual([4, ι.shape[0]*4, 1])) || (λ(){throw Error()})()
 	var [X,Y] = ι.shape
-	cb(e,{X,Y,ι:
-		_.range(X*Y).map({
-			'rgb':i => ι.data.slice(i*4,i*4+3),
-			'rgba':i => ι.data.slice(i*4,i*4+4),
-			'gray':i => ι.data[i*4],
-			}[type]) }) }) }
+	cb(e,{X,Y,ι:(X*Y).map({
+		'rgb':i => ι.data.slice(i*4,i*4+3),
+		'rgba':i => ι.data.slice(i*4,i*4+4),
+		'gray':i => ι.data[i*4],
+		}[type]) }) }) }
 E.pixels.show = λ(ι,type='rgba',to){
 	ndarray ← _require_lazy(require)('ndarray','1.0.18')
 	ι = ndarray(Buffer(ι.ι.mapcat(ι => [ι,ι,ι,0xff])), [ι.X,ι.Y,4], [4,ι.X*4,1])

@@ -75,7 +75,7 @@ gen2fn ← λ(f){t ← f(); ↩ λ(){↩ t.next().value}}
 namegen ← gen2fn(λ*(){
 	long ← 'bekas cahlo caris cekla dedna dekik emiak eseik gazok gihza girim gumlu halbo hanka henuh kadut kagzi kakki kamor kehul kisar kizak kofur kohig lopra mesat mesip mezid motka nahso nalic nirsu omiac radil ratis repgi resra rukan siral sorzo tarak tilke zalsi zehaz zekhu zeluz zephu zifin zirez zohip zokmi zonri zusci'.split(' ')
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
-	short = short.mapcat(ι => _.range(10).map(ι => ι+' '+i))._.shuffle()
+	short = short.mapcat(ι => 10..map(i => ι+' '+i))._.shuffle()
 	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
 

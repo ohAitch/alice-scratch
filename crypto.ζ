@@ -4,7 +4,7 @@ crypto ← require('crypto')
 err ← λ(…a){throw Error(a.join(' '))}
 
 Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
-Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(ι => _.range(8).map(i => (ι & 1<<i) >> i))}
+Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(ι => 8..map(i => (ι & 1<<i) >> i))}
 Buffer.prototype.str = λ(){↩ @.toString('binary')}
 Buffer.prototype.clone = λ(){↩ Buffer.concat([@, Buffer(0)])}
 String.prototype.buf = λ(){↩ Buffer(@+'','binary')}
@@ -42,11 +42,11 @@ p_english ← (λ(){
 hamming ← λ(a,b){↩ _.zip(a.bits(),b.bits()).filter(λ(v){↩ v[0] !== v[1]}).length}
 
 encrypt_aes_128_ecb ← λ(buf,key){buf.length % key.length === 0 || err('‽'); t ← crypto.createCipheriv('aes-128-ecb',key,'').setAutoPadding(false); ↩ Buffer.concat([t.update(buf),t.final()])}
-endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat(_.range(ceil(buf.length/key.length)).map(λ(i){t←; ↩ encrypt_aes_128_ecb(Buffer.concat([nonce,(t=Buffer(key.length-nonce.length).fill(0),t.writeUIntLE(i,0,6),t)]),key)})).slice(0,buf.length))}
+endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat((ceil(buf.length/key.length)).map(λ(i){t←; ↩ encrypt_aes_128_ecb(Buffer.concat([nonce,(t=Buffer(key.length-nonce.length).fill(0),t.writeUIntLE(i,0,6),t)]),key)})).slice(0,buf.length))}
 
-bad_keygen ← λ(len){↩ Buffer(_.range(len).map(rand.P(0,0xff)))}
+bad_keygen ← λ(len){↩ Buffer(len.map(rand.P(0,0xff)))}
 
-solve_single_byte_xor ← λ(buf){↩ _.range(0x100).map(λ(key){↩ {key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
+solve_single_byte_xor ← λ(buf){↩ 0x100.map(λ(key){↩ {key, out:xor(buf,key)}})._.max(λ(v){↩ p_english(v.out)})}
 
 mt19937 ← λ(seed){
 	mt ← [0].repeat(624)
@@ -109,11 +109,11 @@ mt19937_untemper ← λ(x){
 
 // ---------------------------------- past ---------------------------------- //
 
-// print(q.map(hex.read).mapcat(λ(v){↩ _.range(0x100).map(xor.P(v))})._.max(p_english)+'')
+// print(q.map(hex.read).mapcat(λ(v){↩ 0x100.map(xor.P(v))})._.max(p_english)+'')
 
-// print(_.range(0x100).map(λ(i){↩ xor(hex.read('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'),i)})._.max(p_english)+'')
+// print(0x100.map(λ(i){↩ xor(hex.read('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'),i)})._.max(p_english)+'')
 
-// print(q.map(hex.read).mapcat(λ(v){↩ _.range(0x100).map(xor.P(v))})._.max(p_english)+'')
+// print(q.map(hex.read).mapcat(λ(v){↩ 0x100.map(xor.P(v))})._.max(p_english)+'')
 // print(q.map(hex.read).map(solve_single_byte_xor)._.max(p_english)+'') eesh, duplicate work
 
 // print(
@@ -125,7 +125,7 @@ mt19937_untemper ← λ(x){
 // print(hamming(Buffer('this is a test'),Buffer('wokka wokka!!!')),'= 37')
 // buf ← base64.read(f6)
 // keysizes ← _.range(1,41)._.sortBy(λ(keysize){
-// 	t ← _.range(5).map(λ(i){↩ buf.slice(keysize*i).slice(0,keysize)}).windows(2)
+// 	t ← 5..map(λ(i){↩ buf.slice(keysize*i).slice(0,keysize)}).windows(2)
 // 	↩ t.map(λ(v){↩ hamming(v[0],v[1])}).reduce(add) / t.length / keysize
 // 	}).slice(0,5)
 // t ← keysizes.map(λ(keysize){
@@ -257,7 +257,7 @@ mt19937_untemper ← λ(x){
 //
 // find_bsize ← λ(oracle){a ← oracle(Buffer(0).fill(0)).length; for (i←1;;i++) {t ← oracle(Buffer(i).fill(0)).length - a; if (t > 0) ↩ t} }
 // find_prefix_len__ecb_cbc ← λ(oracle,bsize) {
-// 	t ← _.range(0,bsize+2).map(λ(v){↩ oracle(Buffer(v).fill(0)).partition(bsize)}).windows(2).map(λ(v,i){
+// 	t ← (bsize+2).map(λ(v){↩ oracle(Buffer(v).fill(0)).partition(bsize)}).windows(2).map(λ(v,i){
 // 		↩ _.zip(v[0],v[1])._.findIndex(λ(v){↩ !v[0].equals(v[1])})
 // 	}).windows(2).map(λ(v,i){if (v[0] !== v[1]) ↩ [i+1,v[1]]}).filter(λ(v){↩ v})[0]
 // 	↩ t[1]*bsize - t[0] }
