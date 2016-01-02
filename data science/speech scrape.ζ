@@ -1,0 +1,23 @@
+http://millercenter.org/president/speeches
+
+$=jQuery; copy(JSON.stringify($('.title').toArray().map(ι => [
+	$(ι).closest('.entry').prevAll('.president:eq(0)').text().replace(/↑$/,'').trim(),
+	$(ι).find('a').text(),
+	location.origin+$(ι).find('a').attr('href')
+	])))
+
+...
+
+entities ← require('entities','1.1.1')
+csv ← require('csv','0.4.6')
+
+get ← ι => {ι = execᵥ('curl -s '+sh_encode(ι))
+	.match(/<h2>Transcript<\/h2>([\s\S]*?)<\/div>/)[1]
+	.replace(/<p>/g,'')
+	.replace(/<br\/?>|<\/p>/g,'\n')
+	↩ entities.decodeHTML(ι).trim()}
+
+csv.stringify(JSON.parse(sb()).map(λ(ι,i,l){
+	print('fetching '+(i+1)+'/'+l.length,ι[2])
+	↩ [ι[0], …ι[1].match(/^(.*?) \(.*(\d{4})\)$/).slice(1), get(ι[2])]
+	}), λ(e,ι){sb(ι)}),0
