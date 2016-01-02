@@ -76,6 +76,9 @@ P({ 'String.prototype.λ':{get:λ(){m←@; r ← ι => ι[m]                    
 P({ 'Number.prototype.λ':{get:λ(){m←@; r ← ι => ι[m]                                         ; r.ι = @; ↩ r}} })
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
+E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([~~ι,(ι-~~ι)*1e9]); ↩ t[0] + t[1]*1e-9}
+E.bench = λ(f){TH←0.4; r←0; I←1; for(t←hrtime(); hrtime(t) < TH;) {for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ hrtime(t) / r}
+
 E.ζ_compile = ζ_compile
 E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
 E.ζ_repl_start = λ(opts){
@@ -92,9 +95,7 @@ E.ζ_repl_start = λ(opts){
 			if (/(^\{[\s\S]*\}$)|(^λ\()/.test(code)) code = '('+code+')'
 			if (code.match(/^>/)) code = '__SPECIAL__('+util.inspect(code.slice(1))+')' // hack: for apprentice
 			try {t ← vm.createScript(ζ_compile(code)+'\n', {filename:'repl', displayErrors:false})}
-			catch (e) {
-				if (e.name === 'SyntaxError' && /^(Unexpected end of input|Unexpected token|Unterminated template literal)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('     '); ↩}
-				e && typeof(e.stack)==='string' && (e.stack = e.stack.replace(/(\n    at )[\s\S]*/,'$1<repl>')); err = e; break}
+			catch (e) {if (e.name === 'SyntaxError' && /^(Unexpected (end of input|token)|Unterminated template literal)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('    '); ↩}; e.stack = e.name+': '+e.message+'\n    at <repl>'; err = e; break}
 			try {ret ← @.useGlobal? t.runInThisContext({displayErrors:false}) : t.runInContext(self.context,{displayErrors:false})}
 			catch (e) {e && typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([\s\S]*)at repl:(.*)[\s\S]*?$/,'$1at <repl:$2>')); err = e; break}
 		break}
@@ -145,9 +146,9 @@ P({
 'Function.prototype.P':λ(…a1){ι←@; ↩ λ(…a2){↩ ι.apply(@, a1.concat(a2))}},
 'Function.prototype.X' :{get:λ(){ι←@; ↩ λ(a  ){↩ ι.call(@,a  )}}},
 'Function.prototype.XX':{get:λ(){ι←@; ↩ λ(a,b){↩ ι.call(@,a,b)}}},
-'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i); ↩ r},
+'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r},
 'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
-'Array.prototype.mapcat': λ(f){↩ @.map(f)._.flatten(true)},
+'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, // λ(f){↩ @.map(f)._.flatten(true)}
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(ˣ=> @)},
 // 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 'Object.prototype._':{get:λ(){↩ _(@)}},
@@ -170,12 +171,11 @@ P({
 	// https://github.com/Automattic/kue
 	// https://github.com/rschmukler/agenda
 	// robust to setTimeout taking extra time
-	now ← λ(){t ← process.hrtime(); ↩ t[0] + t[1]/1e9}
 	qu ← new ˡ.priorityqueuejs(λ(a,b){↩ b.time-a.time}); P←;
 	ensure ← λ(){if (P) ↩; P = true; (λ poll(){
-		t←; qu.size() === 0? (P = false) : qu.peek().time < now()? (t=qu.deq(), t.ι&&t.ι.in(), poll()) : poll.in(0.1)
+		t←; qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), poll()) : poll.in(0.1)
 		})() }
-	↩ λ(time){t ← {time, ι:@}; ↩ time < now()? (t.ι.in(), {clear:λ(){}}) : (qu.enq(t), ensure(), {clear:λ(){t.ι = null}})} }),
+	↩ λ(time){t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), {clear:λ(){}}) : (qu.enq(t), ensure(), {clear:λ(){t.ι = null}})} }),
 'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})},
 })
 P(/(Array|String|Buffer).prototype.-[01234]/.genex_0().map(λ(ι){i ← parseInt(ι[ι.length-1]); ↩ [ι, {get:λ(){↩ @.length<i? undefined : @[@.length-i]}, set:λ(ι){↩ @.length<i? ι : (@[@.length-i] = ι)}}]}))
@@ -363,20 +363,27 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 // 		↩ {X,Y,ι:r} } }
 // ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
+;(λ(){t ← require; (λ(){require ← E._require_lazy(t)
+
+def_lazy(E,'async',()=> require('async','1.5.0'))
+
 E.pixels = {}
-E.pixels.read = λ(ι,type='rgba',cb){_require_lazy(require)('get-pixels','3.2.3')(fs(ι).path,λ(e,ι){
-	;(ι.shape[2] === 4 && ι.stride._.isEqual([4, ι.shape[0]*4, 1])) || (λ(){throw Error()})()
-	var [X,Y] = ι.shape
-	cb(e,{X,Y,ι:(X*Y).map({
-		'rgb':i => ι.data.slice(i*4,i*4+3),
-		'rgba':i => ι.data.slice(i*4,i*4+4),
-		'gray':i => ι.data[i*4],
-		}[type]) }) }) }
-E.pixels.show = λ(ι,type='rgba',to){
-	ndarray ← _require_lazy(require)('ndarray','1.0.18')
-	ι = ndarray(Buffer(ι.ι.mapcat(ι => [ι,ι,ι,0xff])), [ι.X,ι.Y,4], [4,ι.X*4,1])
-	t ← _require_lazy(require)('save-pixels','2.3.0')(ι,'png')
-	t.pipe(fs.createWriteStream(fs(to).path)) }
+E.pixels.read = λ(ι,type='rgb',cb){require('get-pixels','3.2.3')(fs(ι).path,λ(e,{data,shape:[X,Y,d],stride}){
+	// maybe just use Symbol.iterator ?
+	;(d === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+	if (type!=='grey') throw Error()
+	ι ← Array(X*Y); for(i←0;i<ι.length;i++) ι[i] = data[i*4]
+	cb(e,{X,Y,ι}) }) }
+E.pixels.show = λ({ι,X,Y},type='rgb',to){
+	t ← new (require('pngjs','2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
+	if (0);
+	// else if (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
+	// else if (type==='rgb' ) for(i←0;i<ι.length;i+=3) {D[p++] = ι[i]; D[p++] = ι[i+1]; D[p++] = ι[i+2]; D[p++] = 0xff}
+	else if (type==='grey') for(i←0;i<ι.length;i++) {D[p++] = D[p++] = D[p++] = ι[i]; D[p++] = 0xff}
+	else throw Error()
+	t.pack().pipe(fs.createWriteStream(fs(to).path)) }
+
+})()})()
 
 // ----------------------------------- end ---------------------------------- //
 E.ζtoken = {}

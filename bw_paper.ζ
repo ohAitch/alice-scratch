@@ -2,11 +2,10 @@
 
 var [,,in_,out] = process.argv
 
-pixels.read(in_,'gray',λ(e,ι){
-	q ← ι.Y.map(y => ι.ι.slice(y*ι.X,(y+1)*ι.X))
-	g ← λ(x,y){↩ q[max(0,min(y,ι.Y-1))][max(0,min(x,ι.X-1))]}
-	G ← 64; D ← [0.65, 0.95] // should really look at the variance or smth
-	avgs ← ceil(ι.Y/G).map(yₐ => ceil(ι.X/G).map(xₐ => {t ← G.mapcat(yₒ => G.map(xₒ => g(xₐ*G + xₒ, yₐ*G + yₒ))); ↩ t.reduce((a,b) => a+b) / t.length}))
-	r ← {X:ι.X, Y:ι.Y, ι:ι.Y.mapcat(y => ι.X.map(x => round(max(0,min(1, (g(x,y)/avgs[floor(y/G)][floor(x/G)] - D[0]) / (D[1] - D[0]) )) * 0xff)))}
-	pixels.show(r,'gray',out)
+pixels.read(in_,'grey',λ(e,{X,Y,ι}){
+	G ← 32; D ← [0.62, 0.93] // should really look at the variance or smth
+	avg_nearby ← λ(xᵥ,yᵥ,G){r ← 0; yᵃ←max(0,yᵥ-G); yᵇ←min(Y,yᵥ+G); xᵃ←max(0,xᵥ-G); xᵇ←min(X,xᵥ+G); for(y←yᵃ;y<yᵇ;y++) for(x←xᵃ;x<xᵇ;x++) r += ι[y*X+x]; ↩ r / ((yᵇ-yᵃ) * (xᵇ-xᵃ))}
+	avgs ← _.range(0,Y,G).map(y => _.range(0,X,G).map(x => {t ← round(G/2); ↩ avg_nearby(x+t,y+t,t*2)}))
+	r ← Array(ι.length); for(i←0;i<ι.length;i++) {y ← i/X|0; x ← i%X; r[i] = round(max(0,min(1, (ι[i]/avgs[y/G|0][x/G|0] - D[0]) / (D[1] - D[0]) )) * 0xff)}
+	pixels.show({X,Y,ι:r},'grey',out)
 	})
