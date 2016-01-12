@@ -2,7 +2,7 @@
   "comment": "JavaScript Syntax: version 2.0",
   "fileTypes": ["js", "htc", "jsx"],
   "firstLineMatch": "^#!/.*",
-  "foldingStartMarker": "^.*\\b(function|λ)\\s*(\\*)?\\s*([\\wαβγδεζηθικλμνξπρστυφχψω]+\\s*)?\\([^\\)]*\\)(\\s*\\{[^\\}]*)?\\s*$",
+  "foldingStartMarker": "^.*\\b(function|λ)\\s*(\\*)?\\s*([\\wΑ-ΡΣ-Ωα-ω]+\\s*)?\\([^\\)]*\\)(\\s*\\{[^\\}]*)?\\s*$",
   "foldingStopMarker": "^\\s*\\}",
   "keyEquivalent": "^~J",
   "name": "JavaScript",
@@ -17,7 +17,7 @@
     {
       "captures": {"1": {"name": "support.class.js"}, "2": {"name": "support.constant.js"}, "3": {"name": "keyword.operator.js"}},
       "comment": "match stuff like: Sound.prototype = { … } when extending an object",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.(prototype)\\s*(=|←)\\s*",
+      "match": "([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\.(prototype)\\s*(=|←)\\s*",
       "name": "meta.class.js"
     },
     {
@@ -34,7 +34,7 @@
         "10": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: Sound.prototype.play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.(prototype)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\.(prototype)\\.([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.prototype.js"
     },
     {
@@ -45,7 +45,7 @@
         "4": {"name": "keyword.operator.js"}
       },
       "comment": "match stuff like: Sound.prototype.play = myfunc",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.(prototype)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*",
+      "match": "([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\.(prototype)\\.([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\s*(=|←)\\s*",
       "name": "meta.function.js"
     },
     {
@@ -61,7 +61,7 @@
         "9": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: Sound.play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\.([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\.([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
@@ -76,7 +76,7 @@
         "8": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: play = function() { … }",
-      "match": "([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?$][\\wαβγδεζηθικλμνξπρστυφχψω?$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "([a-zA-Z_Α-ΡΣ-Ωα-ω?$][\\wΑ-ΡΣ-Ωα-ω?$]*)\\s*(=|←)\\s*(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
@@ -89,7 +89,7 @@
         "6": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match regular function like: function myFunc(arg) { … }",
-      "match": "\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.js"
     },
     {
@@ -103,7 +103,7 @@
         "7": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "match stuff like: foobar: function() { … }",
-      "match": "\\b([a-zA-Z_αβγδεζηθικλμνξπρστυφχψω?.$][\\wαβγδεζηθικλμνξπρστυφχψω?.$]*)\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "\\b([a-zA-Z_Α-ΡΣ-Ωα-ω?.$][\\wΑ-ΡΣ-Ωα-ω?.$]*)\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.json.js"
     },
     {
@@ -124,12 +124,12 @@
         "14": {"name": "punctuation.definition.parameters.end.js"}
       },
       "comment": "Attempt to match \"foo\": function",
-      "match": "(?:((')([^']*)('))|((\")([^\"]*)(\")))\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$αβγδεζηθικλμνξπρστυφχψω][\\wαβγδεζηθικλμνξπρστυφχψω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
+      "match": "(?:((')([^']*)('))|((\")([^\"]*)(\")))\\s*:\\s*\\b(function|λ)\\s*(\\*)?\\s*([a-zA-Z_$Α-ΡΣ-Ωα-ω][\\wΑ-ΡΣ-Ωα-ω]*)?\\s*(\\()([^)]*?)(\\))(?=\\s*\\{)",
       "name": "meta.function.json.js"
     },
     {
       "captures": {"1": {"name": "keyword.operator.new.js"}, "2": {"name": "entity.name.type.instance.js"}},
-      "match": "(new)\\s+([\\wαβγδεζηθικλμνξπρστυφχψω]+(?:\\.[\\wαβγδεζηθικλμνξπρστυφχψω]*)?)",
+      "match": "(new)\\s+([\\wΑ-ΡΣ-Ωα-ω]+(?:\\.[\\wΑ-ΡΣ-Ωα-ω]*)?)",
       "name": "meta.class.instance.constructor"
     },
     {"match": "\\b(console)\\b", "name": "entity.name.type.object.js.firebug"},
@@ -149,6 +149,14 @@
       "end": "\"",
       "endCaptures": {"0": {"name": "punctuation.definition.string.end.js"}},
       "name": "string.quoted.double.js",
+      "patterns": [{"match": "\\\\(x\\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)", "name": "constant.character.escape.js"}]
+    },
+    {
+      "begin": "`",
+      "beginCaptures": {"0": {"name": "punctuation.definition.string.begin.js"}},
+      "end": "`",
+      "endCaptures": {"0": {"name": "punctuation.definition.string.end.js"}},
+      "name": "string.quoted.interpolated.js",
       "patterns": [{"match": "\\\\(x\\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)", "name": "constant.character.escape.js"}]
     },
     {"begin": "/\\*\\*(?!/)", "captures": {"0": {"name": "punctuation.definition.comment2.js"}}, "end": "\\*/", "name": "comment2.block.documentation.js"},

@@ -57,16 +57,16 @@ transform_json ← λ(str){↩ plist.build(JSON.parse(str))}
 
 main ← λ(){
 	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
-	fs(arg.in).find('*').filter(λ(ι){↩ !fs(ι).dir()}).map(λ(ι){t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
+	φ`${arg.in}/**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
 			(fs(R(arg.out+'/'+t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
 		: (fs(R(arg.out+'/'+ι)).$ = fs(arg.in+'/'+ι).$)
 		})
-	roots ← fs(arg.in).find('>').map(λ(ι){↩ ι.replace(arg.in,arg.out)})
-	out ← fs(arg.out).find('*').filter(λ(ι){↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(λ(ι){↩ !fs(ι).dir()})
+	roots ← φ`${arg.in}/*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
+	out ← φ`${arg.out}/**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
 	_.difference(out,written)
 		.filter(λ(ι){ ↩ !/Package Control\./.λ(ι.replace(arg.out,'')) })
-		.map(λ(ι){ fs(ι).$ = null })
+		.map(λ(ι){ φ(ι).set(null) })
 	}
 
 switch (arg.cmd) {

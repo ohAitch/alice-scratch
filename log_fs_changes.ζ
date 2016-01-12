@@ -17,6 +17,6 @@ fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 
 process.chdir(fs('~/ali/scratch').path)
 fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || /(^|\/)\.history(\/|$)/.λ(fl)) ↩
-	print('['+moment(time).toString()+']', pad(type,' '.repeat(6)), fl)
+	print(moment(time), pad(type,' '.repeat(6)), fl)
 	fs('.history/'+moment(time).toISOString()+' '+(type==='unlink'?'X':'=')+' '+basename_encode(fl)).$ = type==='unlink'? '' : fs(fl).$
 	})

@@ -1,23 +1,174 @@
-let’s design a proper fucking filesystem api
-get persistence right, ACID, whatever
-let’s do it so that it’s done and we’re done
+// #mission let’s design a proper fucking filesystem api
+// #mission let’s do it so that it’s done and we’re done
 
-here’s a list of everything we know about that works with files
-hey future alice: you’re gonna be pretty immersed in the things you’ve done already. only go ahead if you can get over that.
+a filesystem
+is made of paths, which are URLs with some extra functionality. they represent directories and files and symlinks, and also FIFO, and occasionally hard links and isBlockDevice/isCharacterDevice/isSocket and maybe something weirder
+a path may correspond to a thing that exists but you don’t have permission for
+	Error: EACCES: permission denied, scandir '/.Trashes'
+paths can be normalized and absolutized and de-symlinked
+	∃ a standard pronoun “working directory”; relative paths are interpreted as relative to it. in processes, it’s a directory; in html pages, it’s an http origin
+paths can have extensions, which are often meaningful. (basename/filename, ext/suffix)
+paths which exist have metadata, such as .birthtime
+directories are always just a list of paths relative to themselves and are sometimes but usually not formatted
+files are always just a list of bytes and are usually but not always formatted
+paths have {{URL,unixpath}{,symlinkified},bashpath} representation
+formats include
+	binary / bytes   
+	utf8             
+	lines            
+	json             .json
+	image            
+	png              .png
+	jpg              .jpg
+	xml              .xml /^<\?xml /
+	plist            
+	base64           .64
+	lines of base64  
+	csv              .csv
+	pixels (grey)    
+	stdin            fd:0
+	FIFO             fd:0…
+	:executable      ,/^#!/ | try{fs.accessSync(ι,fs.X_OK); ↩ true} catch(e){↩ false}
+files at paths can be GET POST PUT DELETE, but POST PUT DELETE can be folded into SET, but we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help). GET POST PUT have really tangly apis for all sorts of efficiency concerns. symlinks pretend to be their targets sometimes and show themselves as symlinks some other times.
+	? transform-move $bashpath (includes mv)
+	? synchronize datasource 1 with datasource 2 (includes cp -r)
+		when datasource 1 is an in-memory datastructure and datasource 2 is a filesystem piece and a destination, this is ... shit, it’s a hand-rolled mongo, isn’t it
 
-in the line of jquery, we would be removing duplicates all over the place
+// ----- uncategorized ---- //
 
-https://api.jquery.com/has-selector/ - or /.. ?
-of course there are globs, like, instead of fs('comments').find('>') you could just say fs('comments/*')
-maybe you could even say fs('comments/**')
+there exists a giant stream of all filesystem events that we can get mostly-reliable slices of
+we need to be careful with non-atomic transactions
+we need to think about how this interacts with concurrency
+we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
+	“like, it should be caching urls all the time.”
 
+// ------ impl notes ------ //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+? synchronize datasource 1 with datasource 2
+
+? transform-move $bashpath
+
+[change basename before extension.]
+[change basename. replace non-basename.]
+[replace .js extension & parse. replace non-basename.]
+[replace extension. exec to filename utility which copies, so unlink.]
+[replace non-basename.]
+[strip extension & parse. change basename. replace non-basename.]
+[strip extension & parse. replace non-basename.]
+[unlink.]
+
+append / @($bashpath) += $utf8
+
+basename w/o extension of $bashpath
+
+basename_encode
+
+change working directory // change a pronoun (typical pronouns: global, working directory, jQuery $, ι)
+
+copy $bashpath to $bashpath
+
+find: $bashpath find .64 children (basenames / names relative to bashpath)        //  cwd bashpath; './*.64' ?basename?
+find: $bashpath find children (basenames)                                         //  bashpath+'/*' ?basename?
+find: $bashpath find children (full names)                                        //  bashpath+'/*'
+find: $bashpath find children (full names) | sort | [-1] | read it as json.       //  bashpath+'/*'
+find: $bashpath find descendants which are files (name relative to bashpath)      //  cwd bashpath; φ`./**`._.filter('file')
+find: $bashpaths | map find .js children (full names)                             //  φ`${bashpath}/**/*.js'
+find: ($bashpath find descendants with name = $utf8)[0] // with good performance  //  φ`${bashpath}/**/${utf8}`
+find: for children in $bashpath, read it as json // with good performance         //  './**'
+find: for children in $bashpath: read it as json                                  //  './**'
+find: in $bashpath: find descendants of working-dir that are files                //  './**' filter file
+find: in $bashpath: path in $bashpath | filter | delete                           //  bashpath+'/**'
+find: working directory find children (basenames)                                 //  './*' ?basename?
+find: working directory find descendants (full names) (with their contents)       //  './**'
+sets: fs('.').parents().children('{run,index,main}{,.sh,.ζ,.js,.py}')[0]          //  ./..*/{run,index,main}{,.{sh,ζ,js,py}}
+// Mage - 0{47..63}.png
+
+if extension is .json, do something with the basename w/o extension, else do something else
+if modifying the first two bytes of a file, check if they’re now #! and chmod +x it if so.
+
+metadata: $bashpath exists?
+metadata: $bashpath-set | sort stat.birthtime | [-1]
+metadata: is dir?
+
+mktemp
+
+move $bashpath to $bashpath
+
+read $bashpath (as utf8)
+read $bashpath as base64
+read $bashpath as bytes
+read $bashpath as lines
+read $bashpath as lines * as base64
+read $bashpath whose contents are obviously xml | do stuff with the parsed xml
+read $bashpath.json
+read $bashpath.json (lazily)
+read and write symlinks
+read stdin to Buffer (to utf8)
+read-and-unlink $bashpathfile
+read: $bashpath is json (parsing empty file as null). read $bashpath.
+
+resolve $bashpath in $bashpath
+resolve-dirname / resolve-(absolute path of “compilation unit”)
+resolve-symlinks $bashpath
+resolve: (resolve $PWD) absolute path of $bashpath
+
+sets: globs probably aren’t bashpaths, but they’re fun!
+
+unlink $bashpathfile
+unlink recursive / rm -r
+
+watch files ∈ path
+write $bashpath from $csv (async okay)
+write $bashpath from $utf8
+write '' to $bashpath
+write to $bashpath from $utf8
+write to $bashpath from lines
+write to $bashpath.json from $json
+write to $bashpath.json from ($json from $bashpath as plist) // and be pretty
+write to $bashpath.png from $image
+write to ($bashpath as binary) from (read-and-unlink $bashpath as base64)
+write: $bashpath is json. write to $bashpath from $json
+write: atomic write to $bashpath from lines
+write: send Buffer to Duplex to file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----- here’s a list of everything we know about that works with files ---- //
+// hey future alice: you’re gonna be pretty immersed in the things you’ve done already. only go ahead if you can get over that.
 read $unixpath (as utf8)
 	q ← fs('corpus/test.js').$
 	jsdom.env(fs(ι).$,...)
 	// represented as a Path, it has properties path_ and $/val/value/deref
 write to $unixpath from $utf8
 	fs('../'+date.replace(/-/g,'/')+'/'+slug+'.html').$ = text
-	print(i,ι); fs(out).$ = execᵥ('curl -s '+sh_encode(ι));
+	print(i,ι); fs(out).$ = curl_s(ι);
 write to $bashpath.png from $image
 	(merge weather images @ hour 0, index 9 10 11 12) (″ @ hour 48) → @test.png
 $unixpath|bashpath is json (parsing empty file as null). read $unixpath|bashpath.
@@ -115,7 +266,7 @@ write '' to $bashpath
 	[change basename. replace non-basename.] t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])
 	[strip extension & parse. replace non-basename.] (fs(arg.out+'/'+R(t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
 	[strip extension & parse. replace non-basename.] replace $in with $out in all writes/deletions. <...> ≈/\.json$/ -> write @file as plist to file without extension
-	[replace non-basename.] : (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$)
+	[replace non-basename.] : (fs(arg.out+'/'+R(ι)).$ = fs(arg.in+'/'+ι).$) // cp(φ`{${arg.in},${arg.out}}${ι}`) ?
 	[replace non-basename.] replace $in with $out in all writes/deletions. <...> else -> write @file to file
 	[unlink.] .map(λ(ι){ fs(ι).$ = null })
 	[replace extension. exec to filename utility which copies, so unlink.] convert "$v" "${v%.*}.png" && rm "$v"
@@ -124,7 +275,7 @@ write '' to $bashpath
 
 if modifying the first two bytes of a file, check if they’re now #! and chmod +x it if so.
 	fs('~/Documents/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack'; fs.chmod(fs('~/Documents/keyrc_power_key.sh').path,0o777)
-for children of $unixname: read it as json
+for children in $bashpath: read it as json
 	fs('comments').find('>').map(λ(ι){↩ JSON.parse(fs(ι).$)})
 ($unixpath find descendants with name = $utf8)[0] // with good performance
 	guess ← fs(process.env.HOME+'/ali').findˢ('#'+place).next().value
@@ -201,7 +352,7 @@ in $bashpath: path in $bashpath | filter | delete
 		.map(λ(ι){ fs(ι).$ = null })
 	for paths ∈ (in > *): delete unless (we wrote to it earlier  ||  within in and ≈/Package Control\./)
 mktemp
-	user_js ← '/tmp/userscript_'+Math.random().toString(36).slice(2,10)+'.user.js'
+	user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
 		fs(user_js).$ = t
 		osa_encode('file://'+user_js)
 read stdin to Buffer (to utf8)
@@ -234,13 +385,14 @@ notes on filesystem selectors
 	//	⟨filename⟩                 foobar
 	//	:file                      
 	//	:dir                       
+	//  :has(⟨selector⟩)           foo/**.bar/..
 	unresolved interesting things:
 	set-normalization to [those which exist. uniq.]
 	normalization (remove excess . ..)
 	(canonical form *does* use ~/)
 	links, symbolic and hard (and consistent sane behavior in the presence of them)
 
-<more>
+more on file formats
 	export ping_file ← file dirty.getDataPath()+'/pings.log'
 		ping_file is an array of {time :: unix time, period :: float, tags :: str}, parsed out of its lines:
 			// 2014-03-26/19:51:56-07:00(p22.5)? a b c \(a: comment\)
@@ -262,3 +414,55 @@ notes on filesystem selectors
 
 	read plist: npm::plist.parse(it)
 	show plist: npm::plist.build(it)
+
+	E.pixels = {}
+	E.pixels.read = λ(ι,type='rgb',cb){require('get-pixels','3.2.3')(fs(ι).path,λ(e,{data,shape:[X,Y,d],stride}){
+		// maybe just use Symbol.iterator ?
+		;(d === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+		if (type!=='grey') throw Error()
+		ι ← Array(X*Y); for(i←0;i<ι.length;i++) ι[i] = data[i*4]
+		cb(e,{X,Y,ι}) }) }
+	E.pixels.show = λ({ι,X,Y},type='rgb',to){
+		t ← new (require('pngjs','2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
+		if (0);
+		// else if (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
+		// else if (type==='rgb' ) for(i←0;i<ι.length;i+=3) {D[p++] = ι[i]; D[p++] = ι[i+1]; D[p++] = ι[i+2]; D[p++] = 0xff}
+		else if (type==='grey') for(i←0;i<ι.length;i++) {D[p++] = D[p++] = D[p++] = ι[i]; D[p++] = 0xff}
+		else throw Error()
+		t.pack().pipe(fs.createWriteStream(fs(to).path)) }
+
+	pixels.read(in_,'grey',λ(e,{X,Y,ι}){
+		...
+		pixels.show({X,Y,ι:r},'grey',out)
+		})
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------------------------- code ---------------------------------- //
+
+// we *can* return Strings or Arrays with a φ property ... but it's probably best not to
+
+φ.mktemp.randomstring = λ(fmt){t ← /[0-9a-z]/.genex_0(); ↩ fmt.replace(/(X+)([^X]*)$/,λ(ˣ,ι,r){↩ ι.replace(/./g,()=>rand(t)) + r})} // except as a proper file or w/e https://github.com/sasaplus1/mktemp/blob/master/lib/mktemp.js
+
+//! bad - should use directed Dijkstra's from all roots with edge length equal to the number of files in a dir
+// sample impl:
+	// all ← λ(ι){try {↩ fs.readdirSync(ι).map(t => ι+'/'+t) } catch (e) {↩ []}}
+	// root ← '.'
+	// dist ← {}; dist[root] = 0
+	// next ← [root] // should be pqueue
+	// out ← []
+	// while (next.length) {t ← next._.min(λ(ι){↩ dist[ι]}); next = next._.without(t); out.push(t); at←; (at=all(t)).map(λ(ι){dist[ι] = dist[t] + at.length; next.push(ι)}) }
+// or just:
+	// all ← λ(ι){try {↩ fs.readdirSync(ι).map(λ(t){↩ ι+'/'+t}) } catch (e) {↩ []}}; root ← '.'; out ← []
+	// (λ λ(ι,dist){out.push([dist,ι]); at←;(at=all(ι)).forEach(λ(t){λ(t,dist + at.length)})})(root,0)
+	// q ← out._.sortBy(0)._.map(1)

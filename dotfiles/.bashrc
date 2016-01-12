@@ -1,5 +1,6 @@
 __dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
 ########### private ##########
+λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\}"; printf -- "${v//↩/\\\\q}↩"; done | ζ -p 'ι = ι.replace(/↩$/,"").split("↩").map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
 -q(){ "$@" &>/dev/null; }
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 chmodxprint(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
@@ -45,9 +46,12 @@ d(){ ( shopt -s nullglob; cd "${1:-.}"; for v in .[!.] .??* * .; do du -hs "$v" 
 del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ (-q qlmanage -p "$@" &); }
 man(){ /usr/bin/man "$@" | col -bfx | sb; }
-im_to_png(){ for v in "$@"; do [[ $v == *.png ]] || { convert "$v" "${v%.*}.png" && rm "$v"; }; done; }
-im_pdf_to_png() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 "${v%.*}.png"; done; }
-im_resize(){ t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; }
+im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
+im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
+# im_to_png(){ λ 'ι.filter(ι => !/\.png$/.λ(ι)).map(ι => execᵥ("convert ")), void 0' "$@"; }
+im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
+im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
+im_resize(){ t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; } #! wth are you using scale
 im_concat(){
 	tile=$(echo "$1" | egrep -q '^(\d+x\d*|x\d+)$' && { echo "$1"; shift; } || echo x1)
 	out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
@@ -56,15 +60,13 @@ im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
 im_dateify(){
 	echo=$([[ $1 = -d ]] && echo echo)
 	for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); $echo mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
-im_grayscale(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
-im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 l(){ ls -AG "$@"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
-# pb(){ local v="$(ζ -p '"pastebin_jsonp("+JSON.stringify(ι)+")"' | _pastebin_id)"; _chrome "$v"; v="http://alice0meta.github.io/txt#$v"; echo "$v" | tr -d '\n' | p; echo "copied: "; }
-pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice0meta.github.io/txt#$v"; echo "$v" | p; echo "copied: $v"; }
+# pb(){ local v="$(ζ -p '"pastebin_jsonp("+JSON.stringify(ι)+")"' | _pastebin_id)"; _chrome "$v"; v="http://alice.sh/txt#$v"; echo "$v" | tr -d '\n' | p; echo "copied: "; }
+pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 dl_fix(){ f ~/Downloads; f ~/pg; ζ -e '
 	from ← process.env.HOME+"/Downloads"
 	out ← process.env.HOME+"/pg"
@@ -79,7 +81,7 @@ export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput s
 date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this(){ home_link "$PWD"; }
 x(){ E=$?; if [[ $E = 0 ]]; then is_term || beep $E; exit; fi; is_term || { osascript -e 'tell app "terminal" to activate'; beep $E; }; return $E; }
-rmds(){ ( shopt -s globstar; rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS_STORE ) }
+rmds(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ) }
 ↩(){
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
@@ -88,14 +90,17 @@ rmds(){ ( shopt -s globstar; rm -f ~/{,Desktop,Downloads}/.DS_STORE ~/ali/**/.DS
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); chmodxprint "$t"; "$t" "$@"; }; }
 
 ######## external only #######
-](){ echo "$*" | ζ -e 'osaᵥ("tell app \"system events\" \n" +
+](){ λ 'ι = ι.join(" "); osaᵥ("tell app \"system events\" \n" +
 	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
 	ι.split(/ +] +/g).map(ι =>
 		(t=/^FnF(.)$/.λ(ι))? "key code "+[,107,113][t[1]]||(λ(){throw Error()})() :
+		(t={"↩":36}[ι])? "key code "+t :
 			"keystroke "+osa_encode(ι.replace(/^⌘/,""))+(/^⌘/.λ(ι)? " using command down" : "")
-			).join("\n") + "\n end tell")'; }
+			).join("\n") + "\n end tell")
+	void 0' "$@"; }
 _in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
 alias ·='eval "$(cat /tmp/__·)"; rm /tmp/__·;'
+alias _clr='cd ~; /usr/bin/clear && printf "\e[3J";'
 
 ####### not interactive ######
 beep(){ (afplay "$__dirname/$([[ $1 = 1 ]] && echo "fail.wav" || echo "done.wav")" &); }

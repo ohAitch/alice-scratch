@@ -39,8 +39,9 @@ _ ← require('underscore')
 global.stream = E.stream
 E.Reflect = require('harmony-reflect') // ought to hook into both Proxy and Reflect and be lazy, but that's too hard, and it's a temporary hack
 
-hook_stdout ← λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
+simple_template ← λ(ss,ιs){↩ _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')}
 
+E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
 E._require_lazy = λ(require){
 	↩ _(λ Λ(ι,version){
 		if (arguments.length === 1) {try {↩ require(ι)} catch (e) {if (!(e.code === "MODULE_NOT_FOUND")) throw e; ↩ Λ(ι,undefined)}}
@@ -59,6 +60,7 @@ E._require_lazy = λ(require){
 write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? ι : util.inspect(ι,{depth:null}))}
 E.p = λ(ι){↩ arguments.length === 0? execᵥ('pbpaste') : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)}
 E.sb = λ(ι){↩ arguments.length === 0? sublimeᵥ('view.substr(sublime.Region(0,view.size()))') : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)}
+// E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(sublime.Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)}
 })()
 E.print = λ(…a){process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n'); ↩ a[-1]}
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
@@ -77,10 +79,13 @@ P({ 'Number.prototype.λ':{get:λ(){m←@; r ← ι => ι[m]                    
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
 P({ 'RegExp.prototype.λ':{get:λ(){θ←@; r ← ι => ι === undefined || ι === null? ι : ι.match(θ); r.ι = @; ↩ r}} })
 E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([~~ι,(ι-~~ι)*1e9]); ↩ t[0] + t[1]*1e-9}
-E.bench = λ(f){TH←0.4; r←0; I←1; for(t←hrtime(); hrtime(t) < TH;) {for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ hrtime(t) / r}
+E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ hrtime(hr) / r}
+memo_frp ← λ(name,f){a ← moment().toISOString(); ι ← f(); b ← moment().toISOString(); fs('~/.memo_frp/'+basename_encode(name)+'/'+basename_encode(a+' '+Buffer(15..map(()=> rand(0x100))).toString('base64'))).$ = JSON.stringify({name, date:[a,b], ι}); ↩ ι}
+E.curl_s = λ(ι){↩ memo_frp('curl -s', ()=> execᵥ('curl -s '+sh_encode(ι)))} // some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
+E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ Array.isArray(a)? _.sample(a) : (Math.random()*a)|0; case 2: ↩ (Math.random()*(b-a) + a)|0}}
 
 E.ζ_compile = ζ_compile
-E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$αβγδεζηθικλμνξπρστυφχψω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
+E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
 E.ζ_repl_start = λ(opts){
 	//! aaaaa why does this break if i remove useGlobal:true ?
 	repl._builtinLibs = []
@@ -102,7 +107,11 @@ E.ζ_repl_start = λ(opts){
 		self.memory(cmd)
 		if (err) self._domain.emit('error', err.err || err)
 		self.bufferedCommand = ''
-		if (!err && ret !== undefined) {self.context.__ = ret; self.outputStream.write(self.writer(ret)+'\n')}
+		if (!err && ret !== undefined) {
+			self.context.__ = ret
+			try {t ← Array.isArray(ret) && ret.length > 1 && ret.every(ι => ι===ret[0])? self.writer([ret[0]])+' * '+self.writer(ret.length) : self.writer(ret)}
+			catch(e){t ← '<repl inspect failed>:\n'+(e&&e.stack)}
+			self.outputStream.write(t+'\n') }
 		self.displayPrompt()
 		})
 	self.context.require = _require_lazy(self.context.require)
@@ -121,7 +130,7 @@ E.execᵥ = λ(ι,opts){↩ (child_process.execSync(ι,opts)+'').replace(/\n$/,'
 E.fs_ipc = {
 	emit: λ(port,ι){fs('/tmp/fs_ipc_'+port).$ = ι; ↩ execᵥ('curl -s -X PUT 127.0.0.1:'+port)},
 	on: λ(port,cbₐ){http.createServer(λ(ˣ,res){
-		t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null; global.ι = fs('/tmp/fs_ipc_'+port+'_stdin').$.replace(/\n$/,'')
+		t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null; global.ι = fs('/tmp/fs_ipc_'+port+'_stdin').$.replace(/\n$/,''); fs('/tmp/fs_ipc_'+port+'_stdin').$ = null
 		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdout(); try {cbₐ(t); end(r())} catch(e){end(r()+''+(e.stack||e)+"\n")}
 		}).listen(port)},
 	}
@@ -138,7 +147,7 @@ jquery_script ← λ(extra){↩ "t ← document.createElement('script'); t.src =
 E.chrome_js = λ(ι,tab){c_js(osa,ι+'; undefined',tab)}
 E.chrome_jsᵥ = λ(ι,tab){c_js(osaᵥ,"t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← eval("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined",tab); ↩ c_js_sandbox("document.querySelectorAll('#applescript_hack')[0].textContent",tab)}
 E.chrome_$ = λ(ι,tab){chrome_js("f ← λ(){"+ι+"}; if (window.jQuery) f(); else {"+jquery_script("t.onload = f")+"}",tab)}
-E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+Math.random().toString(36).slice(2); fst ← 1; while ((r=chrome_jsᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, jquery_script()) : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
+E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join(''); fst ← 1; while ((r=chrome_jsᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, jquery_script()) : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
 
 E.sublimeᵥ = λ(ι){t ← JSON.parse(fs_ipc.emit(JSON.parse(fs('~/Library/Application Support/Sublime Text 3/Packages/User/external_command.py').$.match(/#↩(.*)/)[1]).PORT,ι)); if (t !== null) ↩ t}
 
@@ -160,7 +169,7 @@ P({
 // 'Buffer.prototype.inspect':λ ρ(){↩ ρ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 'RegExp.prototype.genex_0':λ(){
 	parse ← λ(ι){
-		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:ι.slice(1,-1).replace().split('')} : ι})}
+		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:ι.slice(1,-1).match(/.-.|./g).mapcat(ι => ι.length === 1? [ι] : _.range(ι[0].charCodeAt(0),ι[2].charCodeAt(0)+1).map(String.fromCharCode.X))} : ι})}
 		w ← λ(ι){if (!_.isArray(ι)) ↩ ι; t←; r ← []; while ((t=ι._.indexOf('|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
 		↩ w(q(ι))}
 	q ← ι => ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b) => a.mapcat(a => b.map(b => a+b)),['']) : [ι]
@@ -193,67 +202,13 @@ def_lazy(ˡ,'Path',λ(){
 	def(Path.prototype,'$',λ(){↩ @._$()}, λ(ι){↩ @['='](ι)})
 	// path_ manipulation
 	Path.prototype.dir = λ(){try{↩ fs.statSync(@.path).isDirectory()} catch(e){if (!(e.code==='ENOENT')) throw e; ↩ false}}
-	Path.prototype.exists = λ(){↩ fs.existsSync(@.path)}
+	Path.prototype.exists = λ(){try {fs.statSync(@.path); ↩ true} catch(e){↩ false}}
 	Path.prototype.resolve = λ(){↩ path.resolve(@.path)}
 	Path.prototype.name = λ(ext){↩ path.basename(@.path,ext)}
 	Path.prototype.parent = λ(){↩ path.dirname(@.path)}
 	// find
 		// it's really weird how this returns a thing that you can't actually pass to fs()
 		// maybe we'll fix this by returning a more magical, jquery-like thing?
-	Path.prototype.find = λ(sel){↩ Array.from(@.findˢ(sel))}
-	Path.prototype.findˢ = λ*(sel){
-		// does not handle uniqueness in selections
-		// wtf is up with selectors only being a .find() thing and not a fs() thing? and not returning selections so they're not chainable?
-		// doesn't normalize everything properly or reliably
-		// doesn't follow symlinks (note: when you do follow symlinks, know that not all symlinks lead places)
-
-		seq ← λ*(ι){for (i←0;i<ι.length;i++) yield ι[i]}
-		WALK ← λ*(t,mode){
-			switch (mode) {
-				default: throw Error('↯')
-				break; case '>': yield* seq(fs.readdirSync(t).map(ι => t+'/'+ι))
-				break; case '*':
-					root ← t+'/'
-					//! bad - should use directed Dijkstra's from all roots with edge length equal to the number of files in a dir
-					// sample impl:
-						// all ← λ(ι){try {↩ fs.readdirSync(ι).map(t => ι+'/'+t) } catch (e) {↩ []}}
-						// root ← '.'
-						// dist ← {}; dist[root] = 0
-						// next ← [root] // should be pqueue
-						// out ← []
-						// while (next.length) {t ← next._.min(λ(ι){↩ dist[ι]}); next = next._.without(t); out.push(t); at←; (at=all(t)).map(λ(ι){dist[ι] = dist[t] + at.length; next.push(ι)}) }
-					// or just:
-						// all ← λ(ι){try {↩ fs.readdirSync(ι).map(λ(t){↩ ι+'/'+t}) } catch (e) {↩ []}}; root ← '.'; out ← []
-						// (λ λ(ι,dist){out.push([dist,ι]); at←;(at=all(ι)).forEach(λ(t){λ(t,dist + at.length)})})(root,0)
-						// q ← out._.sortBy(0)._.map(1)
-					// note: as is will inf-loop on scary things
-					walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try {fs.lstatSync(fs(root+t).path).isDirectory()? (yield root+t, yield* walk_(t+'/')) : yield root+t} catch (e) {}}} catch (e) {}}
-					yield* walk_('')
-				} }
-
-		sel = sel.trim()
-		if (sel === '') ↩;
-
-		ERR ← λ(){throw Error('[ζ] selector is not supported: '+sel)}
-
-		sel_a ← (' '+sel).replace(/(^|[^>* ])( +(?![>* ]))/g,'$1 * ').trim().split(/ +/)
-		if (!sel_a.every(ι => ι.match(/^>|\*|\.\S+|#\S+$/))) ERR()
-		//! should be: if (!sel_a.every(λ(ι){↩ ι.match(/^(>|\*|\.\S+|#\S+)$/)})) ERR()
-
-		r ← seq([@.path_])
-		sel_a.forEach(λ(ιt){
-			r_ ← r
-			temp ← (λ*(){t←; //r_ ← r
-				var [sw,…ι] = ιt; switch(sw) {
-					default: ERR()
-					break; case '>': case '*': while (t=r_.next(),!t.done) {t=t.value; yield* WALK(t, sw)}
-					break; case '.': while (t=r_.next(),!t.done) {t=t.value; if (t.match(RegExp(regex_encode('.'+ι)+'$'))) yield t}
-					break; case '#': while (t=r_.next(),!t.done) {t=t.value; if (t.match(RegExp(regex_encode(ι)+'$'))) {yield t; break}}
-					} })()
-			r = temp
-			})
-
-		yield* r}
 	// misc
 	Path.prototype.toString = λ(){↩ path.resolve(@.path).replace(RegExp('^'+regex_encode(process.env.HOME)+'(?=/|$)'),'~')}
 	// content manipulation
@@ -267,20 +222,78 @@ def_lazy(ˡ,'Path',λ(){
 		mkdir_p(path.resolve(path.dirname(@.path)))
 		fs.writeFileSync(@.path,ι) }
 	↩ Path })
+def_lazy(E,'φ',λ(){
+	//! needs to handle things like ${child}*
+	//! needs to handle things like {,foo,bar}
+	//! dedup all globs, existence_matching or no (including parent-ness (slightly weird with symlinking))
+	//! make it more jquery-like, so that when it returns an array the elements of the array are literally just strings
+
+	walk ← λ*(root,files){root += '/'
+		walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try {fs.lstatSync(fs(root+t).path).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t))} catch (e) {}}} catch (e) {}}
+		yield* walk_('') }
+	existsSync ← λ(ι){try {fs.statSync(ι); ↩ true} catch(e){↩ false}}
+	mkdir_p ← λ Λ(ι){try {fs.statSync(ι).isDirectory() || fs.mkdirSync(ι)} catch (e) {t ← path.dirname(ι); if (e.code !== 'ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι)}}
+	Φ ← λ(ι){↩ new _Φ(ι)}; _Φ ← λ Φ(ι){@.ι = ι}; _Φ.prototype = {
+		exists:λ(){try {fs.statSync(@.ι); ↩ true} catch(e){↩ false}},
+		dir:λ(){try{↩ fs.statSync(@.ι).isDirectory()} catch(e){↩ false}},
+		resolve:λ(){↩ path.resolve(@.ι)},
+		name:λ(ext){↩ path.basename(@.ι,ext)},
+		parent:λ(){↩ path.dirname(@.ι)},
+		get:λ(){↩ fs.readFileSync(@.ι)+''},
+		set:λ(){if (@.dir()) throw Error(); if (ι == null) @.exists() && fs.unlinkSync(@.ι); else {mkdir_p(path.resolve(path.dirname(@.ι))); fs.writeFileSync(@.ι,ι)}},
+		toString:λ(){↩ @.ι},
+		pretty:λ(){↩ @.ι.replace(RegExp('^'+regex_encode(process.env.HOME)+'(?=/|$)'),'~')},
+		inspect:λ(ˣ,opts){↩ opts.stylize('φ','special')+util.inspect(@.ι,opts)},
+		get url(){↩ encodeURI('file:'+@.resolve())},
+		}
+
+	↩ λ(ss,…ιs){
+	if (ιs.length===0 && ss instanceof _Φ) ↩ ss
+	if (ιs.length===0 && typeof(ss)==='string') ↩ Φ(ss)
+	existence_matching ← /\*/.test(ss.join(''))
+	option_globbing ← /\{[^}]*?,/.test(ss.join(''))
+
+	ι ← simple_template(ss,ιs)
+	if (ι._.isEqual(['~'])) ι = [process.env.HOME]; else {t ← (ι[0].raw||ι[0]).replace(/^~(?=\/)/,process.env.HOME); ι[0].raw? (ι[0].raw = t) : (ι[0] = t)}
+	if (existence_matching || option_globbing) {
+		ι = ι.mapcat(ι => ι.raw? [ι] : ι.match(/\/|\*\*(?:\/|$)|[^\/]+/g)||[])
+		r ← ['']; ι.forEach(λ(ι){
+			if (ι==='..*') r = r.mapcat(ι => […(λ*(){if (!path.isAbsolute(ι)) {for(;;){yield ι; if (ι==='.') break; ι = path.dirname(ι)}; ι = path.resolve(ι); if (ι==='/') ↩}; for(;;){yield ι; if (ι==='/') break; ι = path.dirname(ι)}})()])
+			else if (ι==='**') r = r.mapcat(ι => […walk(ι, true)])
+			else if (ι==='**/') r = r.mapcat(ι => […walk(ι, false)].map(ι => ι+'/'))
+			else if (!ι.raw && ι.includes('*')) r = r.mapcat(r => fs.readdirSync(r).filter(RegExp('^'+ι.replace(/\*|[^*]+/g, ι => ι==='*'? '[\\s\\S]*' : regex_encode(ι))+'$').λ).map(ι => r+'/'+ι))
+			else r = r.map(ι.raw? (t => t+ι.raw) : (t => t+ι))
+			})
+		r = r.map(path.normalize.X)
+		if (existence_matching) r = r.filter(existsSync)
+		↩ r.map(Φ)}
+	else ↩ Φ(ι.map(ι => ι.raw || ι).join(''))
+	} })
+
 
 require.extensions['.ζ'] = λ(module,ι){module._compile(ζ_compile(fs.readFileSync(ι,'utf8').replace(/^((?:#!.*\n)?)/,'$1require = _require_lazy(require);')),ι)}
 
 // ---- things that are more “dotfile” or “library of their own” than “ζ” --- //
 E.email = λ(){
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
-		.map(ι => osa('tell app "chrome" to open location '+osa_encode(ι)))
-	osa('tell app "chrome" to activate') }
+		.map(ι => osaᵥ('tell app "chrome" to open location '+osa_encode(ι)))
+	osaᵥ('tell app "chrome" to activate') }
 E.urijs = ˡ.urijs
-E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
+E.nice_url = λ(ι){t←; urijs ← ˡ.urijs; var {sourcemap} = ι; ι=ι+''
 	if (t=/^"(.*)"$/.λ(ι)) ↩ '“'+t[1]+'”' //! bad hack
 
 	apply_regexes ← regs => multiline(regs).split(/\n/g).map(λ(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
+	URL ← /\b(?:https?:\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
+	parse_alicetext ← ι => _.zip(ι.split(URL).map(ι => ({type:'text', ι})), (ι.match(URL)||[]).map(ι => ({type:'url', ι})))._.flatten(true).filter(ι => !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
+	// ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=urijs(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+''); ↩ ι})._.map('ι').join('')
+
+	if (sourcemap && sourcemap.title && sourcemap.url && (t=urijs(ι.slice(…sourcemap.url)),
+		t.domain() in {'github.com':0} ||
+		t.domain()+t.path()==='google.com/search'
+		)) ι = ι.slice(…sourcemap.url)
+	
+	ι = ι.replace(/%CE%B6/g,'ζ')
 	apply_regexes(λ(){/*
 	\bhttps://         http://
 	\b(http://)www\.   $1
@@ -301,11 +314,10 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 	\b(http://)facebook(\.com/)                        $1fb$2
 	\b(http://fb\.com/)profile\.php\?id=               $1
 	\(\d+\) (.* http://fb\.com/)                       $1
-	 - Wikipedia, the free encyclopedia( http://wikipedia.org/)  $1
+	 - Wikipedia, the free encyclopedia( http://wikipedia\.org/)  $1
+	 - Album on Imgur( http://imgur\.com/)             $1
+	 - Google Maps( http://google\.com/maps/)          $1
 	*/})
-
-	URL ← /\b(?:https?:\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
-	parse_alicetext ← ι => _.zip(ι.split(URL).map(ι => ({type:'text', ι})), (ι.match(URL)||[]).map(ι => ({type:'url', ι})))._.flatten(true).filter(ι => !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
 	ι = parse_alicetext(ι).map(λ(ι){t←;
 		if (ι.type === 'url') {
@@ -316,6 +328,7 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 					uri.filename().match(/^ref=[\w_]+$/) && uri.filename('')
 					if (t=/^\/(?:[\w-]+\/)?(?:dp|gp)\/(?:product\/)?(\w+)\/?$/.λ(uri.resource())) {ι.ι = 'http://amzn.com/'+t[1]; ↩ ι}
 				break; case 'fb.com': uri.removeSearch(['fref','hc_location','_rdr','pnref'])
+				break; case 'google.com': if (uri.segment()._.isEqual(['search'])) {uri.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); uri.hasSearch('q') && uri.removeSearch('oq')}
 				}; ι.ι = uri+'' }
 		↩ ι})._.map('ι').join('')
 
@@ -344,7 +357,7 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 // braille_table ← 0x100.map(ι => String.fromCharCode('⠀'.charCodeAt(0)+ι))
 // braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 // life ← λ(ι){
-// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ Math.random()<0.5 ?1:0})); ↩ ι} // 115,46
+// 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
 // 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
 // 		r ← Buffer(ι)
 // 		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
@@ -368,18 +381,19 @@ E.nice_url = λ(ι){t←; urijs ← ˡ.urijs
 def_lazy(E,'async',()=> require('async','1.5.0'))
 
 E.pixels = {}
-E.pixels.read = λ(ι,type='rgb',cb){require('get-pixels','3.2.3')(fs(ι).path,λ(e,{data,shape:[X,Y,d],stride}){
+E.pixels.read = λ(ι,type='rgb',cb){require('get-pixels','3.2.3')(fs(ι).path,λ(e,{data:D,shape:[X,Y,depth],stride}){X|=0;Y|=0
 	// maybe just use Symbol.iterator ?
-	;(d === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
-	if (type!=='grey') throw Error()
-	ι ← Array(X*Y); for(i←0;i<ι.length;i++) ι[i] = data[i*4]
+	;(depth === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+	if      (type==='rgba') ι ← D
+	else if (type==='rgb' ) {ι ← Buffer(X*Y*3); pˡ←0; pᵈ←0; for(i←0;i<X*Y;i++) {ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; pᵈ++}}
+	else if (type==='grey') {ι ← Buffer(X*Y); for(i←0;i<X*Y;i++) ι[i] = D[i*4]}
+	else throw Error()
 	cb(e,{X,Y,ι}) }) }
 E.pixels.show = λ({ι,X,Y},type='rgb',to){
 	t ← new (require('pngjs','2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
-	if (0);
-	// else if (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
-	// else if (type==='rgb' ) for(i←0;i<ι.length;i+=3) {D[p++] = ι[i]; D[p++] = ι[i+1]; D[p++] = ι[i+2]; D[p++] = 0xff}
-	else if (type==='grey') for(i←0;i<ι.length;i++) {D[p++] = D[p++] = D[p++] = ι[i]; D[p++] = 0xff}
+	if      (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
+	else if (type==='rgb' ) for(i←0;i<ι.length;) {D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = 0xff}
+	else if (type==='grey') for(i←0;i<ι.length;) {D[p++] =         D[p++] =         D[p++] = ι[i++]; D[p++] = 0xff}
 	else throw Error()
 	t.pack().pipe(fs.createWriteStream(fs(to).path)) }
 
@@ -395,3 +409,25 @@ module.exports = λ(to){to.ζtoken === E.ζtoken || (prop_assign(E,to), patches.
 // E.bit_reverse = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
 // catch_ ← λ(f){↩ λ(){try {↩ f.apply(@,arguments)} catch (ι) {if (ι.__catchable) ↩ ι.__catchable; else throw ι}}}
 // _return ← λ(ι){throw {__catchable:ι}}
+
+// _re ← λ(flags,ι){
+// 	mode ← ''; typeof(ι[0])==='string' && (ι[0] = ι[0].replace(/^([s0+*])\//,λ(ˣ,ι){mode = ι; ↩ ''}))
+// 	if (mode==='s'){
+// 		if (typeof(ι[-1])==='string') {t ← ι[-1].match(/^([\s\S]*)\/([^\/]*)$/); if (!t) throw Error(); ι[-1] = t[1]; to ← t[2] }
+// 		else {if (!ι[-2].match(/\/$/)) throw Error(); ι[-2] = ι[-2].slice(0,-1); to ← ι.pop() }
+// 		to = typeof(to)==='string'? to : typeof(to.ι)==='function'? to.ι : (()=>to.ι) }
+// 	ι = RegExp(ι.map(ι => typeof(ι)==='string'? ι : regex_encode(ι.raw)).join(''), 'u'+(mode===''?'':'g')+flags)
+// 	switch(mode){default: throw Error()
+// 		case '': case '+': r ← t => t.match(ι)
+// 		case '0': r ← t => t===''? [] : t.split(ι)
+// 		// case '*': r ← t => _.zip(t.split(ι).map(ι => [ι]), (t.match(ι)||[]))._.flatten(true).filter(ι => !(ι[0]===''))
+// 		case 's': r ← t => t.replace(ι,to)
+// 		}; r.ι = ι; ↩ r}
+// E.re   = simple_template(λ(ι){↩ _re(''  ,ι)})
+// E.reᵢ  = simple_template(λ(ι){↩ _re('i' ,ι)})
+// E.reₘ  = simple_template(λ(ι){↩ _re('m' ,ι)})
+// E.reᵢₘ = simple_template(λ(ι){↩ _re('im',ι)})
+// P({ 'String.prototype.re'  : simple_template(λ(ι){↩ _re(''  ,ι)(@)}) })
+// P({ 'String.prototype.reᵢ' : simple_template(λ(ι){↩ _re('i' ,ι)(@)}) })
+// P({ 'String.prototype.reₘ' : simple_template(λ(ι){↩ _re('m' ,ι)(@)}) })
+// P({ 'String.prototype.reᵢₘ': simple_template(λ(ι){↩ _re('im',ι)(@)}) })

@@ -80,7 +80,7 @@ login(λ(e,spotify){
 	ι ← getPlaylists(spotify.playlistContainer)
 	poll(λ(){↩ ι.filter(is_playlist).every(λ(ι){↩ ι.isLoaded})},λ(){
 		playlists ← ι.filter(is_playlist)
-		playlists._.indexBy('name')['[from mage]'] || (λ(){throw '‽'})() // testing
+		playlists._.indexBy('name')['[mage 1]'] || (λ(){throw '‽'})() // testing
 		playlists = playlists.filter(ι => ι.owner.canonicalName === spotify.sessionUser.canonicalName)
 		playlists = playlists.filter(ι => !/^history:/.λ(ι.name)) // hack
 		playlists = playlists._.sortBy('numTracks')

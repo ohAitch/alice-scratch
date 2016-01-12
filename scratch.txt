@@ -77,7 +77,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.mapcat(ι => 10..map(i => ι+' '+i))._.shuffle()
 	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
-	c ← {}; for(;;){t ← '#'+Math.random().toString(36).slice(2,6); if (c[t]) continue; yield (c[t]=1, t)} })
+	c ← {}; for(;;){t ← '#'+4..map(ι => rand(/[0-9a-z]/.genex_0())).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
 # # 0 requests remaining on alice0meta@gmail.com
@@ -85,7 +85,7 @@ namegen ← gen2fn(λ*(){
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
 # ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
 tesseract ← require('node-tesseract')
-fs('../ep').find('>').map(λ(f){tesseract.process(sh_encode(f),λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+φ`../ep/*`.map(λ(f){tesseract.process(sh_encode(f+''),λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 ------------------------------------- dunno ------------------------------------
 
@@ -108,7 +108,7 @@ q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp
 https://github.com/gillstrom/osx-brightness
 
 -------------------------------- de-duplication --------------------------------
-fs('.').find('*').map(ι => [ι,fs(ι).$])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
+φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
 
 ------------- http://thirdfoundation.github.io/#/design/chesscraft -------------
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
@@ -196,3 +196,48 @@ ax.set_xlabel('R Label')
 ax.set_ylabel('G Label')
 ax.set_zlabel('B Label')
 plt.show()
+
+-------------------------------------- ooh -------------------------------------
+We've installed your MySQL database without a root password. To secure it run:
+    mysql_secure_installation
+
+To connect run:
+    mysql -uroot
+
+To have launchd start mysql at login:
+  ln -sfv /usr/local/opt/mysql/*.plist ~/Library/LaunchAgents
+Then to load mysql now:
+  launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
+Or, if you don't want/need launchctl, you can just run:
+  mysql.server start
+
+------------------------------ sublime api things ------------------------------
+sublimeᵥ('window.focus_view(window.views()[-1])')
+T ← 10; i←0; (λ(){sublimeᵥ('view.insert(edit,view.sel()[0].begin(),"\\n")')}).every(T)
+
+------------------------------------- life -------------------------------------
+sublime_set_buffer ← λ(ι){sublimeᵥ('view.replace(edit,sublime.Region(0,view.size()),'+util.inspect(ι)+')')}
+braille_table ← 0x100.map(ι => String.fromCharCode('⠀'.charCodeAt(0)+ι))
+braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
+life ← λ(ι){
+	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
+	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
+		r ← Buffer(ι)
+		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
+		for(y←1;y<Y-1;y++) for(x←1;x<X-1;x++) {
+			n ← ι[(y-1)*X+x-1] + ι[(y-1)*X+x] + ι[(y-1)*X+x+1] + ι[y*X+x-1] + ι[y*X+x+1] + ι[(y+1)*X+x-1] + ι[(y+1)*X+x] + ι[(y+1)*X+x+1]
+			r[y*X+x] = (n===2? ι[y*X+x] : n===3? 1 : 0) }
+		for(y←0;y<Y;y+=Y-1) for(x←0;x<X;x++) {
+			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
+		for(x←0;x<X;x+=X-1) for(y←1;y<Y-1;y++) {
+			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
+		// for(y←0;y<Y;y++) for(x←0;x<X;x++) {
+		// 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
+		// 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
+		↩ {X,Y,ι:r} } }
+ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
+
+---------------------------------- bit_reverse ---------------------------------
+bit_reverse = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}

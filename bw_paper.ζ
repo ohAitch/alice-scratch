@@ -6,6 +6,6 @@ pixels.read(in_,'grey',λ(e,{X,Y,ι}){
 	G ← 32; D ← [0.62, 0.93] // should really look at the variance or smth
 	avg_nearby ← λ(xᵥ,yᵥ,G){r ← 0; yᵃ←max(0,yᵥ-G); yᵇ←min(Y,yᵥ+G); xᵃ←max(0,xᵥ-G); xᵇ←min(X,xᵥ+G); for(y←yᵃ;y<yᵇ;y++) for(x←xᵃ;x<xᵇ;x++) r += ι[y*X+x]; ↩ r / ((yᵇ-yᵃ) * (xᵇ-xᵃ))}
 	avgs ← _.range(0,Y,G).map(y => _.range(0,X,G).map(x => {t ← round(G/2); ↩ avg_nearby(x+t,y+t,t*2)}))
-	r ← Array(ι.length); for(i←0;i<ι.length;i++) {y ← i/X|0; x ← i%X; r[i] = round(max(0,min(1, (ι[i]/avgs[y/G|0][x/G|0] - D[0]) / (D[1] - D[0]) )) * 0xff)}
+	r ← Buffer(ι.length); for(i←0;i<ι.length;i++) {y ← i/X|0; x ← i%X; r[i] = round(max(0,min(1, (ι[i]/avgs[y/G|0][x/G|0] - D[0]) / (D[1] - D[0]) )) * 0xff)}
 	pixels.show({X,Y,ι:r},'grey',out)
 	})

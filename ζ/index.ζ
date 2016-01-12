@@ -20,7 +20,7 @@ global.ζ_main = λ(argv){
 			process.argv = ['ζ','<eval>',…argv]
 			t ← λ(ι){arguments.length > 0 && (global.ι = ι); t ← evalζ(argv[1]); _p && t !== undefined && process.stdout.write(t+'')}
 			fs.fstatSync(0).isFIFO()? read_stdin(t) : t()
-		break; case '-f': argv = argv.slice(1); read_stdin(λ(ι){global.ι = ι; main(argv)})
+		break; case '-f': argv = argv.slice(1); read_stdin(λ(ι){global.ι = ι; ζ_main(argv)})
 		break; case '-pa': //! bad name
 			process.argv = ['ζ','<eval>',…argv]
 			global.i = 0

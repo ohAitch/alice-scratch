@@ -13,22 +13,23 @@ gen ← λ(ι){name←;
 		// ==/UserScript==
 		*/})
 		.replace('NAME',name=path.basename(ι,'.js'))
-		.replace('REST',fs(ι).$.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
-		.replace('FILE','file://'+fs(ι).resolve())
-	user_js ← '/tmp/userscript_'+Math.random().toString(36).slice(2,10)+'.user.js'
-	fs(user_js).$ = t
-	t ← λ(){osa('tell application "chrome" to open location '+osa_encode('file://'+user_js))}
-	↩ [name, t]}
+		.replace('REST',φ(ι).get().match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
+		.replace('FILE','file://'+φ(ι).resolve())
+	p(t); execᵥ('bash -ci ack'); osaᵥ('tell app "chrome" \n open location '+osa_encode('chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html')+'\n activate \n end tell')}
+	// user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
+	// φ(user_js).set(t)
+	// t ← λ(){osaᵥ('tell application "chrome" to open location '+osa_encode('file://'+user_js))}
+	// ↩ [name, t]}
 	
-if (arg.ι) gen(arg.ι)[1]()
-else {
-	ιs ← fs('.').find('>').filter(λ(ι){↩ /\.js$/.λ(ι)}).map(gen)
-	print('press any key to install')
-	t ← λ*(){for(;;){
-		if (!ιs.length) ↩ -1
-		ι ← ιs.shift()
-		print('  '+ι[0]); yield
-		ι[1]()
-		}}(); t.next()
-	diy_stdin(λ(key){↩ key==='\x03'? -1 : t.next().value})
-	}
+if (arg.ι) gen(arg.ι)//[1]()
+// else {
+// 	ιs ← φ`./*.js`.map(gen)
+// 	print('press any key to install')
+// 	t ← λ*(){for(;;){
+// 		if (!ιs.length) ↩ -1
+// 		ι ← ιs.shift()
+// 		print('  '+ι[0]); yield
+// 		ι[1]()
+// 		}}(); t.next()
+// 	diy_stdin(λ(key){↩ key==='\x03'? -1 : t.next().value})
+// 	}

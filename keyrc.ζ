@@ -57,7 +57,7 @@ wat ← []
 
 make_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 	Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
-	shells ← {}; shell ← λ(ι){ι = 'bash -ci '+sh_encode(ι); ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
+	shells ← {}; shell ← λ(ι){ι = '/usr/local/bin/bash -ci '+sh_encode(ι); ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
 	compile_mapping ← λ(ι){t←;
 		compile_keystring ← λ(ι,ridiculous_trigger_flag){t←;
 			wat ← ridiculous_trigger_flag?

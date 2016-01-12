@@ -3,7 +3,7 @@ arg ← { cmd:process.argv[2] }
 
 // ------- settings ------- //
 date ← '2015-12-02';    process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(moment().format('YYYY-MM-DD'))+';')
-total_stories ← 306325; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(execᵥ('curl -s https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(λ(ι){↩ parseInt(ι.match(/\d+/)[0])})._.max() + 3000)+';')
+total_stories ← 306325; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(curl_s('https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(λ(ι){↩ parseInt(ι.match(/\d+/)[0])})._.max() + 3000)+';')
 sm_out ← 'story_meta '+date+'.txt'
 st_out ← 'story_text '+date
 
@@ -21,7 +21,7 @@ story_meta ← λ(i){
 		↩ ι}
 	t←; ↩ i < story_meta.cache.length? story_meta.cache[i] : (
 		print('fetching story metadata #'+i+'/'+total_stories),
-		t = execᵥ('curl -s '+sh_encode('http://www.fimfiction.net/api/story.php?story='+i)),
+		t = curl_s('http://www.fimfiction.net/api/story.php?story='+i),
 		t === '{"error":"Invalid story id"}'? '' : JSON.stringify(clean(JSON.parse(t))) )}
 story_meta.cache = (t=fs(sm_out).$, t? t.split('\n') : [])
 
@@ -44,7 +44,7 @@ meta ← (λ(){t ← story_meta.cache._.filter().map(λ(ι){↩ JSON.parse(ι)})
 	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
 story_text ← λ(ι){↩ ι.chapters.map(λ(ι){
 	print('fetching story chapters #'+ι[0]+'/'+ch_i)
-	↩ execᵥ('curl -s '+sh_encode('http://www.fimfiction.net/download_chapter.php?chapter='+ι[1]))})}
+	↩ curl_s('http://www.fimfiction.net/download_chapter.php?chapter='+ι[1])})}
 while (meta.length) {t ← meta.pop(); fs(st_out+'/'+t.id).$ = JSON.stringify(story_text(t),null,'  ')}
 print('<done!>')
 
