@@ -13,10 +13,10 @@ $('#newsletter-ad').parent().remove()
 
 if (location.host === 'stackexchange.com') {
 	$('#question-list > :not([data-sid^="math."])'/*:not([href^="physics."])'*/).remove()
-} else if (!(location.host === 'math.stackexchange.com' /*|| location.host === 'physics.stackexchange.com'*/)) {
+} else if (!(location.host === 'math.stackexchange.com')) {
 	if (location.pathname in {'/':0, '/questions':0, '/unanswered':0}) {
 		$('#mainbar').remove()
-	} else {
+	} else if (!(location.host === 'stats.stackexchange.com')) {
 		$('#sidebar > .sidebar-linked').remove()
 		$('#sidebar > .sidebar-related').remove()
 	}	

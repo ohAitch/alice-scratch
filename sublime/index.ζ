@@ -2,75 +2,33 @@
 // translate sane stuff into weird sublime formats and put it in the sublime places
 // then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 
-plist ← require('plist','1.2.0')
+plist ← npm('plist@1.2.0')
 arg ← {
 	cmd: process.argv[2] || 'to',
-	in: path.resolve(process.argv[3] || 'Packages'),
-	out: path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path),
+	in: 'Packages',//path.resolve(process.argv[3] || 'Packages'),
+	out: φ`~/Library/Application Support/Sublime Text 3/Packages`+'',//path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path),
 	}
-
-// json ← {read:JSON.parse, show:JSON.stringify} // these names should be used, i think, unless they have text connotations
-
-// this is my first attempt at stringifying json nicely.
-// i do not think it will be my last.
-json_pretty_stringify ← λ(ι){
-	seen ← []
-	T ← '  ' // tab
-	wrap_width ← 150
-	join_collection ← λ(ι,a,b){
-		if (ι.length === 0) ↩ a+b
-		len ← a.length + b.length
-			+ (ι.length-1) * ', '.length
-			+ ι.map(λ(ι){↩ ι.length}).reduce(λ(a,b){↩ a+b})
-		// assert( len === (a+ι.join(', ')+b).length )
-		↩ len <= wrap_width?
-			a+ι.join(', ')+b :
-			a+'\n'+T+ι.join(',\n'+T)+'\n'+b }
-	stringify_object ← λ(ι){
-		seen.push(ι)
-		t ← ι._.pairs().filter(λ(ι){↩ ι[1]!==undefined && typeof(ι[1])!=='function'})
-			.map(λ(ι){↩ JSON.stringify(ι[0])+': '+stringify_indent(ι[1])})
-		seen.pop()
-		↩ join_collection(t,'{','}') }
-	stringify_array ← λ(ι){
-		seen.push(ι)
-		t ← ι.map(stringify_indent)
-		for (i←0;i<t.length;i++) t[i]===undefined && (t[i] = 'null')
-		seen.pop()
-		↩ join_collection(t,'[',']') }
-	stringify_indent ← λ(ι){↩ stringify(ι).replace(/\n/g,'\n'+T) }
-	stringify ← λ(ι){
-		if (seen.indexOf(ι) !== -1)
-			throw TypeError('Converting circular structure to JSON')
-		if (ι == null) ↩ 'null'
-		switch (typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι)) {
-			case 'string': case '[object String]': ↩ JSON.stringify(ι)
-			case 'boolean': case '[object Boolean]': ↩ ι+''
-			case 'number': case '[object Number]': ↩ ι+''
-			case 'function': ↩ 'null'
-			case '[object Array]': ↩ stringify_array(ι)
-			default: ↩ stringify_object(ι)
-		} }
-	↩ stringify(ι)}
 
 transform_json ← λ(str){↩ plist.build(JSON.parse(str))}
 
 main ← λ(){
 	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
-	φ`${arg.in}/**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
+// ------------------------------- broken part ------------------------------ //
+	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
 			(fs(R(arg.out+'/'+t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
 		: (fs(R(arg.out+'/'+ι)).$ = fs(arg.in+'/'+ι).$)
 		})
-	roots ← φ`${arg.in}/*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
-	out ← φ`${arg.out}/**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
+	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
+	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
+// -------------------------------------------------------------------------- //
 	_.difference(out,written)
 		.filter(λ(ι){ ↩ !/Package Control\./.λ(ι.replace(arg.out,'')) })
-		.map(λ(ι){ φ(ι).set(null) })
+		.map(λ(ι){ φ(ι).ι = null })
 	}
 
 switch (arg.cmd) {
 	default: print('[sublime-transform] invalid command')
 	break; case 'to': main()
-	break; case 'from': fs(arg.in+'.json').$ = json_pretty_stringify(plist.parse(fs(arg.in).$),null,'\t')
+	// break; case 'from': φ(arg.in+'.json').ι = plist.parse(fs(arg.in).$)
 	}

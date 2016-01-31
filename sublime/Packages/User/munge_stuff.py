@@ -6,11 +6,14 @@
 # could do this in a way that routes everything through ζ (except things where the flat 80ms cost is too much?) but should architect it in a way that doesn't tie you into ζ; like, if i define “p” in ζ but can export it to a self-contained bash function that would be amazing
 # ”
 
-# maybe `require('wav'` should be a link to http://npmjs.com/package/wav
+# maybe require('wav') and npm('wav@ should be links to http://npmjs.com/package/wav
 
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
 
+# would be great to have the eval zeta thing return a stream
+
 import sublime, sublime_plugin
+from sublime import Region
 import os, subprocess, re, urllib, json
 
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
@@ -37,15 +40,22 @@ def merge_overlapping_regions(ι):
 def expand_empty_region_to_line(view,ι): return view.line(ι) if ι.empty() else ι
 def expand_empty_region_to_url(view,ι,mouse_mode=False):
 	if not ι.empty(): return ι
-	a = max(ι.a-500, 0); b = min(ι.a+500, view.size())
-	for t in re.finditer(URL,view.substr(sublime.Region(a,b))):
-		s = a + t.start(); e = a + t.end()
+	l = expand_empty_region_to_line(view,ι)
+	if l.size() > 1000000: return ι
+	for t in re.finditer(URL,view.substr(l)):
+		s = l.a + t.start(); e = l.a + t.end()
 		if (s < ι.a < e if mouse_mode else s <= ι.a <= e):
-			return sublime.Region(s,e)
+			return Region(s,e)
+	return ι
+def left_trim_region(view,ι):
+	t = len(re.match(r'^\s*',view.substr(ι)).group(0))
+	if ι.a <= ι.b: ι.a += t
+	else:          ι.b += t
 	return ι
 def expand_empty_regions_to_urls_or_lines(view,ι): return merge_overlapping_regions([expand_empty_region_to_line(view,expand_empty_region_to_url(view,ι)) for ι in ι])
 def expand_empty_regions_to_lines(view,regions): return merge_overlapping_regions([expand_empty_region_to_line(view,ι) for ι in regions])
-def expand_empty_region_to_whole_buffer(view,regions): return [sublime.Region(0,view.size())] if len(view.sel()) == 1 and view.sel()[0].empty() else view.sel()
+def left_trim_regions(view,regions): return [left_trim_region(view,ι) for ι in regions]
+def expand_empty_region_to_whole_buffer(view,regions): return [Region(0,view.size())] if len(view.sel()) == 1 and view.sel()[0].empty() else view.sel()
 
 def open(ι,app=None,focus=True,view=None):
 	print("#OPEN",ι,'∈',app)
@@ -63,15 +73,16 @@ def open(ι,app=None,focus=True,view=None):
 		if view and view.file_name() and t[0] != '/': t = os.path.normpath(os.path.join(os.path.dirname(view.file_name()),t)); ι = 'file:'+urllib.parse.quote(t.encode('utf-8'))
 		if os.path.isdir(t): app = "Path Finder"
 		elif os.path.splitext(t)[1] in ['.pdf','.m4a','.epub']: pass
+		# elif os.path.splitext(t)[1] in ['.png','.jpg']: make app be ql
 		else: app = "Sublime Text"
 
 	if app is "Terminal":
 		subprocess.Popen(['bash','-ci','ack'])
 		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
-		var [dir,base] = fs(ι).exists() && fs(ι).dir()? [ι] : [fs(ι).parent(), path.basename(ι)]
-		unbusy ← _.zip(...osaᵥ('tell app "terminal" to {name,id} of (windows whose busy = false)')).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]})[1]
-		fs('/tmp/__·').$ = 'cd '+sh_encode(dir)+(!unbusy? '; clear' : '')+(base? '; set -- '+sh_encode(base)+'; ({ sleep 0.01; printf "\\033[1G\\033[2K\\033[F\\033[2K${green}$(this)/${purple}$1 ${reset}"; } &)' : '')
-		osa('tell app "terminal" \\n do script "·"'+(unbusy? ' in (window 1 whose id = '+osa_encode(unbusy)+')' : '')+'\\n'+(focus?'activate \\n':'')+'end tell')
+		var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
+		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]})[1]
+		φ`/tmp/__·`.text = sh`cd ${dir}`+(!unbusy? '; clear' : '')+(base? sh`; set -- ${base}; ({ sleep 0.01; printf "\e[1G\e[2K\e[F\e[2K\${green}$(this)/\${purple}$1 \${reset}"; } &)` : '')
+		osaᵥ`terminal: do script "·" …${unbusy? osa`in (window 1 whose id = ${unbusy})` : ''}; …${focus? 'activate' : ''}`
 		""")
 	else:
 		subprocess.call([ι for ι in ["open", app and "-a", app, not focus and "-g", ι] if ι])
@@ -84,12 +95,12 @@ class open_context(sublime_plugin.TextCommand):
 		view = self.view
 		if type == "github":
 			t = ζ('-e',"""
-				ι ← fs("""+repr(view.file_name() or '')+""").resolve()
-				root ← ι; while (root !== '/' && !fs(root+'/.git').exists()) root = fs(root).parent()
+				ι ← require('path').resolve("""+repr(view.file_name() or '')+""")
+				root ← ι; while (root !== '/' && !φ(root+'/.git').BAD_exists()) root = φ(root).φ`..`
 				if (root !== '/') {
 					ι = ι.slice((root+'/').length)
-					t ← require('ini','1.3.4').parse(fs(root+'/.git/config').$)['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+fs(root+'/.git/HEAD').$.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
+					t ← npm('ini@1.3.4').parse(φ(root+'/.git/config').text)['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
+					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+φ(root+'/.git/HEAD').text.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
 					process.stdout.write(r) }
 				""")
 			if t:
@@ -100,26 +111,27 @@ class open_context(sublime_plugin.TextCommand):
 		elif type == "link":
 			if mouse: t = view.sel()[0]; ι = [] if not t.empty() else [ι for ι in [expand_empty_region_to_url(view, view.sel()[0], True)] if not ι.empty()]
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
-			if mouse and len(ι): view.sel().clear(); view.sel().add(sublime.Region(ι[0].end(),ι[0].end())) # workaround for a bug
+			if mouse and len(ι): view.sel().clear(); view.sel().add(Region(ι[0].end(),ι[0].end())) # workaround for a bug
 			for ι in ι: open(omnibox(view.substr(ι)),focus=focus,view=view)
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view; sel = view.sel()
-		append = len(sel) == 1 and sel[0].empty()
+		# append = len(sel) == 1 and sel[0].empty()
 		sel = expand_empty_regions_to_lines(view, sel)
+		sel = left_trim_regions(view, sel)
 		ι = [view.substr(ι) for ι in sel]
-		r = json.loads(ζ('-pa',json.dumps(ι)))
-		if append:
-			P = '-> '
-			last = sublime.Region(sel[0].end(),sel[0].end())
-			sel_ = view.sel()[0]; view.sel().clear()
-			while view.substr(sublime.Region(last.end(),last.end()+len('\n'+P))) == '\n'+P: last = sublime.Region(last.begin(), view.line(sublime.Region(last.end()+1,last.end()+1)).end())
-			view.replace(edit, last, re.sub(r'\n','\n'+P,'\n'+re.sub(r'\n$','',r[0])))
-			view.sel().add(sel_)
-		else:
-			for i in range(len(sel))[::-1]:
-				view.replace(edit, sel[i], r[i])
+		r = json.loads(ζ('--pa',json.dumps(ι)))
+		# if append:
+		# 	P = '-> '
+		# 	last = Region(sel[0].end(),sel[0].end())
+		# 	sel_ = view.sel()[0]; view.sel().clear()
+		# 	while view.substr(Region(last.end(),last.end()+len('\n'+P))) == '\n'+P: last = Region(last.begin(), view.line(Region(last.end()+1,last.end()+1)).end())
+		# 	view.replace(edit, last, re.sub(r'\n','\n'+P,'\n'+re.sub(r'\n$','',r[0])))
+		# 	view.sel().add(sel_)
+		# else:
+		for i in range(len(sel))[::-1]:
+			view.replace(edit, sel[i], r[i])
 
 class inline_compile_zeta_js(sublime_plugin.TextCommand):
 	def run(self,edit):
@@ -142,4 +154,4 @@ class nice_url(sublime_plugin.TextCommand):
 			if t is not ι: view.replace(edit, reg, t)
 
 class _(sublime_plugin.EventListener):
-	def on_post_save(self,view): view.substr(sublime.Region(0,2)) == '#!' and subprocess.Popen(['chmod','+x',view.file_name()])
+	def on_post_save(self,view): view.substr(Region(0,2)) == '#!' and subprocess.Popen(['chmod','+x',view.file_name()])

@@ -61,6 +61,7 @@ sd  ι
 
 FnF1  $ ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1
 FnF2  $ ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2
+# https://github.com/gillstrom/osx-brightness
           FnF3  ] ⌘^f
 [chrome]  FnF3  ] ⌘⇧f
 [sublime] FnF3  ] ⌘⇧^f
@@ -73,7 +74,10 @@ FnF4  ] DASHBOARD
 ⌘⇧⌥3  $ t=/tmp/screencapture.png; screencapture     "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌘⇧⌥4  $ t=/tmp/screencapture.png; screencapture -io "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌘⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
-⌘⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0* ]] && echo 1 || echo 0); NoSleepCtrl -abs $t,$t
+⌘⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
+⌘⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/31)' )& )
+⌘⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
+# ⌘⌥^v  $ ζ -e 'robot ← npm("robotjs@0.3.7"); shᵥ`sleep 0.3`; "241"._.map(robot.keyTap.X); _.range(0,6,1/31).map(ι => robot.mouseClick.in(ι))'
 ☝☝    ] ⌘
 
 [terminal] ⌘R      ] ^
@@ -84,8 +88,8 @@ FnF4  ] DASHBOARD
 # [chrome]  /↩       $ ack; _chrome "$(osascript -e 'tell app "google chrome" to execute window 1'\''s active tab javascript "window.getSelection().toString()"')"
 [spotify] /↩       $ ] ⌘c; ack; sleep 0.12; p="$(p)"; if ! [[ $p = http:* ]]; then _chrome "$p"; else t=$(osascript -e 'tell app "spotify" to spotify url of current track'); osascript -e 'tell app "spotify" to play track "'"$p"'"'; sleep 0.05; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"; osascript -e 'tell app "spotify" to play track "'"$t"'"'; fi
           /↩       $ ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"
-# [path_finder] ⌘c   $ ] ⌘c; ζ -e 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(RegExp('^'+regex_encode('/Users/ali/')),"~/").replace(/^~\/ali\/books\/papers\//,"~/papers").replace(/^~\/ali\/books\//,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"))'
-[chrome] ⌘⇧l       $ ] ⌘l; ack; ζ -e 'var [title,url] = osaᵥ("tell app \"chrome\" to get {title,URL} of active tab of window 1"); t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
+# [path_finder] ⌘c   $ ] ⌘c; ζ -e 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"))'
+[chrome] ⌘⇧l       $ ] ⌘l; ack; ζ -e 'var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
 [terminal] ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w ] _clr ] ↩
 
          ⌘h     $ nack

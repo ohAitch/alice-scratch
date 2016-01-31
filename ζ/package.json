@@ -1,8 +1,11 @@
 {
   "name": "zeta-lang",
+  "version": "0.10.84",
+  "description": "simple js util lib",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
-  "description": "js plus batteries",
-  "version": "0.8.356",
+  "scripts": {
+    "postinstall": "./compiler.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/alice0meta/scratch.git"
@@ -12,9 +15,10 @@
     "moment": "^2.10.6",
     "priorityqueuejs": "^1.0.0",
     "underscore": "^1.8.3",
-    "urijs": "^1.17.0"
+    "urijs": "^1.17.0",
+    "minimist": "^1.2.0"
   },
-  "main": "./index.sh",
+  "main": "./index.js",
   "bin": {
     "ζ": "./index.sh"
   }

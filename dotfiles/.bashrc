@@ -29,23 +29,25 @@ clear(){ /usr/bin/clear && printf '\e[3J'; }
 …(){ bash -s; }
 alias pwf='echo "$(home_link "$PWD/$1")"'
 alias ct=chrome_tabs; chrome_tabs(){ ζ -e '
-	t ← osaᵥ("tell app \"chrome\" to get {title,URL} of tabs of windows"); title ← t[0]; url ← t[1]
+	nice_ ← λ(title,url){t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; ↩ nice_url(t)}
+	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
 	i ← '"$(echo "$1" | jq -R .)"'
-	if (i) {i = parseInt(i); t ← title[0][i]+" "+nice_url(url[0][i]); p(t); print(t+"\n<copied>")}
-	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => ι.join(" ")).map(nice_url.X).join("\n")).join("\n\n"); sb(t)}
+	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); print(t+"\n<copied>")}
+	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
 	'; }
-bookmarks(){ ζ -e '
-	ι ← JSON.parse(fs("'"${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"'").$).roots.bookmark_bar.children
+bookmarks(){ λ '
+	//! should use nice_url
+	ι = φ(ι[0]).json.roots.bookmark_bar.children
 	t ← (λ λ(ι){↩ ι instanceof Array? ι.map(λ).join("\n") :
 		ι.children? (ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
 		ι.url === "http://transparent-favicon.info/favicon.ico"? ι.name :
 		ι.url? (!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
 			JSON.stringify(ι)})(ι); sb(t)
-	'; }
+	' "${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"; }
 d(){ ( shopt -s nullglob; cd "${1:-.}"; for v in .[!.] .??* * .; do du -hs "$v" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$v" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$v"; done ) }
 del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ (-q qlmanage -p "$@" &); }
-man(){ /usr/bin/man "$@" | col -bfx | sb; }
+man(){ t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
 # im_to_png(){ λ 'ι.filter(ι => !/\.png$/.λ(ι)).map(ι => execᵥ("convert ")), void 0' "$@"; }
@@ -60,7 +62,8 @@ im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
 im_dateify(){
 	echo=$([[ $1 = -d ]] && echo echo)
 	for v in *.jpg; do t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); $echo mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
-l(){ ls -AG "$@"; }
+ll(){ ls -AGl "$@"; }
+la(){ ls -AG "$@"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
@@ -68,12 +71,16 @@ googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url
 # pb(){ local v="$(ζ -p '"pastebin_jsonp("+JSON.stringify(ι)+")"' | _pastebin_id)"; _chrome "$v"; v="http://alice.sh/txt#$v"; echo "$v" | tr -d '\n' | p; echo "copied: "; }
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 dl_fix(){ f ~/Downloads; f ~/pg; ζ -e '
+	fs ← require("fs")
 	from ← process.env.HOME+"/Downloads"
 	out ← process.env.HOME+"/pg"
 	fix ← ι => ι
 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
 	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
 	'; }
+/(){ -q pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; -q popd; }
+cache_imgurs(){ for v in "$@"; do o=~/"ali/misc/.cache/imgur/$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
+youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/"Downloads/$2.%(ext)s" "$1"; }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
@@ -81,7 +88,7 @@ export red=$(tput setaf 1); export green=$(tput setaf 2); export purple=$(tput s
 date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 this(){ home_link "$PWD"; }
 x(){ E=$?; if [[ $E = 0 ]]; then is_term || beep $E; exit; fi; is_term || { osascript -e 'tell app "terminal" to activate'; beep $E; }; return $E; }
-rmds(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ) }
+rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
 ↩(){
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
@@ -90,13 +97,14 @@ rmds(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ) }
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo "$purple$(home_link "$t")$reset"; cd $(dirname "$t"); chmodxprint "$t"; "$t" "$@"; }; }
 
 ######## external only #######
-](){ λ 'ι = ι.join(" "); osaᵥ("tell app \"system events\" \n" +
+](){ λ 'ι = ι.join(" "); 
 	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
-	ι.split(/ +] +/g).map(ι =>
-		(t=/^FnF(.)$/.λ(ι))? "key code "+[,107,113][t[1]]||(λ(){throw Error()})() :
+	ι = ι.split(/ +] +/g).map(ι =>
+		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||(λ(){throw Error()})() :
 		(t={"↩":36}[ι])? "key code "+t :
-			"keystroke "+osa_encode(ι.replace(/^⌘/,""))+(/^⌘/.λ(ι)? " using command down" : "")
-			).join("\n") + "\n end tell")
+			osa`keystroke ${ι.replace(/^⌘/,"")}`+(ι.re`^⌘`? " using command down" : "")
+		).join("\n")
+	osaᵥ`system events: …${ι}`
 	void 0' "$@"; }
 _in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
 alias ·='eval "$(cat /tmp/__·)"; rm /tmp/__·;'

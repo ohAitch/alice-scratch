@@ -46,11 +46,11 @@ think about the prompt at the beginning and figure out what we want to do with t
 	> 		tracks in some backup and not in latest backup
 
 maybe make use of
-	osaᵥ('tell app "spotify" to play')
-	osaᵥ('tell app "spotify" to pause')
-	osaᵥ('tell app "spotify" to next track')
-	osaᵥ('tell app "spotify" to previous track')
-	vol=osaᵥ('tell app "spotify" to sound volume as integer')
+	osaᵥ`spotify: play`
+	osaᵥ`spotify: pause`
+	osaᵥ`spotify: next track`
+	osaᵥ`spotify: previous track`
+	vol=osaᵥ`spotify: sound volume as integer`
 		text=$2;
 		if [ $2 = "up" ]; then
 			newvol=$(( vol+10 ));
@@ -60,5 +60,5 @@ maybe make use of
 			newvol=$2;
 			text="to $2";
 		fi
-		osaᵥ('tell app "spotify" to set sound volume to $newvol')
-	osaᵥ('tell app "spotify" to set player position to $2')
+		osaᵥ`spotify: set sound volume to ${newvol}`
+	osaᵥ`spotify: set player position to ${_2}`

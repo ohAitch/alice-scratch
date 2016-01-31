@@ -5,7 +5,7 @@
 // run this program if ~/.keyrc has changed
 // if remapping the power key, install https://github.com/pkamb/PowerKey and set it to the script ~/Documents/keyrc_power_key.sh (after having run this program at least once)
 
-xmlbuilder ← require('xmlbuilder','4.1.0')
+xmlbuilder ← npm('xmlbuilder@4.1.0')
 
 as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
 
@@ -57,7 +57,7 @@ wat ← []
 
 make_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 	Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
-	shells ← {}; shell ← λ(ι){ι = '/usr/local/bin/bash -ci '+sh_encode(ι); ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
+	shells ← {}; shell ← λ(ι){ι = sh`/usr/local/bin/bash -ci ${ι}`; ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
 	compile_mapping ← λ(ι){t←;
 		compile_keystring ← λ(ι,ridiculous_trigger_flag){t←;
 			wat ← ridiculous_trigger_flag?
@@ -94,13 +94,13 @@ make_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι => /^F[^n]$/.λ(ι)? ['Fn'+ι,ι] : /^[⌥⇧⌘][RL]$/.λ(ι)? [ι,ι[0]] : [ι,ι]).map(ι => compile_mapping(ι).ι+','+shell('ack; '+KB+' toggle notsave.power_key'))},
 			…(t=mappings.map(compile_mapping)._.groupBy('only'), […t._.omit('undefined')._.values(), t.undefined]).map(λ(ι,i){wat.push('lackey'+i); ↩ {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, autogen:ι._.map('ι').reverse()} }),
 			],
-		vkopenurldef: shells._.map((name,url) => ({name, url:{'@type':'shell', '#text':url}})),
+		vkopenurldef: shells._.map((name,ι) => ({name, url:{'@type':'shell', '#text':ι}})),
 		}}).end({pretty:true}) }
 
 // --------- main --------- //
-fs('~/Library/Application Support/Karabiner/private.xml').$ = make_xml(parse_keyrc(fs('~/.keyrc').$))
-execᵥ(KB+' reloadxml'); wat.map(λ(ι){execᵥ(KB+' enable '+ι)})
-fs('~/Documents/keyrc_power_key.sh').$ = '#!/usr/bin/env bash -i\nack; '+KB+' toggle notsave.power_key'; fs.chmodSync(fs('~/Documents/keyrc_power_key.sh').path,0o777)
+φ`~/Library/Application Support/Karabiner/private.xml`.text = make_xml(parse_keyrc(φ`~/.keyrc`.text))
+shᵥ`${KB} reloadxml`; wat.map(ι => shᵥ`${KB} enable ${ι}`)
+φ`~/Documents/keyrc_power_key.sh`.text = '#!/usr/bin/env bash -i\nack; '+KB+' toggle notsave.power_key'; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
 
 // mild todo:
 // right command is maybe problematic

@@ -1,26 +1,22 @@
 #!/usr/bin/env ζ
-jquery ← require('jquery')
-jsdom ← require('jsdom')
-// csv ← require('csv')
+jquery ← npm('jquery@2.2.0')
+jsdom ← npm('jsdom@7.2.2')
+// csv ← npm('csv@0.4.6')
 
 scrape_index_for_posts ← λ λ(ι){
 	print(ι)
 	jsdom.env(ι,λ(e,ι){if (e) throw e; $ ← jquery(ι)
 		posts ← $('.post > h2 a').toArray().map(λ(ι){↩ 'http://lesswrong.com'+$(ι).attr('href')})
-		φ`posts/${basename_encode(ι)}`.set(posts.join('\n')+'\n')
+		φ`posts/${ι}`.lines = posts
 		next ← $('a[rel="nofollow,next"]:contains("Next")').attr('href')
 		if (next) λ.P(next).in(rand()*0.1); else print('<done>')
 		}); }
 
-cache_post ← λ(ι,i){
-	out ← φ`post_cache/${basename_encode(ι)}`
-	if (out.exists()) ↩;
-	print(i,ι); out.set(curl_s(ι)); }
-
 scrape_post_for_comments ← λ(ι,out,cb){
+	// ? ι -> GET_L(ι,1e7) ?
 	jsdom.env(φ(ι).get(),λ(e,t){if (e) throw e; $ ← jquery(t)
 		parse_id ← λ(ι){↩ ι.replace(/^.*_/,'')}
-		φ(out).set(JSON.stringify({
+		φ(out).ι = {
 			url: basename_decode(ι.replace(/^.*\//,'')).replace(/\?all=true$/,''),
 			num_comments: parseInt($('#content > #comments > h2').text().match(/\d+/)[0]),
 			comments: $('div.comment').toArray().map(λ(ι){ι = $(ι); ↩ {
@@ -32,17 +28,14 @@ scrape_post_for_comments ← λ(ι,out,cb){
 				body: ι.find('> .entry .comment-content').html(),
 				children: ι.find('> .child > * > .comment').toArray().map(λ(ι){↩ parse_id($(ι).attr('id'))}),
 				}}),
-			},null,'  '))
+			}
 		cb&&cb(); }); }
 
 // scrape_index_for_posts('http://lesswrong.com/new/')
 // scrape_index_for_posts('http://lesswrong.com/r/discussion/new/')
-// φ`posts.txt`.get().trim().split('\n').map(λ(ι){↩ ι+'?all=true'}).map(cache_post); print('<done>')
+φ`posts.txt`.lines().map(ι => ι+'?all=true').map(λ(ι,i){print(i,ι); GET_L(ι,1e7)}); print('<done>')
 // t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
 
 q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
-// errors ← q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})
-// φ`comment_error.json`.set(JSON.stringify(errors,null,'  '))
-r ← (q.forEach(λ(ι){ι.comments.forEach(λ(c){c.url = ι.url})}), q.mapcat(λ(ι){↩ ι.comments}))//.map(λ(ι){↩ [ι.id,ι.url,ι.author,ι.time,ι.net_votes,ι.vote_ratio,ι.body,ι.children.join(' ')]})
-// csv.stringify(r,λ(e,ι){φ`comments.csv`.set(ι)})
-φ`comments.json`.set(JSON.stringify(r,null,'  '))
+// φ`comment_error.json`.ι = q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})
+φ`comments.csv`.ι = (q.forEach(λ(ι){ι.comments.forEach(λ(c){c.url = ι.url})}), q.mapcat(λ(ι){↩ ι.comments}))//.map(λ(ι){↩ [ι.id,ι.url,ι.author,ι.time,ι.net_votes,ι.vote_ratio,ι.body,ι.children.join(' ')]})

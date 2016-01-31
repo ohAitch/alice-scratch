@@ -12,14 +12,16 @@ gen ← λ(ι){name←;
 		// @grant       none
 		// ==/UserScript==
 		*/})
-		.replace('NAME',name=path.basename(ι,'.js'))
-		.replace('REST',φ(ι).get().match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
-		.replace('FILE','file://'+φ(ι).resolve())
-	p(t); execᵥ('bash -ci ack'); osaᵥ('tell app "chrome" \n open location '+osa_encode('chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html')+'\n activate \n end tell')}
+		.replace('NAME',name=require('path').basename(ι,'.js'))
+		.replace('REST',φ(ι).text.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
+		.replace('FILE',φ(ι).url)
+	p(t); shᵥ`bash -ci ack`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
+
 	// user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
 	// φ(user_js).set(t)
-	// t ← λ(){osaᵥ('tell application "chrome" to open location '+osa_encode('file://'+user_js))}
-	// ↩ [name, t]}
+	// t ← ()=> osaᵥ`chrome: open location ${φ(user_js).url}`
+	// ↩ [name, t]
+	}
 	
 if (arg.ι) gen(arg.ι)//[1]()
 // else {

@@ -91,12 +91,13 @@ do_command ← λ(ι){act←; ι = ι.replace(/^(?:<pre> )?/,λ(ι){act = !ι; �
 			if (!act) {
 				P('would download 1 mp3 from youtube')
 			} else {
-				t ← 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+sh_encode(basename_encode('%(title)s '+b+' .%(ext)s'))+' '+sh_encode(b)+'; x'
+				// t ← 'youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/'+sh_encode(basename_encode('%(title)s '+b+' .%(ext)s'))+' '+sh_encode(b)+'; x'
+				t ← sh`youtube-dl --extract-audio --audio-format mp3 -o ${φ`~/Downloads/%(title)s ${b} .%(ext)s`} ${b}; x`
 				osa('tell app "terminal" \n do script '+osa_encode(t)+' \n activate \n end tell')
 			}
 		}
 	} else if ((a === 'l' || a === 'ls') && b === '') {
-		;(act? print : P)(bashᵥ('cd '+sh_encode(process.cwd())+'; . ~/.bashrc; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l'))
+		;(act? print : P)(shᵥ`cd ${process.cwd()}; . ~/.bashrc; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l`)
 	} else if (a === 'chrome') {
 		t ← b? as_url(b) : 'chrome:newtab'
 		!act?

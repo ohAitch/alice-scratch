@@ -1,7 +1,8 @@
 import sublime, sublime_plugin
+from sublime import Region
 import threading, http.server, json, os, codecs, re
 
-PORT = 34289 #↩ {"PORT":34289}
+PORT = 34289
 
 def window_(): return sublime.active_window()
 def view_():   return sublime.active_window().active_view()

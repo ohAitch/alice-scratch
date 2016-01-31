@@ -8,10 +8,10 @@ $=jQuery; copy(JSON.stringify($('.title').toArray().map(ι => [
 
 ...
 
-entities ← require('entities','1.1.1')
-csv ← require('csv','0.4.6')
+entities ← npm('entities@1.1.1')
+csv ← npm('csv@0.4.6')
 
-get ← ι => {ι = curl_s(ι)
+get ← ι => {ι = GET_L(ι)
 	.match(/<h2>Transcript<\/h2>([\s\S]*?)<\/div>/)[1]
 	.replace(/<p>/g,'')
 	.replace(/<br\/?>|<\/p>/g,'\n')

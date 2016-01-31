@@ -140,12 +140,12 @@ mt19937_untemper ← λ(x){
 
 // print([PKCS_7(Buffer("YELLOW SUBMARINE"),20).str()])
 
-// f10 ← base64.read(fs('data/10.txt').$)
+// f10 ← φ`data/10.txt`.base64
 // key ← "YELLOW SUBMARINE"
 // iv ← Buffer(key.length).fill(0)
 // print(bad_decrypt_cbc(bad_encrypt_cbc(bad_decrypt_cbc(f10,key,iv),key,iv),key,iv)+'')
 
-// tea ← Buffer(fs('data/tea.txt').$)
+// tea ← φ`data/tea.txt`.buf
 // ls ← tea.partition(500).map(encryption_oracle)
 
 // encryption_oracle ← λ(buf){ // 11
@@ -292,7 +292,7 @@ mt19937_untemper ← λ(x){
 // print(data.map(λ(v){↩ xor(v.slice(0,key2.length),key2.slice(0,v.length))+''}))
 
 // 20
-// data ← fs('data/20.txt').$.trim().split('\n').map(base64.read).map(λ(v){↩ endecrypt_aes_128_ctr(v,key,Buffer(8).fill(0))})
+// data ← φ`data/20.txt`.lines().map(base64.read).map(ι => endecrypt_aes_128_ctr(ι,key,Buffer(8).fill(0)))
 // and same as 19
 
 // 21

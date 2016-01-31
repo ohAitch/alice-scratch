@@ -1,6 +1,5 @@
 import sublime, sublime_plugin
-import os
-import re
+import os, re
 
 def sh_encode(ι): return re.escape(ι)
 def osa_encode(ι): return '"'+re.sub(r'"','\\"',re.sub(r'\\','\\\\\\\\',ι))+'"'

@@ -168,7 +168,7 @@ read $unixpath (as utf8)
 	// represented as a Path, it has properties path_ and $/val/value/deref
 write to $unixpath from $utf8
 	fs('../'+date.replace(/-/g,'/')+'/'+slug+'.html').$ = text
-	print(i,ι); fs(out).$ = curl_s(ι);
+	print(i,ι); fs(out).$ = GET_L(ι);
 write to $bashpath.png from $image
 	(merge weather images @ hour 0, index 9 10 11 12) (″ @ hour 48) → @test.png
 $unixpath|bashpath is json (parsing empty file as null). read $unixpath|bashpath.
@@ -192,6 +192,7 @@ read $unixpath as lines
 	var [title,date,…text] = fs(fl).$.split('\n'); text = text.join('\n')
 write to $unixpath from lines
 	fs('./posts/'+basename_encode(ι)).$ = posts.join('\n')+'\n' // perhaps this should encode the lines?
+	φ`posts/${ι}`.lines = posts  ?
 atomic write to $unixpath from lines
 	fs('/tmp/fimscrape').$ = C.join('\n'); fs.renameSync('/tmp/fimscrape',sm_out)
 read $unixpath as base64
@@ -371,10 +372,7 @@ rm -r
 	rm node_modules; build || ↩ 1
 
 past difficulty: it’s really weird how this returns a thing that you can’t actually pass to fs(). maybe we’ll fix this by returning a more magical, jquery-like thing?
-past difficulty: does not handle uniqueness in selections
-past difficulty: wtf is up with selectors only being a .find() thing and not a fs() thing? and not returning selections so they’re not chainable?
 past difficulty: doesn’t normalize everything properly or reliably
-past difficulty: doesn’t follow symlinks (note: when you do follow symlinks, know that not all symlinks lead places)
 
 notes on filesystem selectors
 	//	*                          *
@@ -389,10 +387,11 @@ notes on filesystem selectors
 	unresolved interesting things:
 	set-normalization to [those which exist. uniq.]
 	normalization (remove excess . ..)
-	(canonical form *does* use ~/)
+	(canonical form *does* use ~/) ⋈ no false
 	links, symbolic and hard (and consistent sane behavior in the presence of them)
 
 more on file formats
+but file formats are really actually Buffer formats
 	export ping_file ← file dirty.getDataPath()+'/pings.log'
 		ping_file is an array of {time :: unix time, period :: float, tags :: str}, parsed out of its lines:
 			// 2014-03-26/19:51:56-07:00(p22.5)? a b c \(a: comment\)
@@ -415,44 +414,13 @@ more on file formats
 	read plist: npm::plist.parse(it)
 	show plist: npm::plist.build(it)
 
-	E.pixels = {}
-	E.pixels.read = λ(ι,type='rgb',cb){require('get-pixels','3.2.3')(fs(ι).path,λ(e,{data,shape:[X,Y,d],stride}){
-		// maybe just use Symbol.iterator ?
-		;(d === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
-		if (type!=='grey') throw Error()
-		ι ← Array(X*Y); for(i←0;i<ι.length;i++) ι[i] = data[i*4]
-		cb(e,{X,Y,ι}) }) }
-	E.pixels.show = λ({ι,X,Y},type='rgb',to){
-		t ← new (require('pngjs','2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
-		if (0);
-		// else if (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
-		// else if (type==='rgb' ) for(i←0;i<ι.length;i+=3) {D[p++] = ι[i]; D[p++] = ι[i+1]; D[p++] = ι[i+2]; D[p++] = 0xff}
-		else if (type==='grey') for(i←0;i<ι.length;i++) {D[p++] = D[p++] = D[p++] = ι[i]; D[p++] = 0xff}
-		else throw Error()
-		t.pack().pipe(fs.createWriteStream(fs(to).path)) }
-
-	pixels.read(in_,'grey',λ(e,{X,Y,ι}){
-		...
-		pixels.show({X,Y,ι:r},'grey',out)
-		})
 
 
-
-
-
-
-
-
-
-
-
-
-
-// ---------------------------------- code ---------------------------------- //
-
-// we *can* return Strings or Arrays with a φ property ... but it's probably best not to
+// -------------------------- implementation todos -------------------------- //
 
 φ.mktemp.randomstring = λ(fmt){t ← /[0-9a-z]/.genex_0(); ↩ fmt.replace(/(X+)([^X]*)$/,λ(ˣ,ι,r){↩ ι.replace(/./g,()=>rand(t)) + r})} // except as a proper file or w/e https://github.com/sasaplus1/mktemp/blob/master/lib/mktemp.js
+
+// ----- if existence_matching or globbing ---- //
 
 //! bad - should use directed Dijkstra's from all roots with edge length equal to the number of files in a dir
 // sample impl:
@@ -466,3 +434,120 @@ more on file formats
 	// all ← λ(ι){try {↩ fs.readdirSync(ι).map(λ(t){↩ ι+'/'+t}) } catch (e) {↩ []}}; root ← '.'; out ← []
 	// (λ λ(ι,dist){out.push([dist,ι]); at←;(at=all(ι)).forEach(λ(t){λ(t,dist + at.length)})})(root,0)
 	// q ← out._.sortBy(0)._.map(1)
+
+// ι = ι.mapcat(ι => !ts(ι)? [{raw:ENC(ι.raw+'')}] : ι===''?[]: ι.split(''))
+// r ← head? [head] : [(!ts(ι[0])? ι[0].raw[0] : ι[0])==='/'? '/' : './']
+// parse ← λ(l){
+// 	// ^ value+ $ = '{' value* ',' (value | ',')* '}' | `\*+` | `/` | .
+// 	push_ ← λ(r,ι){r[-1]&&r[-1].type==='raw' && ι.type==='raw'? (r[-1].ι += ι.ι) : r.push(ι)}
+// 	_1 ← λ(i){if (l[i]==='{'}){i++; r ← [{type:'',ι:[]}]; for(;;){ if (l[i]===','){i++; r.push({type:'',ι:[]})} else if (l[i]==={'}'){i++; ↩ r.length>1? {i,ι:{type:'|',ι:r}} : null} else if (i===l.length){↩} else {t ← value(i); i = t.i; push_(r[-1].ι,t.ι)} }}} // '{' value* ',' (value | ',')* '}'
+// 	_2 ← λ(i){if (l[i]==='*'){i++; type←'*'; if (l[i]==='*'){i++; type+='*'}; ↩ {i,ι:{type}}}} // `\*+`
+// 	_3 ← λ(i){if (l[i]==='/'){i++; type←'/'; ↩ {i,ι:{type}}}} // `/`
+// 	_4 ← λ(i){↩ {i:i+1, ι:{type:'raw',ι:(!ts(l[i])? l[i].raw : l[i])}}} // .
+// 	value ← λ(i){↩ _1(i) || _2(i) || _3(i) || _4(i)}
+// 	all ← λ(){r ← []; i ← 0; while (i !== l.length) {t ← value(i); if (t.i === i) throw Error(); i = t.i; push_(r,t.ι)}; ↩ {type:'',ι:r}} // ^ value+ $
+// 	↩ all()}
+// eval_ ← λ(r,{type,ι,dir}){switch(type){default: throw '‽'
+// 	break; case '': ι.forEach(λ(ι){
+// 		r = eval_(r,ι)
+// 		}); ↩ r
+// 	break; case 'raw': ↩ r.map(r => r+ι)
+// 	break; case '/': ↩ r.map(r => r+'/')
+// 	break; case '|': ↩ r.mapcat(r => ι.mapcat(ι => eval_([r],ι)))
+// 	// break; case '*': ↩ r.mapcat(r => fs.readdirSync(r).filter(re`^…${ι.replace(/\*|[^*]+/g, ι => (ι==='*'? /[\s\S]*/ : re`${ι}`).source)}$`.λ).map(ι => r+'/'+ι))
+// 	break; case '*': ↩ r.mapcat(r => fs.readdirSync(r).map(ι => r+'/'+ι))
+// 	break; case '**': ↩ r.mapcat(r => […walk(r,!dir)]); dir && (r = r.map(r => r+'/'))
+// 	}}
+// ι = eval_(r,parse(ι))
+// ι = ι.map(path.normalize.X)
+// ι = ι.filter(existsSync)
+// ↩ ι
+
+// if (ι==='..*') r = r.mapcat(ι => […(λ*(){if (!path.isAbsolute(ι)) {for(;;){yield ι; if (ι==='.') break; ι = path.dirname(ι)}; ι = path.resolve(ι); if (ι==='/') ↩}; for(;;){yield ι; if (ι==='/') break; ι = path.dirname(ι)}})()])
+
+//! handle symlink-cycle and symlink-following cycle
+//! needs to handle things like   ${child}*
+//! add mktemp.   φ.mktemp.randomstring = λ(fmt){t ← /[0-9a-z]/.genex_0(); ↩ fmt.replace(/(X+)([^X]*)$/,λ(ˣ,ι,r){↩ ι.replace(/./g,()=>rand(t)) + r})} // except as a proper file or w/e https://github.com/sasaplus1/mktemp/blob/master/lib/mktemp.js
+
+//! dedup all globs, existence_matching or no (including parent-ness)
+
+//! make it more jquery-like, so that when it returns an array the elements of the array are literally just strings
+// we *can* return Strings or Arrays with a φ property ... but it's probably best not to
+
+// anything that gets properties of things that *aren’t* jQuerys does a .first() first, although it’s perfectly willing to *set* properties on sets
+// it is meaningful to end in a slash but only if existence_matching. you’ll only find directories.
+
+// ------- if doing other exotic things ------- //
+
+//! unresolved: fs.fstatSync(0).isFIFO() ; replace with φ.fd(0) ?
+
+// ------------------------ //
+
+// treat symlinks like their targets
+// * treat broken symlink like permission error
+// except,
+// * rm -r doesn’t follow symlinks
+// * cp -r doesn’t follow symlinks (to mirror mv)
+// * include symlink-specific functions that treat symlinks like files whose contents are their destination and are able to make symlinks and are able to symlink-normalize (which then dedups) - which doesn’t have to normalize to “no symlinks”; it should be possible to normalize to a chosen set of symlinks ... i think
+// * * readlink, realpath
+
+// weird things are treated like permission errors
+// is_not_weird ← λ(ι){t ← fs.statSync(ι).mode & 0xf000; ↩ t===0x4000 || t===0x8000} // also 0xa000 is symbolic link and 0x1000 is fifo
+
+// permission errors are sometimes ignored and sometimes thrown - think about what’s the right thing to do for various functions
+// if they can be fixed via chmoding - again, sometimes you want to fix them and sometimes you don’t (like, you don’t if walking /, but you do if accessing specifically X. maybe other situations?)
+
+// all paths are relative to http:// or file:/ or . or some other path; these are all different kinds of paths and do not mix, but sometimes you want to ‘change the perspective’
+
+// // -------- weird ------- //
+// there exists a giant stream of all filesystem events that we can get mostly-reliable slices of
+
+// // ----- uncategorized ---- //
+// ? transform-move $bashpath (includes mv)
+// ? synchronize datasource 1 with datasource 2 (includes cp -r)
+// 	when datasource 1 is an in-memory datastructure and datasource 2 is a filesystem piece and a destination, this is ... shit, it’s a hand-rolled mongo, isn’t it
+
+// we need to be careful with non-atomic transactions
+// we need to think about how this interacts with concurrency
+// we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
+// 	“like, it should be caching urls all the time.”
+
+/*
+E.pixels = {
+	read: λ(ι,type='rgb',cb){npm('get-pixels@3.2.3')(φ(ι)+'',λ(e,{data:D,shape:[X,Y,depth],stride}){X|=0;Y|=0
+		// maybe just use Symbol.iterator ?
+		;(depth === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+		if      (type==='rgba') ι ← D
+		else if (type==='rgb' ) {ι ← Buffer(X*Y*3); pˡ←0; pᵈ←0; for(i←0;i<X*Y;i++) {ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; pᵈ++}}
+		else if (type==='grey') {ι ← Buffer(X*Y); for(i←0;i<X*Y;i++) ι[i] = D[i*4]}
+		else throw Error()
+		cb(e,{X,Y,ι}) }) },
+	show: λ({ι,X,Y},type='rgb',to){
+		t ← new (npm('pngjs@2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
+		if      (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
+		else if (type==='rgb' ) for(i←0;i<ι.length;) {D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = 0xff}
+		else if (type==='grey') for(i←0;i<ι.length;) {D[p++] =         D[p++] =         D[p++] = ι[i++]; D[p++] = 0xff}
+		else throw Error()
+		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
+	}
+*/
+
+// --------- dunno -------- //
+
+// root:λ(x){switch(arguments.length){default: throw Error()
+// 	case 0: ↩ @._ι[0]==='/'? '/' : '.'
+// 	case 1: @._ι = x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : (λ(){throw Error('not yet implemented: nonstandard roots')})(); ↩ @ }},
+
+// ---------------------- things i need globbing to do ---------------------- //
+scratch/data science/lw scrape.ζ:41:// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
+scratch/data science/lw scrape.ζ:43:q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
+scratch/data science/fimscrape.ζ:44:	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
+scratch/scratch.txt:88:φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+scratch/scratch.txt:107:φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
+scratch/spotiman/pretty.ζ:5:t ← JSON.parse(φ`~/ali/history/auto/spotify/*`.sort()[-1].get()).map(λ(ι){
+scratch/dotfiles/.keyrc:83:[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
+scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
+scratch/sublime/index.ζ:65:	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
+scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
+scratch/dotfiles/.bashrc:143:# ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
+scratch/userscripts/install.ζ:27:// 	ιs ← φ`./*.js`.map(gen)

@@ -161,14 +161,6 @@
     },
     {"begin": "/\\*\\*(?!/)", "captures": {"0": {"name": "punctuation.definition.comment2.js"}}, "end": "\\*/", "name": "comment2.block.documentation.js"},
     {"begin": "/\\*", "captures": {"0": {"name": "punctuation.definition.comment2.js"}}, "end": "\\*/", "name": "comment2.block.js"},
-    {"match": "(//) (---+)(.*?)(---+) (//)$\\n?", "name": "plaintext.js",
-      "captures": {
-        "1": {"name": "comment2.line.double-slash.js"},
-        "2": {"name": "keyword.js"},
-        "3": {"name": "plaintext.js"},
-        "4": {"name": "keyword.js"},
-        "5": {"name": "comment2.line.double-slash.js"}
-      } },
     {"captures": {"1": {"name": "punctuation.definition.comment2.js"}}, "match": "(//).*$\\n?", "name": "comment2.line.double-slash.js"},
     {
       "captures": {"0": {"name": "punctuation.definition.comment2.html.js"}, "2": {"name": "punctuation.definition.comment2.html.js"}},

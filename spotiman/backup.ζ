@@ -67,6 +67,6 @@ getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
 	})
 
 // future:
-// spotify_web_api ← require('spotify-web-api-node','2.2.0')
+// spotify_web_api ← npm('spotify-web-api-node@2.2.0')
 // // https://www.npmjs.com/package/spotify-web-api-node
 // // https://developer.spotify.com/web-api/tutorial/
