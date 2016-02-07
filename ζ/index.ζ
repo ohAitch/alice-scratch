@@ -1,18 +1,9 @@
 #!/bin/sh
-// 2>/dev/null;           node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps "$0" "$@"; exit
-shebang ← '#!/usr/bin/env node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps'
+__harmony='--harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps'; // 2>/dev/null; node $__harmony "$0" "$@"; exit
+shebang ← '#!/usr/bin/env node '+__harmony
 
 // ---------------------------------- todo ---------------------------------- //
-// http://es6-features.org/#IteratorForOfOperator
-// http://es6-features.org/#GeneratorFunctionIteratorProtocol
-// http://es6-features.org/#GeneratorFunctionDirectUse
-// http://es6-features.org/#GeneratorMatching
-// http://es6-features.org/#GeneratorControlFlow
-// http://es6-features.org/#PromiseUsage    http://es6-features.org/#PromiseCombination
-// not in node yet:
-// http://es6-features.org/#BlockScopedVariables (not yet supported outside of strict mode)
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive and more
-// eh: (new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
 // -------------------------- local metaprogramming ------------------------- //
 E ← {} // exports
@@ -45,14 +36,15 @@ E.Reflect = require('harmony-reflect')
 
 // --------------------------------- ζ infra -------------------------------- //
 E.npm = λ(ι){var [ι,version] = ι.split('@')
+	APP ← '\x1b[34m[npm]\x1b[0m'
 	if (version){
 		cache ← φ`~/.npm/${ι}/${version}`
 		try {↩ require(cache+'/node_modules/'+ι)}
 		catch (e) {if (!(e.code==="MODULE_NOT_FOUND")) throw e
-			print('\x1b[34m[npm]\x1b[0m installing',ι+'@'+version)
+			print(APP+' installing',ι+'@'+version)
 			cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ι+'@'+version}`
 			cache.φ`/package.json`.ι = {description:"-",repository:1,license:"ISC"}; cache.φ`README`.text = ''; shᵥ`cd ${cache} && npm i ${ι+'@'+version}`; cache.φ`package.json`.ι = cache.φ`README`.ι = null
-			print('\x1b[34m[npm]\x1b[0m done')
+			print(APP+' done')
 			↩ require(cache+'/node_modules/'+ι) } }
 	else {
 		shᵥ`bash -ci ack`
@@ -74,8 +66,8 @@ E.ζ_repl_start = λ(opts){
 		if (/(^\{[\s\S]*\}$)|(^λ\()/.test(t)) t = '('+t+')'
 		t = ζ_compile(t)
 		try {sc ← new vm.Script(t, {filename:'repl', displayErrors:false})}
-		catch (e) {if (!(e.name === 'SyntaxError' && /^(Unexpected (end of input|token)|Unterminated template literal)/.test(e.message))) throw Error('‽'); self.bufferedCommand += cmd+'\n'; self.outputStream.write('    '); ↩}
-		// catch (e) {if (e.name === 'SyntaxError' && /^(Unexpected (end of input|token)|Unterminated template literal)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('    '); ↩}; e.stack = e.name+': '+e.message+'\n    at <repl>'; err ← e}
+		catch (e) {if (e.name === 'SyntaxError' && /^(Unexpected (end of input|token)|Unterminated template literal)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('    '); ↩}; e.stack = e.name+': '+e.message+'\n    at <repl>'; err ← e}
+		if (sc)
 		try {ret ← sc.runInThisContext({displayErrors:false})}
 		catch (e) {e && typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([\s\S]*)at repl:(.*)[\s\S]*?$/,'$1at <repl:$2>')); err ← e}
 		In.push(code); Out.push(err || ret)
@@ -106,13 +98,13 @@ genex_0 ← λ(ι){
 		↩ w(q(ι))}
 	q ← ι => ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b) => _(a.map(a => b.map(b => a+b))).flatten(true),['']) : [ι]
 	↩ q(parse(ι)) }
-Number_toFixed ← λ(θ,ι){↩ ι >= 0? θ.toFixed(ι) : round(θ/pow(10,-ι))*pow(10,-ι)+''}
-pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι ← @; if (ι >= P/1e3) {u ← 's'} else {u ← 'μs'; ι *= 1e6}; ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
+Number_toFixed ← λ(θ,ι){↩ round(θ/pow(10,-ι))*pow(10,-ι)+''}
+pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
 
 E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
 E.print = λ(…a){process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n')}
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
-E.multiline = λ(ι){ι = ι.toString().split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
+E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
 def(E,'moment',λ(){
 	_moment ← require('moment')
 	moment ← λ(ι){↩ typeof(ι)==='number' && arguments.length===1? _moment(ι*1000) : _moment(…arguments)}
@@ -124,10 +116,9 @@ def(E,'moment',λ(){
 E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
 E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
-E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ Array.isArray(a)? _.sample(a) : (Math.random()*a)|0; case 2: ↩ (Math.random()*(b-a) + a)|0}}
-def(E,'async',()=> npm('async@1.5.0'))
+E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ typeof(a)==='number'? rand()*a |0 : _.sample(a); case 2: ↩ rand(b-a)+a |0}}
 E.fs_ipc = {
-	emit: λ(port,ι){fs('/tmp/fs_ipc_'+port).$ = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
+	emit: λ(port,ι){φ`/tmp/fs_ipc_${port}`.text = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
 	on: λ(port,cbₐ){http.createServer(λ(ˣ,res){
 		t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null; global.ι = fs('/tmp/fs_ipc_'+port+'_stdin').$.replace(/\n$/,''); fs('/tmp/fs_ipc_'+port+'_stdin').$ = null
 		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdout(); try {cbₐ(t); end(r())} catch(e){end(r()+''+(e.stack||e)+"\n")}
@@ -171,10 +162,6 @@ P(()=>({
 write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? ι : util.inspect(ι,{depth:null}))}
 E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)}
 E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)}
-E.email = λ(){
-	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
-		.map(ι => osaᵥ`chrome: open location ${ι}`)
-	osaᵥ`chrome: activate` }
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=ι+''
 	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' //! bad hack
 
@@ -257,10 +244,11 @@ P(()=>({ 'RegExp.prototype.i':{get(){↩ RegExp(@.source,@.flags+'i')}} }))
 P(()=>({ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} }))
 
 // --- metaprogramming → runtime macros built on top of template literals --- //
+ts ← ι => typeof(ι)==='string'
 is_template ← λ(ss,ιs){↩ Array.isArray(ss) && ss.length-1 === ιs.length}
 simple_template ← λ(ss,ιs){is_template(ss,ιs) || (λ(){throw Error()})()
 	ι ← _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')
-	for(i←0;i<ι.length-1;i++) if (!ι[i].raw && ι[i+1].raw) ι[i] = ι[i].replace(/…$/,λ(){ι[i+1] = ι[i+1].raw+''; i++; ↩ ''})
+	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){t←; ι[i+1] = (t=ι[i+1].raw, t===null||t===undefined||t===false||t===''? '' : t+''); i++; ↩ ''})
 	↩ ι}
 JSON_pretty ← λ(ι){
 	seen ← []
@@ -392,7 +380,6 @@ def(E,'φ',λ(){
 		}
 	λ Φs(ι){@._ι = ι}; Φs.prototype = {
 		}
-	ts ← ι => typeof(ι)==='string'
 	λ φ(ss,…ιs){
 		head ← @ instanceof Φ && @._ι
 		if (@ instanceof Φs) throw Error('not yet implemented')
@@ -415,6 +402,8 @@ if (!module.parent) (λ(){t←;
 	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι))}
 	read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}	
 	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([\s\S]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
+
+	//! the handling here of passing argv to the new process.argv is actually incorrect. however i'm busy and don't want to figure out the right thing right now.
 
 	argv ← process.argv.slice(2); arg ← minimist(argv,{boolean:['c','v'],alias:{version:'v',print:'p',eval:'e',compile:'c',output:'o'}})
 	if (arg.v){ print(φ(__dirname).φ`package.json`.ι.version) }
@@ -440,8 +429,7 @@ if (!module.parent) (λ(){t←;
 		print(JSON.stringify(ι))
 		}
 	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; ζ_repl_start() }
-	else if (arg._.length===1){ process.argv = ['ζ',…argv]; Module._load(path.resolve(arg._[0]), null, true) }
-	else throw Error('bad args')
+	else {                      process.argv = ['ζ',…arg._]; Module._load(path.resolve(arg._[0]), null, true) }
 	})()
 
 // ------------------ really important remaining work for φ ----------------- //

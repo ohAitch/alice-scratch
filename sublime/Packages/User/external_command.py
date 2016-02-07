@@ -22,7 +22,8 @@ class server_h(http.server.BaseHTTPRequestHandler):
 		self.wfile.write(bytes(json.dumps(ι)+'    \n','UTF-8'))
 server = http.server.HTTPServer(('127.0.0.1',PORT),server_h)
 def t():
-	try: print('[external eval] server starting'); server.serve_forever()
-	except: print('[external eval] server shutting down')
+	APP = '[external eval]'
+	try: print(APP+' server starting'); server.serve_forever()
+	except: print(APP+' server shutting down')
 threading.Thread(target=t, daemon=True).start()
 def plugin_unloaded(): server.socket.close()

@@ -1,6 +1,6 @@
 __dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
 ########### private ##########
-λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\}"; printf -- "${v//↩/\\\\q}↩"; done | ζ -p 'ι = ι.replace(/↩$/,"").split("↩").map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
+λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\}"; printf -- "${v//↩/\\\\q}↩"; done | ζ -e 'ι = ι.replace(/↩$/,"").split("↩").map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
 -q(){ "$@" &>/dev/null; }
 is_term(){ osascript -e 'path to frontmost application' | -q grep Terminal.app; }
 chmodxprint(){ a=$(stat -f "%p" "$1"); chmod +x "$1"; b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; }
@@ -8,7 +8,8 @@ home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"
 _chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; osascript -e 'tell app "chrome" to activate'; }
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; }
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; echo "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-_alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
+# _alert(){ osascript -ss -e 'tell app "system events" to display alert "'"$1"'"'"$([ -n "$2" ] && echo ' message "'"$2"'"')$([ -n "$3" ] && echo ' giving up after "'"$3"'"')"; }
+_alert(){ λ ' osaᵥ`system events: display alert ${ι[0]} …${ι[1] && osa`message ${ι[1]}`} …${ι[2] && osa`giving up after ${ι[2]}`}` ' "$@"; }
 
 ###### interactive only ######
 shopt -s no_empty_cmd_completion
@@ -50,7 +51,7 @@ ql(){ (-q qlmanage -p "$@" &); }
 man(){ t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
-# im_to_png(){ λ 'ι.filter(ι => !/\.png$/.λ(ι)).map(ι => execᵥ("convert ")), void 0' "$@"; }
+# im_to_png(){ λ 'ι.filter(ι => !/\.png$/.λ(ι)).map(ι => execᵥ("convert "))' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
 im_resize(){ t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; } #! wth are you using scale
@@ -81,6 +82,12 @@ dl_fix(){ f ~/Downloads; f ~/pg; ζ -e '
 /(){ -q pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; -q popd; }
 cache_imgurs(){ for v in "$@"; do o=~/"ali/misc/.cache/imgur/$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
 youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/"Downloads/$2.%(ext)s" "$1"; }
+email(){ ack; λ '
+	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
+		.map(ι => osaᵥ`chrome: open location ${ι}`)
+	osaᵥ`chrome: activate`
+	'; }
+cdw(){ t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
@@ -105,7 +112,7 @@ rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_S
 			osa`keystroke ${ι.replace(/^⌘/,"")}`+(ι.re`^⌘`? " using command down" : "")
 		).join("\n")
 	osaᵥ`system events: …${ι}`
-	void 0' "$@"; }
+	' "$@"; }
 _in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
 alias ·='eval "$(cat /tmp/__·)"; rm /tmp/__·;'
 alias _clr='cd ~; /usr/bin/clear && printf "\e[3J";'

@@ -7,16 +7,17 @@ chokidar ← npm('chokidar@1.4.1')
 // huh, we could/should implement it as a library that logs all (requested) filesystem events whether or not its caller is running ?
 // that would require reliable long-running processes
 
+APP ← '\x1b[34m[φΔs]\x1b[0m'
 pad ← λ(ι,s){↩ ι+s.slice(ι.length)}
 fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
-	if (fl !== (fl=fs(fl).path)) {fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩}
+	if (fl !== (fl=φ(fl)+'')) {fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩}
 	fsʷ._events[fl] || chokidar.watch(fl,{ignoreInitial:true,alwaysStat:true})
 		.on('error',λ(ι){console.error('[fs_watch] wat '+ι)})
 		.on('all',λ(ev,ι,stat){t ← {'addDir':'add','unlinkDir':'unlink'}; type ← t[ev]||ev; fsʷ.emit(fl, ι, {type, dir: !!t[ev], stat, time: type==='unlink'? new Date() : stat.ctime})})
 	})
 
-process.chdir(fs('~/ali/scratch').path)
+process.chdir(φ`~/ali/scratch`+'')
 fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || /(^|\/)\.history(\/|$)/.λ(fl)) ↩
-	print(moment(time), pad(type,' '.repeat(6)), fl)
-	fs('.history/'+moment(time).toISOString()+' '+(type==='unlink'?'X':'=')+' '+basename_encode(fl)).$ = type==='unlink'? '' : fs(fl).$
+	print(APP, moment(time), pad(type,' '.repeat(6)), fl)
+	φ`.history/${moment(time).toISOString()} ${type==='unlink'?'X':'='} ${fl}`.text = type==='unlink'? '' : φ(fl).text
 	})

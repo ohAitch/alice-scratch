@@ -214,3 +214,13 @@ _return ← λ(ι){throw {__catchable:ι}}
 ----------------------------------- entities -----------------------------------
 entities_encode = ι => ι.replace(/[&"'<>]/g, ι => ({'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]))
 entities_decode = typeof window==='undefined'? npm('html-entities@1.2.0').AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
+
+------------------------------------ es6 eh ------------------------------------
+(new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'
+http://es6-features.org/#IteratorForOfOperator
+http://es6-features.org/#GeneratorFunctionDirectUse
+http://es6-features.org/#GeneratorControlFlow
+
+------------------------------ es6 not in node yet -----------------------------
+http://es6-features.org/#BlockScopedVariables (not yet supported outside of strict mode)
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive and more
