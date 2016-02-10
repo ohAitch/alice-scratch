@@ -25,4 +25,4 @@ class _(sublime_plugin.EventListener):
 class get_syntax(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
-		print('[fyi] syntax:',view.settings().get('syntax'))
+		print('[fyi]','syntax:',view.settings().get('syntax'))

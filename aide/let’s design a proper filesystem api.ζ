@@ -532,12 +532,6 @@ E.pixels = {
 	}
 */
 
-// --------- dunno -------- //
-
-// root:λ(x){switch(arguments.length){default: throw Error()
-// 	case 0: ↩ @._ι[0]==='/'? '/' : '.'
-// 	case 1: @._ι = x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : (λ(){throw Error('not yet implemented: nonstandard roots')})(); ↩ @ }},
-
 // ---------------------- things i need globbing to do ---------------------- //
 scratch/data science/lw scrape.ζ:41:// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
 scratch/data science/lw scrape.ζ:43:q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))

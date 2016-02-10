@@ -300,7 +300,7 @@ mt19937_untemper ← λ(x){
 
 // // 22
 // // server
-// output ← mt19937(round(moment()) - rand(40,1000))()
+// output ← mt19937(round(Time().i) - rand(40,1000))()
 // // attacker
-// now ← round(moment())
+// now ← round(Time().i)
 // for(i←now;;i--) if (mt19937(i)() === output) {print('found seed:',i); break}

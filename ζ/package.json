@@ -1,6 +1,6 @@
 {
   "name": "zeta-lang",
-  "version": "0.10.92",
+  "version": "0.10.138",
   "description": "simple js util lib",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "harmony-reflect": "^1.4.2",
-    "moment": "^2.10.6",
+    "moment": "^2.11.2",
     "priorityqueuejs": "^1.0.0",
     "underscore": "^1.8.3",
     "urijs": "^1.17.0",

@@ -2,7 +2,7 @@
 arg ← { cmd:process.argv[2] }
 
 // ------- settings ------- //
-date ← '2016-01-18';    process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(moment().format('YYYY-MM-DD'))+';')
+date ← '2016-02-09';    process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(Time().ymd)+';')
 total_stories ← 314549; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(GET_L('https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(ι => parseInt(ι.match(/\d+/)[0]))._.max() + 3000)+';')
 sm_out ← φ`story_meta ${date}.txt`
 st_out ← φ`story_text ${date}`

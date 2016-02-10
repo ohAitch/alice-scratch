@@ -5,19 +5,18 @@
 plist ← npm('plist@1.2.0')
 arg ← {
 	cmd: process.argv[2] || 'to',
-	in: 'Packages',//path.resolve(process.argv[3] || 'Packages'),
-	out: φ`~/Library/Application Support/Sublime Text 3/Packages`+'',//path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path),
+	in: φ(process.argv[3] || 'Packages').root('/')+'',
+	out: φ`~/Library/Application Support/Sublime Text 3/Packages`+'',
 	}
-
-transform_json ← λ(str){↩ plist.build(JSON.parse(str))}
+APP ← '\x1b[34m[sublime transform]\x1b[0m'
 
 main ← λ(){
-	written ← []; R ← λ(ι){written.push(ι); ↩ ι}
+	written ← []; R ← ι => (written.push(ι+''), ι)
 // ------------------------------- broken part ------------------------------ //
 	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 		;(t=ι.match(/^(.*)\.json$/))?
-			(fs(R(arg.out+'/'+t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
-		: (fs(R(arg.out+'/'+ι)).$ = fs(arg.in+'/'+ι).$)
+			( R(φ(arg.out).φ(t[1])).buf = plist.build(φ(arg.in).φ(ι).json) )
+		: ( R(φ(arg.out).φ(ι)).buf = φ(arg.in).φ(ι).buf )
 		})
 	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
 	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
@@ -28,7 +27,7 @@ main ← λ(){
 	}
 
 switch (arg.cmd) {
-	default: print('[sublime-transform] invalid command')
+	default: print(APP,'invalid command')
 	break; case 'to': main()
-	// break; case 'from': φ(arg.in+'.json').ι = plist.parse(fs(arg.in).$)
+	// break; case 'from': φ`…${arg.in}.json`.ι = plist.parse(φ(arg.in).text)
 	}

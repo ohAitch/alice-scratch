@@ -81,7 +81,7 @@ def open(ι,app=None,focus=True,view=None):
 		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
 		var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]})[1]
-		φ`/tmp/__·`.text = sh`cd ${dir}`+(!unbusy? '; clear' : '')+(base? sh`; set -- ${base}; ({ sleep 0.01; printf "\e[1G\e[2K\e[F\e[2K\${green}$(this)/\${purple}$1 \${reset}"; } &)` : '')
+		φ`/tmp/__·`.ι = sh`cd ${dir}`+(!unbusy? '; clear' : '')+(base? sh`; set -- ${base}; ({ sleep 0.01; printf "\e[1G\e[2K\e[F\e[2K\${green}$(this)/\${purple}$1 \${reset}"; } &)` : '')
 		osaᵥ`terminal: do script "·" …${unbusy? osa`in (window 1 whose id = ${unbusy})` : ''}; …${focus? 'activate' : ''}`
 		""")
 	else:
@@ -95,17 +95,17 @@ class open_context(sublime_plugin.TextCommand):
 		view = self.view
 		if type == "github":
 			t = ζ('-e',"""
-				ι ← require('path').resolve("""+repr(view.file_name() or '')+""")
-				root ← ι; while (root !== '/' && !φ(root+'/.git').BAD_exists()) root = φ(root).φ`..`
-				if (root !== '/') {
-					ι = ι.slice((root+'/').length)
-					t ← npm('ini@1.3.4').parse(φ(root+'/.git/config').text)['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+φ(root+'/.git/HEAD').text.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
+				ι ← φ("""+repr(view.file_name() or '')+""").root('/')
+				root ← ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
+				if (root+'' !== '/') {
+					ι = (ι+'').slice((root+'/').length)
+					t ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
+					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
 					process.stdout.write(r) }
 				""")
 			if t:
 				h = ['L'+str(view.rowcol(ι)[0] + 1) for ι in [view.sel()[0].begin(), view.sel()[-1].end()]]
-				open(t+('' if h[0] == 'L1' else '#'+(h[0] if h[0] == h[1] else h[0]+'-'+h[1])),focus=focus)
+				open(t+('' if h[0] == h[1] == 'L1' else '#'+(h[0] if h[0] == h[1] else h[0]+'-'+h[1])),focus=focus)
 		elif type == "terminal":
 			open(view.file_name() or os.getenv("HOME"),focus=focus,app="Terminal")
 		elif type == "link":

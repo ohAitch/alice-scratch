@@ -23,7 +23,7 @@ class server_h(http.server.BaseHTTPRequestHandler):
 server = http.server.HTTPServer(('127.0.0.1',PORT),server_h)
 def t():
 	APP = '[external eval]'
-	try: print(APP+' server starting'); server.serve_forever()
-	except: print(APP+' server shutting down')
+	try: print(APP,'server starting'); server.serve_forever()
+	except: print(APP,'server shutting down')
 threading.Thread(target=t, daemon=True).start()
 def plugin_unloaded(): server.socket.close()

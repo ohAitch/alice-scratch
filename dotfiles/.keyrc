@@ -83,7 +83,7 @@ FnF4  ] DASHBOARD
 [terminal] ⌘R      ] ^
 [spotify] ⌘l       $ ack; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
 [path_finder] ⌘⇧t  $ ack; _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
-[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
+[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${Time(t[1]+"T"+t[2]+":"+t[3]).ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
 [sublime] /↩       ] ^↩
 # [chrome]  /↩       $ ack; _chrome "$(osascript -e 'tell app "google chrome" to execute window 1'\''s active tab javascript "window.getSelection().toString()"')"
 [spotify] /↩       $ ] ⌘c; ack; sleep 0.12; p="$(p)"; if ! [[ $p = http:* ]]; then _chrome "$p"; else t=$(osascript -e 'tell app "spotify" to spotify url of current track'); osascript -e 'tell app "spotify" to play track "'"$p"'"'; sleep 0.05; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"; osascript -e 'tell app "spotify" to play track "'"$t"'"'; fi

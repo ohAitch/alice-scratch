@@ -4,6 +4,7 @@ shebang ← '#!/usr/bin/env node '+__harmony
 
 // ---------------------------------- todo ---------------------------------- //
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+// Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
 // -------------------------- local metaprogramming ------------------------- //
 E ← {} // exports
@@ -28,28 +29,29 @@ prop_assign ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι => Objec
 ;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['minimist'],
 ['fs'],//! hack
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
+global.stream = E.stream
 _ ← E._
 path ← require('path')
 fs ← require('fs')
-global.stream = E.stream
+moment ← require('moment')
 E.Reflect = require('harmony-reflect')
 
 // --------------------------------- ζ infra -------------------------------- //
-E.npm = λ(ι){var [ι,version] = ι.split('@')
+E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
 	APP ← '\x1b[34m[npm]\x1b[0m'
 	if (version){
 		cache ← φ`~/.npm/${ι}/${version}`
 		try {↩ require(cache+'/node_modules/'+ι)}
 		catch (e) {if (!(e.code==="MODULE_NOT_FOUND")) throw e
-			print(APP+' installing',ι+'@'+version)
-			cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ι+'@'+version}`
-			cache.φ`/package.json`.ι = {description:"-",repository:1,license:"ISC"}; cache.φ`README`.text = ''; shᵥ`cd ${cache} && npm i ${ι+'@'+version}`; cache.φ`package.json`.ι = cache.φ`README`.ι = null
-			print(APP+' done')
+			print(APP,'installing',ιv())
+			cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ιv()}`
+			;(a=cache.φ`package.json`).ι = {description:"-",repository:1,license:"ISC"}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm i ${ιv()}`; a.ι = b.ι = null
+			print(APP,'done')
 			↩ require(cache+'/node_modules/'+ι) } }
 	else {
 		shᵥ`bash -ci ack`
-		version = shᵥ`npm show async version`+''
-		process.stderr.write('\x1b[34m[npm]\x1b[0m latest: '); process.stdout.write(ι+' ← npm('+util.inspect(ι+'@'+version)+')'); process.stderr.write('\n')
+		version = shᵥ`npm show ${ι} version`+''
+		process.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm('+util.inspect(ιv())+')'); process.stderr.write('\n')
 		} }
 E.ζ_compile = ζ_compile
 E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
@@ -88,9 +90,10 @@ memo_frp ← λ(names,within,f){
 	dir ← φ`~/.memo_frp`; names.map(ι => dir = dir.φ`${ι}`)
 	if (within){
 		try{t ← fs.readdirSync(dir+'')} catch(e){if (!(e.code==='ENOENT')) throw e; t ← []}
-		now ← Date.now()/1e3; t = t.sort().filter(ι => +moment(/^\S+/.λ(ι)[0]) >= now - within)[-1]
-		if (t) ↩ dir.φ(t).text}
-	a ← moment().toISOString(); ι ← f(); o ← ι; b ← moment().toISOString(); if (Buffer.isBuffer(ι)) ι = ι.equals(Buffer(ι.toString('utf8')))? ι.toString('utf8') : {type:'Buffer',data:ι.toString('base64')}; dir.φ`${a} ${Buffer(6..map(()=> rand(0x100))).toString('hex')}`.ι = {names, date:[a,b], ι}; ↩ o}
+		now ← Date.now()/1e3; t = t.sort().filter(ι => Time(/^\S+/.λ(ι)[0]).i >= now - within)[-1]
+		if (t) ↩ dir.φ(t).json2.ι}
+	a ← Time().iso; ι ← f(); b ← Time().iso
+	dir.φ`${a} ${Buffer(6..map(()=> rand(0x100))).toString('hex')}`.json2 = {names, date:[a,b], ι}; ↩ ι}
 genex_0 ← λ(ι){
 	parse ← λ(ι){
 		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:_(ι.slice(1,-1).match(/.-.|./g).map(ι => ι.length === 1? [ι] : _.range(ι[0].charCodeAt(0),ι[2].charCodeAt(0)+1).map(String.fromCharCode.X))).flatten(true)} : ι})}
@@ -98,29 +101,21 @@ genex_0 ← λ(ι){
 		↩ w(q(ι))}
 	q ← ι => ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b) => _(a.map(a => b.map(b => a+b))).flatten(true),['']) : [ι]
 	↩ q(parse(ι)) }
-Number_toFixed ← λ(θ,ι){↩ round(θ/pow(10,-ι))*pow(10,-ι)+''}
+Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
 pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
 
 E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
 E.print = λ(…a){process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n')}
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
 E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
-def(E,'moment',λ(){
-	_moment ← require('moment')
-	moment ← λ(ι){↩ typeof(ι)==='number' && arguments.length===1? _moment(ι*1000) : _moment(…arguments)}
-	Object.setPrototypeOf(moment,_moment)
-	moment.fn.valueOf = λ(){↩ +@._d/1000 - (@._offset||0)*60}
-	moment.fn.toString = λ(){↩ @.utc().format('YYYY-MM-DD[T]HH:mm:ss[Z]')}
-	moment.fn.inspect = λ(depth,opts){↩ opts.stylize(@.toString(),'date')}
-	↩ moment})
 E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
 E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ typeof(a)==='number'? rand()*a |0 : _.sample(a); case 2: ↩ rand(b-a)+a |0}}
 E.fs_ipc = {
-	emit: λ(port,ι){φ`/tmp/fs_ipc_${port}`.text = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
-	on: λ(port,cbₐ){http.createServer(λ(ˣ,res){
-		t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null; global.ι = fs('/tmp/fs_ipc_'+port+'_stdin').$.replace(/\n$/,''); fs('/tmp/fs_ipc_'+port+'_stdin').$ = null
+	emit: λ(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
+	on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
+		t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
 		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdout(); try {cbₐ(t); end(r())} catch(e){end(r()+''+(e.stack||e)+"\n")}
 		}).listen(port)},
 	}
@@ -156,6 +151,21 @@ P(()=>({
 // '(Buffer|Array|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i => @.slice(i,i+L))},
 // 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 // 'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
+}))
+E.Time = λ(ι){↩ arguments.length===0? new Date() : ι instanceof Date? ι : new Date(ι instanceof Number? ι*1e3 : ι)}
+fmt ← λ(a,b){t ← @.__local? moment(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString(); t = t.slice(a,b); if (!@.__local && b > 10) t += 'Z'; ↩ t}
+P(()=>({
+'Date.prototype.inspect':λ(d,opts){↩ opts.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')},
+'Date.prototype.local':{get(){↩ new Date(@)._.assign({__local:true})}},
+'Date.prototype.i':{get(){↩ +@ / 1e3}},
+'Date.prototype.ym':      {get(){↩ fmt.call(@,0,'YYYY-MM'.length)}},
+'Date.prototype.ymd':     {get(){↩ fmt.call(@,0,'YYYY-MM-DD'.length)}},
+'Date.prototype.ymdh':    {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH'.length)}},
+'Date.prototype.ymdhm':   {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm'.length)}},
+'Date.prototype.ymdhms':  {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss'.length)}},
+'Date.prototype.ymdhmss': {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
+'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
+'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.length,'YYYY-MM-DDTHH:mm:ss'.length)}},
 }))
 
 // ---------------------------------- .ζrc ---------------------------------- //
@@ -250,13 +260,15 @@ simple_template ← λ(ss,ιs){is_template(ss,ιs) || (λ(){throw Error()})()
 	ι ← _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')
 	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){t←; ι[i+1] = (t=ι[i+1].raw, t===null||t===undefined||t===false||t===''? '' : t+''); i++; ↩ ''})
 	↩ ι}
-JSON_pretty ← λ(ι){
+JSON_pretty ← λ(ι,replacer){
 	seen ← []
 	T ← '  ' // tab
 	wrap_width ← 140
 	indent_show ← ι => show(ι).replace(/\n/g,'\n'+T)
 	show ← λ(ι){t←;
 		if (ι===undefined||ι===null) ↩ 'null'
+		ι = replacer(ι)
+		while (ι.toJSON) ι = ι.toJSON()
 		switch (typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι)) {
 			case 'string': case '[object String]': ↩ JSON.stringify(ι)
 			case 'boolean': case '[object Boolean]': case 'number': case '[object Number]': ↩ ι+''
@@ -299,14 +311,14 @@ def(E,'φ',λ(){
 	ENC ← ι => ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ['⁻¹'] = ι => /%2F/i.λ(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 
-	existsSync ← λ(ι){try{fs.accessSync(ι); ↩ true} catch(e){↩ false}}
-	mkdir_p ← λ Λ(ι){try {fs.mkdirSync(ι)} catch(e){if (e.code==='EEXIST') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι)}}
-	walk ← λ*(root,files){root += '/'
-		walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try {fs.statSync(root+t).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t))} catch (e) {}}} catch (e) {}}
-		yield* walk_('') }
-	read_file ← λ(ι){try{↩ fs.readFileSync(ι)} catch(e){if (!(e.code==='ENOENT')) throw e}}
-	ensure_exists ← λ(ι,ifdne){mkdir_p(path.resolve(path.dirname(ι))); existsSync(ι) || fs.writeFileSync(ι,ifdne)}
-	writeFile ← λ(ι,data){ try{fs.writeFileSync(ι,data)} catch(e){if (!(e.code==='ENOENT')) throw e; ensure_exists(ι,data)} }
+	existsSync ← λ(ι){ try{fs.accessSync(ι); ↩ true} catch(e){↩ false} }
+	mkdir_p ← λ Λ(ι){ try{fs.mkdirSync(ι)} catch(e){if (e.code==='EEXIST') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι)} }
+	// walk ← λ*(root,files){root += '/'
+	// 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try {fs.statSync(root+t).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t))} catch (e) {}}} catch (e) {}}
+	// 	yield* walk_('') }
+	read_file ← λ(ι){ try{↩ fs.readFileSync(ι)} catch(e){if (!(e.code==='ENOENT')) throw e} }
+	ensure_exists ← λ(ι,ifdne){ existsSync(ι) || ( mkdir_p(path.resolve(path.dirname(ι))) , fs.writeFileSync(ι,ifdne) ) }
+	write_file ← λ(ι,data){ try{fs.writeFileSync(ι,data)} catch(e){if (!(e.code==='ENOENT')) throw e; ensure_exists(ι,data)} }
 	open ← λ(ι,ifdne,f){
 		ensure_exists(ι,ifdne); Lc ← new Φ(ι).size
 		fd ← fs.openSync(ι,'r+'); f({
@@ -322,6 +334,8 @@ def(E,'φ',λ(){
 				},
 			}); fs.closeSync(fd)}
 
+	def(φ,'cwd',{get(){↩ new Φ(process.cwd())}, set(ι){process.chdir(φ(ι+'')._ι)}})
+
 	normHs ← λ(ι){if (ι._.isEqual(['~'])) ↩ [process.env.HOME]; ts(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)); ↩ ι}
 	λ Φ(ι){@._ι = ι}; Φ.prototype = {
 		φ,
@@ -331,11 +345,16 @@ def(E,'φ',λ(){
 		get nlink(){↩ fs.statSync(@._ι).nlink},
 		get mtime(){↩ fs.statSync(@._ι).mtime},
 		get birthtime(){↩ fs.statSync(@._ι).birthtime},
-		get url(){↩ encodeURI('file:'+path.resolve(@._ι))},
+		get url(){↩ encodeURI('file:'+@.root('/'))}, //! should this be part of root
 		get is_dir(){try{↩ fs.statSync(@._ι).isDirectory()} catch(e){↩ false}},
 		get name(){↩ path.basename(@._ι)},
 		BAD_exists(){↩ existsSync(@._ι)},
+		root(x){switch(arguments.length){default: throw Error()
+			case 0: ↩ @._ι[0]==='/'? '/' : '.'
+			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : (λ(){throw Error('not yet implemented: nonstandard roots')})() )
+			}},
 
+		// get ι(){↩},
 		set ι(ι){
 			if (@.is_dir) throw Error('TODO')
 			if (ι == null) {try{fs.unlinkSync(@._ι)} catch(e){}; ↩}
@@ -343,12 +362,15 @@ def(E,'φ',λ(){
 			if (e==='.csv') {@.csv = ι; ↩}
 			ι = e==='.json'? JSON_pretty(ι) :
 				typeof(ι)==='string'? ι :
+				e==='.xml'? npm('xmlbuilder@4.2.1').create(ι).end({pretty:true}) :
 					JSON_pretty(ι)
-			writeFile(@._ι,ι) },
+			write_file(@._ι,ι) },
 		get buf(){↩ read_file(@._ι) || Buffer(0)},
+		set buf(ι){write_file(@._ι,ι)},
 		get base64(){↩ Buffer(@.text,'base64')},
+		// set base64(ι){},
 		get text(){↩ (read_file(@._ι) || '')+''},
-		set text(ι){writeFile(@._ι,ι)},
+		set text(ι){write_file(@._ι,ι)},
 		get lines(){↩ λ(…ιs){
 			d ← ((read_file(@._ι)||'\n')+'').replace(/\n$/,'').split('\n')
 			if (ιs.length > 1) ↩ ιs.map(ι => typeof(ι)==='number'? d[ι] : d.slice(parseInt(/^(\d+):$/.λ(ι)[1])).join('\n')+'\n')
@@ -358,10 +380,20 @@ def(E,'φ',λ(){
 					} }
 			else throw Error('TODO')
 			}},
-		set lines(ι){writeFile(@._ι, ι.join('\n')+'\n')},
+		set lines(ι){write_file(@._ι, ι.join('\n')+'\n')},
 		get json(){↩ JSON.parse(read_file(@._ι) || 'null')},
-		set json(ι){writeFile(@._ι, JSON.stringify(ι,null,'  '))},
-		set csv(ι){t ← φ`/tmp/csv_${rand().toString(36).slice(2)}`; t.json = ι; shᵥ`ζ -e ${`npm('csv@0.4.6').stringify(φ(${JSON.stringify(t+'')}).json,λ(e,ι){φ(${JSON.stringify(path.resolve(@._ι))}).text = ι})`}`},
+		set json(ι){write_file(@._ι, JSON.stringify(ι,null,'  '))},
+		get json2(){ι ← @.json; (λ Λ(ι,k,o){if (ι.type==='Buffer') {
+			o[k] = 'data' in ι || 'utf8' in ι? Buffer(ι.data||ι.utf8) : 'base64' in ι? Buffer(ι.base64,'base64') : (λ(){throw Error('‽')})()
+			} else if (typeof(ι)==='object') _(ι).forEach(Λ)})(ι); ↩ ι},
+		set json2(ι){
+			@.text = JSON_pretty(ι,λ(ι){t←;
+			if (Buffer.isBuffer(ι)) ↩ ι.equals(Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
+			↩ ι})},
+		get ini(){↩ npm('ini@1.3.4').parse(@.text)},
+		// set ini(ι){},
+		// get csv(){↩},
+		set csv(ι){t ← φ`/tmp/csv_${rand().toString(36).slice(2)}`; t.json = ι; shᵥ`ζ -e ${`npm('csv@0.4.6').stringify(φ(${JSON.stringify(t+'')}).json,λ(e,ι){φ(${JSON.stringify(@.root('/')+'')}).buf = ι})`}`},
 		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
 			if (ιs.length) throw Error('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')
@@ -384,7 +416,7 @@ def(E,'φ',λ(){
 		head ← @ instanceof Φ && @._ι
 		if (@ instanceof Φs) throw Error('not yet implemented')
 		tmpl ← is_template(ss,ιs)
-		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) throw Error('not yet implemented') }
+		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) throw Error('not yet implemented * **') }
 		else {ι ← ss; if (ιs.length || Array.isArray(ι)) throw Error('not yet implemented'); if (ι instanceof Φs) throw Error('not yet implemented')}
 		if (tmpl){ι = normHs(ι).map(ι => !ts(ι)? ENC(ι.raw+'') : ι).join('')}
 		else if (ι instanceof Φ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
@@ -394,8 +426,8 @@ def(E,'φ',λ(){
 
 // ---------------------- finish local metaprogramming ---------------------- //
 prop_assign(E,global)
-patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly
-module.exports = λ(to){print('[ζ] patching'); patched.has(to) || (patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
+patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly?
+module.exports = λ(to){print('\x1b[34m[ζ]\x1b[0m patching'); patched.has(to) || (patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
 
 // -------------------------------- call main ------------------------------- //
 if (!module.parent) (λ(){t←;
@@ -409,7 +441,7 @@ if (!module.parent) (λ(){t←;
 	if (arg.v){ print(φ(__dirname).φ`package.json`.ι.version) }
 	else if (arg.c){
 		if (!arg.o) throw Error('TODO'); arg._.map(λ(ι){ if (φ(ι).is_dir) throw Error('TODO') })
-		arg._.map(λ(ι){ φ(arg.o+'/'+(t=path.relative('.',ι), t.re`^\.\./` && λ(){throw Error()}(), t).replace(/\.ζ$/,'')+'.js').text = ζ_compile_file(φ(ι).text) })
+		arg._.map(λ(ι){ φ(arg.o+'/'+(t=φ(ι).root('.')+'', t.re`^\.\./` && λ(){throw Error()}(), t).replace(/\.ζ$/,'')+'.js').buf = ζ_compile_file(φ(ι).text) })
 		}
 	else if (arg.p || arg.e){
 		process.argv = ['ζ','<eval>',…argv]
@@ -426,10 +458,10 @@ if (!module.parent) (λ(){t←;
 			t !== undefined && r.push(t+'')
 			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[\s\S]*/,'\n    at <eval>') : '<error> '+e)
 			↩ r.join('')})
-		print(JSON.stringify(ι))
+		process.stdout.write(JSON.stringify(ι))
 		}
 	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; ζ_repl_start() }
-	else {                      process.argv = ['ζ',…arg._]; Module._load(path.resolve(arg._[0]), null, true) }
+	else {                      process.argv = ['ζ',…arg._]; Module._load(φ(arg._[0]).root('/')+'', null, true) }
 	})()
 
 // ------------------ really important remaining work for φ ----------------- //
@@ -459,24 +491,4 @@ the formats are complicated to interact with, because
 // we need to think about how this interacts with concurrency
 // we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
 // 	“like, it should be caching urls all the time.”
-
-exists:λ(){↩ existsSync(@.ι)},
-pretty:λ(){↩ @.ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')},
-
-scratch/log_fs_changes.ζ:12:	if (fl !== (fl=fs(fl).path)) {fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩}
-scratch/log_fs_changes.ζ:18:process.chdir(fs('~/ali/scratch').path)
-scratch/log_fs_changes.ζ:21:	fs('.history/'+moment(time).toISOString()+' '+(type==='unlink'?'X':'=')+' '+basename_encode(fl)).$ = type==='unlink'? '' : fs(fl).$
-scratch/sublime/index.ζ:9:	out: path.resolve(fs('~/Library/Application Support/Sublime Text 3/Packages').path),
-scratch/sublime/index.ζ:62:			(fs(R(arg.out+'/'+t[1])).$ = transform_json(fs(arg.in+'/'+ι).$))
-scratch/sublime/index.ζ:63:		: (fs(R(arg.out+'/'+ι)).$ = fs(arg.in+'/'+ι).$)
-scratch/sublime/index.ζ:69:		.map(λ(ι){ φ(ι).set(null) })
-scratch/sublime/index.ζ:75:	break; case 'from': φ(arg.in+'.json').json_pretty = plist.parse(fs(arg.in).$)
-scratch/sublime/Packages/User/munge_stuff.py:89:				ι ← fs("""+repr(view.file_name() or '')+""").resolve()
-scratch/sublime/Packages/User/munge_stuff.py:90:				root ← ι; while (root !== '/' && !fs(root+'/.git').exists()) root = fs(root).parent()
-scratch/sublime/Packages/User/munge_stuff.py:93:					t ← npm('ini@1.3.4').parse(fs(root+'/.git/config').$)['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-scratch/sublime/Packages/User/munge_stuff.py:94:					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+fs(root+'/.git/HEAD').$.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
-scratch/ζ/index.ζ:53:				fs(cache).exists() || shᵥ`cd ~; npm cache add ${ι+'@'+version}`
-scratch/ζ/index.ζ:54:				fs(cache+'/README').$ = ''; shᵥ`cd ${cache} && npm i ${ι+'@'+version}`; fs(cache+'/package.json').$ = fs(cache+'/README').$ = null
-scratch/ζ/index.ζ:169:	emit: λ(port,ι){fs('/tmp/fs_ipc_'+port).$ = ι; ↩ execᵥ('curl -s -X PUT 127.0.0.1:'+port)},
-scratch/ζ/index.ζ:171:		t ← fs('/tmp/fs_ipc_'+port).$; fs('/tmp/fs_ipc_'+port).$ = null; global.ι = fs('/tmp/fs_ipc_'+port+'_stdin').$.replace(/\n$/,''); fs('/tmp/fs_ipc_'+port+'_stdin').$ = null
 */
