@@ -61,6 +61,7 @@ E.ζ_repl_start = λ(opts){
 	rRpc ← repl.REPLServer.prototype.complete; repl.REPLServer.prototype.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
 	self ← repl.start({useGlobal:true, prompt:{split:()=>['ζ '], valueOf:()=>'\x1b[32mζ\x1b[39m '}}._.assign(opts))
 	self.removeAllListeners('line').on('line',λ(cmd){
+		if (cmd==='') ↩;
 		if (self.bufferedCommand) {self.history[1] += '\n'+self.history[0]; self.history.shift()}
 		code ← self.bufferedCommand + (cmd||'')
 		t ← code
@@ -142,7 +143,7 @@ P(()=>({
 		t←; qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), poll()) : poll.in(0.1)
 		})() }
 	↩ λ(time){t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), {clear:λ(){}}) : (qu.enq(t), ensure(), {clear:λ(){t.ι = null}})} }),
-'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})},
+'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})}, //! are you sure end doesn’t also pass any data?
 '(Array|String|Buffer).prototype.-0':{get(){}, set(ι){@.push(ι)}},
 '(Array|String|Buffer).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1]}, set(ι){@.length<1 || (@[@.length-1] = ι)}},
 '(Array|String|Buffer).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2]}, set(ι){@.length<2 || (@[@.length-2] = ι)}},
@@ -152,7 +153,7 @@ P(()=>({
 // 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
 // 'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 }))
-E.Time = λ(ι){↩ arguments.length===0? new Date() : ι instanceof Date? ι : new Date(ι instanceof Number? ι*1e3 : ι)}
+E.Time = λ(ι){r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(typeof(ι)==='number'? ι*1e3 : ι); r.toString = λ(){↩ util.inspect(@)}; ↩ r}
 fmt ← λ(a,b){t ← @.__local? moment(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString(); t = t.slice(a,b); if (!@.__local && b > 10) t += 'Z'; ↩ t}
 P(()=>({
 'Date.prototype.inspect':λ(d,opts){↩ opts.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')},
@@ -260,14 +261,14 @@ simple_template ← λ(ss,ιs){is_template(ss,ιs) || (λ(){throw Error()})()
 	ι ← _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')
 	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){t←; ι[i+1] = (t=ι[i+1].raw, t===null||t===undefined||t===false||t===''? '' : t+''); i++; ↩ ''})
 	↩ ι}
-JSON_pretty ← λ(ι,replacer){
+E.JSON_pretty = λ(ι,replacer){
 	seen ← []
 	T ← '  ' // tab
 	wrap_width ← 140
 	indent_show ← ι => show(ι).replace(/\n/g,'\n'+T)
 	show ← λ(ι){t←;
 		if (ι===undefined||ι===null) ↩ 'null'
-		ι = replacer(ι)
+		replacer && (ι = replacer(ι))
 		while (ι.toJSON) ι = ι.toJSON()
 		switch (typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι)) {
 			case 'string': case '[object String]': ↩ JSON.stringify(ι)
@@ -427,7 +428,7 @@ def(E,'φ',λ(){
 // ---------------------- finish local metaprogramming ---------------------- //
 prop_assign(E,global)
 patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly?
-module.exports = λ(to){print('\x1b[34m[ζ]\x1b[0m patching'); patched.has(to) || (patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
+module.exports = λ(to){patched.has(to) || (print('\x1b[34m[ζ]\x1b[0m patching'), print(Error('<stack>').stack), patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
 
 // -------------------------------- call main ------------------------------- //
 if (!module.parent) (λ(){t←;
@@ -491,4 +492,18 @@ the formats are complicated to interact with, because
 // we need to think about how this interacts with concurrency
 // we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
 // 	“like, it should be caching urls all the time.”
+
+// ---------------------- things i need globbing to do ---------------------- //
+scratch/data science/lw scrape.ζ:41:// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
+scratch/data science/lw scrape.ζ:43:q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
+scratch/data science/fimscrape.ζ:44:	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
+scratch/scratch.txt:88:φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+scratch/scratch.txt:107:φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
+scratch/spotiman/pretty.ζ:5:t ← JSON.parse(φ`~/ali/history/auto/spotify/*`.sort()[-1].get()).map(λ(ι){
+scratch/dotfiles/.keyrc:83:[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
+scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
+scratch/sublime/index.ζ:65:	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
+scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
+scratch/dotfiles/.bashrc:143:# ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
+scratch/userscripts/install.ζ:27:// 	ιs ← φ`./*.js`.map(gen)
 */

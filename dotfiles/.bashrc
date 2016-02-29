@@ -152,3 +152,6 @@ nack(){ (afplay "$__dirname/nack.wav" &); }
 # not [for t in $(find . -type f); do echo $t; done], instead [find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done]
 
 # ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
+
+########## temporary #########
+keypresses(){ ζ -e 'diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){f(key) === -1 && process.stdin.pause()})}; o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else print(round((-o+(o=hrtime()))*1e4)/1e4)})'; }

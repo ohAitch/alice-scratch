@@ -59,8 +59,8 @@ sd  ι
 
 # a ] FnF5
 
-FnF1  $ ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1
-FnF2  $ ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2
+# FnF1  $ ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1
+# FnF2  $ ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2
 # https://github.com/gillstrom/osx-brightness
           FnF3  ] ⌘^f
 [chrome]  FnF3  ] ⌘⇧f
@@ -75,13 +75,15 @@ FnF4  ] DASHBOARD
 ⌘⇧⌥4  $ t=/tmp/screencapture.png; screencapture -io "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌘⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
 ⌘⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
-⌘⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/31)' )& )
+⌘⌥^l  $ ack; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
+⌘⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )& )
 ⌘⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
+# ⌘⌥^b  $ ζ -e 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n"'
+# ⌘⌥^b  $ ζ -e 'shᵥ`sleep 0.18`; robot ← npm("robotjs@0.3.7"); click ← λ(…xy){robot.mouseMove(…xy); robot.mouseClick(); shᵥ`sleep 0`}; for(i←0;i<1;i++) { if (i%50===1) shᵥ`bash -ci ack`; click(660,322); click(983,614); click(875,475)}'
 # ⌘⌥^v  $ ζ -e 'robot ← npm("robotjs@0.3.7"); shᵥ`sleep 0.3`; "241"._.map(robot.keyTap.X); _.range(0,6,1/31).map(ι => robot.mouseClick.in(ι))'
 ☝☝    ] ⌘
 
 [terminal] ⌘R      ] ^
-[spotify] ⌘l       $ ack; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
 [path_finder] ⌘⇧t  $ ack; _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
 [photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${Time(t[1]+"T"+t[2]+":"+t[3]).ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
 [sublime] /↩       ] ^↩
@@ -109,8 +111,8 @@ FnF4  ] DASHBOARD
 # \x20    ␣
 
 # meh ≁ ≔≕ ∴ ∓ ′″‴ ∘ ≡≢ ⊕ ｢｣
-# want ∪∩ ⊨⊢⊥⊤ ∧∨ ÷ ⊄⊅⊈⊉ ∋∌ ☝ ″
+# want ∪∩ ⊨⊢⊥⊤ ∧∨ ÷ ⊄⊅⊈⊉ ∋∌ ☝ ″ 卍
 # ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ § ‖ †‡ ※⁜ ‼⁇⁈⁉ ⁞ ≒≓≔≝ ⨀⨁⨂⨸ ≪≫ ⋱ ⌂ ⌕ ◊⟠⧫ ♈♉♊♋♌♍♎♏♐♑♒♓ ‹›⟪⟫⸨⸩
-# ‣⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
+# ‣⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤ ☥
 
 # http://orderedbytes.com/controllermate/ , https://github.com/sdegutis/mjolnir , wacky ideas: gesture interface that uses differently-painted fingernails to activate different features

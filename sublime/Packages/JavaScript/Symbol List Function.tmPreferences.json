@@ -1,6 +1,0 @@
-{
-  "name": "Symbol List Function",
-  "scope": "source.js meta.function.js, source.js meta.function.json.js",
-  "settings": {"showInSymbolList": "1", "symbolTransformation": "s/^function\\s*\\(.*\\)//g"},
-  "uuid": "3CEA49B2-A5C5-405C-82E2-B8B668877C38"
-}

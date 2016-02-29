@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 arg ← {ι: process.argv[2]}
 
-diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})} //! hacky copypaste
+diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})}
 
 gen ← λ(ι){name←;
 	t ← multiline(λ(){/*

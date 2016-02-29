@@ -531,17 +531,3 @@ E.pixels = {
 		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
 	}
 */
-
-// ---------------------- things i need globbing to do ---------------------- //
-scratch/data science/lw scrape.ζ:41:// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
-scratch/data science/lw scrape.ζ:43:q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
-scratch/data science/fimscrape.ζ:44:	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
-scratch/scratch.txt:88:φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
-scratch/scratch.txt:107:φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
-scratch/spotiman/pretty.ζ:5:t ← JSON.parse(φ`~/ali/history/auto/spotify/*`.sort()[-1].get()).map(λ(ι){
-scratch/dotfiles/.keyrc:83:[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
-scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
-scratch/sublime/index.ζ:65:	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
-scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
-scratch/dotfiles/.bashrc:143:# ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
-scratch/userscripts/install.ζ:27:// 	ιs ← φ`./*.js`.map(gen)

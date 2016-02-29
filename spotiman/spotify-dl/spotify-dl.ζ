@@ -58,13 +58,14 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 			i: (parseInt(t.tracks._.map('link')._.invert()[ι.link])+1)+'/'+t.tracks.length,
 			name: ι.name,
 			}
+		if (metadata.artist === 'Howard Shore, London Philharmonic Orchestra, The London Oratory School Schola,featuring Edward Ross, London Voices, New Zealand Symphony Orchestra') metadata.artist = 'Howard Shore'
 		out ← arg.cache_dir+'/'+mp3_info_to_basename(metadata)+'.mp3'
 		if (fs(out).exists()) {cb&&cb.in(); ↩}
 		quiet_skipping = false
 		player_bufs = []
 		spotify.player.play(ι)
 		q ← (λ(){
-			process.stdout.write('\x0d'+APP,prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
+			process.stdout.write('\x0d'+APP+' '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
 			spotify.player.resume()
 			}).every(0.1)
 		spotify.player.on({endOfTrack: λ(){(λ(){

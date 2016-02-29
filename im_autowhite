@@ -93,8 +93,9 @@ main() {
 	fi
 	}
 
+APP=$'\e[34m[im_autowhite]\e[0m'
 if [[ $# == 1 ]]; then main "$1"
-else i=1; for v in "$@"; do echo "[im_autowhite $i/$#] $v"; main "$v"; ((i++)); done
+else i=1; for v in "$@"; do echo "$APP [$i/$#] $v"; main "$v"; ((i++)); done
 fi
 
 rm -f $tmpA $tmpM $tmpT $tmpR $tmpG $tmpB
