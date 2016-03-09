@@ -9,7 +9,7 @@
   "patterns": [
     {"name": "alice", "match": "⋈"},
     {"name": "support.function", "match": "ι"},
-    {"match": "[{},;.]", "name": "block.js"},
+    {"match": "\\B\\(λ\\(\\)\\{|\\}\\)\\(\\)|[{},;.]", "name": "block.js"},
     {"match": "\\{|\\}", "name": "brace.curly.js"},
     {"match": "\\(|\\)", "name": "brace.round.js"},
     {"match": "\\[|\\]", "name": "brace.square.js"},

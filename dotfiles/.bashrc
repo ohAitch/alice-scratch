@@ -88,6 +88,7 @@ email(){ ack; λ '
 	osaᵥ`chrome: activate`
 	'; }
 cdw(){ t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }
+mvlog(){ mv ~/Downloads/201[6-9]-??-??T??:??:??*Z.png ~/ali/history/text\ logs/nihil/; }
 
 ### interactive & external ###
 export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
