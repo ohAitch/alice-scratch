@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-ex() { chmod -R 755 "$1" &>/dev/null; }
+-q(){ "$@" &>/dev/null; }
+ex() { -q chmod -R 755 "$1"; }
 export mydir='cd $(dirname "${BASH_SOURCE[0]}")'
 eval $mydir
 

@@ -3,7 +3,7 @@ arg ← { cmd:process.argv[2] }
 
 // ------- settings ------- //
 date ← '2016-02-09';    process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(Time().ymd)+';')
-total_stories ← 314549; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect(GET_L('https://www.fimfiction.net/stories/latest').match(/class="story_name" href="\/story\/\d+/g).map(ι => parseInt(ι.match(/\d+/)[0]))._.max() + 3000)+';')
+total_stories ← 314549; process.argv[1] === '<eval>' && code.replace(/←.*?;/, '← '+util.inspect((GET_L('https://www.fimfiction.net/stories/latest')+'').match(/class="story_name" href="\/story\/\d+/g).map(ι => parseInt(ι.match(/\d+/)[0]))._.max() + 3000)+';')
 sm_out ← φ`story_meta ${date}.txt`
 st_out ← φ`story_text ${date}`
 
@@ -37,7 +37,7 @@ if (arg.cmd==='text'){
 ch_i ← 0
 meta ← (λ(){
 	t ← C.filter('chapters').map(λ(ι){ι.chapters = ι.chapters.map(ι => [ch_i++,ι])})
-	t = t._.indexBy('id'); fs.readdirSync(st_out+'').map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
+	t = t._.indexBy('id'); st_out.φ`*`.φs.map(λ(ι){delete t[ι.name]}); ↩ t._.values()._.sortBy('id').reverse()})()
 story_text ← λ(ι){↩ ι.chapters.map(λ(ι){
 	print('fetching story chapters #'+ι[0]+'/'+ch_i)
 	↩ GET_L('http://www.fimfiction.net/download_chapter.php?chapter='+ι[1])})}

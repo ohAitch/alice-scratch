@@ -66,13 +66,13 @@ E.ζ_repl_start = λ(opts){
 		code ← self.bufferedCommand + (cmd||'')
 		t ← code
 		if (t.re`^>`) t = '__SPECIAL__('+JSON.stringify(t.slice(1))+')' // hack: for apprentice
-		if (/(^\{[\s\S]*\}$)|(^λ\()/.test(t)) t = '('+t+')'
+		if (/(^\{[^]*\}$)|(^λ\()/.test(t)) t = '('+t+')'
 		t = ζ_compile(t)
 		try {sc ← new vm.Script(t, {filename:'repl', displayErrors:false})}
 		catch (e) {if (e.name === 'SyntaxError' && /^(Unexpected (end of input|token)|Unterminated template literal)/.test(e.message)) {self.bufferedCommand += cmd+'\n'; self.outputStream.write('    '); ↩}; e.stack = e.name+': '+e.message+'\n    at <repl>'; err ← e}
 		if (sc)
 		try {ret ← sc.runInThisContext({displayErrors:false})}
-		catch (e) {e && typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([\s\S]*)at repl:(.*)[\s\S]*?$/,'$1at <repl:$2>')); err ← e}
+		catch (e) {e && typeof(e.stack)==='string' && (e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>')); err ← e}
 		In.push(code); Out.push(err || ret)
 		if (err) self._domain.emit('error', err.err || err)
 		self.bufferedCommand = ''
@@ -284,12 +284,13 @@ E.JSON_pretty = λ(ι,replacer){
 				} }
 	↩ show(ι)}
 
-E.re = λ(ss,…ιs){ENC ← ι => (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(simple_template(ss,ιs).map(ι => ι.raw? ENC(ι.raw) : ι).join(''),'u')}
+E.re = λ(ss,…ιs){↩ re_(simple_template(ss,ιs))}
+E.re_ = λ(ι){ENC ← ι => (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι => ι.raw? ENC(ι.raw) : ι).join(''),'u')}
 P(()=>({ 'String.prototype.re':{get(){↩ (ss,…ιs) => @.match(re(ss,…ιs))}} }))
 E.sh = λ(ss,…ιs){ENC ← ι => "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs).map(ι => ι.raw? ENC(ι.raw) : ι).join('')}
 E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
-	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\.|.)*?")/g).map(λ(ι){↩ /^"[\s\S]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
+	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
 	show: ι => typeof(ι)==='number'? ι+'' : typeof(ι)==='string'? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : (λ(){throw Error()})(),
 	}
 E.osa = λ(ss,…ιs){t←;
@@ -334,6 +335,7 @@ def(E,'φ',λ(){
 				for(i←from;i>to;i+=step) {if (d[i-(to+1)]===find) ↩ i; else if (String.fromCharCode(d[i-(to+1)]).match(skip)); else ↩ null}
 				},
 			}); fs.closeSync(fd)}
+	globmatch ← λ(glob,ι){↩ re_(['^',…glob._.map(ι => ι==='*'? '.*' : {raw:ι}),'$']).λ(ι)}
 
 	def(φ,'cwd',{get(){↩ new Φ(process.cwd())}, set(ι){process.chdir(φ(ι+'')._ι)}})
 
@@ -412,12 +414,30 @@ def(E,'φ',λ(){
 			} }},
 		}
 	λ Φs(ι){@._ι = ι}; Φs.prototype = {
+		inspect(ˣ,opts){↩ opts.stylize('φ','special')+util.inspect(@._ι,opts)},
+		get name_TMP(){↩ @._ι.map(ι => new Φ(ι).name)}, // fs.readdirSync
+		get φs(){↩ @._ι.map(ι => new Φ(ι))}, // [φ]
 		}
 	λ φ(ss,…ιs){
 		head ← @ instanceof Φ && @._ι
 		if (@ instanceof Φs) throw Error('not yet implemented')
 		tmpl ← is_template(ss,ιs)
-		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) throw Error('not yet implemented * **') }
+		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) {
+			if (ι.length > 1) throw Error('not yet implemented * ** ${}'+util.inspect(ι))
+			ι = normHs(ι)
+			ι = ι[0]
+			if (ι.includes('**')) throw Error('not yet implemented ** ${}'+util.inspect(ι))
+			r ← ['.']
+			if (ι[0]==='/') r = ['/']
+			ι.split('/').forEach(λ(ι){
+				if (ι==='')↩;
+				r = r.mapcat(λ(r){
+					if (ι === '.') ↩ [r]
+					if (ι === '..') ↩ [r==='.'? '..' : r.split('/').every(ι=>ι==='..')? r+'/..' : path.dirname(r)]
+					↩ fs.readdirSync(r).filter(b => globmatch(ι,b)).map(b => r+'/'+b)
+					})
+				})
+			↩ new Φs(r) } }
 		else {ι ← ss; if (ιs.length || Array.isArray(ι)) throw Error('not yet implemented'); if (ι instanceof Φs) throw Error('not yet implemented')}
 		if (tmpl){ι = normHs(ι).map(ι => !ts(ι)? ENC(ι.raw+'') : ι).join('')}
 		else if (ι instanceof Φ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
@@ -434,7 +454,7 @@ module.exports = λ(to){patched.has(to) || (print('\x1b[34m[ζ]\x1b[0m patching'
 if (!module.parent) (λ(){t←;
 	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι))}
 	read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}	
-	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([\s\S]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
+	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([^]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
 
 	//! the handling here of passing argv to the new process.argv is actually incorrect. however i'm busy and don't want to figure out the right thing right now.
 
@@ -457,7 +477,7 @@ if (!module.parent) (λ(){t←;
 			t←; e←; (λ __special_es__u7h7zxgvi__(){try {t = evalζ(ι)} catch (e_) {e = e_}})()
 			r = [r()]
 			t !== undefined && r.push(t+'')
-			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[\s\S]*/,'\n    at <eval>') : '<error> '+e)
+			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[^]*/,'\n    at <eval>') : '<error> '+e)
 			↩ r.join('')})
 		process.stdout.write(JSON.stringify(ι))
 		}
@@ -493,17 +513,8 @@ the formats are complicated to interact with, because
 // we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
 // 	“like, it should be caching urls all the time.”
 
-// ---------------------- things i need globbing to do ---------------------- //
-scratch/data science/lw scrape.ζ:41:// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
-scratch/data science/lw scrape.ζ:43:q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
-scratch/data science/fimscrape.ζ:44:	t = t._.indexBy('id'); fs.readdirSync(st_out).map(λ(ι){delete t[ι]}); ↩ t._.values()._.sortBy('id').reverse()})()
-scratch/scratch.txt:88:φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+// --------------------- things i need ** globbing to do -------------------- //
 scratch/scratch.txt:107:φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
-scratch/spotiman/pretty.ζ:5:t ← JSON.parse(φ`~/ali/history/auto/spotify/*`.sort()[-1].get()).map(λ(ι){
-scratch/dotfiles/.keyrc:83:[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← fs(ι).name().match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,fs("~/Downloads").path+"/"+moment(t[1]+"T"+t[2]+":"+t[3]).utc().format("YYYY-MM-DD[T]HH:mm[Z]")+(t[4]?" "+t[4]:"")+t[5])})'
 scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
-scratch/sublime/index.ζ:65:	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
 scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
-scratch/dotfiles/.bashrc:143:# ls|sbᵥ|… looks hard. a start: fs('/tmp').find('>').filter(λ(ι){↩ /\/subl stdin /.λ(ι)})._.sortBy(λ(ι){↩ fs.statSync(ι).birthtime})[-1]
-scratch/userscripts/install.ζ:27:// 	ιs ← φ`./*.js`.map(gen)
 */

@@ -34,8 +34,8 @@ scrape_post_for_comments ← λ(ι,out,cb){
 // scrape_index_for_posts('http://lesswrong.com/new/')
 // scrape_index_for_posts('http://lesswrong.com/r/discussion/new/')
 φ`posts.txt`.lines().map(ι => ι+'?all=true').map(λ(ι,i){print(i,ι); GET_L(ι,1e7)}); print('<done>')
-// t ← fs.readdirSync('post_cache')._.difference(fs.readdirSync('comments'))[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
+// t ← φ`post_cache/*`.name_TMP._.difference(φ`comments/*`.name_TMP)[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
 
-q ← φ`comments/*`.map(ι => JSON.parse(ι.get()))
+q ← φ`comments/*`.φs.map(ι => ι.json)
 // φ`comment_error.json`.ι = q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})
 φ`comments.csv`.ι = (q.forEach(λ(ι){ι.comments.forEach(λ(c){c.url = ι.url})}), q.mapcat(λ(ι){↩ ι.comments}))//.map(λ(ι){↩ [ι.id,ι.url,ι.author,ι.time,ι.net_votes,ι.vote_ratio,ι.body,ι.children.join(' ')]})

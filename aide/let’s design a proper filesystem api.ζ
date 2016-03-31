@@ -454,7 +454,7 @@ but file formats are really actually Buffer formats
 // 	break; case 'raw': ↩ r.map(r => r+ι)
 // 	break; case '/': ↩ r.map(r => r+'/')
 // 	break; case '|': ↩ r.mapcat(r => ι.mapcat(ι => eval_([r],ι)))
-// 	// break; case '*': ↩ r.mapcat(r => fs.readdirSync(r).filter(re`^…${ι.replace(/\*|[^*]+/g, ι => (ι==='*'? /[\s\S]*/ : re`${ι}`).source)}$`.λ).map(ι => r+'/'+ι))
+// 	// break; case '*': ↩ r.mapcat(r => fs.readdirSync(r).filter(re`^…${ι.replace(/\*|[^*]+/g, ι => (ι==='*'? /[^]*/ : re`${ι}`).source)}$`.λ).map(ι => r+'/'+ι))
 // 	break; case '*': ↩ r.mapcat(r => fs.readdirSync(r).map(ι => r+'/'+ι))
 // 	break; case '**': ↩ r.mapcat(r => […walk(r,!dir)]); dir && (r = r.map(r => r+'/'))
 // 	}}

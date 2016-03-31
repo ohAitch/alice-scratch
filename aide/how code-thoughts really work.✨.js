@@ -151,7 +151,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	ATOMSH_ROOT="https://github.com/atom/atom-shell/releases/download/v$ATOMSH_V"
 
 	install() {
-		expect x ← type "$x" &>/dev/null || echo "expected $x to be on path"
+		expect x ← -q type "$x" || echo "expected $x to be on path"
 		expect npm
 		expect jq
 		expect github-release

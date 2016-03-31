@@ -2,7 +2,7 @@
 
 col ← λ(ι){↩ ι+' '.repeat(max(0,100-ι.length))}
 
-t ← JSON.parse(φ`~/ali/history/auto/spotify/*`.sort()[-1].get()).map(λ(ι){
+t ← φ`~/ali/history/auto/spotify/*`.φs.sort()[-1].json.map(λ(ι){
 	↩ col(ι.artists._.map('name').join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+(t=ι.createTime._.map(0),t.join(', ')+(t.length>1?',':''))
 	}).join('\n')
 sb(t)

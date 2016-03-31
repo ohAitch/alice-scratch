@@ -18,7 +18,7 @@ main ← λ(){
 			( R(φ(arg.out).φ(t[1])).buf = plist.build(φ(arg.in).φ(ι).json) )
 		: ( R(φ(arg.out).φ(ι)).buf = φ(arg.in).φ(ι).buf )
 		})
-	roots ← φ(arg.in).φ`*`.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
+	roots ← φ(arg.in).φ`*`.φs.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
 	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
 // -------------------------------------------------------------------------- //
 	_.difference(out,written)

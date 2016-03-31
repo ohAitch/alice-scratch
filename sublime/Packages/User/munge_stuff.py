@@ -80,8 +80,8 @@ def open(ι,app=None,focus=True,view=None):
 		subprocess.Popen(['bash','-ci','ack'])
 		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
 		var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
-		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]})[1]
-		φ`/tmp/__·`.ι = sh`cd ${dir}`+(!unbusy? '; clear' : '')+(base? sh`; set -- ${base}; ({ sleep 0.01; printf "\e[1G\e[2K\e[F\e[2K\${green}$(this)/\${purple}$1 \${reset}"; } &)` : '')
+		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
+		φ`/tmp/__·`.ι = sh`cd ${ι}`+(!unbusy? '; clear' : '')
 		osaᵥ`terminal: do script "·" …${unbusy? osa`in (window 1 whose id = ${unbusy})` : ''}; …${focus? 'activate' : ''}`
 		""")
 	else:

@@ -3,8 +3,8 @@ import os, re
 
 data = {
 	'ζ': 'Packages/JavaScript/JavaScript.tmLanguage',
-	'python': 'Packages/Python/Python.tmLanguage',
-	'bash': 'Packages/ShellScript/Shell-Unix-Generic.tmLanguage',
+	'python': 'Packages/Python/Python.sublime-syntax',
+	'bash': 'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax',
 	'.txt': 'Packages/Text/Plain text.tmLanguage',
 	'.blog': 'Packages/Text/Plain text.tmLanguage',
 	}

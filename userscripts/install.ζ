@@ -25,7 +25,7 @@ gen ← λ(ι){name←;
 	
 if (arg.ι) gen(arg.ι)//[1]()
 // else {
-// 	ιs ← φ`./*.js`.map(gen)
+// 	ιs ← φ`./*.js`.φs.map(gen)
 // 	print('press any key to install')
 // 	t ← λ*(){for(;;){
 // 		if (!ιs.length) ↩ -1

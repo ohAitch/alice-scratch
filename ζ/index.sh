@@ -19,7 +19,7 @@ PORT=33710
 
 # 	fs_ipc_emit $PORT "$*"
 # 	if [[ $? = 7 ]]; then # 7: CURLE_COULDNT_CONNECT
-# 		("$(__dirname)/index.js" -e '"uqo4hqvayc3m1jor"; fs_ipc.on('"$PORT"',λ(ι){if (ι === "\n") ↩; ζ_main(/^(\S+) ([\s\S]+)$/.λ(ι).slice(1))})' &) &>/dev/null
+# 		("$(__dirname)/index.js" -e '"uqo4hqvayc3m1jor"; fs_ipc.on('"$PORT"',λ(ι){if (ι === "\n") ↩; ζ_main(/^(\S+) ([^]+)$/.λ(ι).slice(1))})' &) &>/dev/null
 # 		while ! fs_ipc_emit $PORT ""; do sleep 0.005; done
 # 		fs_ipc_emit $PORT "$*"
 # 		fi

@@ -10,11 +10,12 @@ import re, time, datetime
 # maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
 
 e_table_ = {
-	'Packages/JavaScript/JavaScript.tmLanguage': '/',
-	'Packages/Python/Python.tmLanguage': '#',
-	'Packages/ShellScript/Shell-Unix-Generic.tmLanguage': '#',
-	'Packages/Ruby/Ruby.tmLanguage': '#',
-	'Packages/Lisp/Lisp.tmLanguage': ';',
+	'Packages/JavaScript/JavaScript.sublime-syntax': '/',
+	'Packages/JavaScript/JavaScript.tmLanguage': '/', #! remove
+	'Packages/Python/Python.sublime-syntax': '#',
+	'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
+	'Packages/Ruby/Ruby.sublime-syntax': '#',
+	'Packages/Lisp/Lisp.sublime-syntax': ';',
 	}
 s_table = {
 	'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],

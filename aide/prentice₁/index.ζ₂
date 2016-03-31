@@ -97,7 +97,7 @@ do_command ← λ(ι){act←; ι = ι.replace(/^(?:<pre> )?/,λ(ι){act = !ι; �
 			}
 		}
 	} else if ((a === 'l' || a === 'ls') && b === '') {
-		;(act? print : P)(shᵥ`cd ${process.cwd()}; . ~/.bashrc; echo "$green$(this)$reset"; CLICOLOR_FORCE=t l`)
+		;(act? print : P)(shᵥ`cd ${process.cwd()}; . ~/.bashrc; echo "$green$(,)$reset"; CLICOLOR_FORCE=t l`)
 	} else if (a === 'chrome') {
 		t ← b? as_url(b) : 'chrome:newtab'
 		!act?
@@ -166,7 +166,7 @@ we could go through the process of _, with an eye for paul's model https://mediu
 
 // global.primitive = {eval: λ(ι){eval(ι)}, print}
 // do_command_ ← λ(ι){t←;
-// 	if ((t=ι.match(/^(\S+) ?([\s\S]*)/)) && primitive[t[1]]) primitive[t[1]](t[2])
+// 	if ((t=ι.match(/^(\S+) ?([^]*)/)) && primitive[t[1]]) primitive[t[1]](t[2])
 // 	else predict_sequence(ι).map(do_command_)
 // 	}
 

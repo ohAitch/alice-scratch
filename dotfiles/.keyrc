@@ -73,19 +73,18 @@ FnF4  ] DASHBOARD
 ⌘⇧^4  $ screencapture -io -cr
 ⌘⇧⌥3  $ t=/tmp/screencapture.png; screencapture     "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌘⇧⌥4  $ t=/tmp/screencapture.png; screencapture -io "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
-⌘⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
-⌘⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
-⌘⌥^l  $ ack; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
-⌘⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )& )
-⌘⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
-# ⌘⌥^b  $ ζ -e 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n"'
-# ⌘⌥^b  $ ζ -e 'shᵥ`sleep 0.18`; robot ← npm("robotjs@0.3.7"); click ← λ(…xy){robot.mouseMove(…xy); robot.mouseClick(); shᵥ`sleep 0`}; for(i←0;i<1;i++) { if (i%50===1) shᵥ`bash -ci ack`; click(660,322); click(983,614); click(875,475)}'
-# ⌘⌥^v  $ ζ -e 'robot ← npm("robotjs@0.3.7"); shᵥ`sleep 0.3`; "241"._.map(robot.keyTap.X); _.range(0,6,1/31).map(ι => robot.mouseClick.in(ι))'
+⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
+⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
+⌥^l  $ ack; _chrome "genius $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
+⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )& )
+⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
+# ⌥^b  $ ζ -e 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n"'
+# ⌥^b  $ ( ( ζ -e 'shᵥ`sleep 0.18`; robot ← npm("robotjs@0.3.7"); click ← λ(…xy){robot.moveMouse(…xy); robot.mouseClick()}; (λ(){ [10,9,8,7,6,5,4,2].forEach(i => click(476+(951-476)/3*(i%4), 543+(800-543)/7*floor(i/4))) }).every(0.01)' )& )
 ☝☝    ] ⌘
 
 [terminal] ⌘R      ] ^
 [path_finder] ⌘⇧t  $ ack; _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
-[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${Time(t[1]+"T"+t[2]+":"+t[3]).ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
+[photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${Time(t[1]+"T"+t[2]+":"+t[3]).ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
 [sublime] /↩       ] ^↩
 # [chrome]  /↩       $ ack; _chrome "$(osascript -e 'tell app "google chrome" to execute window 1'\''s active tab javascript "window.getSelection().toString()"')"
 [spotify] /↩       $ ] ⌘c; ack; sleep 0.12; p="$(p)"; if ! [[ $p = http:* ]]; then _chrome "$p"; else t=$(osascript -e 'tell app "spotify" to spotify url of current track'); osascript -e 'tell app "spotify" to play track "'"$p"'"'; sleep 0.05; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"; osascript -e 'tell app "spotify" to play track "'"$t"'"'; fi
@@ -94,17 +93,20 @@ FnF4  ] DASHBOARD
 [chrome] ⌘⇧l       $ ] ⌘l; ack; ζ -e 'var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
 [terminal] ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w ] _clr ] ↩
 
-         ⌘h     $ nack
-[chrome] ⌘h     ] ⌘h
-          ⌘^f   $ nack
-[chrome]  ⌘⇧f   $ nack
-[sublime] ⌘⇧^f  $ nack
-⇪               $ nack
-# FnF5            $ nack
-# FnF6            $ nack
-[sublime] ^↩    $ nack
-[sublime] ⌘⇧;   $ nack
-[sublime] ⌘⇧p   $ nack
+         ⌘h        $ nack
+[chrome] ⌘h        ] ⌘h
+          ⌘^f      $ nack
+[chrome]  ⌘⇧f      $ nack
+[sublime] ⌘⇧^f     $ nack
+⇪                  $ nack
+# FnF5               $ nack
+# FnF6               $ nack
+[sublime] ^↩       $ nack
+[sublime] ⌘⇧;      $ nack
+[sublime] ⌘⇧p      $ nack
+[path_finder] ⌘1   $ nack
+[path_finder] ⌘2   $ nack
+[path_finder] ⌘3   $ nack
 
 # \x09    ⇥, ⇧⇥
 # \x0a    ↩, ⇧↩, ^o

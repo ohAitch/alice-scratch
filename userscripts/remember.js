@@ -18,6 +18,7 @@ var update = input => {
 	var t = input
 		.replace(/(\bsite:|\B∈) ?SE\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
 		.replace(/(\bsite:|\B∈) ?git\b/i,'site:github.com')
+		.replace(/\bdl\b/i,'-inurl:htm -inurl:html intitle:”index of”')
 	if (!(t === input)) {$($in).val(t).submit(); return}
 
 	$('.augment').remove()

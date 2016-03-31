@@ -104,7 +104,7 @@ $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 q() { ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3"; }
 
 -------------------------------- de-duplication --------------------------------
-φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
+φ`**`.φs.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values().map(ι => ι._.map(0)).filter(ι => ι.length > 1)
 
 ------------- http://thirdfoundation.github.io/#/design/chesscraft -------------
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO    O┌─┐┌─┐OOO┌─┐┌─┐┌─┐┌─┐┌─┐OOO│    │OOOO┌─┐┌─┐┌─┐┌─┐┌─┐O┌┐└┘┌─┐O

@@ -12,7 +12,7 @@ entities ← npm('entities@1.1.1')
 csv ← npm('csv@0.4.6')
 
 get ← ι => {ι = GET_L(ι)
-	.match(/<h2>Transcript<\/h2>([\s\S]*?)<\/div>/)[1]
+	.match(/<h2>Transcript<\/h2>([^]*?)<\/div>/)[1]
 	.replace(/<p>/g,'')
 	.replace(/<br\/?>|<\/p>/g,'\n')
 	↩ entities.decodeHTML(ι).trim()}
