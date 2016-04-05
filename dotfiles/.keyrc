@@ -67,10 +67,10 @@ sd  ι
 [sublime] FnF3  ] ⌘⇧^f
 FnF4  ] DASHBOARD
 ^⇪    ] ^⇧L⇥
-⌘⇧3   $ screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png
-⌘⇧4   $ screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png
-⌘⇧^3  $ screencapture     -cr
-⌘⇧^4  $ screencapture -io -cr
+⌘⇧3   $ (( . mutex; mutex_get screencapture; screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png; mutex_release screencapture; )&)
+⌘⇧4   $ (( . mutex; mutex_get screencapture; screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png; mutex_release screencapture; )&)
+⌘⇧^3  $ (( . mutex; mutex_get screencapture; screencapture     -cr; mutex_release screencapture; )&)
+⌘⇧^4  $ (( . mutex; mutex_get screencapture; screencapture -io -cr; mutex_release screencapture; )&)
 ⌘⇧⌥3  $ t=/tmp/screencapture.png; screencapture     "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌘⇧⌥4  $ t=/tmp/screencapture.png; screencapture -io "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
 ⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p

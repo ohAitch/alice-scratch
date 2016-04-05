@@ -1,0 +1,13 @@
+{
+  "name": "mutex-sh",
+  "version": "0.0.6",
+  "description": "clone of http://sh-mutex.sourceforge.net/",
+  "author": "Comely Naiad <comely.naiad@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alice0meta/scratch.git"
+  },
+  "bin": {
+    "mutex": "./index.sh"
+  }
+}
