@@ -1,6 +1,6 @@
 #!/bin/sh
-__harmony='--harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps'; // 2>/dev/null; node $__harmony "$0" "$@"; exit
-shebang ← '#!/usr/bin/env node '+__harmony
+// 2>/dev/null;           node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps "$0" "$@"; exit
+shebang ← '#!/usr/bin/env node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps'
 
 // ---------------------------------- todo ---------------------------------- //
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
@@ -30,6 +30,7 @@ prop_assign ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι => Objec
 ['fs'],//! hack
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
 global.stream = E.stream
+require('stream') // for browserify
 _ ← E._
 path ← require('path')
 fs ← require('fs')
@@ -55,11 +56,11 @@ E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+
 		} }
 E.ζ_compile = ζ_compile
 E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
-E.ζ_repl_start = λ(opts){
+E.ζ_repl_start = λ(){
 	global.In = []; global.Out = []
 	repl._builtinLibs = []
-	rRpc ← repl.REPLServer.prototype.complete; repl.REPLServer.prototype.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
-	self ← repl.start({useGlobal:true, prompt:{split:()=>['ζ '], valueOf:()=>'\x1b[32mζ\x1b[39m '}}._.assign(opts))
+	t ← repl.REPLServer.prototype; rRpc ← t.complete; t.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
+	self ← repl.start({useGlobal:true, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '})
 	self.removeAllListeners('line').on('line',λ(cmd){
 		if (cmd==='') ↩;
 		if (self.bufferedCommand) {self.history[1] += '\n'+self.history[0]; self.history.shift()}
@@ -83,8 +84,12 @@ E.ζ_repl_start = λ(opts){
 			self.outputStream.write(t+'\n') }
 		self.displayPrompt()
 		})
+  self.removeAllListeners('SIGINT').on('SIGINT',λ(){
+    if (self.bufferedCommand+self.line){ self.clearLine(); self.lineParser.reset(); self.bufferedCommand = ''; self.lines.level = []; self.displayPrompt() }
+    else { self.clearLine(); self.close() }
+    })
 	↩ self}
-require.extensions['.ζ'] = λ(module,ι){module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι)}
+require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
 
 // ---------------------------- “with batteries” ---------------------------- //
 memo_frp ← λ(names,within,f){
@@ -481,7 +486,7 @@ if (!module.parent) (λ(){t←;
 			↩ r.join('')})
 		process.stdout.write(JSON.stringify(ι))
 		}
-	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; ζ_repl_start() }
+	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; global.rl = ζ_repl_start() }
 	else {                      process.argv = ['ζ',…arg._]; Module._load(φ(arg._[0]).root('/')+'', null, true) }
 	})()
 

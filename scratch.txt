@@ -212,8 +212,8 @@ catch_ ← λ(f){↩ λ(){try {↩ f.apply(@,arguments)} catch (ι) {if (ι.__ca
 _return ← λ(ι){throw {__catchable:ι}}
 
 ----------------------------------- entities -----------------------------------
-entities_encode = ι => ι.replace(/[&"'<>]/g, ι => ({'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]))
-entities_decode = typeof window==='undefined'? npm('html-entities@1.2.0').AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
+entities_encode ← ι => ι.replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
+entities_decode ← typeof(window)==='undefined'? npm('html-entities@1.2.0').AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
 
 -------------------------------------- es6 -------------------------------------
 (new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'

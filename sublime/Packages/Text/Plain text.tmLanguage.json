@@ -56,12 +56,12 @@
     {"name": "yellow", "match": "\\B←(?=[\\w\".])[^←\\n]+?(?<=[\\w\".])←\\B"},
     {"name": "italic", "match": "\\b_\\B[^_\\n]+?\\B_\\b"},
     {"name": "bold", "match": "\\B\\*\\b[^*\\n]+?\\b\\*\\B"},
+    {"name": "string", "match": "[\"“”]|\\\\."},
     {"name": "magic", "match": "[!$&+,\\-.:;=?@`\\\\|/↯…≪≫‽⁺⁻₊×∀∃₋~←→↔≡⇒∈∉≠⎋✓¬≔*↩↑↓≈]"},
     {"name": "alice", "match": "⋈"},
     {"name": "link", "match": "[┌─┐│└┘┴┤┬├┼]"},
     {"name": "bright_red", "match": "\\b(?<![|])[FGHJKLMPQRSTUVWXYZ](?=\\b|[₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰])(?![|])"},
     {"name": "brace.square", "match": "[()\\[\\]{}<>≤≥‹›⟨⟩]"},
-    {"name": "string", "match": "[\"“”]"},
     {"name": "constant.numeric", "match": "[\\d₁₂₃₄₅₆₇₈₉₀¹²³⁴⁵⁶⁷⁸⁹⁰]"},
     {"name": "quiet", "match": "(?!\\b_\\b)_"}
   ],

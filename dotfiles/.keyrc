@@ -34,7 +34,7 @@
 │ ⎋ _ _ _ _ _ _  _ _ _ _ _ _ _ │ │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │
 │ _ ↯ _ ∃ ⇧ ⌘ ⌥ _ × _ _ − ⌫ _  │ │ _ _ _ ∄ _ _ _ _ _ _ _ _ _ _  │
 │  ⇥ ℚ _ ∈ ℝ _ ✓ ∪ ∞ ◍ ℙ ⟨ ⟩ ⌽ │ │  _ _ _ ∉ _ _ _ _ _ _ ∏ _ _ _ │
-│  _ ∀ ∑ _ ⌊ ⌈ ℍ _ _ _  “ ” ↩  │ │  _ ¬∀_ _ ⌋ ⌉ _ _ _ _ ‘ ’  _  │
+│  _ ∀ ∑ ° ⌊ ⌈ ℍ _ _ _  “ ” ↩  │ │  _ ¬∀_ _ ⌋ ⌉ _ _ _ _ ‘ ’  _  │
 │  _  ℤ _ ℂ _ _ ℕ ∕ ⊂ ⊃ ¢  _   │ │  _  _ _ _ _ _ _ _ ⊆ ⊇ _  _   │
 │ _ _ _ _     ␣    _ _ _ _ _ _ │ │ _ _ _ _     _    _ _ ← ↑ ↓ → │
 └──────────────────────────────┘ └──────────────────────────────┘
@@ -83,15 +83,19 @@ FnF4  ] DASHBOARD
 ☝☝    ] ⌘
 
 [terminal] ⌘R      ] ^
-[path_finder] ⌘⇧t  $ ack; _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
+[path_finder] ⌘⇧t  $ _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
 [photo_booth] ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${Time(t[1]+"T"+t[2]+":"+t[3]).ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
 [sublime] /↩       ] ^↩
 # [chrome]  /↩       $ ack; _chrome "$(osascript -e 'tell app "google chrome" to execute window 1'\''s active tab javascript "window.getSelection().toString()"')"
-[spotify] /↩       $ ] ⌘c; ack; sleep 0.12; p="$(p)"; if ! [[ $p = http:* ]]; then _chrome "$p"; else t=$(osascript -e 'tell app "spotify" to spotify url of current track'); osascript -e 'tell app "spotify" to play track "'"$p"'"'; sleep 0.05; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"; osascript -e 'tell app "spotify" to play track "'"$t"'"'; fi
+# [spotify] /↩       $ ] ⌘c; ack; sleep 0.12; p="$(p)"; if ! [[ $p = http:* ]]; then _chrome "$p"; else t=$(osascript -e 'tell app "spotify" to spotify url of current track'); osascript -e 'tell app "spotify" to play track "'"$p"'"'; sleep 0.05; _chrome "lyrics $(osascript -e 'tell app "spotify" to {artist,name} of current track')"; osascript -e 'tell app "spotify" to play track "'"$t"'"'; fi
           /↩       $ ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"
 # [path_finder] ⌘c   $ ] ⌘c; ζ -e 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"))'
 [chrome] ⌘⇧l       $ ] ⌘l; ack; ζ -e 'var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
-[terminal] ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w ] _clr ] ↩
+[terminal] ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w
+[terminal] ⌘⇧r     $ ] '. ~/.bashrc' ] ↩
+
+⌥^q  $ ack
+⌥^e  $ (( ack )&)
 
          ⌘h        $ nack
 [chrome] ⌘h        ] ⌘h

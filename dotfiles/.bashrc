@@ -3,7 +3,8 @@ __dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
 λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\}"; printf -- "${v//↩/\\\\q}↩"; done | ζ -e 'ι = ι.replace(/↩$/,"").split("↩").map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
 -q(){ "$@" &>/dev/null; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; } # should instead be a function that compresses all of the standard symlinks
-_chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; osascript -e 'tell app "chrome" to activate'; }
+_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
+chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
 _alert(){ λ ' osaᵥ`system events: display alert ${ι[0]} …${ι[1] && osa`message ${ι[1]}`} …${ι[2] && osa`giving up after ${ι[2]}`}` ' "$@"; }
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
@@ -49,11 +50,13 @@ x(){ local E=$?; this_term_is_frontmost || { [[ $E != 0 ]] && ζ -e 'osaᵥ`term
 shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
 dgrey='\[\e[1;30m\]'; red='\[\e[31m\]'; green='\[\e[32m\]'; purple='\[\e[35m\]'; reset='\[\e[0m\]'; goX(){ printf '\[\e['$1'G\]'; }
-export PROMPT_COMMAND='    lx=$?; hash -r; if [[ $last_dir != $PWD ]]; then PWF=""; last_dir="$PWD"; fi    '
+export PROMPT_COMMAND='    lx=$?; hash -r; if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi    '; last_dir=~
 export PS1='=== $(
 	[[ $lx = 0 ]] || printf '"$red$(goX 1)"'"$([[ $lx = 1 ]] && printf === || printf $lx" ")"'"$(goX 5)"'
 	printf '"$green"'"$(home_link "$PWD")$([ -z "$PWF" ] || printf /'"$purple"'"$PWF")"'"$reset"'
-	)'"$(goX 78)"'===\n'"$dgrey"'>'"$reset"' '
+	)'"$(goX 78)"'===\n$(
+		[[ $do_ls = 1 ]] && { CLICOLOR_FORCE=1 ls -AGC; echo -e "\n"; }
+		)'"$dgrey"'>'"$reset"' '
 alias -- -='cd -'
 chx(){ chmod +x "$1"; }
 64e(){ base64; }
@@ -74,7 +77,7 @@ googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 /(){ -q pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; -q popd; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
-cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then local t="$(dirname "$v")"; last_dir="$(realpath "$t")"; builtin cd "${@:1:($#-1)}" "$t"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
+cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
@@ -100,6 +103,7 @@ comic_rotate(){
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
 cache_imgurs(){ for v in "$@"; do local o=~/"ali/misc/.cache/imgur/$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
 youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/"Downloads/$2.%(ext)s" "$1"; }
+kc(){ sudo killall coreaudiod; }
 ############ nlog ############
 nlog(){ f ~/ali/history/text\ logs/nihil/; }
 nlog₋₁(){ ql "$(ζ -p 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
