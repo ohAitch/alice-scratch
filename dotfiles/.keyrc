@@ -57,29 +57,25 @@
 ;=  :=
 sd  ι
 
-# a ] FnF5
-
-# FnF1  $ ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1 ] FnF1
-# FnF2  $ ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2 ] FnF2
-# https://github.com/gillstrom/osx-brightness
+FnF1  $ _bright down
+FnF2  $ _bright up
           FnF3  ] ⌘^f
 [chrome]  FnF3  ] ⌘⇧f
 [sublime] FnF3  ] ⌘⇧^f
 FnF4  ] DASHBOARD
 ^⇪    ] ^⇧L⇥
-⌘⇧3   $ (( . mutex; mutex_get screencapture; screencapture     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png; mutex_release screencapture; )&)
-⌘⇧4   $ (( . mutex; mutex_get screencapture; screencapture -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png; mutex_release screencapture; )&)
-⌘⇧^3  $ (( . mutex; mutex_get screencapture; screencapture     -cr; mutex_release screencapture; )&)
-⌘⇧^4  $ (( . mutex; mutex_get screencapture; screencapture -io -cr; mutex_release screencapture; )&)
-⌘⇧⌥3  $ t=/tmp/screencapture.png; screencapture     "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
-⌘⇧⌥4  $ t=/tmp/screencapture.png; screencapture -io "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$t" "https://api.imgur.com/3/upload" | jq -r .data.link)"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p
-⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | p
+⌘⇧3   $ (( _sc     ~/Downloads/$(date_i).png )&)
+⌘⇧4   $ (( _sc -io ~/Downloads/$(date_i).png )&)
+⌘⇧^3  $ (( _sc     -cr )&)
+⌘⇧^4  $ (( _sc -io -cr )&)
+⌘⇧⌥3  $ (( _sc_imgur     )&)
+⌘⇧⌥4  $ (( _sc_imgur -io )&)
+⌥^i  $ ack; osascript -e 'id of app (path to frontmost application as text)' | sb
 ⌥^s  $ ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
 ⌥^l  $ ack; _chrome "genius $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
-⌥^c  $ ( ( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )& )
+⌥^c  $ (( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )&)
 ⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
 # ⌥^b  $ ζ -e 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n"'
-# ⌥^b  $ ( ( ζ -e 'shᵥ`sleep 0.18`; robot ← npm("robotjs@0.3.7"); click ← λ(…xy){robot.moveMouse(…xy); robot.mouseClick()}; (λ(){ [10,9,8,7,6,5,4,2].forEach(i => click(476+(951-476)/3*(i%4), 543+(800-543)/7*floor(i/4))) }).every(0.01)' )& )
 ☝☝    ] ⌘
 
 [terminal] ⌘R      ] ^
@@ -93,9 +89,6 @@ FnF4  ] DASHBOARD
 [chrome] ⌘⇧l       $ ] ⌘l; ack; ζ -e 'var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
 [terminal] ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w
 [terminal] ⌘⇧r     $ ] '. ~/.bashrc' ] ↩
-
-⌥^q  $ ack
-⌥^e  $ (( ack )&)
 
          ⌘h        $ nack
 [chrome] ⌘h        ] ⌘h

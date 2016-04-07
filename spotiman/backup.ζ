@@ -1,6 +1,7 @@
 #!/usr/bin/env /Users/ali/ali/github/scratch/spotiman/spotify-dl/node --harmony /Users/ali/ali/github/scratch/spotiman/spotify-dl/node_modules/zeta-lang/bootstrap.js
 
 node_spotify ← require('./spotify-dl/node_modules/node-spotify')
+cn ← {log:print}
 
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
@@ -21,13 +22,13 @@ now ← ()=> Date.now()/1e3
 getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded ← (λ(){
 		login ← λ(cb){t←;
-			print(APP,'logging on ...')
+			cn.log(APP,'logging on ...')
 			spotify ← node_spotify({appkeyFile:process.env.HOME+'/.auth/spotify_appkey.key', settingsFolder:process.env.HOME+'/.libspotify_cache', cacheFolder:process.env.HOME+'/.libspotify_cache'})
 			spotify.on({ready:λ(e){cb(e,spotify)}})
 			spotify.login((t=JSON.parse(fs('~/.auth/spotify').$),t.username),t.password)
 			}
 		waitForAllLoaded ← λ(spotify,cb){
-			print(APP,'loading playlists ...')
+			cn.log(APP,'loading playlists ...')
 			t ← spotify.playlistContainer.getPlaylists()
 			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
 				t = t.filter(is_playlist).mapcat(λ(v){↩ v.getTracks()})
@@ -54,7 +55,7 @@ getDatabaseoid ← λ(cb){
 	loginAndWaitForAllLoaded(λ(e,spotify){
 		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
 		d ← (t._.countBy('name')⟩_.pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]}))
-		if (d.length) print(APP,'oh no! duplicate tags!',d)
+		if (d.length) cn.log(APP,'oh no! duplicate tags!',d)
 		if (d.length) t = t.filter(λ(v){↩ d.indexOf(v.name) === -1})
 		t = t.filter(λ(v){↩ v.owner.canonicalName === spotify.sessionUser.canonicalName}) // it's unclean and hacky to do this
 		tags ← t.map(λ(v){ ↩ new Native(v, { name: v.name, tracks: v.getTracks().map(λ(t){↩ tag_track(v, intern_track(t), t)}) }) })
@@ -66,7 +67,7 @@ getDatabaseoid ← λ(cb){
 getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
 	// φ`~/ali/history/auto/spotify/${Time().ymdhms}.json`.ι = tracks
 	fs('~/ali/history/auto/spotify/'+moment().toString()+'.json').$ = JSON.stringify(tracks,null,'\t')
-	print(APP,'done.')
+	cn.log(APP,'done.')
 	process.exit() //! augh
 	})
 

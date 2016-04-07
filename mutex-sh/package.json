@@ -1,6 +1,6 @@
 {
   "name": "mutex-sh",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "clone of http://sh-mutex.sourceforge.net/",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "repository": {

@@ -19,7 +19,7 @@ story_meta ← λ(i){
 		ι.categories = ι.categories._.pairs()._.filter(1)._.map(0)
 		ι.chapters && (ι.chapters = ι.chapters._.map('id'))
 		↩ ι}
-	print('fetching story metadata #'+i+'/'+total_stories)
+	cn.log('fetching story metadata #'+i+'/'+total_stories)
 	t ← GET_L('http://www.fimfiction.net/api/story.php?story='+i); ↩ t === '{"error":"Invalid story id"}'? '' : clean(JSON.parse(t))}
 C ← story_meta.cache = φ(sm_out).json_array__synchronized()
 
@@ -27,7 +27,7 @@ C ← story_meta.cache = φ(sm_out).json_array__synchronized()
 if (arg.cmd==='meta'){
 
 while (C.length < total_stories) C.push(story_meta(C.length))
-print('<done!>')
+cn.log('<done!>')
 
 }
 
@@ -39,9 +39,9 @@ meta ← (λ(){
 	t ← C.filter('chapters').map(λ(ι){ι.chapters = ι.chapters.map(ι => [ch_i++,ι])})
 	t = t._.indexBy('id'); st_out.φ`*`.φs.map(λ(ι){delete t[ι.name]}); ↩ t._.values()._.sortBy('id').reverse()})()
 story_text ← λ(ι){↩ ι.chapters.map(λ(ι){
-	print('fetching story chapters #'+ι[0]+'/'+ch_i)
+	cn.log('fetching story chapters #'+ι[0]+'/'+ch_i)
 	↩ GET_L('http://www.fimfiction.net/download_chapter.php?chapter='+ι[1])})}
 while (meta.length) {t ← meta.pop(); φ(st_out).φ`${t.id}`.json = story_text(t)}
-print('<done!>')
+cn.log('<done!>')
 
 }

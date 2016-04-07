@@ -27,7 +27,7 @@ main ← λ(){
 	}
 
 switch (arg.cmd) {
-	default: print(APP,'invalid command')
+	default: cn.log(APP,'invalid command')
 	break; case 'to': main()
 	// break; case 'from': φ`…${arg.in}.json`.ι = plist.parse(φ(arg.in).text)
 	}

@@ -18,6 +18,6 @@ get ← ι => {ι = GET_L(ι)
 	↩ entities.decodeHTML(ι).trim()}
 
 csv.stringify(JSON.parse(sb()).map(λ(ι,i,l){
-	print('fetching '+(i+1)+'/'+l.length,ι[2])
+	cn.log('fetching '+(i+1)+'/'+l.length,ι[2])
 	↩ [ι[0], …ι[1].match(/^(.*?) \(.*(\d{4})\)$/).slice(1), get(ι[2])]
 	}), λ(e,ι){sb(ι)}),0

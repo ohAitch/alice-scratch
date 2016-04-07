@@ -29,8 +29,12 @@ nack(){ (afplay "$__dirname/nack.wav" &); }
 		).join("\n")
 	osaᵥ`system events: …${ι}`
 	' "$@"; }
+	]
 _in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
-alias _clr='cd ~; /usr/bin/clear && printf "\e[3J";'
+_sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
+_imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
+_sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
+_bright(){ ζ -e 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/16) : (ι===0? 0 : ι+1/16)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107}`); ιs ← [0,1/16,2/16,4/16,8/16,12/16,16/16]; br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))'; }
 
 ################################# external only ################################
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
@@ -127,7 +131,7 @@ alias ct=chrome_tabs; chrome_tabs(){ λ '
 	nice_ ← λ(title,url){t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; ↩ nice_url(t)}
 	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
 	i ← ι[0]
-	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); print(t+"\n<copied>")}
+	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); process.stdout.write(t+"\n<copied>\n")}
 	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
 	' "$@"; }
 bookmarks(){ λ '
@@ -142,7 +146,7 @@ bookmarks(){ λ '
 alias kp=keypresses; keypresses(){ λ '
 	diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){f(key) === -1 && process.stdin.pause()})}
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█".split("")].join("-".repeat(9))
-	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else print(disp.slice(0,floor((-o+(o=hrtime()))*100)))})
+	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
 	'; }
 
 ############################# system configuration #############################

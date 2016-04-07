@@ -26,11 +26,11 @@ gen ← λ(ι){name←;
 if (arg.ι) gen(arg.ι)//[1]()
 // else {
 // 	ιs ← φ`./*.js`.φs.map(gen)
-// 	print('press any key to install')
+// 	process.stdout.write('press any key to install\n')
 // 	t ← λ*(){for(;;){
 // 		if (!ιs.length) ↩ -1
 // 		ι ← ιs.shift()
-// 		print('  '+ι[0]); yield
+// 		process.stdout.write('  '+ι[0]+'\n'); yield
 // 		ι[1]()
 // 		}}(); t.next()
 // 	diy_stdin(λ(key){↩ key==='\x03'? -1 : t.next().value})

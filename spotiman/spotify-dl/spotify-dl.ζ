@@ -1,5 +1,6 @@
 lame ← require('lame')
 async ← require('async','1.5.0')
+cn ← {log:print}
 
 arg ← {
 	cache_dir: '~/ali/misc/music_cache',
@@ -28,13 +29,13 @@ mp3_id3 ← λ(fl){s ← sh_encode; fl = fs(fl).path
 // E.mp3_clean = λ(fl){
 // 	get id3 tags [artist, album, i, name] from file // mp3_id3(fl).$
 // 	read filename to look for [artist, album, i, name] // […(t=path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1), t]
-// 	if filename contained things id3 is missing: write those to id3 (and print)
-// 	if id3 contained things filename is missing: move the file (and print)
+// 	if filename contained things id3 is missing: write those to id3 (and cn.log)
+// 	if id3 contained things filename is missing: move the file (and cn.log)
 // 	if mp3_info_to_basename(id3) !== filename: ↩ {conflict:true, file:, id3:}
 // 	}
 
 login ← λ(cb){
-	print(APP,'logging on ...')
+	cn.log(APP,'logging on ...')
 	// spotify ← require('./build/Release/nodespotify')()
 	spotify ← require('node-spotify')({appkeyFile:process.env.HOME+'/.auth/spotify_appkey.key', settingsFolder:process.env.HOME+'/.libspotify_cache', cacheFolder:process.env.HOME+'/.libspotify_cache'})
 	spotify.on({ready:λ(e){cb(e,spotify)}})
@@ -48,7 +49,7 @@ ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pai
 ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 	prettyname ← '\x1b[32m'+p_name+'\x1b[33m'+(p_i+'')._.map(λ('₀₁₂₃₄₅₆₇₈₉')).join('')+'\x1b[39m'
 	if (ι.availability !== 1) {
-		!quiet_skipping && !/^spotify:local/.λ(ι.link) && print(APP,prettyname+' \x1b[31;1mskipped\x1b[0m')
+		!quiet_skipping && !/^spotify:local/.λ(ι.link) && cn.log(APP,prettyname+' \x1b[31;1mskipped\x1b[0m')
 		cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
 	ι.album.browse(λ(e,t){
 		metadata ← {
@@ -65,11 +66,11 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 		player_bufs = []
 		spotify.player.play(ι)
 		q ← (λ(){
-			process.stdout.write('\x0d'+APP+' '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration))
+			process.stdout.write('\x0d'+APP+' '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration)) //! should be done with an improved console.log
 			spotify.player.resume()
 			}).every(0.1)
 		spotify.player.on({endOfTrack: λ(){(λ(){
-			clearInterval(q); print('\x0d'+APP,prettyname+' \x1b[31;1m✓\x1b[0m            ')
+			clearInterval(q); cn.log('\x0d'+APP,prettyname+' \x1b[31;1m✓\x1b[0m            ')
 			data ← Buffer.concat(player_bufs); player_bufs = null
 			t ← new lame.Encoder({channels:2, bitDepth:16, sampleRate:44100, bitRate:256, outSampleRate:22050, mode:lame.STEREO})
 			t.end(data)
@@ -78,7 +79,7 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 
 login(λ(e,spotify){
 	spotify.useNodejsAudio(λ(e,ι){if (e) throw e; player_bufs.push(ι); ↩ true})
-	print(APP,'loading playlists ...')
+	cn.log(APP,'loading playlists ...')
 	ι ← getPlaylists(spotify.playlistContainer)
 	poll(λ(){↩ ι.filter(is_playlist).every(ι => ι.isLoaded)},λ(){
 		playlists ← ι.filter(is_playlist)
@@ -88,7 +89,7 @@ login(λ(e,spotify){
 		playlists = playlists._.sortBy('numTracks')
 		async.mapSeries(playlists,
 			λ(ι,cb){ poll(λ(){↩ getTracks(ι).every(ι => ι.isLoaded)},λ(){ensure_playlist_cached(spotify,ι,cb)}) },
-			λ(e,ι){print(APP,'done.') ;(λ(){process.exit()}).in(1.5)
+			λ(e,ι){cn.log(APP,'done.') ;(λ(){process.exit()}).in(1.5)
 			})
 		})
 	})
@@ -139,7 +140,7 @@ login(λ(e,spotify){
 // // a ← ref.alloc(sp_session_config.ᵖ)
 // // b ← ref.alloc(sp_session.ᵖ.ᵖ)
 // // t ← libspotify.sp_session_create(a,b)
-// // print(t)
+// // cn.log(t)
 
 // TimeVal ← ref_struct({
 //   'tv_sec': 'long',

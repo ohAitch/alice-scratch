@@ -15,7 +15,7 @@ think about the prompt at the beginning and figure out what we want to do with t
 		http://www.node-spotify.com/api.html#playlist
 		var main = function(){
 			var add_tracks = function(p,ts){
-				print('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
+				cn.log('adding',Math.min(ts.length,500),'tracks out of',ts.length,'tracks')
 				p.addTracks(ts.slice(0,500).map(function(v){return v.original}),0)
 				}
 			var pl = playlists()._.indexBy('name')
@@ -25,10 +25,10 @@ think about the prompt at the beginning and figure out what we want to do with t
 			var t = tracks().filter(function(v){return is(v.playlists['meh pile']) && Object.keys(v.playlists).length>=2})
 			
 			//t = t.map(function(v){return Object.keys(v.playlists).length>=2})._.sortBy()
-			//print(pl.clbuttic.removeTracks(t))
+			//cn.log(pl.clbuttic.removeTracks(t))
 			//t = t.filter(function(v){return Object.keys(v.playlists).length>=2})
-			t.map(function(v,i){print(i,v.unique_name)})
-			//print(get_tracks(pl['don\'t want to hear again']))
+			t.map(function(v,i){cn.log(i,v.unique_name)})
+			//cn.log(get_tracks(pl['don\'t want to hear again']))
 			//add_tracks(pl['meh pile'],tracks().filter(function(v){return v.playlists.length===1 && v.playlists[0]==='mehp'}))
 			}
 	> implement tags

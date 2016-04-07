@@ -4,12 +4,12 @@ jsdom ← npm('jsdom@7.2.2')
 // csv ← npm('csv@0.4.6')
 
 scrape_index_for_posts ← λ λ(ι){
-	print(ι)
+	cn.log(ι)
 	jsdom.env(ι,λ(e,ι){if (e) throw e; $ ← jquery(ι)
 		posts ← $('.post > h2 a').toArray().map(λ(ι){↩ 'http://lesswrong.com'+$(ι).attr('href')})
 		φ`posts/${ι}`.lines = posts
 		next ← $('a[rel="nofollow,next"]:contains("Next")').attr('href')
-		if (next) λ.P(next).in(rand()*0.1); else print('<done>')
+		if (next) λ.P(next).in(rand()*0.1); else cn.log('<done>')
 		}); }
 
 scrape_post_for_comments ← λ(ι,out,cb){
@@ -33,8 +33,8 @@ scrape_post_for_comments ← λ(ι,out,cb){
 
 // scrape_index_for_posts('http://lesswrong.com/new/')
 // scrape_index_for_posts('http://lesswrong.com/r/discussion/new/')
-φ`posts.txt`.lines().map(ι => ι+'?all=true').map(λ(ι,i){print(i,ι); GET_L(ι,1e7)}); print('<done>')
-// t ← φ`post_cache/*`.name_TMP._.difference(φ`comments/*`.name_TMP)[0]; if (!t) {print('<done>'); process.exitCode = 1} else {print(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
+φ`posts.txt`.lines().map(ι => ι+'?all=true').map(λ(ι,i){cn.log(i,ι); GET_L(ι,1e7)}); cn.log('<done>')
+// t ← φ`post_cache/*`.name_TMP._.difference(φ`comments/*`.name_TMP)[0]; if (!t) {cn.log('<done>'); process.exitCode = 1} else {cn.log(t); scrape_post_for_comments('post_cache/'+t,'comments/'+t)}
 
 q ← φ`comments/*`.φs.map(ι => ι.json)
 // φ`comment_error.json`.ι = q.map(λ(ι){↩ {url:ι.url, nominal:ι.num_comments, actual:ι.comments.length}}).filter(λ(ι){↩ ι.nominal !== ι.actual})

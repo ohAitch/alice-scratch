@@ -6,12 +6,19 @@ shebang ← '#!/usr/bin/env node --harmony --harmony_destructuring --harmony_def
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
+// ------------------------------ browser fixes ----------------------------- //
+BROWSERP ← typeof window!=='undefined'
+if (BROWSERP) if (!module.parent) module.parent = '<unknown>'
+if (BROWSERP) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
+
 // -------------------------- local metaprogramming ------------------------- //
 E ← {} // exports
 patches ← []
 P ← λ(_ι){r ← λ(G){ι ← _ι(); (_.isArray(ι)? ι : _(ι).pairs()).forEach(λ([name,ι]){genex_0(name).map(λ(name){
 	name = name.split('.'); last ← name.pop()
+	try{
 	t ← name.reduce((r,ι) => r[ι], G); typeof(ι)==='function'? (ι.name && (ι.super = t[last]), t[last] = ι) : def(t,last,ι)
+	}catch(e){console.log('wat',name,last); throw e}
 	}) }) }; r(global); patches.push(r)}
 
 // ------------------------------- local utils ------------------------------ //
@@ -29,25 +36,26 @@ prop_assign ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι => Objec
 ;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['minimist'],
 ['fs'],//! hack
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
+global._ && (E._ = global._)
 global.stream = E.stream
-require('stream') // for browserify
 _ ← E._
 path ← require('path')
 fs ← require('fs')
 moment ← require('moment')
 E.Reflect = require('harmony-reflect')
+if (0){ require('util'); require('stream'); require('harmony-reflect'); require('moment'); require('priorityqueuejs'); require('urijs'); require('minimist') } // browserify
 
 // --------------------------------- ζ infra -------------------------------- //
-E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
+if (!BROWSERP) E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
 	APP ← '\x1b[34m[npm]\x1b[0m'
 	if (version){
 		cache ← φ`~/.npm/${ι}/${version}`
 		try {↩ require(cache+'/node_modules/'+ι)}
 		catch (e) {if (!(e.code==="MODULE_NOT_FOUND")) throw e
-			print(APP,'installing',ιv())
+			cn.log(APP,'installing',ιv())
 			cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ιv()}`
 			;(a=cache.φ`package.json`).ι = {description:"-",repository:1,license:"ISC"}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm i ${ιv()}`; a.ι = b.ι = null
-			print(APP,'done')
+			cn.log(APP,'done')
 			↩ require(cache+'/node_modules/'+ι) } }
 	else {
 		shᵥ`bash -ci ack`
@@ -89,7 +97,7 @@ E.ζ_repl_start = λ(){
     else { self.clearLine(); self.close() }
     })
 	↩ self}
-require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
+if (require.extensions) require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
 
 // ---------------------------- “with batteries” ---------------------------- //
 memo_frp ← λ(names,within,f){
@@ -110,11 +118,11 @@ genex_0 ← λ(ι){
 Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
 pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
 
-E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
-E.print = λ(…a){process.stdout.write(a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}).join(' ')+'\n')}
+if (!BROWSERP) E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
+E.cn = { log:λ(…a){ console.log(…(BROWSERP? a : a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}))); if (BROWSERP) window.__ = a[-1] } }
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
 E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
-E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
+if (!BROWSERP) E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
 E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ typeof(a)==='number'? rand()*a |0 : _.sample(a); case 2: ↩ rand(b-a)+a |0}}
@@ -175,6 +183,7 @@ P(()=>({
 }))
 
 // ---------------------------------- .ζrc ---------------------------------- //
+if (!BROWSERP){
 write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(typeof(ι)==='string'? ι : util.inspect(ι,{depth:null}))}
 E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)}
 E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)}
@@ -251,6 +260,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 
 	↩ ι}
 
+}
 // ----------------------------- metaprogramming ---------------------------- //
 E.λ = λ(ι){r ← λ(m){↩ ι[m]}; r.ι = ι; ↩ r}
 P(()=>({ '(String|Number).prototype.λ':{get(){'use strict'; r ← ι => ι[@]; r.ι = @; ↩ r}} }))
@@ -293,7 +303,7 @@ E.re = λ(ss,…ιs){↩ re_(simple_template(ss,ιs))}
 E.re_ = λ(ι){ENC ← ι => (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι => ι.raw? ENC(ι.raw) : ι).join(''),'u')}
 P(()=>({ 'String.prototype.re':{get(){↩ (ss,…ιs) => @.match(re(ss,…ιs))}} }))
 E.sh = λ(ss,…ιs){ENC ← ι => "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs).map(ι => ι.raw? ENC(ι.raw) : ι).join('')}
-E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
+if (!BROWSERP) E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
 	show: ι => typeof(ι)==='number'? ι+'' : typeof(ι)==='string'? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : (λ(){throw Error()})(),
@@ -302,7 +312,7 @@ E.osa = λ(ss,…ιs){t←;
 	ι ← simple_template(ss,ιs)
 	if (!ι[0].raw && (t=ι[0].re`^(?!tell )([\w ]+):`)) {ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, …ι, '; end tell']}
 	↩ ι.map(ι => ι.raw? _osa.show(ι.raw) : ι.replace(/;/g,'\n')).join('') }
-E.osaᵥ = λ(ss,…ιs){ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
+if (!BROWSERP) E.osaᵥ = λ(ss,…ιs){ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
 // E.chromeᵥ = ⋈ not actually used ⋈ wait, nope, is actually used, but mostly in one-off scripts
 	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
 	// 	// E.chrome_js_sandboxᵥ = λ(ι,tab){↩ osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`}
@@ -311,10 +321,10 @@ E.osaᵥ = λ(ss,…ιs){ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -s
 	// 	osaᵥ`chrome: tell …${tab} of window 1 to set URL to ${'javascript:'+ζ_compile(t)}`
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	// 	↩ JSON.parse(osaᵥ`chrome: execute window 1's …${tab} javascript ${t}` || '""') }
-E.sublᵥ = λ(ss,…ιs){
+if (!BROWSERP) E.sublᵥ = λ(ss,…ιs){
 	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι => ι.raw? ENC(ι.raw) : ι).join('')
 	t ← JSON.parse(fs_ipc.emit(34289,ι)); t===null && (t = undefined); ↩ t }
-def(E,'φ',λ(){
+if (!BROWSERP) def(E,'φ',λ(){
 	ENC ← ι => ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ['⁻¹'] = ι => /%2F/i.λ(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 
@@ -453,18 +463,18 @@ def(E,'φ',λ(){
 // ---------------------- finish local metaprogramming ---------------------- //
 prop_assign(E,global)
 patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly?
-module.exports = λ(to){patched.has(to) || (print('\x1b[34m[ζ]\x1b[0m patching'), print(Error('<stack>').stack), patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
+module.exports = λ(to){patched.has(to) || (cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
 
 // -------------------------------- call main ------------------------------- //
 if (!module.parent) (λ(){t←;
-	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι))}
+	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι+''))}
 	read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}	
 	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([^]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
 
 	//! the handling here of passing argv to the new process.argv is actually incorrect. however i'm busy and don't want to figure out the right thing right now.
 
 	argv ← process.argv.slice(2); arg ← minimist(argv,{boolean:['c','v'],alias:{version:'v',print:'p',eval:'e',compile:'c',output:'o'}})
-	if (arg.v){ print(φ(__dirname).φ`package.json`.ι.version) }
+	if (arg.v){ process.stdout.write(φ(__dirname).φ`package.json`.ι.version+'\n') }
 	else if (arg.c){
 		if (!arg.o) throw Error('TODO'); arg._.map(λ(ι){ if (φ(ι).is_dir) throw Error('TODO') })
 		arg._.map(λ(ι){ φ(arg.o+'/'+(t=φ(ι).root('.')+'', t.re`^\.\./` && λ(){throw Error()}(), t).replace(/\.ζ$/,'')+'.js').buf = ζ_compile_file(φ(ι).text) })
