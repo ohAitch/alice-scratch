@@ -1,7 +1,6 @@
 __dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
 #################################### private ###################################
 λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\\\\\}"; printf -- "${v//↩/\\␣}↩"; done | ζ -e 'ι = ι.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
--q(){ "$@" &>/dev/null; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; } # should instead be a function that compresses all of the standard symlinks
 _chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
@@ -71,12 +70,12 @@ f(){ open -a 'Path Finder' "${1:-.}"; osascript -e 'tell app "path finder" to ac
 ar (){ tar -c "$@" | xz -v    > "$(basename "$1").tar.xz"; }
 ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 …(){ bash -s; }
-del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-ql(){ (-q qlmanage -p "$@" &); }
+del(){ for v in "$@"; do v="$(realpath "$v")"; &>/dev/null osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+ql(){ ( &>/dev/null qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
-/(){ -q pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; -q popd; }
+/(){ &>/dev/null pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; &>/dev/null popd; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
 alias ps=$'echo \e[41muse ps2 instead\e[0m; ps'
