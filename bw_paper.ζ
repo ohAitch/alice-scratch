@@ -1,22 +1,22 @@
 #!/usr/bin/env ζ
 
-throw Error('sad')
+‽('sad')
 
 pixels = {
 	read: λ(ι,type='rgb',cb){npm('get-pixels@3.2.3')(φ(ι)+'',λ(e,{data:D,shape:[X,Y,depth],stride}){X|=0;Y|=0
 		// maybe just use Symbol.iterator ?
-		;(depth === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+		;(depth === 4 && stride._.isEqual([4,X*4,1])) || ‽
 		if      (type==='rgba') ι ← D
 		else if (type==='rgb' ) {ι ← Buffer(X*Y*3); pˡ←0; pᵈ←0; for(i←0;i<X*Y;i++) {ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; pᵈ++}}
 		else if (type==='grey') {ι ← Buffer(X*Y); for(i←0;i<X*Y;i++) ι[i] = D[i*4]}
-		else throw Error()
+		else ‽
 		cb(e,{X,Y,ι}) }) },
 	show: λ({ι,X,Y},type='rgb',to){
 		t ← new (npm('pngjs@2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
 		if      (type==='rgba') (Buffer.isBuffer(ι)? ι : Buffer(ι)).copy(t.data)
 		else if (type==='rgb' ) for(i←0;i<ι.length;) {D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = 0xff}
 		else if (type==='grey') for(i←0;i<ι.length;) {D[p++] =         D[p++] =         D[p++] = ι[i++]; D[p++] = 0xff}
-		else throw Error()
+		else ‽
 		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
 	}
 

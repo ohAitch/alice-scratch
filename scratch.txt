@@ -64,7 +64,7 @@ $.css = function(v){$('head').append('<style>'+v+'</style>')}
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
-	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(0), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+	↩ {code: t[0] || typeof(key)==='number'? key : key.charCodeAt(), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){if (!cb0) {cb0 = sel; sel = null}
 	// var [key,…ns] = key.split(/(?=\.\w)/); ns = ns.join('')
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
@@ -151,7 +151,7 @@ T ← 10; i←0; (λ(){sublᵥ`view.insert(edit,view.sel()[0].begin(),"\n")`}).e
 
 ------------------------------------- life -------------------------------------
 sublime_set_buffer ← λ(ι){sublᵥ`view.replace(edit,Region(0,view.size()),${ι})`}
-braille_table ← 0x100.map(ι => String.fromCharCode('⠀'.charCodeAt(0)+ι))
+braille_table ← 0x100.map(ι => String.fromCharCode('⠀'.charCodeAt()+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46

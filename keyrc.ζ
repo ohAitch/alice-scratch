@@ -7,39 +7,36 @@
 
 xmlbuilder ← npm('xmlbuilder@4.1.0')
 
-as_char_as_hex ← λ(ι){↩ ('000'+ι.charCodeAt(0).toString(16)).slice(-4)}
+as_char_as_hex ← ι => ('000'+ι.charCodeAt().toString(16)).slice(-4)
 
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
+// -------------------------------------------------------------------------- //
 parse_keyrc ← λ(src){
 	homoiconic←; h_shape←; keycode←;
-	transpose_str ← λ(ι){↩ _.zip(…ι.split('\n')).map(ι => ι.join('')).join('\n')}
+	transpose_str ← ι => _.zip(…ι.split('\n')).map(ι => ι.join('')).join('\n')
 	parse_boards ← λ(ι){
-		ι ← ι.mapcat(λ(ι){
-			↩ transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
+		ι ← ι.mapcat(ι =>
+			transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 				root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-				keys: ι.slice(1,-1).map(λ(ι){↩ /^│(.+)│$/.λ(ι)[1]}).map(/\S\S?/g.λ),
-				} }) })
-		// h←; h_shape || (
-		// 	h = 
-		// 	)
-		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(ι => ι.map(() => '_')))
-		ι.filter(λ(ι){↩ ι.keys.length === 4}).map(λ(ι){ι.keys = [h_shape[0], …ι.keys, h_shape[-1]]})
-		ι.map(λ(ι){ι.keys = ι.keys._.flatten(true)})
+				keys: ι.slice(1,-1).map(ι => /^│(.+)│$/.λ(ι)[1]).map(/\S\S?/g.λ),
+				} }) )
+		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(ι => ι.map(()=>'_')))
+		ι.filter(ι => ι.keys.length === 4).forEach(λ(ι){ι.keys = [h_shape[0], …ι.keys, h_shape[-1]]})
+		ι.forEach(λ(ι){ι.keys = ι.keys._.flatten(true)})
+		ι.forEach(λ(ι){ ι.root!=='⇧' && (ι.keys = ι.keys.map(ι => ι==='X'? '$ nack' : ι)) }) // let X = $ nack
 		ι = ι._.without(homoiconic)
-		ι.map(λ(ι){ι.keys = _.zip(homoiconic.keys,ι.keys).filter(ι => ι[1] !== '_')})
-		keycode || (keycode = ι._.indexBy('root')['[keycode]'])
-		ι = ι._.without(keycode)
-		ι = ι.mapcat(λ(ι){↩ ι.keys.map(λ(k){k[0] = ι.root+k[0]; ↩ k})})
+		ι.forEach(λ(ι){ι.keys = _.zip(homoiconic.keys,ι.keys).filter(ι => ι[1] !== '_')})
+		keycode || (keycode = ι._.indexBy('root')['[keycode]'], ι = ι._.without(keycode))
+		ι = ι.mapcat(λ(ι){ ι.keys.forEach(k => k[0] = ι.root+k[0]); ↩ ι.keys })
 		↩ ι}
 	tₐ ← []
 	tₑ ← parse_boards(
 		(src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
 		.replace(/(?:^|\n)(?![│┌└]) *((?:\[\w+\])? *\S+) +(.+)/g,λ(ˣ,a,b){tₐ.push([a,b]); ↩ ''})
-		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(λ(ι){↩ ι.replace(/\n$/,'')}) )
-	mappings ← […tₐ, …tₑ]
-	t ← mappings._.indexBy(λ(ι){↩ ι[0]+'\n'+ι[1]})
+		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(ι => ι.replace(/\n$/,''))
+		)
 	system ← parse_boards([multiline(λ(){/*
 		┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
 		│ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
@@ -48,9 +45,8 @@ parse_keyrc ← λ(src){
 		│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
 		└──────────────────────────────┘ └──────────────────────────────┘
 		*/})])
-	system.map(λ(ι){↩ ι[0]+'\n'+ι[1]}).map(λ(ι){delete t[ι]})
-	mappings = t._.values()
-	mappings.forEach(λ(ι){ι[0] = ι[0].replace(/^⇧⌥([←↑↓→])$/,'⇧R⌥R$1')})
+	mappings ← […tₐ, …tₑ]._.difference_eq(system)
+	cn.log(mappings)
 	↩ {keycodes:keycode.keys._.object(), mappings, homoiconic:homoiconic.keys, non_special:system._.map(0).filter(ι => ι[0]!=='⇧')} }
 
 wat ← []
@@ -68,39 +64,39 @@ show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 			else {t ← /F.|.[LR]|./g.λ(ι); i ← t.map(Mod).concat([undefined]).indexOf(undefined); md ← t.slice(0,i); ky ← t.slice(i)}
 			if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
 			else md.push(' ')
-			if (!{1:1,2:1}[ky.length]) throw Error('[lackey] invalid keystring: '+util.inspect(ι))
-			Key ← λ(ι){↩ ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])}
+			if (!{1:1,2:1}[ky.length]) ‽('[lackey] invalid keystring: '+util.inspect(ι))
+			Key ← ι => ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		appdef_fix ← λ(ι){ι = ι.toLowerCase(); ↩ _.contains(['terminal','vlc','x11','system_preferences','skype','preview','quicktime','itunes','finder'],ι)? ι.toUpperCase() : {chrome:'GOOGLE_CHROME', sublime:'SUBLIMETEXT', activity_monitor:'Activity_Monitor', atom:'Atom', dock:'Dock'}[ι] || ι}
 		compile_trigger ← λ(ι){t←; if (t=/^\[(\w+)\] +(.+)$/.λ(ι)) {only ← appdef_fix(t[1]); ι = t[2]}; t ← compile_keystring(ι,true); ↩ {only, ι:t.cmd+' '+t.ι} }
 		compile_output ← λ(ι){t←;
 			↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) :
 			(t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι :
-				ι._.map(λ(ι){↩ as_char_as_hex(ι)._.map(λ(ι){↩ compile_keystring('⌥L'+ι).ι})})._.flatten().join('') }
+				ι._.map(ι => as_char_as_hex(ι)._.map(ι => compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		↩ {ι:(t=compile_trigger(ι[0])).ι + compile_output(ι[1]), only:t.only} }
-	touchmaps ← []; mappings = mappings.filter(ι => {t ← /^☝/.λ(ι[0]); t && touchmaps.push(ι); ↩ !t})
+	t ← mappings._.partition(ι => /^☝/.λ(ι[0])); touchmaps ← t[0]; mappings = t[1]
 	↩ {root: {
 		appdef: {
 			'spotify':'com.spotify.client', 'path_finder':'com.cocoatech.PathFinder', 'photo_booth':'com.apple.PhotoBooth',
 			}._.map(λ(ι,k){↩ {appname:k, equal:ι}}),
 		item: [
 			…touchmaps.map(λ(ι){t←;
-				ι[0]+ι[1] === '☝☝] ⌘' || (λ(){throw Error('‽')})()
+				ι[0]+ι[1] === '☝☝] ⌘' || ‽
 				//[ ☝☝⇪   ] ^⇧L⇥
 				//[ ☝☝⇥   ] ^⇥
 				//[ ☝☝`   ] ^`
 				↩ {name:(t='notsave.'+ι[0].length+'touch'), identifier:t, autogen:homoiconic.filter(ι => !Mod(ι)).map(ι => compile_mapping([ι,'] '+({'⇥':'^⇥','⇪':'^⇧⇥','`':'^`'}[ι]||('⌘'+ι))]).ι)}
 				}),
-			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι => /^F[^n]$/.λ(ι)? ['Fn'+ι,ι] : /^[⌥⇧⌘][RL]$/.λ(ι)? [ι,ι[0]] : [ι,ι]).map(ι => compile_mapping(ι).ι+','+shell('ack; '+KB+' toggle notsave.power_key'))},
+			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι => /^F[^n]$/.λ(ι)? ['Fn'+ι,ι] : /^[⌥⇧⌘][RL]$/.λ(ι)? [ι,ι[0]] : [ι,ι]).map(ι => compile_mapping(ι).ι+','+shell('ack; '+KB+' disable notsave.power_key'))},
 			…(t=mappings.map(compile_mapping)._.groupBy('only'), […t._.omit('undefined')._.values(), t.undefined]).map(λ(ι,i){wat.push('lackey'+i); ↩ {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].only, autogen:ι._.map('ι').reverse()} }),
 			],
 		vkopenurldef: shells._.map((name,ι) => ({name, url:{'@type':'shell', '#text':ι}})),
 		}} }
 
-// --------- main --------- //
+// ---------------------------------- main ---------------------------------- //
 φ`~/Library/Application Support/Karabiner/private.xml`.ι = show_private_xml(parse_keyrc(φ`~/.keyrc`.text))
 shᵥ`${KB} reloadxml`; wat.map(ι => shᵥ`${KB} enable ${ι}`)
-φ`~/Documents/keyrc_power_key.sh`.text = '#!/usr/bin/env bash -i\nack; '+KB+' toggle notsave.power_key'; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
+φ`~/Documents/keyrc_power_key.sh`.text = '#!/usr/bin/env bash -i\nack; '+KB+' enable notsave.power_key'; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
 
 // mild todo:
 // right command is maybe problematic

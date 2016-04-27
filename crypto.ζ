@@ -1,8 +1,6 @@
 #!/usr/bin/env ζ
 crypto ← require('crypto')
 
-err ← λ(…a){throw Error(a.join(' '))}
-
 Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
 Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(ι => 8..map(i => (ι & 1<<i) >> i))}
 Buffer.prototype.str = λ(){↩ @.toString('binary')}
@@ -41,7 +39,7 @@ p_english ← (λ(){
 	↩ λ(buf){↩ buf.toArray().map(english_frequency).reduce(add) / buf.length} })()
 hamming ← λ(a,b){↩ _.zip(a.bits(),b.bits()).filter(λ(v){↩ v[0] !== v[1]}).length}
 
-encrypt_aes_128_ecb ← λ(buf,key){buf.length % key.length === 0 || err('‽'); t ← crypto.createCipheriv('aes-128-ecb',key,'').setAutoPadding(false); ↩ Buffer.concat([t.update(buf),t.final()])}
+encrypt_aes_128_ecb ← λ(buf,key){buf.length % key.length === 0 || ‽; t ← crypto.createCipheriv('aes-128-ecb',key,'').setAutoPadding(false); ↩ Buffer.concat([t.update(buf),t.final()])}
 endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat((ceil(buf.length/key.length)).map(λ(i){t←; ↩ encrypt_aes_128_ecb(Buffer.concat([nonce,(t=Buffer(key.length-nonce.length).fill(0),t.writeUIntLE(i,0,6),t)]),key)})).slice(0,buf.length))}
 
 bad_keygen ← λ(len){↩ Buffer(len.map(rand.P(0,0xff)))}
@@ -188,7 +186,7 @@ mt19937_untemper ← λ(x){
 // is_thing_admin ← λ(buf){↩ PKCS_7.read(bad_decrypt_cbc(buf, key, iv)).str().split(';')._.contains('admin=true')}
 // an_edit_cbc_hack ← λ(oracle){t←;
 // 	bsize ← find_bsize(oracle)
-// 	!detect_ecb_cbc(oracle,bsize) || err('‽')
+// 	!detect_ecb_cbc(oracle,bsize) || ‽
 // 	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
 // 	pad ← Buffer(prefix_len_ceil-prefix_len).fill(0)
 // 	t ← oracle(Buffer.concat([pad,'xxxxxdadminbtrue'.buf()])).partition(bsize)
@@ -245,11 +243,11 @@ mt19937_untemper ← λ(x){
 // 	// doesn't remove padding !
 // 	↩ Buffer.concat([iv].concat(buf.partition(key.length)).windows(2).map(λ(v){↩ xor(bad_decrypt_ecb(v[1],key),v[0])})) }
 //
-// PKCS_7 ← λ(buf,len){len -= buf.length; len < 0 && (len = 0); len <= 0xff || err('‽'); ↩ Buffer.concat([buf, Buffer(len).fill(len)])}
+// PKCS_7 ← λ(buf,len){len -= buf.length; len < 0 && (len = 0); len <= 0xff || ‽; ↩ Buffer.concat([buf, Buffer(len).fill(len)])}
 // PKCS_7.show = λ(buf,bsize){↩ PKCS_7(buf, ceil((buf.length+1)/bsize)*bsize)}
-// PKCS_7.read = λ(buf){ // PKCS_7.read = λ(buf,bsize){buf.length % bsize === 0 || err('invalid buffer alignment')
-// 	buf[-1] > 0 || err('invalid padding')
-// 	buf.slice(-buf[-1]).toArray().every(λ(v){↩ v === buf[-1]}) || err('invalid padding')
+// PKCS_7.read = λ(buf){ // PKCS_7.read = λ(buf,bsize){buf.length % bsize === 0 || ‽('invalid buffer alignment')
+// 	buf[-1] > 0 || ‽('invalid padding')
+// 	buf.slice(-buf[-1]).toArray().every(λ(v){↩ v === buf[-1]}) || ‽('invalid padding')
 // 	↩ buf.slice(0,-buf[-1]) }
 //
 // detect_ecb ← λ(buf,bsize){t ← buf.partition(bsize); ↩ t.some(λ(a,i){↩ t.slice(i+1).some(λ(b){↩ a.equals(b)})}) }
@@ -264,7 +262,7 @@ mt19937_untemper ← λ(x){
 //
 // decode_ecb_postfix__prefix_safe ← λ(oracle){
 // 	bsize ← find_bsize(oracle)
-// 	detect_ecb_cbc(oracle,bsize) || err('‽')
+// 	detect_ecb_cbc(oracle,bsize) || ‽
 // 	prefix_len ← find_prefix_len__ecb_cbc(oracle,bsize); prefix_len_ceil ← ceil(prefix_len/bsize)*bsize
 // 	extra ← Buffer(prefix_len_ceil-prefix_len).fill(0)
 // 	got ← Buffer(0)

@@ -447,7 +447,7 @@ but file formats are really actually Buffer formats
 // 	value ← λ(i){↩ _1(i) || _2(i) || _3(i) || _4(i)}
 // 	all ← λ(){r ← []; i ← 0; while (i !== l.length) {t ← value(i); if (t.i === i) throw Error(); i = t.i; push_(r,t.ι)}; ↩ {type:'',ι:r}} // ^ value+ $
 // 	↩ all()}
-// eval_ ← λ(r,{type,ι,dir}){switch(type){default: throw '‽'
+// eval_ ← λ(r,{type,ι,dir}){switch(type){default: ‽
 // 	break; case '': ι.forEach(λ(ι){
 // 		r = eval_(r,ι)
 // 		}); ↩ r

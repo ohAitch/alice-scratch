@@ -1,3 +1,5 @@
+# easy todo: replace --pa with a ζ_eval function or something like that
+
 # make use of the fact that urls can't contain newlines
 
 # “
@@ -20,7 +22,8 @@ URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
 
 def ζ(cmd,ι,stdin=None):
-	args = ['/usr/local/bin/ζ',cmd,ι]
+	# args = ['/usr/local/bin/ζ',cmd,ι]
+	args = ['/usr/local/bin/node','--harmony','--harmony_destructuring','--harmony_default_parameters','--harmony_reflect','--harmony_regexps','--harmony_proxies','--harmony_unicode_regexps','/usr/local/lib/node_modules/zeta-lang/index.js',cmd,ι]
 	if stdin:
 		t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 		t = t.communicate(bytes(stdin,'UTF-8'))

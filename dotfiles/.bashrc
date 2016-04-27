@@ -1,6 +1,6 @@
 __dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
 #################################### private ###################################
-λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\}"; printf -- "${v//↩/\\\\q}↩"; done | ζ -e 'ι = ι.replace(/↩$/,"").split("↩").map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
+λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\\\\\}"; printf -- "${v//↩/\\␣}↩"; done | ζ -e 'ι = ι.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
 -q(){ "$@" &>/dev/null; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; } # should instead be a function that compresses all of the standard symlinks
 _chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
@@ -9,9 +9,8 @@ _alert(){ λ ' osaᵥ`system events: display alert ${ι[0]} …${ι[1] && osa`me
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; echo "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-chmodxprint(){ local a=$(stat -f "%p" "$1"); chmod +x "$1"; local b=$(stat -f "%p" "$1"); [[ $a == $b ]] || echo "${purple}chmod +x \"$1\"$reset"; } # ↩
-set_term_title(){ printf "\033]0;%s\007" "$1"; } # x
-this_term_is_frontmost(){ set_term_title __sentinel_f; local r=$(ζ -p 'osaᵥ`terminal: frontmost of (windows whose custom title = "__sentinel_f")`[0]'); set_term_title ''; [[ $r = true ]]; } # x
+set_term_title(){ printf "\033]0;%s\007" "$1"; } # this_term_is_frontmost
+this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ -p 'osaᵥ`terminal: frontmost of (windows whose custom title = "'$t'")`[0]')"; set_term_title ''; [[ $r = true ]]; } # x
 clear(){ /usr/bin/clear && printf '\e[3J'; } # sublime open terminal
 
 ################################ not interactive ###############################
@@ -23,18 +22,17 @@ nack(){ (afplay "$__dirname/nack.wav" &); }
 ](){ λ 'ι = ι.join(" "); 
 	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
 	ι = ι.split(/ +] +/g).map(ι =>
-		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||(λ(){throw Error()})() :
+		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||‽ :
 		(t={"↩":36}[ι])? "key code "+t :
 			osa`keystroke ${ι.replace(/^⌘/,"")}`+(ι.re`^⌘`? " using command down" : "")
 		).join("\n")
 	osaᵥ`system events: …${ι}`
 	' "$@"; }
-	]
 _in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ -e 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/16) : (ι===0? 0 : ι+1/16)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107}`); ιs ← [0,1/16,2/16,4/16,8/16,12/16,16/16]; br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))'; }
+_bright(){ ζ -e 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))'; }
 
 ################################# external only ################################
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
@@ -48,7 +46,7 @@ x(){ local E=$?; this_term_is_frontmost || { [[ $E != 0 ]] && ζ -e 'osaᵥ`term
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
-	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmodxprint "$t"; "$t" "$@"; }; }
+	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
 
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
@@ -60,8 +58,8 @@ export PS1='=== $(
 	printf '"$green"'"$(home_link "$PWD")$([ -z "$PWF" ] || printf /'"$purple"'"$PWF")"'"$reset"'
 	)'"$(goX 78)"'===\n$(
 		[[ $do_ls = 1 ]] && { CLICOLOR_FORCE=1 ls -AGC; echo -e "\n"; }
-		)'"$dgrey"'>'"$reset"' '
-alias -- -='cd -'
+		)'"$dgrey"'>'"$reset"' ' # oh, the problem with ls is that it's in a subshell and being made a string, which is slow
+alias -- -='cd ~-'
 chx(){ chmod +x "$1"; }
 64e(){ base64; }
 64d(){ base64 -D; }
@@ -77,11 +75,24 @@ del(){ for v in "$@"; do v="$(realpath "$v")"; -q osascript -e 'tell app "finder
 ql(){ (-q qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
-# pb(){ local v="$(ζ -p '"pastebin_jsonp("+JSON.stringify(ι)+")"' | _pastebin_id)"; _chrome "$v"; v="http://alice.sh/txt#$v"; echo "$v" | tr -d '\n' | p; echo "copied: "; }
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 /(){ -q pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; -q popd; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
+alias ps=$'echo \e[41muse ps2 instead\e[0m; ps'
+ps2(){ ζ -p '
+	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι => ι[1] < t)._.map(0); }
+	bad ← startup_procs()._.countBy()
+	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+"").split("\n")
+	h ← r.shift()
+	CMD ← ι => ι.slice(h.search("COMMAND"))
+	ETIME ← ι => ι.slice(5,h.search("ELAPSED")+"ELAPSED".length)
+	h+"\n"+r
+		.filter(ι => !bad[ι.re`^ *(\d*)`[1]])
+		.filter(ι => !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
+		._.sortBy(ETIME).reverse()
+		.map(ι => ι.replace(/(--harmony\w* )+/g,"… "))
+		.join("\n")+"\n"'; }
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
@@ -101,7 +112,14 @@ im_dateify(){
 
 ################## single-purpose commands (interactive only) ##################
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
-d(){ ( shopt -s nullglob; cd "${1:-.}"; for v in .[!.] .??* * .; do du -hs "$v" 2>/dev/null | sed $'s/\t.*//' | tr '\n' '\t'; find "$v" 2>/dev/null | wc -l | tr '\n' '\t'; echo "$v"; done ) }
+d(){ λ '♈ ← ι[0] || "."
+	sum ← 0
+	♓ ← (ι,fl) => cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
+	fs.readdirSync(♈).map(λ(fl){
+		o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${♈}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
+		b ← +(t+"").re`^\d+`[0] * 1024; sum += b; ♓(b,fl) })
+	♓(sum,♈)
+	' "$@"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
@@ -111,7 +129,7 @@ kc(){ sudo killall coreaudiod; }
 ############ nlog ############
 nlog(){ f ~/ali/history/text\ logs/nihil/; }
 nlog₋₁(){ ql "$(ζ -p 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
-nlog↩(){ mv ~/Downloads/201[6-9]-??-??T??:??:??*Z.png ~/ali/history/text\ logs/nihil/; }
+nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/history/text\ logs/nihil/; }
 ##############################
 dl_fix(){ f ~/Downloads; f ~/pg; λ '
 	fs ← require("fs")
@@ -156,31 +174,11 @@ alias kp=keypresses; keypresses(){ λ '
 # ln -sf ~/ali/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/ali/books ~
 # ln -sf ~/books/\#papers ~/papers
 # ln -sf ~/books/#misc/page_cache ~/pg
-# ln -sf ~/books/TheHourglassGrimoire/TheHourglassGrimoire.html ~/the-hourglass-grimoire
 # ln -sf ~/ali/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
 # -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 # defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
 
 ################################## deprecated ##################################
-# ar_zip(){ ditto -ckv --keepParent "$1" "${2%/}.zip"; }
-# D(){ [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
-# RM(){ [ -d "$1" ] || [ -f "$1" ] && rm -r "$1"; echo "$1"; }
-# exists(){ -q type "$1"; }
-# T(){ tee /tmp/lastL; } #! should use mktemp
-# L(){ cat /tmp/lastL; }
-# mute(){ osascript -e "set volume output muted $([[ $(osascript -e 'output muted of (get volume settings)') == 'true' ]] && echo false || echo true)"; }
-# mute(){ osascript -e "set volume output muted true"; }
-# unmute(){ osascript -e "set volume output muted false"; }
-# vol(){ osascript -e "set volume output volume $1"; }
-# async(){ ("$@" &) & }
-# here’s a way to easily modify your macros key: { rm "$rc"; jq ".macros=$macros" > "$rc"; } < "$rc"
-# How to make the tagtime daemon automatically start on bootup in OSX: sudo ln -s /path/to/tagtimed.pl /Library/StartupItems/tagtimed.pl
-# not [for t in $(find . -type f); do echo $t; done], instead [find . -type f -print0 | while IFS= read -r -d $'\0' t; do echo $t; done]
-
 # ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(λ(ι){↩ /\/subl stdin /.λ(ι+'')})._.sortBy(λ(ι){↩ ι.birthtime})[-1]
-
-# opencp(){ sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist; /Applications/CrashPlan.app/Contents/MacOS/CrashPlan & }
-# killcp(){ sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; }
-# __rc_t1(){ if ! [[ $1 =~ [=] ]] && [ -f "$1" ] && ! [[ -x $1 ]]; then chmodxprint "$1"; fi; }; __rc_t2(){ __rc_t1 $BASH_COMMAND; }; trap __rc_t2 DEBUG
 # cdw(){ local t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }

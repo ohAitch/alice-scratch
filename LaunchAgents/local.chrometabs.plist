@@ -16,7 +16,6 @@
 		<string>https://calendar.google.com/calendar/render#main_7%7Ccustom,5</string>
 		<string>https://gmail.com/</string>
 		<string>https://facebook.com/</string>
-		<string>https://tumblr.com/</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

@@ -110,27 +110,30 @@ memo_frp ← λ(names,within,f){
 	dir.φ`${a} ${Buffer(6..map(()=> rand(0x100))).toString('hex')}`.json2 = {names, date:[a,b], ι}; ↩ ι}
 genex_0 ← λ(ι){
 	parse ← λ(ι){
-		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:_(ι.slice(1,-1).match(/.-.|./g).map(ι => ι.length === 1? [ι] : _.range(ι[0].charCodeAt(0),ι[2].charCodeAt(0)+1).map(String.fromCharCode.X))).flatten(true)} : ι})}
+		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:_(ι.slice(1,-1).match(/.-.|./g).map(ι => ι.length === 1? [ι] : _.range(ι[0].charCodeAt(),ι[2].charCodeAt()+1).map(String.fromCharCode.X))).flatten(true)} : ι})}
 		w ← λ(ι){if (!_.isArray(ι)) ↩ ι; t←; r ← []; while ((t=_(ι).indexOf('|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
 		↩ w(q(ι))}
 	q ← ι => ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b) => _(a.map(a => b.map(b => a+b))).flatten(true),['']) : [ι]
 	↩ q(parse(ι)) }
 Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
 pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
-
-if (!BROWSERP) E.hook_stdout = λ(){o ← process.stdout.write; r ← []; process.stdout.write = λ(ι){r.push(ι)}; ↩ λ(){process.stdout.write = o; ↩ r.join('')}}
+if (!BROWSERP) E.hook_stdouterr = λ(){
+	r ← ['stdout','stderr'].map(λ(stdio){
+		o ← process[stdio].write; r ← []; process[stdio].write = λ(ι){r.push(ι)}; ↩ λ(){process[stdio].write = o; ↩ r.join('')}
+		}); ↩ ()=> r.map(ι => ι()) }
 E.cn = { log:λ(…a){ console.log(…(BROWSERP? a : a.map(λ(ι){↩ typeof(ι)==='string'? ι : util.inspect(ι,{colors:true,depth:2})}))); if (BROWSERP) window.__ = a[-1] } }
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
-E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[ι.length-1]===''? ι.slice(1,-1) : ι).join('\n')}
+E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι => ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι => ι.slice(t)); ↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n')}
 if (!BROWSERP) E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
+E.busywait = λ(ι){♎←; for(hr←hrtime(); (♎=hrtime(hr)) < ι; ι-♎ > 0.03 && shᵥ`sleep ${ι-♎-0.02}`);}
 E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
-E.rand = λ(a,b){switch(arguments.length){default: throw '‽'; case 0: ↩ Math.random(); case 1: ↩ typeof(a)==='number'? rand()*a |0 : _.sample(a); case 2: ↩ rand(b-a)+a |0}}
+E.rand = λ(a,b){switch(arguments.length){default: ‽; case 0: ↩ Math.random(); case 1: ↩ typeof(a)==='number'? rand()*a |0 : _.sample(a); case 2: ↩ rand(b-a)+a |0}}
 E.fs_ipc = {
 	emit: λ(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
 	on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
 		t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
-		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdout(); try {cbₐ(t); end(r())} catch(e){end(r()+''+(e.stack||e)+"\n")}
+		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
 		}).listen(port)},
 	}
 P(()=>({
@@ -144,6 +147,7 @@ P(()=>({
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @)},
 'Object.prototype._':{get(){↩ _(@)}},
 '(Buffer|Array|String).prototype.partition':λ(L){↩ _.range(0,@.length,L).map(i => @.slice(i,i+L))},
+'Set.prototype.filter!':λ(f){ @.forEach(ι => f(ι) || @.delete(ι)) },
 'Function.prototype.in':λ(time){↩ !time || time <= 0? setImmediate(@) : setTimeout(@,time*1000)},
 'Function.prototype.every':λ(time){↩ setInterval(@,time*1000)},
 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
@@ -181,6 +185,8 @@ P(()=>({
 'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
 'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.length,'YYYY-MM-DDTHH:mm:ss'.length)}},
 }))
+hash ← JSON.stringify.X
+_.mixin({difference_eq:λ(ι,…a){ t ← ι._.groupBy(hash); a.forEach(ι => ι.forEach(ι => delete t[hash(ι)])); ↩ t._.values()._.flatten(true) }})
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
@@ -272,7 +278,9 @@ P(()=>({ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} }))
 // --- metaprogramming → runtime macros built on top of template literals --- //
 ts ← ι => typeof(ι)==='string'
 is_template ← λ(ss,ιs){↩ Array.isArray(ss) && ss.length-1 === ιs.length}
-simple_template ← λ(ss,ιs){is_template(ss,ιs) || (λ(){throw Error()})()
+// shᵥ`command ${a} ${b}`
+// shᵥ`command …${args.map(ι => sh`${ι}`).join(' ')}`
+simple_template ← λ(ss,ιs){is_template(ss,ιs) || ‽
 	ι ← _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')
 	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){t←; ι[i+1] = (t=ι[i+1].raw, t===null||t===undefined||t===false||t===''? '' : t+''); i++; ↩ ''})
 	↩ ι}
@@ -306,7 +314,7 @@ E.sh = λ(ss,…ιs){ENC ← ι => "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ si
 if (!BROWSERP) E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
-	show: ι => typeof(ι)==='number'? ι+'' : typeof(ι)==='string'? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : (λ(){throw Error()})(),
+	show: ι => typeof(ι)==='number'? ι+'' : typeof(ι)==='string'? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : ‽,
 	}
 E.osa = λ(ss,…ιs){t←;
 	ι ← simple_template(ss,ιs)
@@ -340,19 +348,18 @@ if (!BROWSERP) def(E,'φ',λ(){
 		ensure_exists(ι,ifdne); Lc ← new Φ(ι).size
 		fd ← fs.openSync(ι,'r+'); f({
 			get L(){↩ Lc},
-			read(i,L){t ← Buffer(L); fs.readSync(fd,t,0,L,i) === L || (λ(){throw Error('‽')})(); ↩ t},
+			read(i,L){t ← Buffer(L); fs.readSync(fd,t,0,L,i) === L || ‽; ↩ t},
 			write(ι,i){L ← fs.writeSync(fd,ι,i); Lc = max(Lc, L+i)},
 			truncate(L){fs.ftruncateSync(fd,L); Lc = min(Lc,L)},
 			indexOf_skipping(from,to,step,find,skip){fl←@
 				if (from<0) from += fl.L; if (to<0) to += fl.L; from = min(max(0, from ),fl.L-1); to = min(max(-1, to ),fl.L)
-				if (!(step===-1 && from>to)) throw Error('TODO')
+				if (!(step===-1 && from>to)) ‽('TODO')
 				d ← fl.read(to+1,from-to)
 				for(i←from;i>to;i+=step) {if (d[i-(to+1)]===find) ↩ i; else if (String.fromCharCode(d[i-(to+1)]).match(skip)); else ↩ null}
 				},
 			}); fs.closeSync(fd)}
 	globmatch ← λ(glob,ι){↩ re_(['^',…glob._.map(ι => ι==='*'? '.*' : {raw:ι}),'$']).λ(ι)}
-
-	def(φ,'cwd',{get(){↩ new Φ(process.cwd())}, set(ι){process.chdir(φ(ι+'')._ι)}})
+	def(φ,'cwd',{get(){↩ new Φ(process.cwd()) }, set(ι){ t ← φ(ι+'')._ι; mkdir_p(t); process.chdir(t) }})
 
 	normHs ← λ(ι){if (ι._.isEqual(['~'])) ↩ [process.env.HOME]; ts(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)); ↩ ι}
 	λ Φ(ι){@._ι = ι}; Φ.prototype = {
@@ -367,14 +374,14 @@ if (!BROWSERP) def(E,'φ',λ(){
 		get is_dir(){try{↩ fs.statSync(@._ι).isDirectory()} catch(e){↩ false}},
 		get name(){↩ path.basename(@._ι)},
 		BAD_exists(){↩ existsSync(@._ι)},
-		root(x){switch(arguments.length){default: throw Error()
+		root(x){switch(arguments.length){default: ‽
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
-			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : (λ(){throw Error('not yet implemented: nonstandard roots')})() )
+			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
 			}},
 
 		// get ι(){↩},
 		set ι(ι){
-			if (@.is_dir) throw Error('TODO')
+			if (@.is_dir) ‽('TODO')
 			if (ι == null) {try{fs.unlinkSync(@._ι)} catch(e){}; ↩}
 			e ← path.extname(@._ι)
 			if (e==='.csv') {@.csv = ι; ↩}
@@ -396,13 +403,13 @@ if (!BROWSERP) def(E,'φ',λ(){
 				↩ {
 					map(…a){↩ d.map(…a)},
 					} }
-			else throw Error('TODO')
+			else ‽('TODO')
 			}},
 		set lines(ι){write_file(@._ι, ι.join('\n')+'\n')},
 		get json(){↩ JSON.parse(read_file(@._ι) || 'null')},
 		set json(ι){write_file(@._ι, JSON.stringify(ι,null,'  '))},
 		get json2(){ι ← @.json; (λ Λ(ι,k,o){if (ι.type==='Buffer') {
-			o[k] = 'data' in ι || 'utf8' in ι? Buffer(ι.data||ι.utf8) : 'base64' in ι? Buffer(ι.base64,'base64') : (λ(){throw Error('‽')})()
+			o[k] = 'data' in ι || 'utf8' in ι? Buffer(ι.data||ι.utf8) : 'base64' in ι? Buffer(ι.base64,'base64') : ‽
 			} else if (typeof(ι)==='object') _(ι).forEach(Λ)})(ι); ↩ ι},
 		set json2(ι){
 			@.text = JSON_pretty(ι,λ(ι){t←;
@@ -413,15 +420,15 @@ if (!BROWSERP) def(E,'φ',λ(){
 		// get csv(){↩},
 		set csv(ι){t ← φ`/tmp/csv_${rand().toString(36).slice(2)}`; t.json = ι; shᵥ`ζ -e ${`npm('csv@0.4.6').stringify(φ(${JSON.stringify(t+'')}).json,λ(e,ι){φ(${JSON.stringify(@.root('/')+'')}).buf = ι})`}`},
 		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
-			if (ιs.length) throw Error('TODO')
+			if (ιs.length) ‽('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')
 			↩ {
 			get length(){↩ d.length},
 			push(…a){a.map(λ(ι){
 				d.push(ι)
 				open(_ι,'[]',λ(fl){
-					i ← fl.indexOf_skipping(-1,-1e4,-1,']'.charCodeAt(0),/[ \n\t]/) || (λ(){throw Error('bad file')})()
-					is_0 ← fl.indexOf_skipping(i-1,-1e4,-1,'['.charCodeAt(0),/[ \n\t]/)!==null
+					i ← fl.indexOf_skipping(-1,-1e4,-1,']'.charCodeAt(),/[ \n\t]/) || ‽('bad file')
+					is_0 ← fl.indexOf_skipping(i-1,-1e4,-1,'['.charCodeAt(),/[ \n\t]/)!==null
 					fl.write((is_0?'':',')+JSON.stringify(ι,null,'  ')+']',i)
 					})
 				})},
@@ -435,13 +442,13 @@ if (!BROWSERP) def(E,'φ',λ(){
 		}
 	λ φ(ss,…ιs){
 		head ← @ instanceof Φ && @._ι
-		if (@ instanceof Φs) throw Error('not yet implemented')
+		if (@ instanceof Φs) ‽('not yet implemented')
 		tmpl ← is_template(ss,ιs)
 		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) {
-			if (ι.length > 1) throw Error('not yet implemented * ** ${}'+util.inspect(ι))
+			if (ι.length > 1) ‽('not yet implemented * ** ${}'+util.inspect(ι))
 			ι = normHs(ι)
 			ι = ι[0]
-			if (ι.includes('**')) throw Error('not yet implemented ** ${}'+util.inspect(ι))
+			if (ι.includes('**')) ‽('not yet implemented ** ${}'+util.inspect(ι))
 			r ← ['.']
 			if (ι[0]==='/') r = ['/']
 			ι.split('/').forEach(λ(ι){
@@ -453,20 +460,15 @@ if (!BROWSERP) def(E,'φ',λ(){
 					})
 				})
 			↩ new Φs(r) } }
-		else {ι ← ss; if (ιs.length || Array.isArray(ι)) throw Error('not yet implemented'); if (ι instanceof Φs) throw Error('not yet implemented')}
+		else {ι ← ss; if (ιs.length || Array.isArray(ι)) ‽('not yet implemented'); if (ι instanceof Φs) ‽('not yet implemented')}
 		if (tmpl){ι = normHs(ι).map(ι => !ts(ι)? ENC(ι.raw+'') : ι).join('')}
 		else if (ι instanceof Φ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
 		else {ι = (ι+'').replace(/^~(?=\/|$)/,process.env.HOME)}
-		↩ new Φ(path.normalize(head? head+'/'+ι : ι).replace(/\/$/,'')) }
+		↩ new Φ(path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
 	↩ φ})
 
-// ---------------------- finish local metaprogramming ---------------------- //
-prop_assign(E,global)
-patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly?
-module.exports = λ(to){patched.has(to) || (cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
-
-// -------------------------------- call main ------------------------------- //
-if (!module.parent) (λ(){t←;
+// ---------------------------------- main ---------------------------------- //
+E.ζ_main = λ(){t←;
 	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι+''))}
 	read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}	
 	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([^]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
@@ -476,8 +478,8 @@ if (!module.parent) (λ(){t←;
 	argv ← process.argv.slice(2); arg ← minimist(argv,{boolean:['c','v'],alias:{version:'v',print:'p',eval:'e',compile:'c',output:'o'}})
 	if (arg.v){ process.stdout.write(φ(__dirname).φ`package.json`.ι.version+'\n') }
 	else if (arg.c){
-		if (!arg.o) throw Error('TODO'); arg._.map(λ(ι){ if (φ(ι).is_dir) throw Error('TODO') })
-		arg._.map(λ(ι){ φ(arg.o+'/'+(t=φ(ι).root('.')+'', t.re`^\.\./` && λ(){throw Error()}(), t).replace(/\.ζ$/,'')+'.js').buf = ζ_compile_file(φ(ι).text) })
+		if (!arg.o) ‽('TODO'); arg._.map(λ(ι){ if (φ(ι).is_dir) ‽('TODO') })
+		arg._.map(λ(ι){ φ(arg.o+'/'+(t=φ(ι).root('.')+'', t.re`^\.\./` && ‽, t).replace(/\.ζ$/,'')+'.js').buf = ζ_compile_file(φ(ι).text) })
 		}
 	else if (arg.p || arg.e){
 		process.argv = ['ζ','<eval>',…argv]
@@ -488,9 +490,9 @@ if (!module.parent) (λ(){t←;
 		process.argv = ['ζ','<eval>',…argv]
 		global.i = 0
 		ι ← JSON.parse(arg.pa).map(λ(ι){
-			r ← hook_stdout()
+			r ← hook_stdouterr()
 			t←; e←; (λ __special_es__u7h7zxgvi__(){try {t = evalζ(ι)} catch (e_) {e = e_}})()
-			r = [r()]
+			r = r(); r = [(r[0]? r[0]+'\n' : '')+r[1]]
 			t !== undefined && r.push(t+'')
 			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[^]*/,'\n    at <eval>') : '<error> '+e)
 			↩ r.join('')})
@@ -498,7 +500,15 @@ if (!module.parent) (λ(){t←;
 		}
 	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; global.rl = ζ_repl_start() }
 	else {                      process.argv = ['ζ',…arg._]; Module._load(φ(arg._[0]).root('/')+'', null, true) }
-	})()
+	}
+
+// ---------------------- finish local metaprogramming ---------------------- //
+prop_assign(E,global)
+patched ← new WeakSet().add(global) //! should actually use Symbols to cross realms correctly?
+module.exports = λ(to){patched.has(to) || (cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), prop_assign(E,to), patches.forEach(ι => ι(to)))}
+
+// -------------------------------- call main ------------------------------- //
+if (!module.parent) E.ζ_main()
 
 // ------------------ really important remaining work for φ ----------------- //
 /*

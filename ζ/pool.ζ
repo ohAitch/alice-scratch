@@ -1,0 +1,71 @@
+#!/usr/bin/env ζ
+cluster ← require('cluster')
+
+// ---------------------------- stdlib copypasted --------------------------- //
+existsSync ← λ(ι){ try{fs.accessSync(ι); ↩ true} catch(e){↩ false} }
+
+// ----------------------------------- lib ---------------------------------- //
+start_watcher ← λ(fl,cbₐ){fl+=''; existsSync(fl) || fs.appendFileSync(fl,''); ↩ fs.watch(fl,{persistent:true},λ(ev,fl){ ev==='change' && cbₐ() }) }
+eval_in_new_worker ← λ(code){
+	//! ignores several important events https://nodejs.org/api/cluster.html
+	t ← process.pid+'_'+rand().toString(36).slice(2)
+	process.argv[1] = t
+	φ.cwd = '/tmp/cluster_worker'
+	φ.cwd.φ`${t}.js`.ι = 'require("/usr/local/lib/node_modules/zeta-lang")(global);'+code
+	↩ cluster.fork() }
+eval_in_worker ← (λ(){
+	busy ← new Set(); free ← new Set()
+	make ← λ(){
+		r ← eval_in_new_worker('('+λ(){
+			persist_id←;
+			process.on('message',λ(ι){if(ι[0]==='eval'){ clearInterval(persist_id); (0,eval)(ι[1]) }})
+			process.on('beforeExit',λ(){ process.send('unbusy'); persist_id ← (λ(){}).every(1e6) })
+			}+')()')
+		r.on('message',λ(ι){if(ι==='unbusy'){ busy.delete(r); free.add(r) }})
+		r.birth_time = Time().i
+		↩ r}
+	cleanup ← λ(){
+		busy['filter!'](ι => ι.isConnected()); free['filter!'](ι => ι.isConnected())
+		a ← free._.sortBy(ι => -ι.birth_time)
+		while (a.length > 20 && a[-1].birth_time < Time().i -   10*60){ t ← a.pop(); free.delete(t); t.kill() }
+		while (a.length >  1 && a[-1].birth_time < Time().i - 1*60*60){ t ← a.pop(); free.delete(t); t.kill() }
+		if (!free.size) free.add(make())
+		}
+	cleanup()
+	↩ λ(code){ t ← free.values().next().value; free.delete(t); busy.add(t); t.send(['eval',code]); cleanup() }
+	})()
+
+// ---------------------------------- main ---------------------------------- //
+do_job ← λ(pid){eval_in_worker('pid ← '+pid+'; ('+λ(){
+	printf_inverse ← ι => ι.replace(/[\0\n\r\\%]/g, ι => ({'\0':'\\0','\n':'\\n','\r':'\\r','\\':'\\\\','%':'%%'}[ι])) // stdlib
+	tmp ← φ(process.env.DIR).φ`${pid}_`
+	stdin ← φ(tmp+'in').buf
+	argv ← φ(tmp+'argv').text.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩"))
+	process.argv = […process.argv.slice(0,2),…argv]
+	global.ι = stdin
+	r ← hook_stdouterr(); status ← 0
+	try{ ζ_main(); r=r() }catch(e){ r=r(); r[1] += '\n'+(e.stack || e); status = 1 }
+	// process.on('beforeExit',λ(status){
+	// 	... finish w/ status ...
+	// })
+	// process.on('exit',λ(status){
+	// 	... finish w/ status ...
+	// })
+	r[0] && (φ(tmp+'out').text = printf_inverse(r[0]))
+	r[1] && (φ(tmp+'err').text = printf_inverse(r[1]))
+	status && (φ(tmp+'status').text = status)
+	process.kill(pid,'SIGCONT') // wake
+	}+')()') }
+
+fs.mkdirSync(process.env.DIR)
+queue ← φ(process.env.DIR).φ`queue`
+;(λ Λ(){
+	w_id ← start_watcher(queue,_.once(λ(){t←;
+		while (!queue.text.trim()) busywait(t= !t? 0.0001 : t*1.5)
+		fd ← fs.openSync(queue+'','a+')
+		fs.unlinkSync(queue+'')
+		L ← fs.fstatSync(fd).size; t ← Buffer(L); fs.readSync(fd,t,0,L,0) === L || ‽; fs.closeSync(fd)
+		;(t+'').trim().split('\n').map(ι => parseInt(ι)).map(do_job)
+		w_id.close(); Λ() }))
+	φ(process.env.DIR).φ`.ready`.ι = ''	
+	})()

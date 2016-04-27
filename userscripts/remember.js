@@ -2,6 +2,27 @@
 // @require     https://code.jquery.com/jquery-2.1.4.min.js
 // @require     file:///~/ali/scratch/remember.txt.js
 
+// this line should not be in this file but w/e
+if (location.host==='hangouts.google.com'){ var f = ()=>{ $('.g-Ue-v0h5Oe, .g-Qx-eb').remove() }; f(); setInterval(f,0.5*1e3) }
+if (location.host==='hangouts.google.com'){
+	var dl_data = (ι,name) => {
+		var t = document.createElement('a')
+		t.href = 'data:application/octet-stream,'+ι
+		t.target = '_blank'
+		t.download = name
+		t.click()
+		}
+	var recent_data = ()=> $('iframe').toArray().filter(ι => /^gtn_/.test($(ι).attr('id'))).map(ι=>{ var t = $(ι).contents().find('.Mu.SP'); return t.find('.lWfe2d').text().includes('\x61\x72\x69\x6e\x61\x2e\x73\x68\x61\x6c\x75\x6e\x6f\x76\x61@gmail.com') && t.toArray().map(ι => $(ι).html()) }).filter(ι=>ι)[0]
+	var update = ι=>{
+		var t = localStorage.getItem('νlog'); t = t==null? [] : JSON.parse(t); t = new Set(t); ι.forEach(ι => t.add(ι)); var r = JSON.stringify([...t]); localStorage.setItem('νlog',r)
+		console.log('updating nlog. new size:',r.length)
+		if (r.length > 3e6) alert('nlogdl()')
+		}
+	window.nlogdl = ()=>{ dl_data(localStorage.getItem('νlog'), 'nlog '+new Date().toISOString()+'.json') }
+
+	var t = ()=>{ var t = recent_data(); if (t) update(t) }; t(); setInterval(t, 10*1e3)
+}
+
 var $in = 'input[title="Search"]'
 
 if ($('#searchform').length && $($in).length) {
