@@ -13,9 +13,9 @@ this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ -p
 clear(){ /usr/bin/clear && printf '\e[3J'; } # sublime open terminal
 
 ################################ not interactive ###############################
-beep(){ (afplay "$__dirname/$([[ $1 = 1 ]] && echo "fail.wav" || echo "done.wav")" &); }
-ack(){ (afplay "$__dirname/ack.wav" &); }
-nack(){ (afplay "$__dirname/nack.wav" &); }
+beep(){ ( afplay "$__dirname/$([[ $1 = 1 ]] && echo "fail.wav" || echo "done.wav")" &); }
+ack(){ ( afplay "$__dirname/ack.wav" &); }
+nack(){ ( afplay "$__dirname/nack.wav" &); }
 
 ################################## .keyrc only #################################
 ](){ λ 'ι = ι.join(" "); 
