@@ -113,7 +113,7 @@ mega_table ← {
 	if (context.length) {context = []; print("(assuming non-sequitur)")}
 
 	sublime_open(fs('~/ali/scratch/planspad').path)
-	setTimeout(λ(){ sublime_eval("import re\nt = view.substr(sublime.Region(0,view.size()))\nt = re.search(r'---+ percolation ---+[\\s\\S]*?---+ ready ---+[\\s\\S]*?(\\n)\\n*---+ queue ---+[\\s\\S]*?(\\n[ \\t]+)(.+)',t)\nview.run_command('exec_edit',{'v':'view.erase(edit,sublime.Region('+repr(t.start(2))+','+repr(t.end(3))+'))\\nview.insert(edit,'+repr(t.end(1))+','+repr(t.group(3)+'\\n')+')'})") },500)
+	setTimeout(λ(){ sublime_eval("import re\nt = view.substr(sublime.Region(0,view.size()))\nt = re.search(r'---+ percolation ---+[\\s\\S]*?---+ ready ---+[\\s\\S]*?(\\n)\\n*---+ queue ---+[\\s\\S]*?(\\n[ \\t]+)(.+)',t)\nview.run_command('exec_edit',{'v':'view.erase(edit,sublime.Region('+repr(t.start(2))+','+repr(t.end(3))+'))\\nview.insert(edit,'+repr(t.end(1))+','+repr(t.group(3)+'\\n')+')'})") },0.5*1e3)
 	print("i've updated your queue.")
 
 	inquire(mega_table.INQ_3,sen,'proposed: go to sleep log',"-> sleep log now?")
@@ -123,7 +123,7 @@ mega_table ← {
 	v ← ctx_pop()
 	if (v.v) {
 		sublime_open(fs('~/ali/scratch/records.txt').path)
-		setTimeout(λ(){ sublime_eval('view.show(view.size())\nview.sel().clear()\nview.sel().add(sublime.Region(view.size()))') },500)
+		setTimeout(λ(){ sublime_eval('view.show(view.size())\nview.sel().clear()\nview.sel().add(sublime.Region(view.size()))') },0.5*1e3)
 		print('done :)')
 	} else {
 		print('alright. do it sometime today, though!')

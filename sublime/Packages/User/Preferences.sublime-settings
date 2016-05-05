@@ -6,7 +6,7 @@
 	"caret_extra_top": 0,
 	"caret_extra_width": 0,
 	"caret_style": "phase",
-	"close_windows_when_empty": true,
+	"close_windows_when_empty": false,
 	"color_scheme": "Packages/User/Alice Dark.tmTheme",
 	"default_line_ending": "unix",
 	"enable_tab_scrolling": false,

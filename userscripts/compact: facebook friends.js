@@ -8,7 +8,7 @@ if ($('#pagelet_timeline_medley_friends').length) {
 var load_friends = cb => {(function load_friends(){
 	if ($('.FriendButton').length < parseInt($('[data-tab-key="friends"] ._gs6').text())) {
 		window.scrollBy(0,1e9)
-		var t = $('.FriendButton').length; (function Λ(){if ($('.FriendButton').length !== t) load_friends(); else setTimeout(Λ,1000*0.01)})()
+		var t = $('.FriendButton').length; (function Λ(){if ($('.FriendButton').length !== t) load_friends(); else setTimeout(Λ,0.01*1e3)})()
 		} else cb&&cb() })() }
 
 $('body').append('<button id="load_friends" style="z-index:1000; position:fixed; top:3px; left:22px;">load all</button>')

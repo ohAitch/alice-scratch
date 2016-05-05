@@ -38,6 +38,6 @@ setInterval(catch_(()=>{
 		var pg = t? dict_or({'PA':'','PP':'.f','PR':'.p'},t[1])+pad0(t[2]) : my_encode(h)
 		var t = my_encode(title)+' - '+pg+'.png.64'; dl_cache(t) || (dl_cache(t,1), dl_data(img_to_data(ι), t))
 		})
-	}), 50)
+	}), 0.05*1e3)
 
-},1000)
+},1*1e3)

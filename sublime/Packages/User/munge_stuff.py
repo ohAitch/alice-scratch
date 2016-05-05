@@ -62,7 +62,7 @@ def expand_empty_region_to_whole_buffer(view,regions): return [Region(0,view.siz
 
 def open(ι,app=None,focus=True,view=None):
 	print("#OPEN",ι,'∈',app)
-	if not focus: subprocess.call(['bash','-ci','ack'])
+	if not focus: subprocess.call(['bash','-ci','sfx ack'])
 
 	if app is None and re.match(r'^file:',ι):
 		t = re.sub(r'^file:(//)?','',ι)
@@ -80,7 +80,7 @@ def open(ι,app=None,focus=True,view=None):
 		else: app = "Sublime Text"
 
 	if app is "Terminal":
-		subprocess.Popen(['bash','-ci','ack'])
+		subprocess.Popen(['bash','-ci','sfx ack'])
 		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
 		var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]

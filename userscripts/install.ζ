@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 arg ← {ι: process.argv[2]}
 
-diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})}
+diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 
 gen ← λ(ι){name←;
 	t ← multiline(λ(){/*
@@ -15,7 +15,7 @@ gen ← λ(ι){name←;
 		.replace('NAME',name=require('path').basename(ι,'.js'))
 		.replace('REST',φ(ι).text.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
 		.replace('FILE',φ(ι).url)
-	p(t); shᵥ`bash -ci ack`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
+	p(t); shᵥ`bash -ci 'sfx ack'`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
 
 	// user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
 	// φ(user_js).set(t)

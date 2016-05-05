@@ -1,21 +1,21 @@
-__dirname="$(dirname $(/usr/local/bin/realpath "${BASH_SOURCE[0]}"))"
+[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || export PATH="/usr/local/bin:$PATH"
+[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || export PATH="./node_modules/.bin:$PATH:."
+__dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 #################################### private ###################################
-λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\\\\\}"; printf -- "${v//↩/\\␣}↩"; done | ζ -e 'ι = ι.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
-home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && echo "~${1:${#HOME}}" || echo "$1"; } # should instead be a function that compresses all of the standard symlinks
-_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && echo "$1" || echo "https://www.google.com/search?q=$(echo "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
+λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\\\\\}"; printf %s "${v//↩/\\␣}↩"; done | ζ -e 'ι = ι.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
+home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
+_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(printf %s "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
 _alert(){ λ ' osaᵥ`system events: display alert ${ι[0]} …${ι[1] && osa`message ${ι[1]}`} …${ι[2] && osa`giving up after ${ι[2]}`}` ' "$@"; }
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
-# _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; echo "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-set_term_title(){ printf "\033]0;%s\007" "$1"; } # this_term_is_frontmost
+# _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
+set_term_title(){ printf %s "\033]0;%s\007" "$1"; } # this_term_is_frontmost
 this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ -p 'osaᵥ`terminal: frontmost of (windows whose custom title = "'$t'")`[0]')"; set_term_title ''; [[ $r = true ]]; } # x
-clear(){ /usr/bin/clear && printf '\e[3J'; } # sublime open terminal
+clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # sublime open terminal
 
 ################################ not interactive ###############################
-beep(){ ( afplay "$__dirname/$([[ $1 = 1 ]] && echo "fail.wav" || echo "done.wav")" &); }
-ack(){ ( afplay "$__dirname/ack.wav" &); }
-nack(){ ( afplay "$__dirname/nack.wav" &); }
+sfx(){ ( afplay "$__dirname/$1.wav" &); }
 
 ################################## .keyrc only #################################
 ](){ λ 'ι = ι.join(" "); 
@@ -27,7 +27,7 @@ nack(){ ( afplay "$__dirname/nack.wav" &); }
 		).join("\n")
 	osaᵥ`system events: …${ι}`
 	' "$@"; }
-_in_new_terminal(){ echo "{ $1; } &>/dev/null; exit" > /tmp/__·; osascript -e 'tell app "terminal" to do script "·"'; }
+_in_new_terminal(){ λ '    φ`/tmp/__·`.text = "{ "+ι[0]+"; } &>/dev/null; exit"; osaᵥ`terminal: do script "·"`    ' "$1"; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
@@ -37,9 +37,7 @@ _bright(){ ζ -e 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5?
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
 
 ############################ interactive & external ############################
-export PATH="./node_modules/.bin:/usr/local/bin:$HOME/ali/github/scratch:$PATH:."
-date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-x(){ local E=$?; this_term_is_frontmost || { [[ $E != 0 ]] && ζ -e 'osaᵥ`terminal: activate`'; beep $E; }; [[ $E = 0 ]] && exit; return $E; }
+x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || { sfx fail; ζ -e 'osaᵥ`terminal: activate`'; }; }; [[ $E = 0 ]] && exit; return $E; }
 ↩(){
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
@@ -50,20 +48,20 @@ x(){ local E=$?; this_term_is_frontmost || { [[ $E != 0 ]] && ζ -e 'osaᵥ`term
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
-dgrey='\[\e[1;30m\]'; red='\[\e[31m\]'; green='\[\e[32m\]'; purple='\[\e[35m\]'; reset='\[\e[0m\]'; goX(){ printf '\[\e['$1'G\]'; }
-export PROMPT_COMMAND='    lx=$?; hash -r; if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi    '; last_dir=~
-export PS1='=== $(
-	[[ $lx = 0 ]] || printf '"$red$(goX 1)"'"$([[ $lx = 1 ]] && printf === || printf $lx" ")"'"$(goX 5)"'
-	printf '"$green"'"$(home_link "$PWD")$([ -z "$PWF" ] || printf /'"$purple"'"$PWF")"'"$reset"'
-	)'"$(goX 78)"'===\n$(
-		[[ $do_ls = 1 ]] && { CLICOLOR_FORCE=1 ls -AGC; echo -e "\n"; }
-		)'"$dgrey"'>'"$reset"' ' # oh, the problem with ls is that it's in a subshell and being made a string, which is slow
+dgrey='\e[1;30m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
+export PROMPT_COMMAND='    lx=$?;    _PC_t    '; last_dir=~; _PC_t(){
+	hash -r
+	if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi
+	printf %s '=== '; [[ $lx = 0 ]] || { printf %s "$red"; goX 1; [[ $lx = 1 ]] && printf %s === || printf %s "$lx "; goX 5; }
+	printf %s "$green"; home_link "$PWD"; [ -z "$PWF" ] || printf %s "/$purple$PWF"; printf %s "$reset"; goX 78; printf %s ===
+	[[ $do_ls = 1 ]] && CLICOLOR_FORCE=1 ls -AGC; }
+export PS1='\['"$dgrey"'\]>\['"$reset"'\] '
 alias -- -='cd ~-'
 chx(){ chmod +x "$1"; }
 64e(){ base64; }
 64d(){ base64 -D; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then printf 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then printf %s 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 ll(){ ls -AGl "$@"; }
 la(){ ls -AG "$@"; }
 f(){ open -a 'Path Finder' "${1:-.}"; osascript -e 'tell app "path finder" to activate'; }
@@ -115,8 +113,11 @@ d(){ λ '♈ ← ι[0] || "."
 	sum ← 0
 	♓ ← (ι,fl) => cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
 	fs.readdirSync(♈).map(λ(fl){
-		o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${♈}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
-		b ← +(t+"").re`^\d+`[0] * 1024; sum += b; ♓(b,fl) })
+		if (φ(fl).is_dir){
+			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${♈}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
+			b ← +(t+"").re`^\d+`[0] * 1024 }
+		else b ← φ(fl).size
+		sum += b; ♓(b,fl) })
 	♓(sum,♈)
 	' "$@"; }
 comic_rotate(){
@@ -130,16 +131,16 @@ nlog(){ f ~/ali/history/text\ logs/nihil/; }
 nlog₋₁(){ ql "$(ζ -p 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
 nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/history/text\ logs/nihil/; }
 ##############################
-dl_fix(){ f ~/Downloads; f ~/pg; λ '
-	fs ← require("fs")
-	from ← process.env.HOME+"/Downloads"
-	out ← process.env.HOME+"/pg"
-	fix ← ι => ι
-		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
-	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
-	'; }
+# dl_fix(){ f ~/Downloads; f ~/pg; λ '
+# 	fs ← require("fs")
+# 	from ← process.env.HOME+"/Downloads"
+# 	out ← process.env.HOME+"/pg"
+# 	fix ← ι => ι
+# 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
+# 	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+# 	'; }
 email(){ λ '
-	shᵥ`bash -ci ack`
+	shᵥ`bash -ci "sfx ack"`
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
 		.map(ι => osaᵥ`chrome: open location ${ι}`)
 	osaᵥ`chrome: activate`
@@ -161,20 +162,24 @@ bookmarks(){ λ '
 			JSON.stringify(ι)})(ι); sb(t)
 	' "${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"; }
 alias kp=keypresses; keypresses(){ λ '
-	diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){f(key) === -1 && process.stdin.pause()})}
+	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█".split("")].join("-".repeat(9))
 	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
 	'; }
 
 ############################# system configuration #############################
 # -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
-# # for v in /* ~/* ~/Library/LaunchAgents/*; do [ -h "$v" ] && printf "$v"$'\t'; readlink "$v"; done
+# -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
+
+# # for v in /* ~/* ~/Library/LaunchAgents/*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
 # ln -sf ~/ali/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/ali/books ~
 # ln -sf ~/books/\#papers ~/papers
 # ln -sf ~/books/#misc/page_cache ~/pg
 # ln -sf ~/ali/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
-# -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
+# ln -sf ~/Library/Spelling/LocalDictionary ~/Library/'Application Support/Sublime Text 3'/Local ~/Library/'Application Support'/Google/Chrome/Default/Bookmarks ~/ali/notes/#auto
+# for v in ~/ali/github/scratch/*; do [ -f "$v" ] && [ -x "$v" ] && ln -sf "$v" /usr/local/bin; done
+
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 # defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
 

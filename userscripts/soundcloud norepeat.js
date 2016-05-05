@@ -3,4 +3,4 @@
 
 // var t = setInterval(function(){
 // 	if (!$('.heroPlayButton-pause').length && $('.playControl.playing').length) {$('.playControl').click(); clearInterval(t)}
-// 	}, 100)
+// 	}, 0.1*1e3)

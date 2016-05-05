@@ -58,7 +58,7 @@ tesseract ← require('node-tesseract')
 
 ------------------------------------- dunno ------------------------------------
 $.on_view = function(f){document.addEventListener('visibilitychange',function(){if (!document.hidden) f()})}
-var poll = function(f,cb){var t; if (t=f()) cb(null,t); else setTimeout(poll,10,f,cb)}
+// E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(null,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
 $.css = function(v){$('head').append('<style>'+v+'</style>')}
 // @require     https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js
 
@@ -175,10 +175,6 @@ life ← λ(ι){
 
 ---------------------------------- bit_reverse ---------------------------------
 bit_reverse = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
-
---------------------------------- reify Errors ---------------------------------
-catch_ ← λ(f){↩ λ(){try {↩ f.apply(@,arguments)} catch (ι) {if (ι.__catchable) ↩ ι.__catchable; else throw ι}}}
-_return ← λ(ι){throw {__catchable:ι}}
 
 ----------------------------------- entities -----------------------------------
 entities_encode ← ι => ι.replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})

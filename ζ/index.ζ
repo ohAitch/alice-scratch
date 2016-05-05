@@ -22,7 +22,7 @@ P ← λ(_ι){r ← λ(G){ι ← _ι(); (_.isArray(ι)? ι : _(ι).pairs()).forE
 	}) }) }; r(global); patches.push(r)}
 
 // ------------------------------- local utils ------------------------------ //
-def ← λ(o,name,ι){
+def ← E.def = λ(o,name,ι){
 	if (typeof(ι)==='function') ι = lazy(name,ι)
 	'configurable' in ι || (ι.configurable = true)
 	'value' in ι?
@@ -58,12 +58,13 @@ if (!BROWSERP) E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv �
 			cn.log(APP,'done')
 			↩ require(cache+'/node_modules/'+ι) } }
 	else {
-		shᵥ`bash -ci ack`
+		shᵥ`bash -ci 'sfx ack'`
 		version = shᵥ`npm show ${ι} version`+''
 		process.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm('+util.inspect(ιv())+')'); process.stderr.write('\n')
 		} }
 E.ζ_compile = ζ_compile
 E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})}
+;[process,module,global].map(ι=> ι.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι => ι+':').join(', ')+'}' }) //⋈ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 E.ζ_repl_start = λ(){
 	global.In = []; global.Out = []
 	repl._builtinLibs = []
@@ -87,8 +88,12 @@ E.ζ_repl_start = λ(){
 		self.bufferedCommand = ''
 		if (!err && ret !== undefined) {
 			global.__ = ret
-			try {t ← Array.isArray(ret) && ret.length > 1 && ret.every(ι => ι===ret[0]) && _.range(ret.length).every(ι => ι in ret)? self.writer([ret[0]])+' * '+self.writer(ret.length) : self.writer(ret)}
-			catch(e){t ← '<repl inspect failed>:\n'+(e&&e.stack)}
+			try {
+				if (Array.isArray(ret) && ret.length > 1 && ret.every(ι => ι===ret[0]) && _.range(ret.length).every(ι => ι in ret))
+					t ← self.writer([ret[0]])+' * '+self.writer(ret.length)
+				else
+					t ← self.writer(ret)
+			}catch(e){t ← '<repl inspect failed>:\n'+(e&&e.stack)}
 			self.outputStream.write(t+'\n') }
 		self.displayPrompt()
 		})
@@ -99,7 +104,7 @@ E.ζ_repl_start = λ(){
 	↩ self}
 if (require.extensions) require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
 
-// ---------------------------- “with batteries” ---------------------------- //
+// ------------------------ should be in standard lib ----------------------- //
 memo_frp ← λ(names,within,f){
 	dir ← φ`~/.memo_frp`; names.map(ι => dir = dir.φ`${ι}`)
 	if (within){
@@ -117,6 +122,7 @@ genex_0 ← λ(ι){
 	↩ q(parse(ι)) }
 Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
 pretty_time_num ← ι => new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
+
 if (!BROWSERP) E.hook_stdouterr = λ(){
 	r ← ['stdout','stderr'].map(λ(stdio){
 		o ← process[stdio].write; r ← []; process[stdio].write = λ(ι){r.push(ι)}; ↩ λ(){process[stdio].write = o; ↩ r.join('')}
@@ -136,39 +142,34 @@ E.fs_ipc = {
 		end ← ι => res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
 		}).listen(port)},
 	}
+E.catch_ = f => λ(){try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e }}
+E._↩ = λ(ι){throw {__catchable:ι}}
+TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
 P(()=>({
 'RegExp.prototype.genex_0':λ(){↩ genex_0(@.source)},
-'Function.prototype.P':λ(…a1){ι←@; ↩ λ(…a2){↩ ι.apply(@, a1.concat(a2))}},
-'Function.prototype.X' :{get(){ι←@; ↩ λ(a  ){↩ ι.call(@,a  )}}},
-'Function.prototype.XX':{get(){ι←@; ↩ λ(a,b){↩ ι.call(@,a,b)}}},
 'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r},
 'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
 'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, // λ(f){↩ @.map(f)._.flatten(true)}
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @)},
 'Object.prototype._':{get(){↩ _(@)}},
-'(Buffer|Array|String).prototype.partition':λ(L){↩ _.range(0,@.length,L).map(i => @.slice(i,i+L))},
+'(Buffer|Array|String).prototype.partition':λ(L){↩ _.range(0,@.length,L).map(i => @.slice(i,i+L)) },
 'Set.prototype.filter!':λ(f){ @.forEach(ι => f(ι) || @.delete(ι)) },
-'Function.prototype.in':λ(time){↩ !time || time <= 0? setImmediate(@) : setTimeout(@,time*1000)},
-'Function.prototype.every':λ(time){↩ setInterval(@,time*1000)},
-'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
-	// https://github.com/Automattic/kue
-	// https://github.com/rschmukler/agenda
-	// robust to setTimeout taking extra time
-	//! not robust to the process failing ! should use redis or something instead !
-	qu ← new priorityqueuejs(λ(a,b){↩ b.time-a.time}); P←;
-	ensure ← λ(){if (P) ↩; P = true; (λ poll(){
-		t←; qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), poll()) : poll.in(0.1)
-		})() }
-	↩ λ(time){t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), {clear:λ(){}}) : (qu.enq(t), ensure(), {clear:λ(){t.ι = null}})} }),
+'Set.prototype.pop':λ(){ t ← @.values().next().value; @.delete(t); ↩ t },
+
+'Function.prototype.P':λ(…a1){ ι←@; ↩ λ(…a2){↩ ι.apply(@, a1.concat(a2)) } },
+'Function.prototype.X' :{get(){ ι←@; ↩ λ(a  ){↩ ι.call(@,a  ) } }},
+'Function.prototype.XX':{get(){ ι←@; ↩ λ(a,b){↩ ι.call(@,a,b) } }},
+'Function.prototype._1':{get(){↩ _.once(@) }},
+'Function.prototype.defer':λ(){↩ setImmediate(@) },
+'Function.prototype.in':λ(time){↩ setTimeout(@,max(0,time)*1e3) },
+'Function.prototype.every':λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); ↩ !(opt&&opt.leading)? r : new TimerCons(@.in(0),r) },
+
 'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})}, //! are you sure end doesn’t also pass any data?
 '(Array|String|Buffer).prototype.-0':{get(){}, set(ι){@.push(ι)}},
 '(Array|String|Buffer).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1]}, set(ι){@.length<1 || (@[@.length-1] = ι)}},
 '(Array|String|Buffer).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2]}, set(ι){@.length<2 || (@[@.length-2] = ι)}},
 '(Array|String|Buffer).prototype.-3':{get(){↩ @.length<3? undefined : @[@.length-3]}, set(ι){@.length<3 || (@[@.length-3] = ι)}},
 '(Array|String|Buffer).prototype.-4':{get(){↩ @.length<4? undefined : @[@.length-4]}, set(ι){@.length<4 || (@[@.length-4] = ι)}},
-// '(Buffer|Array|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i => @.slice(i,i+L))},
-// 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
-// 'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
 }))
 E.Time = λ(ι){r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(typeof(ι)==='number'? ι*1e3 : ι); r.toString = λ(){↩ util.inspect(@)}; ↩ r}
 fmt ← λ(a,b){t ← @.__local? moment(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString(); t = t.slice(a,b); if (!@.__local && b > 10) t += 'Z'; ↩ t}
@@ -185,8 +186,15 @@ P(()=>({
 'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
 'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.length,'YYYY-MM-DDTHH:mm:ss'.length)}},
 }))
-hash ← JSON.stringify.X
+hash ← λ(ι){t←;↩ JSON.stringify(Object.prototype.toString.call(ι)==='[object Object]'? (t={}, ι._.keys().sort().forEach(k => t[k]=ι[k]), t) : ι) }
 _.mixin({difference_eq:λ(ι,…a){ t ← ι._.groupBy(hash); a.forEach(ι => ι.forEach(ι => delete t[hash(ι)])); ↩ t._.values()._.flatten(true) }})
+t ← setImmediate(λ(){}); clearImmediate(t); if (typeof(t)==='object'){
+Immediate ← Object.getPrototypeOf(t)
+t ← setTimeout(λ(){},0); clearTimeout(t); Timeout ← Object.getPrototypeOf(t)
+Immediate.clear = λ(){ clearImmediate(@) }
+Timeout.clear = λ(){ @._repeat? clearInterval(@) : clearTimeout(@) }
+Immediate.ref = Immediate.unref = λ(){}
+}
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
@@ -278,11 +286,11 @@ P(()=>({ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} }))
 // --- metaprogramming → runtime macros built on top of template literals --- //
 ts ← ι => typeof(ι)==='string'
 is_template ← λ(ss,ιs){↩ Array.isArray(ss) && ss.length-1 === ιs.length}
-// shᵥ`command ${a} ${b}`
-// shᵥ`command …${args.map(ι => sh`${ι}`).join(' ')}`
-simple_template ← λ(ss,ιs){is_template(ss,ιs) || ‽
+simple_template ← λ(ss,ιs,root,join){
+	is_template(ss,ιs) || ‽
 	ι ← _.zip( ss.raw.map(ι => ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι => ι!=='')
-	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){t←; ι[i+1] = (t=ι[i+1].raw, t===null||t===undefined||t===false||t===''? '' : t+''); i++; ↩ ''})
+	stringify ← ι => ts(ι)? ι : ι===null||ι===undefined||ι===false? '' : !root? ι : Array.isArray(ι)? ι.map(ι=> root`${ι}`).join(join) : ι+''
+	for(i←0;i<ι.length-1;i++) if (ts(ι[i]) && !ts(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){ ι[i+1] = stringify(ι[i+1].raw); i++; ↩ '' })
 	↩ ι}
 E.JSON_pretty = λ(ι,replacer){
 	seen ← []
@@ -307,10 +315,10 @@ E.JSON_pretty = λ(ι,replacer){
 				} }
 	↩ show(ι)}
 
-E.re = λ(ss,…ιs){↩ re_(simple_template(ss,ιs))}
+E.re = λ(ss,…ιs){↩ re_(simple_template(ss,ιs,(…a)=>re(…a).source,''))}
 E.re_ = λ(ι){ENC ← ι => (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι => ι.raw? ENC(ι.raw) : ι).join(''),'u')}
 P(()=>({ 'String.prototype.re':{get(){↩ (ss,…ιs) => @.match(re(ss,…ιs))}} }))
-E.sh = λ(ss,…ιs){ENC ← ι => "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs).map(ι => ι.raw? ENC(ι.raw) : ι).join('')}
+E.sh = λ(ss,…ιs){ENC ← ι => "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs,sh,' ').map(ι => ι.raw? ENC(ι.raw) : ι).join('')}
 if (!BROWSERP) E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
 	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
@@ -444,7 +452,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 		head ← @ instanceof Φ && @._ι
 		if (@ instanceof Φs) ‽('not yet implemented')
 		tmpl ← is_template(ss,ιs)
-		if (tmpl){ι ← simple_template(ss,ιs); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) {
+		if (tmpl){ι ← simple_template(ss,ιs,φ,'/'); if (ι.filter(ts).join('').re`\*|\{[^}]*?,`) {
 			if (ι.length > 1) ‽('not yet implemented * ** ${}'+util.inspect(ι))
 			ι = normHs(ι)
 			ι = ι[0]
@@ -543,3 +551,18 @@ scratch/scratch.txt:107:φ`**`.map(ι => [ι+'',ι.get()])._.groupBy(1)._.values
 scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
 */
+// ---------------------------------- cruft --------------------------------- //
+// 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
+// 	// https://github.com/Automattic/kue
+// 	// https://github.com/rschmukler/agenda
+// 	// robust to setTimeout taking extra time
+// 	//! not robust to the process failing ! should use redis or something instead !
+// 	//! wth is up with the { hrtime() <-> time } comparison
+// 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
+// 	P←; ensure ← λ(){if (P) ↩; P = true; (λ Λ(){t←;
+// 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
+// 		})() }
+// 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
+// '(Buffer|Array|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i => @.slice(i,i+L))},
+// 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
+// 'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},
