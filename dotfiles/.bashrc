@@ -2,7 +2,7 @@
 [[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || export PATH="./node_modules/.bin:$PATH:."
 __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 #################################### private ###################################
-λ(){ local c="$1"; shift; for v; do v="${v//\\/\\\\\\\\}"; printf %s "${v//↩/\\␣}↩"; done | ζ -e 'ι = ι.split("↩").slice(0,-1).map(ι => ι.replace(/\\./g,ι => ι==="\\\\"? "\\" : "↩")); '"$c"; }
+λ(){ ζ -e 'ι = process.argv.slice(4);'"$@"; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
 _chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(printf %s "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
