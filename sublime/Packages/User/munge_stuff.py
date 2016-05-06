@@ -1,5 +1,3 @@
-# easy todo: replace --pa with a ζ_eval function or something like that
-
 # make use of the fact that urls can't contain newlines
 
 # “
@@ -21,15 +19,16 @@ import os, subprocess, re, urllib, json
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
 
-def ζ(cmd,ι,stdin=None):
-	# args = ['/usr/local/bin/ζ',cmd,ι]
-	args = ['/usr/local/bin/node','--harmony','--harmony_destructuring','--harmony_default_parameters','--harmony_reflect','--harmony_regexps','--harmony_proxies','--harmony_unicode_regexps','/usr/local/lib/node_modules/zeta-lang/index.js',cmd,ι]
-	if stdin:
-		t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-		t = t.communicate(bytes(stdin,'UTF-8'))
-		# ignore stderr
-		return t[0].decode('utf-8')
-	else: return subprocess.check_output(args).decode('utf-8')
+def ζ(*a):
+	# args = ['/usr/local/bin/ζ',*args]
+	args = ['/usr/local/bin/node','/usr/local/lib/node_modules/zeta-lang/bin/index.js']+list(a)
+	# if stdin:
+	# 	t = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+	# 	t = t.communicate(bytes(stdin,'UTF-8'))
+	# 	# ignore stderr
+	# 	return t[0].decode('utf-8')
+	# else:
+	return subprocess.check_output(args).decode('utf-8')
 
 def sh_encode(ι): return re.escape(ι)
 def osa_encode(ι): return '"'+re.sub(r'"',r'\\"',re.sub(r'\\',r'\\\\',ι))+'"'
@@ -80,13 +79,13 @@ def open(ι,app=None,focus=True,view=None):
 		else: app = "Sublime Text"
 
 	if app is "Terminal":
-		subprocess.Popen(['bash','-ci','sfx ack'])
-		ζ('-e',"""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
+		ζ("""focus ← """+json.dumps(focus)+"""; ι ← """+repr(ι)+"""; ids ← [2,3]._.indexBy()
+		sfx`ack`
 		var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 		unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
 		φ`/tmp/__·`.ι = sh`cd ${ι}`+(!unbusy? '; clear' : '')
 		osaᵥ`terminal: do script "·" …${unbusy? osa`in (window 1 whose id = ${unbusy})` : ''}; …${focus? 'activate' : ''}`
-		""")
+		;""")
 	else:
 		subprocess.call([ι for ι in ["open", app and "-a", app, not focus and "-g", ι] if ι])
 	if focus and app in ["Path Finder"]: os.system("osascript -e 'tell app "+osa_encode(app)+" to activate'") # workaround for bugs in those apps
@@ -97,7 +96,7 @@ class open_context(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,mouse=False):
 		view = self.view
 		if type == "github":
-			t = ζ('-e',"""
+			t = ζ("""
 				ι ← φ("""+repr(view.file_name() or '')+""").root('/')
 				root ← ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
 				if (root+'' !== '/') {
@@ -105,7 +104,7 @@ class open_context(sublime_plugin.TextCommand):
 					t ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
 					r ← encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι)
 					process.stdout.write(r) }
-				""")
+				;""")
 			if t:
 				h = ['L'+str(view.rowcol(ι)[0] + 1) for ι in [view.sel()[0].begin(), view.sel()[-1].end()]]
 				open(t+('' if h[0] == h[1] == 'L1' else '#'+(h[0] if h[0] == h[1] else h[0]+'-'+h[1])),focus=focus)
@@ -124,7 +123,16 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		sel = expand_empty_regions_to_lines(view, sel)
 		sel = left_trim_regions(view, sel)
 		ι = [view.substr(ι) for ι in sel]
-		r = json.loads(ζ('--pa',json.dumps(ι)))
+		r = json.loads(ζ("""
+			global.i = 0
+			ι ← JSON.parse(ι).map(λ(ι){
+				r ← hook_stdouterr()
+				t←; e←; (λ __special_es__u7h7zxgvi__(){try {global.code = ι; global.require = require; t = (0,eval)(ζ_compile(ι+''))} catch (e_) {e = e_}})()
+				r = r(); r = [(r[0]? r[0]+'\\n' : '')+r[1]]
+				t !== undefined && r.push(t+'')
+				e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e)
+				↩ r.join('')})
+			JSON.stringify(ι)""",json.dumps(ι)))
 		# if append:
 		# 	P = '-> '
 		# 	last = Region(sel[0].end(),sel[0].end())
@@ -143,8 +151,8 @@ class inline_compile_zeta_js(sublime_plugin.TextCommand):
 		sel = expand_empty_regions_to_lines(view, sel)
 		for reg in [ι for ι in sel][::-1]:
 			ι = view.substr(reg)
-			r = ζ('-p','ζ_compile(ι)',stdin=ι)
-			if r == ι: r = ζ('-p','ζ_compile["⁻¹"](ι)',stdin=ι)
+			r = ζ('ζ_compile(ι)',ι)
+			if r == ι: r = ζ('ζ_compile["⁻¹"](ι)',ι)
 			view.replace(edit, reg, r)
 
 class nice_url(sublime_plugin.TextCommand):
@@ -153,7 +161,7 @@ class nice_url(sublime_plugin.TextCommand):
 		sel = expand_empty_regions_to_urls_or_lines(view, view.sel())
 		for reg in [ι for ι in sel][::-1]:
 			ι = view.substr(reg)
-			t = ζ('-p','nice_url(ι)',ι)
+			t = ζ('nice_url(ι)',ι)
 			if t is not ι: view.replace(edit, reg, t)
 
 class _(sublime_plugin.EventListener):

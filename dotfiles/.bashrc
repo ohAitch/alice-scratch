@@ -2,23 +2,22 @@
 [[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || export PATH="./node_modules/.bin:$PATH:."
 __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 #################################### private ###################################
-λ(){ ζ -e 'ι = process.argv.slice(4);'"$@"; }
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
-_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(printf %s "$1" | ζ -p 'encodeURIComponent(ι)')")"; }
-chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; osascript -e 'tell app "chrome" to activate'; }
-_alert(){ λ ' osaᵥ`system events: display alert ${ι[0]} …${ι[1] && osa`message ${ι[1]}`} …${ι[2] && osa`giving up after ${ι[2]}`}` ' "$@"; }
+_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(ζ 'encodeURIComponent(ι)' "$1")")"; }
+chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; ζ 'osaᵥ`chrome: activate`'; }
+_alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message ${a1}`} …${a2 && osa`giving up after ${a2}`}` ;' "$@"; }
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
 set_term_title(){ printf %s "\033]0;%s\007" "$1"; } # this_term_is_frontmost
-this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ -p 'osaᵥ`terminal: frontmost of (windows whose custom title = "'$t'")`[0]')"; set_term_title ''; [[ $r = true ]]; } # x
+this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ 'osaᵥ`terminal: frontmost of (windows whose custom title = ${ι})`[0]' "$t")"; set_term_title ''; [[ $r = true ]]; } # x
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # sublime open terminal
 
 ################################ not interactive ###############################
 sfx(){ ( afplay "$__dirname/$1.wav" &); }
 
 ################################## .keyrc only #################################
-](){ λ 'ι = ι.join(" "); 
+](){ ζ 'ι = a.join(" "); 
 	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
 	ι = ι.split(/ +] +/g).map(ι =>
 		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||‽ :
@@ -26,24 +25,26 @@ sfx(){ ( afplay "$__dirname/$1.wav" &); }
 			osa`keystroke ${ι.replace(/^⌘/,"")}`+(ι.re`^⌘`? " using command down" : "")
 		).join("\n")
 	osaᵥ`system events: …${ι}`
-	' "$@"; }
-_in_new_terminal(){ λ '    φ`/tmp/__·`.text = "{ "+ι[0]+"; } &>/dev/null; exit"; osaᵥ`terminal: do script "·"`    ' "$1"; }
+	;' "$@"; }
+_in_new_terminal(){ ζ '    φ`/tmp/__·`.text = "{ "+ι+"; } &>/dev/null; exit"; osaᵥ`terminal: do script "·"`    ;' "$1"; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ -e 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))'; }
+_bright(){ ζ 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0)) ;'; }
 
 ################################# external only ################################
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
 
 ############################ interactive & external ############################
-x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || { sfx fail; ζ -e 'osaᵥ`terminal: activate`'; }; }; [[ $E = 0 ]] && exit; return $E; }
+x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || { sfx fail; ζ 'osaᵥ`terminal: activate`;'; }; }; [[ $E = 0 ]] && exit; return $E; }
 ↩(){
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
+# ζ(){ if [[ $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; }
+ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; }
 
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
@@ -64,11 +65,11 @@ p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
 sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then printf %s 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 ll(){ ls -AGl "$@"; }
 la(){ ls -AG "$@"; }
-f(){ open -a 'Path Finder' "${1:-.}"; osascript -e 'tell app "path finder" to activate'; }
+f(){ open -a 'Path Finder' "${1:-.}"; ζ 'osaᵥ`path finder: activate`'; }
 ar (){ tar -c "$@" | xz -v    > "$(basename "$1").tar.xz"; }
 ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 …(){ bash -s; }
-del(){ for v in "$@"; do v="$(realpath "$v")"; &>/dev/null osascript -e 'tell app "finder" to delete POSIX file "'"$v"'"'; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ ( &>/dev/null qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
@@ -77,7 +78,7 @@ pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http:/
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
 alias ps=$'echo \e[41muse ps2 instead\e[0m; ps'
-ps2(){ ζ -p '
+ps2(){ ζ '
 	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι => ι[1] < t)._.map(0); }
 	bad ← startup_procs()._.countBy()
 	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+"").split("\n")
@@ -88,13 +89,12 @@ ps2(){ ζ -p '
 		.filter(ι => !bad[ι.re`^ *(\d*)`[1]])
 		.filter(ι => !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
 		._.sortBy(ETIME).reverse()
-		.map(ι => ι.replace(/(--harmony\w* )+/g,"… "))
 		.join("\n")+"\n"'; }
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
-# im_to_png(){ λ 'ι.map(ι => /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`)' "$@"; }
+# im_to_png(){ ζ ' a.map(ι => /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
 im_resize(){ local t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; } #! wth are you using scale
@@ -109,7 +109,7 @@ im_dateify(){
 
 ################## single-purpose commands (interactive only) ##################
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
-d(){ λ '♈ ← ι[0] || "."
+d(){ ζ '♈ ← ι || "."
 	sum ← 0
 	♓ ← (ι,fl) => cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
 	fs.readdirSync(♈).map(λ(fl){
@@ -119,7 +119,7 @@ d(){ λ '♈ ← ι[0] || "."
 		else b ← φ(fl).size
 		sum += b; ♓(b,fl) })
 	♓(sum,♈)
-	' "$@"; }
+	;' "$1"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
@@ -128,44 +128,44 @@ youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/
 kc(){ sudo killall coreaudiod; }
 ############ nlog ############
 nlog(){ f ~/ali/history/text\ logs/nihil/; }
-nlog₋₁(){ ql "$(ζ -p 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
+nlog₋₁(){ ql "$(ζ 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
 nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/history/text\ logs/nihil/; }
 ##############################
-# dl_fix(){ f ~/Downloads; f ~/pg; λ '
+# dl_fix(){ f ~/Downloads; f ~/pg; ζ '
 # 	fs ← require("fs")
 # 	from ← process.env.HOME+"/Downloads"
 # 	out ← process.env.HOME+"/pg"
 # 	fix ← ι => ι
 # 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
 # 	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
-# 	'; }
-email(){ λ '
-	shᵥ`bash -ci "sfx ack"`
+# 	;'; }
+email(){ ζ '
+	sfx`ack`
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
 		.map(ι => osaᵥ`chrome: open location ${ι}`)
 	osaᵥ`chrome: activate`
-	'; }
-alias ct=chrome_tabs; chrome_tabs(){ λ '
+	;'; }
+alias ct=chrome_tabs; chrome_tabs(){ ζ '
 	nice_ ← λ(title,url){t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; ↩ nice_url(t)}
 	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
-	i ← ι[0]
+	i ← ι
 	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); process.stdout.write(t+"\n<copied>\n")}
 	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
-	' "$@"; }
-bookmarks(){ λ '
+	;' "$1"; }
+bookmarks(){ ζ '
 	//! should use nice_url
-	ι = φ(ι[0]).json.roots.bookmark_bar.children
+	ι = φ(ι||"~/Library/Application Support/Google/Chrome/Default/Bookmarks").json.roots.bookmark_bar.children
 	t ← (λ λ(ι){↩ ι instanceof Array? ι.map(λ).join("\n") :
 		ι.children? (ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
 		ι.url === "http://transparent-favicon.info/favicon.ico"? ι.name :
 		ι.url? (!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
 			JSON.stringify(ι)})(ι); sb(t)
-	' "${1:-~/Library/Application Support/Google/Chrome/Default/Bookmarks}"; }
-alias kp=keypresses; keypresses(){ λ '
+	;' "$1"; }
+alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█".split("")].join("-".repeat(9))
 	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
-	'; }
+	;'; }
 
 ############################# system configuration #############################
 # -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/

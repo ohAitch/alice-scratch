@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ
-chokidar ← npm('chokidar@1.4.1')
+chokidar ← npm('chokidar@1.4.3')
 
 // this is not quite right. like, the thing we're pretending to be is a giant stream of all filesystem events. filtering through that by a filesystem set selector is outside the scope of EventEmitter.
 // it probably ought to be using reactive programming?
@@ -24,3 +24,8 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || /(^|\/)\.history(\/|$)/.λ(fl) ||
 	})
 
 // bug: this only gets subfiles if they were new since the last version *and* their folders were not
+
+
+
+
+// this is pretty fucked up

@@ -83,21 +83,23 @@ FnF4  ] DASHBOARD
 ⌘⇧^4  $ (( _sc -io -cr )&)
 ⌘⇧⌥3  $ (( _sc_imgur     )&)
 ⌘⇧⌥4  $ (( _sc_imgur -io )&)
-⌥^i  $ sfx ack; osascript -e 'id of app (path to frontmost application as text)' | sb
+⌥^i  $ sfx ack; ζ 'osaᵥ`id of app (path to frontmost application as text)`' | sb
 ⌥^s  $ sfx ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
-⌥^l  $ sfx ack; _chrome "genius $(osascript -e 'tell app "spotify" to {artist,name} of current track')"
-⌥^c  $ (( ζ -e 'robot ← npm("robotjs@0.3.7"); robot.mouseClick.every(1/100)' )&)
-⌥^v  $ for v in $(ps aux | grep node | grep robot | awk '{ print $2 }'); do kill "$v"; done
-# ⌥^b  $ ζ -e 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n"'
+⌥^l  $ sfx ack; _chrome "genius lyrics: $(ζ 'osaᵥ`spotify: {artist,name} of current track`.join(" - ")')"
+⌥^c  $ (( ζ 'robot ← npm("robotjs@0.4.1"); id ← robot.mouseClick.every(1/100); (()=> φ`/tmp/robodie`.text && (φ`/tmp/robodie`.ι = null, id.clear())).every(1);' )&)
+⌥^v  $ ζ 'φ`/tmp/robodie`.text = "1"'
+# if only you could do RPC on them, then you could just call ζ 'ζ`that`.id.clear()' or w/e
+# ⌥^b  $ ζ 'φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(npm("robotjs@0.3.7").getMousePos())+"\n";'
 ☝☝    ] ⌘
 @terminal  ⌘R      ] ^
-@pathfinder  ⌘⇧t  $ _in_new_terminal 'osascript -e '\''tell app "system events" to tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1'\'''
-@pathfinder  ⌘;   $ ζ -e 'φ`/tmp/__·`.ι = sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`; osaᵥ`terminal: do script "·"; activate`'
-@photobooth  ⌘q   $ ] ⌘q; ζ -e 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm("moment@2.13.0")(t[1]+"T"+t[2]+":"+t[3]).toDate().ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")})'
+@pathfinder  ⌘⇧t  $ _in_new_terminal 'ζ '\''osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`'\'''
+@pathfinder  ⌘;   $ ζ 'φ`/tmp/__·`.ι = sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`; osaᵥ`terminal: do script "·"; activate`;'
+@photobooth  ⌘q   $ ] ⌘q; ζ 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm("moment@2.13.0")(t[1]+"T"+t[2]+":"+t[3]).toDate().ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")});'
 @sublime  /↩       ] ^↩
           /↩       $ sfx ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"
-# @pathfinder ⌘c   $ ] ⌘c; ζ -e 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"))'
-@chrome  ⌘⇧l       $ ] ⌘l; sfx ack; ζ -e 'var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t))'
+#         /↩       $ ζ 'sfx`ack`; S ← rand().toString(36); p(S); shᵥ`bash -ci '] ⌘c'`; start ← Time().i; (λ Λ(){t←; (t=p())===S? start+1 < Time().i && Λ.defer() : shᵥ`bash -ci ${sh`_chrome ${t}`}` }).defer()'
+# @pathfinder ⌘c   $ ] ⌘c; ζ 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"));'
+@chrome  ⌘⇧l       $ ] ⌘l; ζ 'sfx`ack`; var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t));'
 @terminal  ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w
 @terminal  ⌘⇧r     $ ] '. ~/.bashrc' ] ↩
 

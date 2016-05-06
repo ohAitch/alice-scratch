@@ -1,7 +1,4 @@
-#!/bin/sh
-// 2>/dev/null;           node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps "$0" "$@"; exit
-shebang ← '#!/usr/bin/env node --harmony --harmony_destructuring --harmony_default_parameters --harmony_reflect --harmony_regexps --harmony_proxies --harmony_unicode_regexps'
-
+#!/usr/bin/env node
 // ---------------------------------- todo ---------------------------------- //
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
@@ -33,7 +30,7 @@ lazy ← λ(name,ι){↩ {get(){↩ @[name] = ι()}}}
 prop_assign ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι => Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι)))}
 
 // -------------------------------- requires -------------------------------- //
-;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['minimist'],
+;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],
 ['fs'],//! hack
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
 global._ && (E._ = global._)
@@ -42,8 +39,7 @@ _ ← E._
 path ← require('path')
 fs ← require('fs')
 moment ← require('moment')
-E.Reflect = require('harmony-reflect')
-if (0){ require('util'); require('stream'); require('harmony-reflect'); require('moment'); require('priorityqueuejs'); require('urijs'); require('minimist') } // browserify
+if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } // browserify
 
 // --------------------------------- ζ infra -------------------------------- //
 if (!BROWSERP) E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
@@ -58,7 +54,7 @@ if (!BROWSERP) E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv �
 			cn.log(APP,'done')
 			↩ require(cache+'/node_modules/'+ι) } }
 	else {
-		shᵥ`bash -ci 'sfx ack'`
+		sfx`ack`
 		version = shᵥ`npm show ${ι} version`+''
 		process.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm('+util.inspect(ιv())+')'); process.stderr.write('\n')
 		} }
@@ -101,6 +97,7 @@ E.ζ_repl_start = λ(){
     if (self.bufferedCommand+self.line){ self.clearLine(); self.lineParser.reset(); self.bufferedCommand = ''; self.lines.level = []; self.displayPrompt() }
     else { self.clearLine(); self.close() }
     })
+	delete self.context._; global._ = E._
 	↩ self}
 if (require.extensions) require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
 
@@ -273,6 +270,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 	// http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
 
 	↩ ι}
+E.sfx = λ(ss,…ιs){ sh`bash -ci sfx\ ${ss[0]}` }
 
 }
 // ----------------------------- metaprogramming ---------------------------- //
@@ -345,7 +343,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 	φ['⁻¹'] = ι => /%2F/i.λ(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 
 	existsSync ← λ(ι){ try{fs.accessSync(ι); ↩ true} catch(e){↩ false} }
-	mkdir_p ← λ Λ(ι){ try{fs.mkdirSync(ι)} catch(e){if (e.code==='EEXIST') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι)} }
+	mkdir_p ← λ Λ(ι){ try{fs.mkdirSync(ι)} catch(e){if (e.code==='EEXIST'||e.code==='EISDIR') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι)} }
 	// walk ← λ*(root,files){root += '/'
 	// 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try {fs.statSync(root+t).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t))} catch (e) {}}} catch (e) {}}
 	// 	yield* walk_('') }
@@ -476,38 +474,15 @@ if (!BROWSERP) def(E,'φ',λ(){
 	↩ φ})
 
 // ---------------------------------- main ---------------------------------- //
-E.ζ_main = λ(){t←;
-	evalζ ← λ(ι){global.code = ι; global.require = require; ↩ (0,eval)(ζ_compile(ι+''))}
-	read_stdin ← λ(f){process.stdin.read_all(λ(e,ι){f((ι+'').replace(/\n$/,''))})}	
-	ζ_compile_file ← λ(ι){ t ← ι.match(/^(#!.*\n)?([^]*)$/); ↩ t[1].replace(/^#!\/usr\/bin\/env ζ(?=\s|$)/,shebang)+'require("zeta-lang")(global)'+ζ_compile(t[2]) }
-
-	//! the handling here of passing argv to the new process.argv is actually incorrect. however i'm busy and don't want to figure out the right thing right now.
-
-	argv ← process.argv.slice(2); arg ← minimist(argv,{boolean:['c','v'],alias:{version:'v',print:'p',eval:'e',compile:'c',output:'o'}})
-	if (arg.v){ process.stdout.write(φ(__dirname).φ`package.json`.ι.version+'\n') }
-	else if (arg.c){
-		if (!arg.o) ‽('TODO'); arg._.map(λ(ι){ if (φ(ι).is_dir) ‽('TODO') })
-		arg._.map(λ(ι){ φ(arg.o+'/'+(t=φ(ι).root('.')+'', t.re`^\.\./` && ‽, t).replace(/\.ζ$/,'')+'.js').buf = ζ_compile_file(φ(ι).text) })
-		}
-	else if (arg.p || arg.e){
-		process.argv = ['ζ','<eval>',…argv]
-		t ← λ(ι){arguments.length > 0 && (global.ι = ι); t ← evalζ(arg.p || arg.e); arg.p && t !== undefined && process.stdout.write(t+'')}
-		fs.fstatSync(0).isFIFO()? read_stdin(t) : t()
-		}
-	else if (arg.pa){ //! bad name
-		process.argv = ['ζ','<eval>',…argv]
-		global.i = 0
-		ι ← JSON.parse(arg.pa).map(λ(ι){
-			r ← hook_stdouterr()
-			t←; e←; (λ __special_es__u7h7zxgvi__(){try {t = evalζ(ι)} catch (e_) {e = e_}})()
-			r = r(); r = [(r[0]? r[0]+'\n' : '')+r[1]]
-			t !== undefined && r.push(t+'')
-			e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\n    at eval.*)?\n    at eval.*\n    at evalζ.*\n    at __special_es__u7h7zxgvi__[^]*/,'\n    at <eval>') : '<error> '+e)
-			↩ r.join('')})
-		process.stdout.write(JSON.stringify(ι))
-		}
-	else if (arg._.length===0){ process.argv = ['ζ','<repl>',…argv]; global.rl = ζ_repl_start() }
-	else {                      process.argv = ['ζ',…arg._]; Module._load(φ(arg._[0]).root('/')+'', null, true) }
+E.ζ_main = λ(){
+	argv ← process.argv
+	argv[0] = 'ζ'
+	argv[2]==='--fresh' && argv.splice(2,1)
+	if (argv.length===2){ argv[1] = '<repl>'; global.rl = ζ_repl_start() }
+	else if (φ(argv[2]).BAD_exists() || argv[2].re`^\.?/`){ argv.splice(1,1); Module._load(φ(argv[1]).root('/')+'', null, true) }
+	else { argv[1] = '<eval>'
+		global.require = require; global.code = argv[2]; global.a = argv.slice(3); global.ι = a[0]; a.map((ι,i) => global['a'+i] = ι)
+		use_r ← !code.re`;\s*$`; r ← (0,eval)(ζ_compile(code)); use_r && r!==undefined && process.stdout.write(r+'') }
 	}
 
 // ---------------------- finish local metaprogramming ---------------------- //

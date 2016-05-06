@@ -15,7 +15,7 @@ gen ← λ(ι){name←;
 		.replace('NAME',name=require('path').basename(ι,'.js'))
 		.replace('REST',φ(ι).text.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
 		.replace('FILE',φ(ι).url)
-	p(t); shᵥ`bash -ci 'sfx ack'`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
+	p(t); sfx`ack`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
 
 	// user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
 	// φ(user_js).set(t)

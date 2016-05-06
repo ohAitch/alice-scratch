@@ -11,8 +11,7 @@ git merge "$from/master"
 git remote remove "$from"
 
 ----- split out subfolder ----
-
-this ... breaks on unicode :(
+:( this ... breaks on unicode :(
 
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 
