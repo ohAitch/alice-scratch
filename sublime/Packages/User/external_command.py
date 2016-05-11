@@ -5,7 +5,7 @@ import threading, http.server, json, os, codecs, re
 PORT = 34289
 
 def window_(): return sublime.active_window()
-def view_():   return sublime.active_window().active_view()
+def view_(): return sublime.active_window().active_view()
 
 def exec_(ι,edit=None): t = {'window':window_(), 'view':view_(), 'edit':edit}; exec(ι,None,t); return t['ι'] if 'ι' in t else None
 class exec_edit(sublime_plugin.TextCommand):

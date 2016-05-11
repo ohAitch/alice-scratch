@@ -7,7 +7,7 @@
 
 xmlbuilder ← npm('xmlbuilder@4.1.0')
 
-as_char_as_hex ← ι => ('000'+ι.charCodeAt().toString(16)).slice(-4)
+as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
 
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
@@ -15,28 +15,28 @@ KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 M ← λ(a,b,c){↩ {trigger:a, output:b, if:c}}
 parse_keyrc ← λ(src){
 	homoiconic←; h_shape←; keycode←;
-	transpose_str ← ι => _.zip(…ι.split('\n')).map(ι => ι.join('')).join('\n')
+	transpose_str ← ι=> _.zip(…ι.split('\n')).map(ι=> ι.join('')).join('\n')
 	parse_boards ← λ(ι){
-		ι ← ι.mapcat(ι =>
+		ι ← ι.mapcat(ι=>
 			transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 				root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-				keys: ι.slice(1,-1).map(ι => /^│(.+)│$/.λ(ι)[1]).map(/\S\S?/g.λ),
+				keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/.λ(ι)[1]).map(ι=> (/\S\S?/g).λ(ι)),
 				} }) )
-		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(ι => ι.map(()=>'_')))
-		ι.filter(ι => ι.keys.length === 4).forEach(λ(ι){ι.keys = [h_shape[0], …ι.keys, h_shape[-1]]})
+		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(ι=> ι.map(()=>'_')))
+		ι.filter(ι=> ι.keys.length === 4).forEach(λ(ι){ι.keys = [h_shape[0], …ι.keys, h_shape[-1]]})
 		ι.forEach(λ(ι){ι.keys = ι.keys._.flatten(true)})
-		ι.forEach(λ(ι){ ι.root!=='⇧' && (ι.keys = ι.keys.map(ι => ι==='X'? '$ sfx nack' : ι)) }) // let X = $ nack
+		ι.forEach(λ(ι){ ι.root!=='⇧' && (ι.keys = ι.keys.map(ι=> ι==='X'? '$ sfx nack' : ι)) }) // let X = $ nack
 		ι = ι._.without(homoiconic)
-		ι.forEach(λ(ι){ι.keys = _.zip(homoiconic.keys,ι.keys).filter(ι => ι[1] !== '_')})
+		ι.forEach(λ(ι){ι.keys = _.zip(homoiconic.keys,ι.keys).filter(ι=> ι[1] !== '_')})
 		keycode || (keycode = ι._.indexBy('root')['[keycode]'], ι = ι._.without(keycode))
-		ι = ι.mapcat(λ(ι){ ι.keys.forEach(k => k[0] = ι.root+k[0]); ↩ ι.keys })
+		ι = ι.mapcat(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 		↩ ι.map(ι=> M(…ι)) }
 	tₐ ← []
 	tₑ ← parse_boards(
 		(src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
 		.replace(/(?:^|\n)(?![│┌└])(.+)/g,λ(ˣ,ι){ t ← ι.match(/^ *(@\w+)? *(\S+) +(.+)/); tₐ.push(M(t[2],t[3],t[1])); ↩ ''})
-		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(ι => ι.replace(/\n$/,''))
+		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(ι=> ι.replace(/\n$/,''))
 		)
 	system ← parse_boards([multiline(λ(){/*
 		┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
@@ -47,12 +47,12 @@ parse_keyrc ← λ(src){
 		└──────────────────────────────┘ └──────────────────────────────┘
 		*/})])
 	mappings ← […tₐ, …tₑ]._.difference_eq(system)
-	↩ {keycodes:keycode.keys._.object(), mappings, homoiconic:homoiconic.keys, non_special:system._.map('trigger').filter(ι => ι[0]!=='⇧')} }
+	↩ {keycodes:keycode.keys._.object(), mappings, homoiconic:homoiconic.keys, non_special:system._.map('trigger').filter(ι=> ι[0]!=='⇧')} }
 
 wat ← []
 
 show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
-	Mod ← λ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})
+	Mod ← ι=> ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})[ι]
 	shells ← {}; shell ← λ(ι){ι = sh`/usr/local/bin/bash -ci ${ι}`; ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
 	appdefs ← { spotify:'com.spotify.client', chrome:'com.google.Chrome', pathfinder:'com.cocoatech.PathFinder', photobooth:'com.apple.PhotoBooth', sublime:'com.sublimetext.3', terminal:'com.apple.Terminal', }
 	compile_mapping ← λ(ι){
@@ -66,16 +66,16 @@ show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 			if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
 			else md.push(' ')
 			if (!{1:1,2:1}[ky.length]) ‽('[lackey] invalid keystring: '+util.inspect(ι))
-			Key ← ι => ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])
+			Key ← ι=> ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← λ(ι){ t ← compile_keystring(ι,true); ↩ t.cmd+' '+t.ι }
 		compile_output ← λ(ι){t←;
 			↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) :
 			(t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι :
-				ι._.map(ι => as_char_as_hex(ι)._.map(ι => compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
+				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← λ(ι){ ι = ι.toLowerCase().re`^@(.+)$`[1]; appdefs[ι] || ‽; ↩ ι }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if: ι.if? compile_appdef(ι.if) : undefined} }
-	t ← mappings._.partition(ι => /^☝/.λ(ι.trigger)); touchmaps ← t[0]; mappings = t[1]
+	t ← mappings._.partition(ι=> /^☝/.λ(ι.trigger)); touchmaps ← t[0]; mappings = t[1]
 	↩ {root: {
 		appdef: appdefs._.map(λ(ι,k){↩ {appname:k, equal:ι}}),
 		item: [
@@ -84,17 +84,17 @@ show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 				//[ ☝☝⇪   ] ^⇧L⇥
 				//[ ☝☝⇥   ] ^⇥
 				//[ ☝☝`   ] ^`
-				↩ {name:(t='notsave.'+ι.trigger.length+'touch'), identifier:t, autogen:homoiconic.filter(ι => !Mod(ι)).map(ι => compile_mapping(M(ι,'] '+({'⇥':'^⇥','⇪':'^⇧⇥','`':'^`'}[ι]||('⌘'+ι)))).ι)}
+				↩ {name:(t='notsave.'+ι.trigger.length+'touch'), identifier:t, autogen:homoiconic.filter(ι=> !Mod(ι)).map(ι=> compile_mapping(M(ι,'] '+({'⇥':'^⇥','⇪':'^⇧⇥','`':'^`'}[ι]||('⌘'+ι)))).ι)}
 				}),
-			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι => /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι => compile_mapping(ι).ι+','+shell('sfx ack; '+KB+' disable notsave.power_key'))},
+			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell('sfx ack; '+KB+' disable notsave.power_key'))},
 			…(t=mappings.map(compile_mapping)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(λ(ι,i){wat.push('lackey'+i); ↩ {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].if, autogen:ι._.map('ι').reverse()} }),
 			],
-		vkopenurldef: shells._.map((name,ι) => ({name, url:{'@type':'shell', '#text':ι}})),
+		vkopenurldef: shells._.map((name,ι)=> ({name, url:{'@type':'shell', '#text':ι}})),
 		}} }
 
 // ---------------------------------- main ---------------------------------- //
 φ`~/Library/Application Support/Karabiner/private.xml`.ι = show_private_xml(parse_keyrc(φ`~/.keyrc`.text))
-shᵥ`${KB} reloadxml`; wat.map(ι => shᵥ`${KB} enable ${ι}`)
+shᵥ`${KB} reloadxml`; wat.map(ι=> shᵥ`${KB} enable ${ι}`)
 φ`~/Documents/keyrc_power_key.sh`.text = '#!/usr/bin/env bash -i\nsfx ack; '+KB+' enable notsave.power_key'; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
 
 // mild todo:

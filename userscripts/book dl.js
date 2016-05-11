@@ -41,3 +41,13 @@ setInterval(catch_(()=>{
 	}), 0.05*1e3)
 
 },1*1e3)
+
+// --------------------------------- .bashrc -------------------------------- //
+// dl_fix(){ f ~/Downloads; f ~/pg; ζ '
+// 	fs ← require("fs")
+// 	from ← process.env.HOME+"/Downloads"
+// 	out ← process.env.HOME+"/pg"
+// 	fix ← ι => ι
+// 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
+// 	fs.readdirSync(from).filter(ι=> /\.64$/.λ(ι)).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+// 	;'; }

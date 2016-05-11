@@ -20,19 +20,14 @@ eval_in_worker ← (λ(){
 		.on('message',λ(ι){ (ι[0]==='*'? ι.slice(1) : [ι]).map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
 		)
-	;(λ(){ t ← free.pop(); free._.map(ι => ι.kill()); free = new Set([t]) }).every(10*60)
-	cleanup ← λ(){
-		busy['filter!'](ι=> ι.connected); free['filter!'](ι=> ι.connected)
-		// free._.sortBy(ι=> ι.birth_time).slice(0,-1).filter(ι=> ι.birth_time < Time().i - 10*60 ).forEach(λ(ι){ free.delete(ι); ι.kill() })
-		free.size || free.add(make())
-		}
-	// cleanup()
+	;(λ(){ t ← free.pop(); free._.map(ι => ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
+	cleanup ← λ(){ busy['filter!'](ι=> ι.connected); free['filter!'](ι=> ι.connected); free.size || free.add(make()) }
 	↩ λ(code){ cleanup(); t ← free.pop(); free.delete(t); busy.add(t); t.send(['eval',code]); ↩ t }
 	})()
 procify ← (a,code) => ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ(){
 	err ← e => (process.stderr.write((e.stack||e)+'\n'), process.exitCode || (process.exitCode = 1))
 	var {on,off} = on_off(); on(process,'uncaughtException',λ(e){ err(e); process.exit() }); on(process,'beforeExit',()=> off())
-	process.argv = a.argv; φ.cwd = a.cwd; process.env = a.env; try{ _code }catch(e){ err(e) }
+	process.argv = [process.argv[0],…a.argv]; φ.cwd = a.cwd; process.env = a.env; try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code)
 
 // -------------------------------------------------------------------------- //
@@ -47,7 +42,7 @@ new net.Server()
 			i←0; get ← n => i+n <= ι.length || (buf = ι.slice(i), _↩())
 			while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← String.fromCharCode(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 			})); buf←;
-		a ← {argv:process.argv.slice(0,1), cwd:'', env:{}}
+		a ← {argv:[], cwd:'', env:{}}
 		on_msg ← λ(ι){switch(ι.type){default: ‽
 			break; case 'A': a.argv.push(ι.ι+'')
 			break; case 'E': t ← (ι.ι+'').match(/^([^=]*)=(.*)/); a.env[t[1]] = t[2]

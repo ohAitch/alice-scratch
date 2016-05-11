@@ -10,3 +10,10 @@ Object.getOwnPropertyDescriptor(window,'rate') === undefined && Object.definePro
 	get: () => get_viaudeo().playbackRate,
 	set: ι => {get_viaudeo().playbackRate = ι},
 	})
+
+// rate_el ← ()=>{
+// 	vs ← $`video`; as ← $`audio`; bs ← […vs,…as]
+// 	if bs ≈ []: warn('no (vi|au)dios')
+// 	(vs≈[*]  |  vs≈[] & as≈[*]) | warn('too many (vi|au)dios: '+vs.L+', '+as.L)
+// 	↩ bs[0].prop`playbackRate` }
+// def(window,'rate') || def(window,'rate', ()=> rate_el().ι, ι isa 0 => rate_el().ι = ι)

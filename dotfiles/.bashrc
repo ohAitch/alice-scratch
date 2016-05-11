@@ -9,12 +9,12 @@ _alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message 
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-set_term_title(){ printf %s "\033]0;%s\007" "$1"; } # this_term_is_frontmost
-this_term_is_frontmost(){ local t=__$RANDOM; set_term_title $t; local r="$(ζ 'osaᵥ`terminal: frontmost of (windows whose custom title = ${ι})`[0]' "$t")"; set_term_title ''; [[ $r = true ]]; } # x
-clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # sublime open terminal
+this_term_is_frontmost(){ ζ 'set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07"); t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); r'; } # x
+clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
+_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.mov'; &>/dev/null popd; } # /
 
 ################################ not interactive ###############################
-sfx(){ ( afplay "$__dirname/$1.wav" &); }
+sfx(){ ( afplay "$__dirname/$1.wav" &); } #! duplicate
 
 ################################## .keyrc only #################################
 ](){ ζ 'ι = a.join(" "); 
@@ -22,7 +22,7 @@ sfx(){ ( afplay "$__dirname/$1.wav" &); }
 	ι = ι.split(/ +] +/g).map(ι =>
 		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||‽ :
 		(t={"↩":36}[ι])? "key code "+t :
-			osa`keystroke ${ι.replace(/^⌘/,"")}`+(ι.re`^⌘`? " using command down" : "")
+			osa`keystroke ${ι.replace(/^⌘/,"")} …${ι.re`^⌘` && "using command down"}`
 		).join("\n")
 	osaᵥ`system events: …${ι}`
 	;' "$@"; }
@@ -30,13 +30,13 @@ _in_new_terminal(){ ζ '    φ`/tmp/__·`.text = "{ "+ι+"; } &>/dev/null; exit"
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ 'br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set("'"$1"'"==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0)) ;'; }
+_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set(a0==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))  ;' "$1"; }
 
 ################################# external only ################################
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
 
 ############################ interactive & external ############################
-x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || { sfx fail; ζ 'osaᵥ`terminal: activate`;'; }; }; [[ $E = 0 ]] && exit; return $E; }
+x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || ζ 'sfx`fail`; osaᵥ`terminal: activate`;'; }; [[ $E = 0 ]] && exit; return $E; }
 ↩(){
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
@@ -49,7 +49,7 @@ x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || { sfx f
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
-dgrey='\e[1;30m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
+dgrey=$'\e[1;30m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
 export PROMPT_COMMAND='    lx=$?;    _PC_t    '; last_dir=~; _PC_t(){
 	hash -r
 	if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi
@@ -74,10 +74,13 @@ ql(){ ( &>/dev/null qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
-/(){ &>/dev/null pushd ~/ali/github; ag "$@" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/' | sb; &>/dev/null popd; }
+/(){
+	# would be nice to search the text parts of ~/ali/history but it's probably too illegible for that right now
+	if [[ $1 = -h ]]; then _ag ~/ali/notes "$2" .{,/.history}
+	else _ag ~/ali/github "$1" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/'; _ag ~/ali "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+	fi | sb; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
-alias ps=$'echo \e[41muse ps2 instead\e[0m; ps'
 ps2(){ ζ '
 	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι => ι[1] < t)._.map(0); }
 	bad ← startup_procs()._.countBy()
@@ -94,18 +97,18 @@ ps2(){ ζ '
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
-# im_to_png(){ ζ ' a.map(ι => /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
+# im_to_png(){ ζ ' a.map(ι=> /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
-im_resize(){ local t="$1"; shift; for v in "$@"; do convert -scale "$t" "$v" "$v"; done; } #! wth are you using scale
+im_resize(){ ζ 'for (t of a.slice(1)) shᵥ`convert -scale ${a0} ${t} ${t}`' "$@"; } #! wth are you using scale
 im_concat(){
-	local tile=$(echo "$1" | egrep -q '^(\d+x\d*|x\d+)$' && { echo "$1"; shift; } || echo x1)
+	local tile=$(ζ '!!ι.re`^(\d+x\d*|x\d+)$`' "$1" && { echo "$1"; shift; } || echo x1)
 	local out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify(){
-	local echo=$([[ $1 = -d ]] && echo echo)
-	for v in *.jpg; do local t=$(identify -verbose "$v" | grep exif:DateTimeOriginal | sed -E 's/^ +[a-zA-Z:]+ //'); $echo mv "$v" "$(echo $t | awk '{ print $1 }' | tr : -)T$(echo $t | awk '{ print $2 }')Z.jpg"; done; }
+im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,t+".jpg") })  ;' "$@"; }
+ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
+ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 
 ################## single-purpose commands (interactive only) ##################
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
@@ -123,22 +126,15 @@ d(){ ζ '♈ ← ι || "."
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
-cache_imgurs(){ for v in "$@"; do local o=~/"ali/misc/.cache/imgur/$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
-youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/"Downloads/$2.%(ext)s" "$1"; }
+cache_imgurs(){ for v in "$@"; do local o=~/ali/misc/.cache/imgur/"$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
+youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1"; }
+youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 kc(){ sudo killall coreaudiod; }
 ############ nlog ############
 nlog(){ f ~/ali/history/text\ logs/nihil/; }
 nlog₋₁(){ ql "$(ζ 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
 nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/history/text\ logs/nihil/; }
 ##############################
-# dl_fix(){ f ~/Downloads; f ~/pg; ζ '
-# 	fs ← require("fs")
-# 	from ← process.env.HOME+"/Downloads"
-# 	out ← process.env.HOME+"/pg"
-# 	fix ← ι => ι
-# 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
-# 	fs.readdirSync(from).filter(/\.64$/.λ).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
-# 	;'; }
 email(){ ζ '
 	sfx`ack`
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
@@ -149,9 +145,9 @@ alias ct=chrome_tabs; chrome_tabs(){ ζ '
 	nice_ ← λ(title,url){t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; ↩ nice_url(t)}
 	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
 	i ← ι
-	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); process.stdout.write(t+"\n<copied>\n")}
+	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+"\n<copied>\n"}
 	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
-	;' "$1"; }
+	' "$1"; }
 bookmarks(){ ζ '
 	//! should use nice_url
 	ι = φ(ι||"~/Library/Application Support/Google/Chrome/Default/Bookmarks").json.roots.bookmark_bar.children
@@ -163,7 +159,7 @@ bookmarks(){ ζ '
 	;' "$1"; }
 alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
-	disp ← ["",…";;;;#;;;;█;;;;#;;;;█".split("")].join("-".repeat(9))
+	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
 	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
 	;'; }
 
@@ -182,7 +178,8 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 # defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
+# defaults write com.apple.desktopservices DSDontWriteNetworkStores true
 
 ################################## deprecated ##################################
-# ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(λ(ι){↩ /\/subl stdin /.λ(ι+'')})._.sortBy(λ(ι){↩ ι.birthtime})[-1]
+# ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(ι=> /\/subl stdin /.λ(ι+''))._.sortBy(λ(ι){↩ ι.birthtime})[-1]
 # cdw(){ local t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }

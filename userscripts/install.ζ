@@ -17,7 +17,7 @@ gen ← λ(ι){name←;
 		.replace('FILE',φ(ι).url)
 	p(t); sfx`ack`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
 
-	// user_js ← '/tmp/userscript_'+10..map(ι => rand(/[0-9a-z]/.genex_0())).join('')+'.user.js'
+	// user_js ← '/tmp/userscript_'+rand_id(10)+'.user.js'
 	// φ(user_js).set(t)
 	// t ← ()=> osaᵥ`chrome: open location ${φ(user_js).url}`
 	// ↩ [name, t]
