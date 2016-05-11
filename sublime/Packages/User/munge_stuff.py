@@ -11,13 +11,11 @@ import sublime, sublime_plugin
 from sublime import Region
 import os, subprocess, re, urllib, json
 
-URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
-IS_URL = r'^(?:https?://|(?:file|mailto):)'
-
 def ζ(*a): return subprocess.check_output(['/usr/local/bin/node','/usr/local/lib/node_modules/zeta-lang/bin/index.js']+list(a)).decode('utf-8')
 
-def sh_encode(ι): return re.escape(ι)
-def osa_encode(ι): return '"'+re.sub(r'"',r'\\"',re.sub(r'\\',r'\\\\',ι))+'"'
+################################## munge_stuff #################################
+URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
+IS_URL = r'^(?:https?://|(?:file|mailto):)'
 
 def merge_overlapping_regions(ι):
 	for i in range(len(ι)-1):
@@ -144,3 +142,10 @@ class nice_url(sublime_plugin.TextCommand):
 
 class _(sublime_plugin.EventListener):
 	def on_post_save(self,view): view.substr(Region(0,2)) == '#!' and ζ('shᵥ`chmod +x ${ι}`',view.file_name())
+
+################################# build_dollar #################################
+class build_dollar(sublime_plugin.TextCommand):
+	def run(self,edit):
+		view = self.view
+		view.run_command("save")
+		ζ("""  terminal_do_script(sh`clear; cd ${ι}; run.*; x`) """, os.path.dirname(view.file_name()))

@@ -98,7 +98,7 @@ FnF4  $ sfx nack
 ☝☝    ] ⌘
 @terminal  ⌘R      ] ^
 @pathfinder  ⌘⇧t  $ _in_new_terminal 'ζ '\''osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`'\'''
-@pathfinder  ⌘;   $ ζ 'φ`/tmp/__·`.ι = sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`; osaᵥ`terminal: do script "·"; activate`;'
+@pathfinder  ⌘;   $ ζ 'terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, "; activate")'
 @photobooth  ⌘q   $ ] ⌘q; ζ 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm("moment@2.13.0")(t[1]+"T"+t[2]+":"+t[3]).toDate().ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")});'
 @sublime  /↩       ] ^↩
           /↩       $ sfx ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"

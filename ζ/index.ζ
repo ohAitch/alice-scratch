@@ -326,6 +326,7 @@ E.osa = λ(ss,…ιs){t←;
 	if (!ts(ι[0]) && ts(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && ts(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, …ι, '; end tell'] }
 	↩ ι.map(ι=> !ts(ι)? _osa.show(ι.raw) : ι.replace(/;/g,'\n')).join('') }
 if (!BROWSERP) E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
+if (!BROWSERP) E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
 // E.chromeᵥ = ⋈ not actually used ⋈ wait, nope, is actually used, but mostly in one-off scripts
 	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
 	// 	// E.chrome_js_sandboxᵥ = λ(ι,tab){↩ osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`}

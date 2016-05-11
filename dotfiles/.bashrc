@@ -1,6 +1,7 @@
 [[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || export PATH="/usr/local/bin:$PATH"
 [[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || export PATH="./node_modules/.bin:$PATH:."
 __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
+
 #################################### private ###################################
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
 _chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(ζ 'encodeURIComponent(ι)' "$1")")"; }
@@ -10,8 +11,10 @@ _alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message 
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
 this_term_is_frontmost(){ ζ 'set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07"); t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); r'; } # x
-clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.mov'; &>/dev/null popd; } # /
+########## external ##########
+clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
+alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # index.ζ terminal_do_script
 
 ################################ not interactive ###############################
 sfx(){ ( afplay "$__dirname/$1.wav" &); } #! duplicate
@@ -26,20 +29,17 @@ sfx(){ ( afplay "$__dirname/$1.wav" &); } #! duplicate
 		).join("\n")
 	osaᵥ`system events: …${ι}`
 	;' "$@"; }
-_in_new_terminal(){ ζ '    φ`/tmp/__·`.text = "{ "+ι+"; } &>/dev/null; exit"; osaᵥ`terminal: do script "·"`    ;' "$1"; }
+_in_new_terminal(){ ζ 'terminal_do_script("{ "+ι+"; } &>/dev/null; exit");' "$1"; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
 _bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set(a0==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))  ;' "$1"; }
 
-################################# external only ################################
-alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;'
-
 ############################ interactive & external ############################
 x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || ζ 'sfx`fail`; osaᵥ`terminal: activate`;'; }; [[ $E = 0 ]] && exit; return $E; }
-↩(){
+run.*(){
 	local t=$(while :; do
-		t=($(shopt -s nullglob; echo {ru[n],inde[x],mai[n]}{,.sh,.ζ,.js,.py}))
+		t=($(shopt -s nullglob; echo ru[n]{,.*}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
