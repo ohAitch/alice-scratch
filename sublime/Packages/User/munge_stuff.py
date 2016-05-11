@@ -148,4 +148,4 @@ class build_dollar(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")
-		ζ("""  terminal_do_script(sh`clear; cd ${ι}; run.*; x`) """, os.path.dirname(view.file_name()))
+		ζ("""  terminal_do_script(sh`clear; cd ${ι}; build.*; x`) """, os.path.dirname(view.file_name()))

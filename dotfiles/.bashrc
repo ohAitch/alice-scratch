@@ -37,9 +37,9 @@ _bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? 
 
 ############################ interactive & external ############################
 x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || ζ 'sfx`fail`; osaᵥ`terminal: activate`;'; }; [[ $E = 0 ]] && exit; return $E; }
-run.*(){
+build.*(){
 	local t=$(while :; do
-		t=($(shopt -s nullglob; echo ru[n]{,.*}))
+		t=($(shopt -s nullglob; echo [b]uild{,.*}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
