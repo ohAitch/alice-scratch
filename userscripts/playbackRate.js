@@ -7,8 +7,8 @@ var get_viaudeo = ()=>{
 	return vs[0] || as[0] }
 
 Object.getOwnPropertyDescriptor(window,'rate') === undefined && Object.defineProperty(window,'rate',{configurable:true,
-	get: () => get_viaudeo().playbackRate,
-	set: ι => {get_viaudeo().playbackRate = ι},
+	get: ()=> get_viaudeo().playbackRate,
+	set: ι=> {get_viaudeo().playbackRate = ι},
 	})
 
 // rate_el ← ()=>{

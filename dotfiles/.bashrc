@@ -22,7 +22,7 @@ sfx(){ ( afplay "$__dirname/$1.wav" &); } #! duplicate
 ################################## .keyrc only #################################
 ](){ ζ 'ι = a.join(" "); 
 	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
-	ι = ι.split(/ +] +/g).map(ι =>
+	ι = ι.split(/ +] +/g).map(ι=>
 		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||‽ :
 		(t={"↩":36}[ι])? "key code "+t :
 			osa`keystroke ${ι.replace(/^⌘/,"")} …${ι.re`^⌘` && "using command down"}`
@@ -33,7 +33,7 @@ _in_new_terminal(){ ζ 'terminal_do_script("{ "+ι+"; } &>/dev/null; exit");' "$
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι => br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι => set(a0==="up"? ιs.filter(t => t > ι)[0]||1 : ιs.filter(t => t < ι)[-1]||0))  ;' "$1"; }
+_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
 
 ############################ interactive & external ############################
 x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || ζ 'sfx`fail`; osaᵥ`terminal: activate`;'; }; [[ $E = 0 ]] && exit; return $E; }
@@ -54,7 +54,7 @@ export PROMPT_COMMAND='    lx=$?;    _PC_t    '; last_dir=~; _PC_t(){
 	hash -r
 	if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi
 	printf %s '=== '; [[ $lx = 0 ]] || { printf %s "$red"; goX 1; [[ $lx = 1 ]] && printf %s === || printf %s "$lx "; goX 5; }
-	printf %s "$green"; home_link "$PWD"; [ -z "$PWF" ] || printf %s "/$purple$PWF"; printf %s "$reset"; goX 78; printf %s ===
+	printf %s "$green"; home_link "$PWD"; [ -z "$PWF" ] || printf %s "/$purple$PWF"; printf %s "$reset"; goX 78; printf %s ===$'\n'
 	[[ $do_ls = 1 ]] && CLICOLOR_FORCE=1 ls -AGC; }
 export PS1='\['"$dgrey"'\]>\['"$reset"'\] '
 alias -- -='cd ~-'
@@ -82,17 +82,18 @@ pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http:/
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
 ps2(){ ζ '
-	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι => ι[1] < t)._.map(0); }
+	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
 	bad ← startup_procs()._.countBy()
 	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+"").split("\n")
 	h ← r.shift()
-	CMD ← ι => ι.slice(h.search("COMMAND"))
-	ETIME ← ι => ι.slice(5,h.search("ELAPSED")+"ELAPSED".length)
+	CMD ← ι=> ι.slice(h.search("COMMAND"))
+	ETIME ← ι=> ι.slice(5,h.search("ELAPSED")+"ELAPSED".length)
 	h+"\n"+r
-		.filter(ι => !bad[ι.re`^ *(\d*)`[1]])
-		.filter(ι => !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
+		.filter(ι=> !bad[ι.re`^ *(\d*)`[1]])
+		.filter(ι=> !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
 		._.sortBy(ETIME).reverse()
 		.join("\n")+"\n"'; }
+alias diff='wdiff -n -w $'\''\e[30;41m'\'' -x $'\''\e[0m'\'' -y $'\''\e[30;42m'\'' -z $'\''\e[0m'\'''
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
@@ -106,22 +107,22 @@ im_concat(){
 	local out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,t+".jpg") })  ;' "$@"; }
+im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,t+".jpg") })  ;' "$@"; }
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 
 ################## single-purpose commands (interactive only) ##################
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
-d(){ ζ '♈ ← ι || "."
+d(){ ζ 'a ← ι || "."
 	sum ← 0
-	♓ ← (ι,fl) => cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
-	fs.readdirSync(♈).map(λ(fl){
+	q ← (ι,fl)=> cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
+	fs.readdirSync(a).map(λ(fl){
 		if (φ(fl).is_dir){
-			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${♈}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
+			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
 			b ← +(t+"").re`^\d+`[0] * 1024 }
 		else b ← φ(fl).size
-		sum += b; ♓(b,fl) })
-	♓(sum,♈)
+		sum += b; q(b,fl) })
+	q(sum,a)
 	;' "$1"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
@@ -138,7 +139,7 @@ nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/his
 email(){ ζ '
 	sfx`ack`
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
-		.map(ι => osaᵥ`chrome: open location ${ι}`)
+		.map(ι=> osaᵥ`chrome: open location ${ι}`)
 	osaᵥ`chrome: activate`
 	;'; }
 alias ct=chrome_tabs; chrome_tabs(){ ζ '
@@ -146,7 +147,7 @@ alias ct=chrome_tabs; chrome_tabs(){ ζ '
 	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
 	i ← ι
 	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+"\n<copied>\n"}
-	else {t ← _.zip(title,url).map(ι => _.zip(…ι)).map(ι => ι.map(ι => nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
+	else {t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
 	' "$1"; }
 bookmarks(){ ζ '
 	//! should use nice_url

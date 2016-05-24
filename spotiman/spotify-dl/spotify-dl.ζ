@@ -7,20 +7,20 @@ arg ← {
 	}
 
 APP ← '\x1b[34m[spotify dl]\x1b[0m'
-rc ← ι => util.inspect(ι,{colors:true})
+rc ← ι=> util.inspect(ι,{colors:true})
 poll ← λ(f,cb){(λ λ(){if (f()) cb(); else λ.in(0.05)})()}
-is_playlist ← ι => ι.type === undefined || ι.type === 0 // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
-getTracks    ← ι => _.range(ι.numTracks   ).map(i => ι.getTrack(i))
-getPlaylists ← ι => _.range(ι.numPlaylists).map(i => ι.getPlaylist(i))._.filter()
+is_playlist ← ι=> ι.type === undefined || ι.type === 0 // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
+getTracks    ← ι=> _.range(ι.numTracks   ).map(i=> ι.getTrack(i))
+getPlaylists ← ι=> _.range(ι.numPlaylists).map(i=> ι.getPlaylist(i))._.filter()
 mp3_info_to_basename ← λ(ι){
 	Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
-	ι = ι.map(ι => basename_encode((ι+'').replace(/ +- +/g,'-')))
+	ι = ι.map(ι=> basename_encode((ι+'').replace(/ +- +/g,'-')))
 	↩ ι[0]+' - '+ι[1]+' - '+ι[2].replace(/⟩.*/,'').replace(/^(.)$/,'0$1')+' '+ι[3] }
 mp3_id3 ← λ(fl){s ← sh_encode; fl = fs(fl).path
 	r ← {}; Object.defineProperty(r,'$',{
 		get:λ(){
 			t ← execᵥ('mid3v2 '+s(fl))
-			t = ['TPE1','TALB','TRCK','TIT2'].map(ι => (RegExp('^'+ι+'=(.*)','m').λ(t)||[])[1])
+			t = ['TPE1','TALB','TRCK','TIT2'].map(ι=> (RegExp('^'+ι+'=(.*)','m').λ(t)||[])[1])
 			↩ {artist:t[0], album:t[1], i:t[2], name:t[3]} },
 		set:λ(ι){
 			Array.isArray(ι) || (ι = [ι.artist, ι.album, ι.i, ι.name])
@@ -53,7 +53,7 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 		cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
 	ι.album.browse(λ(e,t){
 		metadata ← {
-			artist: ι.artists._.map('name').map(ι => ι.replace(/, +/g,',')).join(', '),
+			artist: ι.artists._.map('name').map(ι=> ι.replace(/, +/g,',')).join(', '),
 			album: ι.album.name,
 			// i: (parseInt(t.tracks._.invert()[ι.link])+1)+'/'+t.tracks.length,
 			i: (parseInt(t.tracks._.map('link')._.invert()[ι.link])+1)+'/'+t.tracks.length,
@@ -81,14 +81,14 @@ login(λ(e,spotify){
 	spotify.useNodejsAudio(λ(e,ι){if (e) throw e; player_bufs.push(ι); ↩ true})
 	cn.log(APP,'loading playlists ...')
 	ι ← getPlaylists(spotify.playlistContainer)
-	poll(λ(){↩ ι.filter(is_playlist).every(ι => ι.isLoaded)},λ(){
+	poll(λ(){↩ ι.filter(is_playlist).every(ι=> ι.isLoaded)},λ(){
 		playlists ← ι.filter(is_playlist)
 		playlists._.indexBy('name')['[mage 1]'] || (λ(){throw '‽'})() // testing
-		playlists = playlists.filter(ι => ι.owner.canonicalName === spotify.sessionUser.canonicalName)
-		playlists = playlists.filter(ι => !/^history:/.λ(ι.name)) // hack
+		playlists = playlists.filter(ι=> ι.owner.canonicalName === spotify.sessionUser.canonicalName)
+		playlists = playlists.filter(ι=> !/^history:/.λ(ι.name)) // hack
 		playlists = playlists._.sortBy('numTracks')
 		async.mapSeries(playlists,
-			λ(ι,cb){ poll(λ(){↩ getTracks(ι).every(ι => ι.isLoaded)},λ(){ensure_playlist_cached(spotify,ι,cb)}) },
+			λ(ι,cb){ poll(λ(){↩ getTracks(ι).every(ι=> ι.isLoaded)},λ(){ensure_playlist_cached(spotify,ι,cb)}) },
 			λ(e,ι){cn.log(APP,'done.') ;(λ(){process.exit()}).in(1.5)
 			})
 		})

@@ -1,5 +1,0 @@
-be warned:
-(if this is the deploy location)
-https://github.com/alice0meta/scratch/tree/master/sublime/ stomps over files in here
-*when* they're in top-level directories that it also has
-(plus a special exception for /User/Package Control.* stuff)

@@ -1,1 +1,2 @@
-/.builtin Packages/
+Package Control*
+*.tmTheme

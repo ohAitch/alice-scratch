@@ -1,0 +1,71 @@
+#2a2626 → bg
+#e8e8e8 → fg,variable
+#534b4b → comment
+#f0624b → keyword
+#f7a21b → const,num,string
+#b4b7ad → function
+#b4b7ade0 → support
+#3d8e91 → special,link
+#f8f8f0 bg #00a8c6 → invalid
+#3d8e919c → sel
+#f8f8f0 → caret
+
+{
+"foreground": "$fg",
+"background": "$bg",
+"caret": "$caret",
+"lineHighlight": "$fg14",
+"findHighlight": "#ffe792",
+"selection": "$sel",
+"selectionBorder": "#00000000",
+"guide": "#ffffff20"
+}
+
+$bg bg $fg [bold] markup.bold
+$fg80 constant.date.punctuation
+$fg80 meta.delimiter.comma # ,
+$fg80 punctuation.(separator|terminator.statement) # : ;
+$fg80 punctuation.accessor # .
+$fg80 punctuation.definition.(block|dictionary) # {}
+$fg80 punctuation.definition.(brackets|array) # []
+$fg80 punctuation.definition.group # ()
+$fg20 punctuation.definition.string.key
+$variable string.key
+$variable variable
+$variable5e variable.quiet
+$string string
+$string60 punctuation.definition.string
+$string60 punctuation.definition.template-expression
+$stringb0 [bold] punctuation.definition.string.template
+# [color($string) with brightness += a little and saturation += a little more] constant.character.escape
+$keyword keyword
+$keyword keyword.operator
+$support support.class
+$support support.type
+$support support.function
+$special variable.language.(x|this)
+$special variable.parameter
+$special80 punctuation.definition.parameters | punctuation.separator.parameter.function
+$special entity
+$function storage.type
+$function string.regexp
+$const constant
+$const constant.language
+$const constant.language.null
+$const constant.language.undefined
+$const support.constant
+$comment comment
+$comment60 punctuation.definition.comment
+$num constant.numeric | constant.language.(infinity|nan) | constant.date.numeral
+$invalid invalid
+
+$keyword punctuation.text
+$keyword [italic] markup.hashtag.hash
+$fgc8 [italic] markup.hashtag
+#ff487e punctuation.text.heart
+#5AC767 bg #296E31 punctuation.text.me
+#D54D47 punctuation.text.them
+#ff0000 [bold] punctuation.text.alert
+$link markup.underline.link
+$link26 markup.underline.link.quiet
+[italic] markup.italic

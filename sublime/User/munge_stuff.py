@@ -103,6 +103,7 @@ class open_context(sublime_plugin.TextCommand):
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
+		# this is a perfect candidate for a state-saving program like a repl; you can load it with functions and then eval them
 		view = self.view; sel = view.sel()
 		sel = expand_empty_regions_to_lines(view, sel)
 		sel = left_trim_regions(view, sel)
@@ -116,7 +117,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				t !== undefined && r.push(t+'')
 				e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e)
 				↩ r.join('')})
-			JSON.stringify(ι)""",json.dumps(ι)))
+			ι""",json.dumps(ι)))
 		for i in range(len(sel))[::-1]:
 			view.replace(edit, sel[i], r[i])
 

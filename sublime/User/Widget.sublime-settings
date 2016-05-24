@@ -1,0 +1,16 @@
+{
+	"auto_complete": false,
+	"auto_match_enabled": false,
+	"color_scheme": "Packages/User/ὄνειρον.tmTheme",
+	"draw_centered": false,
+	"draw_indent_guides": false,
+	"gutter": false,
+	"is_widget": true,
+	"margin": 1,
+	"match_selection": false,
+	"rulers": [],
+	"scroll_past_end": false,
+	"syntax": "Packages/Text/Plain text.tmLanguage",
+	"translate_tabs_to_spaces": false,
+	"word_wrap": false
+}

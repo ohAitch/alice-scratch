@@ -20,12 +20,12 @@ eval_in_worker ← (λ(){
 		.on('message',λ(ι){ (ι[0]==='*'? ι.slice(1) : [ι]).map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
 		)
-	;(λ(){ t ← free.pop(); free._.map(ι => ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
+	;(λ(){ t ← free.pop(); free._.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
 	cleanup ← λ(){ busy['filter!'](ι=> ι.connected); free['filter!'](ι=> ι.connected); free.size || free.add(make()) }
 	↩ λ(code){ cleanup(); t ← free.pop(); free.delete(t); busy.add(t); t.send(['eval',code]); ↩ t }
 	})()
-procify ← (a,code) => ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ(){
-	err ← e => (process.stderr.write((e.stack||e)+'\n'), process.exitCode || (process.exitCode = 1))
+procify ← (a,code)=> ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ(){
+	err ← e=> (process.stderr.write((e.stack||e)+'\n'), process.exitCode || (process.exitCode = 1))
 	var {on,off} = on_off(); on(process,'uncaughtException',λ(e){ err(e); process.exit() }); on(process,'beforeExit',()=> off())
 	process.argv = [process.argv[0],…a.argv]; φ.cwd = a.cwd; process.env = a.env; try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code)
@@ -39,7 +39,7 @@ new net.Server()
 		socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGINT'); ended = true })).on('error',t)
 		socket.on('data',catch_(λ(ι){
 			if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
-			i←0; get ← n => i+n <= ι.length || (buf = ι.slice(i), _↩())
+			i←0; get ← n=> i+n <= ι.length || (buf = ι.slice(i), _↩())
 			while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← String.fromCharCode(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 			})); buf←;
 		a ← {argv:[], cwd:'', env:{}}
@@ -65,7 +65,7 @@ new net.Server()
 
 // perf: excellent except mimic.c makes too many calls to `send\(`; to fix, batch the A,E,D,R messages together into an I init message
 
-// --------------------------------- ⋈ todo --------------------------------- //
+// --------------------------------- ‡ todo --------------------------------- //
 
 // #! important features:
 // # * hardening against fucking up the pooled process

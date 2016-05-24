@@ -1,33 +1,45 @@
 #!/usr/bin/env ζ
 // translate sane stuff into weird sublime formats and put it in the sublime places
 // then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
-
 plist ← npm('plist@1.2.0')
-arg ← {
-	cmd: process.argv[2] || 'to',
-	in: φ(process.argv[3] || 'Packages').root('/')+'',
-	out: φ`~/Library/Application Support/Sublime Text 3/Packages`+'',
-	}
-APP ← '\x1b[34m[sublime transform]\x1b[0m'
 
 main ← λ(){
-	written ← []; R ← ι => (written.push(ι+''), ι)
+	// shᵥ`ln -s ~/ali/github/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
+	‽('φ todo')
+	from ← φ(__dirname).φ`Packages`
+	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
+	written ← []; R ← ι=> (written.push(ι+''), ι)
 // ------------------------------- broken part ------------------------------ //
-	φ(arg.in).φ`**`.filter(ι => !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
+	from.φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice((from+'').length).replace(/^\//,'') // .root(from) ?
 		;(t=ι.match(/^(.*)\.json$/))?
-			( R(φ(arg.out).φ(t[1])).buf = plist.build(φ(arg.in).φ(ι).json) )
-		: ( R(φ(arg.out).φ(ι)).buf = φ(arg.in).φ(ι).buf )
+			( R(dest.φ(t[1])).buf = plist.build(from.φ(ι).json) )
+		: ( R(dest.φ(ι)).buf = from.φ(ι).buf )
 		})
-	roots ← φ(arg.in).φ`*`.φs.map(λ(ι){ι+=''; ↩ ι.replace(arg.in,arg.out)})
-	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι => !ι.dir()).map(ι => ι+'')
+	roots ← from.φ`*`.φs.map(ι=> (ι+'').replace(from+'',dest+''))
+	out ← dest.φ`**`.filter(ι=> roots.some(r=> (ι+'').re`^${r}`)).filter(ι=> !ι.dir()).map(ι=> ι+'')
 // -------------------------------------------------------------------------- //
 	_.difference(out,written)
-		.filter(λ(ι){ ↩ !/Package Control\./.λ(ι.replace(arg.out,'')) })
-		.map(λ(ι){ φ(ι).ι = null })
+		.filter(ι=> !/Package Control\./.λ(ι.replace(dest+'','')) )
+		.forEach(λ(ι){ φ(ι).ι = null })
 	}
 
-switch (arg.cmd) {
-	default: cn.log(APP,'invalid command')
-	break; case 'to': main()
-	// break; case 'from': φ`…${arg.in}.json`.ι = plist.parse(φ(arg.in).text)
+to ← λ(from,to){
+	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
+	t = t.match(/^([^{]*)([^]*)/)
+	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(ι=> ι.match(/([\w# [\]]+) → ([\w,]+)/)).mapcat(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
+	t = t[2]
+	defs.forEach(ι=> t = t.replace(re`\$…${ι[0]}(\w*)`.g, (ˣ,t)=> ι[1].replace(/(?= |$)/,t)))
+	t = t.match(/^\s*(\{[^]+?\})([^]*)/)
+	r ← {name:φ(from).name.replace(/\.colors$/,''), settings:[
+		{settings:JSON.parse(t[1])},
+		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]]._.filter(1)._.object(), scope: re`…${t[4]}`.genex_0().join(',')} }),
+		] }
+	φ(to.replace(/\.colors$/,'')+'.tmTheme').buf = plist.build(r)
+	}
+
+argv ← process.argv
+switch (argv[2]) {default: ‽
+	break; case '': main()
+	break; case 'to': to(argv[3], argv[4]||argv[3])
+	break; case 'from': φ`…${argv[3]}.json`.ι = plist.parse(φ(argv[3]).text)
 	}
