@@ -100,7 +100,9 @@ FnF4  $ sfx nack
 @pathfinder  ⌘⇧t  $ _in_new_terminal 'ζ '\''osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`'\'''
 @pathfinder  ⌘;   $ ζ 'terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, "; activate")'
 @photobooth  ⌘q   $ ] ⌘q; ζ 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm("moment@2.13.0")(t[1]+"T"+t[2]+":"+t[3]).toDate().ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")});'
-@sublime  /↩       ] ^↩
+@sublime  ⌫=       ] ⌘⇧⌥^⌫
+@sublime  ;'       ] ⌘⇧⌥^;
+@sublime  /↩       ] ⌘⇧⌥^↩
           /↩       $ sfx ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"
 #         /↩       $ ζ 'sfx`ack`; S ← rand_id(25); p(S); shᵥ`bash -ci '] ⌘c'`; start ← Time().i; (λ Λ(){t←; (t=p())===S? start+1 < Time().i && Λ.defer() : shᵥ`bash -ci ${sh`_chrome ${t}`}` }).defer()'
 # @pathfinder ⌘c   $ ] ⌘c; ζ 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"));'

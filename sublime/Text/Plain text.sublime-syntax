@@ -22,13 +22,13 @@ contexts:
     - { scope: markup.italic, match: '\b_\B[^_\n]+?\B_\b' }
     - { scope: markup.bold, match: '\B\*\b[^*\n]+?\b\*\B' }
     - { scope: string, match: '["“”]|\\.' }
-    - { scope: punctuation.text, match: '[!$&+,\-.:;=?@`\\|/↯…≪≫‽⁺⁻₊×∀∃∄₋~←→↔≡⇒∈∉≠⎋✓¬≔*↩↑↓≈]' }
+    - { scope: punctuation.text, match: '[!$&+,\-.:;=?@`\\|/↯…≪≫‽⁺⁻₊×∀∃∄₋~←→↔≡⇒∈∉≠✓¬≔*↑↓≈]' }
     - { scope: punctuation.text.alert, match: '\b(?<![|])[X](?=\b|[₀-₉⁰¹²³⁴-⁹])(?!\|)' }
     - { scope: punctuation.text.heart, match: '<3(?!>)' }
     - { scope: punctuation.text.me, match: '‡' }
     - { scope: punctuation.text.them, match: '◍' }
-    - { scope: markup.underline.link, match: '[┌─┐│└┘┴┤┬├┼]' }
     - { scope: punctuation.definition.group, match: '[()\[\]{}<>≤≥‹›⟨⟩]' }
     - { scope: constant.numeric, match: '[\d₀-₉⁰¹²³⁴-⁹]' }
     - { scope: variable.quiet, match: '(?!\b_\b)_' }
+    - { scope: entity, match: '[┌─┐│└┘┴┤┬├┼]|[⌥⌘⇧][RL]|[⎋⌫⇥⇪↩⇧^⌥⌘]|F[1-9a-cn]' }
     

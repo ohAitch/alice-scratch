@@ -20,3 +20,5 @@ ls -Alo ~/'Applications/Chrome Apps.localized' > "ls/$(date_i) ~⟩Applications�
 printf %s $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)"$'# npm -g ls\n'"$(npm -g ls | sed -E 's/^[│ ] [│├└ ].*//' | sed '/^$/d')"$'\n' > "ls/$(date_i) package manager ls"
 
 ~/spotiman/backup.ζ
+
+brew update

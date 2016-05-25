@@ -158,6 +158,7 @@ P(()=>({
 'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
 'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, // λ(f){↩ @.map(f)._.flatten(true)}
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @)},
+'Array.prototype.search':λ(f){ r←; if (@.some(λ(ι,i,l){ r = f(ι,i,l); if (r!==undefined) ↩ true })) ↩ r },
 'Object.prototype._':{get(){↩ _(@)}},
 '(Buffer|Array|String).prototype.partition':λ(L){↩ _.range(0,@.length,L).map(i=> @.slice(i,i+L)) },
 'Set.prototype.filter!':λ(f){ @.forEach(ι=> f(ι) || @.delete(ι)) },
@@ -209,9 +210,9 @@ E.schema = (λ(){
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
-write_object ← λ(θ,ι){ι.pipe? ι.pipe(θ) : θ.end(Tstr(ι)? ι : util.inspect(ι,{depth:null}))}
-E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι)}
-E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι)}
+write_object ← λ(θ,ι){ θ.end(Tstr(ι)? ι : util.inspect(ι,{depth:null})) }
+E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι) }
+E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι) }
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=ι+''
 	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' //! bad hack
 
@@ -428,7 +429,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 			}},
 		set lines(ι){ write_file(@._ι, ι.join('\n')+'\n') },
 		get json(){↩ JSON.parse(read_file(@._ι) || 'null') },
-		set json(ι){ write_file(@._ι, JSON.stringify(ι,null,'  ')) },
+		set json(ι){ write_file(@._ι, JSON_pretty(ι)) },
 		get json2(){ι ← @.json; (λ Λ(ι,k,o){if (ι.type==='Buffer') {
 			o[k] = 'data' in ι || 'utf8' in ι? Buffer(ι.data||ι.utf8) : 'base64' in ι? Buffer(ι.base64,'base64') : ‽
 			} else if (Tobj(ι)) _(ι).forEach(Λ)})(ι); ↩ ι},
@@ -558,5 +559,3 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // 		})() }
 // 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
 // '(Buffer|Array|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i=> @.slice(i,i+L))},
-// 'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile['⁻¹'](@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')},
-// 'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.length+']')},

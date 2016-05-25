@@ -1,13 +1,14 @@
 #!/usr/bin/env ζ
 chokidar ← npm('chokidar@1.4.3')
 
+APP ← '\x1b[34m[φΔs]\x1b[0m'
+
 // this is not quite right. like, the thing we're pretending to be is a giant stream of all filesystem events. filtering through that by a filesystem set selector is outside the scope of EventEmitter.
 // it probably ought to be using reactive programming?
 
 // huh, we could/should implement it as a library that logs all (requested) filesystem events whether or not its caller is running ?
 // that would require reliable long-running processes
 
-APP ← '\x1b[34m[φΔs]\x1b[0m'
 pad ← λ(ι,s){↩ ι+s.slice(ι.length)}
 fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 	if (fl !== (fl=φ(fl)+'')) {fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩}
@@ -20,7 +21,7 @@ fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || /(^|\/)\.history(\/|$)/.λ(fl) || /\.(?:gif|jpg|mov|mp3|pages|pdf|png)$/.λ(fl)) ↩
 	cn.log(APP, time, pad(type,' '.repeat(6)), fl)
 	//! ? φl ← φ(fl,{exists:type!=='unlink'}); φ`.history/${time.ymdhmss} ${φl.exists?'=':'X'} ${fl}`.buf = φl.buf
-	φ`.history/${time.ymdhmss} ${type==='unlink'?'X':'='} ${fl}`.buf = type==='unlink'? '' : φ(fl).buf
+	φ`.history/…${fl==='#auto/Local/Auto Save Session.sublime_session' && '#sublime/'}${time.ymdhmss} ${type==='unlink'?'X':'='} ${fl}`.buf = type==='unlink'? '' : φ(fl).buf
 	})
 
 // bug: this only gets subfiles if they were new since the last version *and* their folders were not

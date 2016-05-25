@@ -3,6 +3,13 @@
 // then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 plist ← npm('plist@1.2.0')
 
+// ------------------------------- generic lib ------------------------------ //
+match_json_head ← ι=> _.range(ι.length).search(λ(i){ i>1e3 && ‽('inefficient'); try{↩ [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] }catch(e){ } })
+
+// ----------------------------------- lib ---------------------------------- //
+compile_keys ← ι=> ι.split('').map(ι=> 0?0:{'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
+
+// -------------------------------------------------------------------------- //
 main ← λ(){
 	// shᵥ`ln -s ~/ali/github/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
 	‽('φ todo')
@@ -34,12 +41,28 @@ to ← λ(from,to){
 		{settings:JSON.parse(t[1])},
 		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]]._.filter(1)._.object(), scope: re`…${t[4]}`.genex_0().join(',')} }),
 		] }
-	φ(to.replace(/\.colors$/,'')+'.tmTheme').buf = plist.build(r)
+	φ(to).buf = plist.build(r)
 	}
 
+sb_keyrc_to_sublime_keymap ← λ(from,to){
+	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
+	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/mg).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
+		k ← compile_keys(ι[1])
+		cm ← ι[2]
+		t ← ι[3]; var [a,t] = t.re`^\)`? [undefined,t] : match_json_head(t); a||(a={}); t = t.replace(/^\) */,'')
+		var [cx,t] = t.re`^@`? match_json_head(t.slice(1)) : [undefined,t]
+		t.trim()==='' || ‽
+		↩ {keys:[k], command:cm, args:a, context:cx}
+		})
+	φ(to).json = r }
+
 argv ← process.argv
-switch (argv[2]) {default: ‽
-	break; case '': main()
+switch (argv[2]||'') {default: ‽
+	// break; case '': main()
+	break; case '':
+		P ← '~/ali/github/scratch/sublime/User/'
+		to(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
+		sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
 	break; case 'to': to(argv[3], argv[4]||argv[3])
 	break; case 'from': φ`…${argv[3]}.json`.ι = plist.parse(φ(argv[3]).text)
 	}

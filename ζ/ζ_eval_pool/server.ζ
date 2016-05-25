@@ -1,4 +1,7 @@
 #!/usr/bin/env ζ
+APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
+log ← (…a)=> cn.log(APP,Time(),…a)
+
 // ------------------------ should be in standard lib ----------------------- //
 on_off ← λ(){ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(λ([ee,m,f]){ ee.removeListener(m,f) }); ons = [] } }}
 
@@ -10,7 +13,7 @@ eval_in_worker ← (λ(){
 	busy ← new Set(); free ← new Set()
 	process.once('exit',λ(){ […busy,…free].map(ι=> ι.kill()) })
 	make ← ()=>(
-		cn.log('new worker',Time()),
+		log('new worker',w_id),
 		eval_in_new_worker('('+λ(){
 			wait ← ()=> process.once('message',λ(ι){ ι[0]==='eval' || ‽; (0,eval)(ι[1]) })
 			wait()
@@ -19,9 +22,13 @@ eval_in_worker ← (λ(){
 			}+')()')
 		.on('message',λ(ι){ (ι[0]==='*'? ι.slice(1) : [ι]).map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
-		)
+		._.assign({id: w_id++})
+		); w_id ← 0
 	;(λ(){ t ← free.pop(); free._.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
-	cleanup ← λ(){ busy['filter!'](ι=> ι.connected); free['filter!'](ι=> ι.connected); free.size || free.add(make()) }
+	cleanup ← λ(){ 
+		busy['filter!'](ι=> ι.connected || (log('lost busy worker',ι.id),0))
+		free['filter!'](ι=> ι.connected || (log('lost free worker',ι.id),0))
+		free.size || free.add(make()) }
 	↩ λ(code){ cleanup(); t ← free.pop(); free.delete(t); busy.add(t); t.send(['eval',code]); ↩ t }
 	})()
 procify ← (a,code)=> ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ(){

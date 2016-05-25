@@ -952,6 +952,8 @@ contexts:
             - include: expressions
         - include: method-declaration
         - include: comments
+        - match: ','
+          scope: meta.delimiter.comma.js
 
   method-declaration:
     - match: \b(get|set)(?!\()\b\s*
