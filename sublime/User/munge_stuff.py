@@ -6,6 +6,9 @@
 
 # maybe require('wav') and npm('wav@ should be links to http://npmjs.com/package/wav
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
+# `~/file/github/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
+
+# http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/ζ/builtins.ζ#L370-L384 is broken
 
 import sublime, sublime_plugin
 from sublime import Region
@@ -63,7 +66,7 @@ def open(ι,app=None,focus=True,view=None):
 		else: app = "Sublime Text"
 	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""
 		if (app==='Terminal'){
-			ids ← [2,3]._.indexBy()
+			ids ← [1,2]._.indexBy()
 			sfx`ack`
 			var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 			unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
@@ -90,7 +93,7 @@ class open_context(sublime_plugin.TextCommand):
 					↩ encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) }
 				""")
 			if t:
-				t = view.sel()[0]; h = [view.rowcol(ι)[0] for ι in [t.begin(), t.end()]]
+				ts = view.sel()[0]; h = [view.rowcol(ι)[0] for ι in [ts.begin(), ts.end()]]
 				def fm(ι): return 'L'+str(ι + 1)
 				open(t+('' if h[0] == h[1] == 0 else '#'+(fm(h[0]) if h[0] == h[1] else fm(h[0])+'-'+fm(h[1]))),focus=focus)
 		elif type == "terminal":
@@ -144,9 +147,16 @@ class nice_url(sublime_plugin.TextCommand):
 class _(sublime_plugin.EventListener):
 	def on_post_save(self,view): view.substr(Region(0,2)) == '#!' and ζ('shᵥ`chmod +x ${ι}`',view.file_name())
 
+class goto_last_tab(sublime_plugin.WindowCommand):
+	def run(self):
+		window = self.window
+		vs = window.views()
+		if len(vs) > 0: window.focus_view(vs[-1])
+
 ################################# build_dollar #################################
 class build_dollar(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")
 		ζ("""  terminal_do_script(sh`clear; cd ${ι}; build.*; x`) """, os.path.dirname(view.file_name()))
+

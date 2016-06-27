@@ -9,7 +9,7 @@
 	<key>Label</key>
 	<string>local.daily</string>
 	<key>Program</key>
-	<string>/Users/ali/ali/github/scratch/daily.sh</string>
+	<string>/Users/home/file/github/scratch/daily.sh</string>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>StartCalendarInterval</key>

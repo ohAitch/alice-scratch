@@ -13,14 +13,16 @@ KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){↩ {trigger:a, output:b, if:c}}
-parse_keyrc ← λ(src){
+parse_keyrc ← ι=> Λ2(ι,false)
+get_keycodes ← ι=> Λ2(ι,true)
+Λ2 ← λ(src,mode){
 	homoiconic←; h_shape←; keycode←;
 	transpose_str ← ι=> _.zip(…ι.split('\n')).map(ι=> ι.join('')).join('\n')
 	parse_boards ← λ(ι){
 		ι ← ι.mapcat(ι=>
 			transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 				root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-				keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/.λ(ι)[1]).map(ι=> (/\S\S?/g).λ(ι)),
+				keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/.λ(ι)[1]).map(ι=> /\S\S?/g.λ(ι)),
 				} }) )
 		homoiconic || (homoiconic = ι._.indexBy('root')['[homoiconic]'], h_shape = homoiconic.keys.map(ι=> ι.map(()=>'_')))
 		ι.filter(ι=> ι.keys.length === 4).forEach(λ(ι){ι.keys = [h_shape[0], …ι.keys, h_shape[-1]]})
@@ -31,6 +33,18 @@ parse_keyrc ← λ(src){
 		keycode || (keycode = ι._.indexBy('root')['[keycode]'], ι = ι._.without(keycode))
 		ι = ι.mapcat(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 		↩ ι.map(ι=> M(…ι)) }
+	parse_boards([multiline(λ(){/*
+		┌──────── [homoiconic] ────────┐ ┌───────── [keycode] ──────────┐
+		│ ⎋ F1F2F3F4F5F6F7F8F9FaFbFc ⏻ │ │ 357A78637660616264656D676F00 │
+		│ ` 1 2 3 4 5 6 7 8 9 0 - = ⌫  │ │ 321213141517161A1C191D1B1833 │
+		│  ⇥ q w e r t y u i o p [ ] \ │ │ 300C0D0E0F111020221F23211E2A │
+		│  ⇪ a s d f g h j k l ; '  ↩  │ │  6E000102030504262825292724  │
+		│  ⇧L z x c v b n m , . /  ⇧R  │ │  38 060708090B2D2E2B2F2C 3C  │
+		│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │ │ 3F3B3A37   31   363D7B7E7D7C │
+		└──────────────────────────────┘ └──────────────────────────────┘
+		*/})])
+	keycodes ← keycode.keys._.object()
+	if (mode) ↩ keycodes
 	tₐ ← []
 	tₑ ← parse_boards(
 		(src+'\n').replace(/\n{2,}/g,'\n')
@@ -47,21 +61,20 @@ parse_keyrc ← λ(src){
 		└──────────────────────────────┘ └──────────────────────────────┘
 		*/})])
 	mappings ← […tₐ, …tₑ]._.difference_eq(system)
-	↩ {keycodes:keycode.keys._.object(), mappings, homoiconic:homoiconic.keys, non_special:system._.map('trigger').filter(ι=> ι[0]!=='⇧')} }
+	↩ {keycodes, mappings, homoiconic:homoiconic.keys, non_special:system._.map('trigger').filter(ι=> ι[0]!=='⇧')} }
 
 wat ← []
 
 show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 	Mod ← ι=> ({"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"})[ι]
-	shells ← {}; shell ← λ(ι){ι = sh`/usr/local/bin/bash -ci ${ι}`; ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
 	appdefs ← { spotify:'com.spotify.client', chrome:'com.google.Chrome', pathfinder:'com.cocoatech.PathFinder', photobooth:'com.apple.PhotoBooth', sublime:'com.sublimetext.3', terminal:'com.apple.Terminal', }
+	shells ← {}; shell ← λ(ι){ι = sh`/bin/bash -ci ${ι}`; ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
 	compile_mapping ← λ(ι){
 		compile_keystring ← λ(ι,ridiculous_trigger_flag){t←;
 			wat ← ridiculous_trigger_flag?
 				'03C 02C a0 83 16C 15C 14C 10C 13C 07C 01C 00C' :
 				'6b 71 a0 83 16C 15C 14C 10C 13C 07C 01C 00C'
 			if (t=/^FnF(.)$/.λ(ι)) {md ← []; t = wat.split(' ')[parseInt(t[1],16)-1]; ky ← [(t[2]?'Consumer':'')+'KeyCode::RawValue::0x'+t.slice(0,2)]}
-			else if (ι==='DASHBOARD') {md ← []; ky ← ['KeyCode::'+ι]}
 			else {t ← /F.|.[LR]|./g.λ(ι); i ← […t.map(Mod), undefined].indexOf(undefined); md ← t.slice(0,i); ky ← t.slice(i)}
 			if (md.length === 1 && ky.length === 0) {ky = [md[0]]; md = []}
 			else md.push(' ')
@@ -86,25 +99,31 @@ show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 				//[ ☝☝`   ] ^`
 				↩ {name:(t='notsave.'+ι.trigger.length+'touch'), identifier:t, autogen:homoiconic.filter(ι=> !Mod(ι)).map(ι=> compile_mapping(M(ι,'] '+({'⇥':'^⇥','⇪':'^⇧⇥','`':'^`'}[ι]||('⌘'+ι)))).ι)}
 				}),
-			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell('sfx ack; '+KB+' disable notsave.power_key'))},
+			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(homoiconic,non_special).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell(KB+' disable notsave.power_key'))},
 			…(t=mappings.map(compile_mapping)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(λ(ι,i){wat.push('lackey'+i); ↩ {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].if, autogen:ι._.map('ι').reverse()} }),
 			],
 		vkopenurldef: shells._.map((name,ι)=> ({name, url:{'@type':'shell', '#text':ι}})),
 		}} }
 
 // ---------------------------------- main ---------------------------------- //
+if (!module.parent){
 φ`~/Library/Application Support/Karabiner/private.xml`.ι = show_private_xml(parse_keyrc(φ`~/.keyrc`.text))
 shᵥ`${KB} reloadxml`; wat.map(ι=> shᵥ`${KB} enable ${ι}`)
 φ`~/Documents/keyrc_power_key.sh`.text = '#!/usr/bin/env bash -i\nsfx ack; '+KB+' enable notsave.power_key'; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
+}
 
 // mild todo:
 // right command is maybe problematic
 // if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
 // 2d regexes would be wonderful for parsing .keyrc
 
-// next: expand the function
-// ]
-// so that it can do all the FnF.s, so that you can remap the keyboard brightness keys to be sane
+// next: expand this function so that it can do all the FnF.s, so that you can remap the keyboard brightness keys to be sane
 // or oh hey remap the main brightness keys to sync up with the keyboard brightness keys, and then you can just totally safely totally reuse the keyboard brightness keys
-//
-// also: now that it's js maybe integrate it with keyrc.ζ?
+module.exports.robot_keys_hacky = λ(ι){t←; a←; c←;
+	keycodes ← get_keycodes()
+	ι = ι.split(/ +] +/g).map(ι=>(
+		ι = ι.replace(/^[⌘^⇧⌥]*/,ι=>(c=ι,'')),
+		a = (t=ι.re`^FnF(.)$`)? 'key code '+[,0x6b,0x71][t[1]]||‽ : ι==='↩'? 'key code '+keycodes[ι] : osa`keystroke ${ι}`,
+		osa`…${a} using {…${c._.map(ι=> 0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down').join(',')}}`
+		)).join('\n')
+	osaᵥ`system events: …${ι}` }

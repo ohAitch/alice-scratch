@@ -1,77 +1,15 @@
-#!/usr/bin/env /Users/ali/ali/github/scratch/spotiman/spotify-dl/node --harmony /Users/ali/ali/github/scratch/spotiman/spotify-dl/node_modules/zeta-lang/bootstrap.js
+#!/usr/bin/env ζ
 
-node_spotify ← require('./spotify-dl/node_modules/node-spotify')
-cn ← {log:print}
+spotify_web_api ← npm('spotify-web-api-node@2.3.0')
 
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
-// ----------------------------------- aux ---------------------------------- //
-
-poll ← λ(f,cb){(λ λ(){if (f()) cb(); else setTimeout(λ,50)})()}
-is_playlist ← λ(v){↩ v.type === undefined || v.type === 0} // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
-Native ← λ(v,body){@.native = v; _(@).assign(body)}
-	Object.defineProperty(Native.prototype,'toJSON',{configurable:true, enumerable:false, value:λ(){↩ _(@).omit('native')} })
-	magic_native ← {inspect:λ(x,opts){t ← '<native>'; ↩ true/*opts.colors*/? '\x1b[36m'+t+'\x1b[39m' : t}}
-	Object.defineProperty(Native.prototype,'inspect',{configurable:true, enumerable:false, value:
-		λ(){↩ util.inspect(_(_(@).clone()).assign({native: magic_native}), {colors:true})}
-		})
-now ← ()=> Date.now()/1e3
-
-// ----------------------------- getDatabaseoid ----------------------------- //
-
-getDatabaseoid ← λ(cb){
-	loginAndWaitForAllLoaded ← (λ(){
-		login ← λ(cb){t←;
-			cn.log(APP,'logging on ...')
-			spotify ← node_spotify({appkeyFile:process.env.HOME+'/.auth/spotify_appkey.key', settingsFolder:process.env.HOME+'/.libspotify_cache', cacheFolder:process.env.HOME+'/.libspotify_cache'})
-			spotify.on({ready:λ(e){cb(e,spotify)}})
-			spotify.login((t=JSON.parse(fs('~/.auth/spotify').$),t.username),t.password)
-			}
-		waitForAllLoaded ← λ(spotify,cb){
-			cn.log(APP,'loading playlists ...')
-			t ← spotify.playlistContainer.getPlaylists()
-			poll(λ(){↩ t.filter(is_playlist).every(λ(v){↩ v.isLoaded})},λ(){
-				t = t.filter(is_playlist).mapcat(λ(v){↩ v.getTracks()})
-				poll(λ(){↩ t.every(λ(v){↩ v.isLoaded})},cb)
-				}) }
-		↩ λ(cb){login(λ(e,spotify){waitForAllLoaded(spotify,λ(){cb(e,spotify)})})}
-		})()
-
-	all_interned_tracks ← {}
-	intern_track ← (λ(){memo ← all_interned_tracks; ↩ λ(v){↩ memo[v.link] || (memo[v.link] = new Native(v,{
-		name: v.name,
-		link: v.link,
-		artists: v.artists.map(λ(v){↩ {name: v.name, link: v.link}}),
-		album: (λ(v){↩ {name: v&&v.name, link: v&&v.link}})(v.album),
-		tags: [],
-		createTime: [],
-		}) ) } })()
-	tag_track ← λ(tag,v,native){
-		!v.tags._.contains(tag.name) && v.tags.push(tag.name)
-		// v.createTime.push([tag.name, Time(native.createTime).iso])
-		v.createTime.push([tag.name, moment(native.createTime).utc().format('YYYY-MM-DD[T]HH:mm:ss[Z]')])
-		↩ v }
-
-	loginAndWaitForAllLoaded(λ(e,spotify){
-		t ← spotify.playlistContainer.getPlaylists().filter(is_playlist)
-		d ← (t._.countBy('name')⟩_.pairs().filter(λ(v){↩ v[1] > 1}).map(λ(v){↩ v[0]}))
-		if (d.length) cn.log(APP,'oh no! duplicate tags!',d)
-		if (d.length) t = t.filter(λ(v){↩ d.indexOf(v.name) === -1})
-		t = t.filter(λ(v){↩ v.owner.canonicalName === spotify.sessionUser.canonicalName}) // it's unclean and hacky to do this
-		tags ← t.map(λ(v){ ↩ new Native(v, { name: v.name, tracks: v.getTracks().map(λ(t){↩ tag_track(v, intern_track(t), t)}) }) })
-		tracks ← _(all_interned_tracks).values()
-		cb(null,[tags,tracks]) }) }
+// client_secret ← '6fb94af6216c412e878ab480e1472441'
 
 // ---------------------------------- main ---------------------------------- //
-
-getDatabaseoid(λ(e,t){tags ← t[0]; tracks ← t[1]
-	// φ`~/ali/history/auto/spotify/${Time().ymdhms}.json`.ι = tracks
-	fs('~/ali/history/auto/spotify/'+moment().toString()+'.json').$ = JSON.stringify(tracks,null,'\t')
-	cn.log(APP,'done.')
-	process.exit() //! augh
-	})
-
-// future:
-// spotify_web_api ← npm('spotify-web-api-node@2.2.0')
-// // https://www.npmjs.com/package/spotify-web-api-node
-// // https://developer.spotify.com/web-api/tutorial/
+if (!module.parent) switch(process.argv[2]){default:‽
+	case 'auth': 
+		spotify_api ← new spotify_web_api({redirectUri:'spotiman://login', clientId:'d5b0c78c127544288b33c260c0f4e8fb'})
+		t ← spotify_api.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify'], 'none')
+		shᵥ`bash -c ${sh`. ~/.bashrc; _chrome ${t}`}`
+}

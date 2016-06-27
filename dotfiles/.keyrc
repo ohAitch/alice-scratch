@@ -1,11 +1,3 @@
-┌──────── [homoiconic] ────────┐ ┌───────── [keycode] ──────────┐
-│ ⎋ F1F2F3F4F5F6F7F8F9FaFbFc ⏻ │ │ 357A78637660616264656D676F00 │
-│ ` 1 2 3 4 5 6 7 8 9 0 - = ⌫  │ │ 321213141517161A1C191D1B1833 │
-│  ⇥ q w e r t y u i o p [ ] \ │ │ 300C0D0E0F111020221F23211E2A │
-│  ⇪ a s d f g h j k l ; '  ↩  │ │  6E000102030504262825292724  │
-│  ⇧L z x c v b n m , . /  ⇧R  │ │  38 060708090B2D2E2B2F2C 3C  │
-│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │ │ 3F3B3A37   31   363D7B7E7D7C │
-└──────────────────────────────┘ └──────────────────────────────┘
 ┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
 │ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
 │  _ q w e r t y u i o p [ ] \ │ │  _ Q W E R T Y U I O P { } | │
@@ -67,7 +59,7 @@ sd  ι
 
 # lang actually want: ∪∩ ∋∌ ⌊⌈⌋⌉ ∕−÷ ¢ ⊥
 # want:
-# fun     卍∴ ⋱ ⌂ ⌕ ◊⟠⧫ ‹›⟪⟫⸨⸩ ☥ § ※⁜ ⁞‣⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
+# fun     卍∴ ⋱ ⌂ ⌕ ◊⟠⧫ ‹›⟪⟫⸨⸩ ☥ § ※⁜ ⁞⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉
 # whoa, ≈ as _.isEqual
 
@@ -76,9 +68,8 @@ sd  ι
 FnF1  $ _bright down
 FnF2  $ _bright up
          FnF3  ] ⌘^f
+@chrome  FnF3  $ ζ 'var [i,t] = osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; urijs ← require("urijs"); urijs(t).domain() === "youtube.com"? chrome_simple_js_ᵥ("$ ← ι=> document.querySelectorAll(ι); t ← $(\".ytp-fullscreen-button\")[0]; t && t.click()","tab "+i) : robot_keys_hacky("⌘^f")'
 @sublime FnF3  ] ⌘⇧^f
-# FnF4  ] DASHBOARD
-FnF4  $ sfx nack
 ^⇪    ] ^⇧L⇥
 ⌘⇧3   $ (( _sc     ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png )&)
 ⌘⇧4   $ (( _sc -io ~/Downloads/$(date -u +"%Y-%m-%dT%H:%M:%SZ").png )&)
@@ -87,7 +78,7 @@ FnF4  $ sfx nack
 ⌘⇧⌥3  $ (( _sc_imgur     )&)
 ⌘⇧⌥4  $ (( _sc_imgur -io )&)
 ⌥^i  $ sfx ack; ζ 'osaᵥ`id of app (path to frontmost application as text)`' | sb
-⌥^s  $ sfx ack; t=$([[ $(NoSleepCtrl -g) = *0 ]] && echo 1 || echo 0); while :; do NoSleepCtrl -abs $t,$t; [[ $(NoSleepCtrl -g) = *$t ]] && break; done # ! should timeout in 1s and alert user of failure
+⌥^s  $ sfx ack; if &>/dev/null pgrep NoSleep; then ζ 'osaᵥ`quit app "nosleep"`'; else open -a NoSleep; fi
 ⌥^l  $ sfx ack; _chrome "genius lyrics: $(ζ 'osaᵥ`spotify: {artist,name} of current track`.join(" - ")')"
 ⌥^c  $ (( ζ 'robot ← npm("robotjs@0.4.1"); id ← robot.mouseClick.every(1/100); (()=> φ`/tmp/robodie`.text && (φ`/tmp/robodie`.ι = null, id.clear())).every(1);' )&)
 ⌥^v  $ ζ 'φ`/tmp/robodie`.text = "1"'
@@ -96,7 +87,6 @@ FnF4  $ sfx nack
 # ⌥^c  ...  ζ.name = "⌥^c"
 # ⌥^v  $ ζ 'ζ["⌥^c"].kill()'
 ☝☝    ] ⌘
-@terminal  ⌘R      ] ^
 @pathfinder  ⌘⇧t  $ _in_new_terminal 'ζ '\''osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`'\'''
 @pathfinder  ⌘;   $ ζ 'terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, "; activate")'
 @photobooth  ⌘q   $ ] ⌘q; ζ 'φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=""; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm("moment@2.13.0")(t[1]+"T"+t[2]+":"+t[3]).toDate().ymdhm+(t[4]?" "+t[4]:"")+t[5]}`+"")});'
@@ -105,15 +95,20 @@ FnF4  $ sfx nack
 @sublime  /↩       ] ⌘⇧⌥^↩
           /↩       $ sfx ack; echo vbb4lx08429be29 | p; ] ⌘c; while [[ "$(p)" = vbb4lx08429be29 ]]; do sleep 0.01; done; _chrome "$(p)"
 #         /↩       $ ζ 'sfx`ack`; S ← rand_id(25); p(S); shᵥ`bash -ci '] ⌘c'`; start ← Time().i; (λ Λ(){t←; (t=p())===S? start+1 < Time().i && Λ.defer() : shᵥ`bash -ci ${sh`_chrome ${t}`}` }).defer()'
-# @pathfinder ⌘c   $ ] ⌘c; ζ 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/ali/books/papers(?=/|$)`,"~/papers").replace(re`^~/ali/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"));'
+# @pathfinder ⌘c   $ ] ⌘c; ζ 't ← p(); if (t[0]==="/") p(t.split("\n").map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,"~").replace(re`^~/file/books/papers(?=/|$)`,"~/papers").replace(re`^~/file/books(?=/|$)`,"~/books").replace(/ /g,"%20").replace(/^\/|(?=~)/,"file:/").replace()}).join("\n"));'
 @chrome  ⌘⇧l       $ ] ⌘l; ζ 'sfx`ack`; var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; p(nice_url(t));'
 @terminal  ⌘r      $ ] ⌘t ] '⌘{' ] ⌘w
 @terminal  ⌘⇧r     $ ] '. ~/.bashrc' ] ↩
+@terminal  ⌘←      ] ^a
+@terminal  ⌘→      ] ^e
+@terminal  ⌘⌫      ] ^u
+@terminal  ⌥⌫      ] ^w
 
 # bad habit keys
          ⌘h      $ sfx nack
-@chrome  ⌘h      ] ⌘h
+@chrome  ⌘h      ] ⌘y
 ⇪                $ sfx nack
+FnF4             $ sfx nack
 # FnF5             $ sfx nack
 # FnF6             $ sfx nack
 @sublime  ^↩     $ sfx nack

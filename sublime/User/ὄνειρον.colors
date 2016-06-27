@@ -1,6 +1,6 @@
 #2a2626 → bg
 #e8e8e8 → fg,variable
-#534b4b → comment
+#615858 → comment # original color: #534b4b
 #f0624b → keyword
 #f7a21b → const,num,string
 #b4b7ad → function
@@ -22,7 +22,7 @@
 }
 
 $bg bg $fg [bold] markup.bold
-$fg80 constant.date.punctuation
+$fg50 constant.date.punctuation
 $fg80 meta.delimiter.comma # ,
 $fg80 punctuation.(separator|terminator.statement) # : ;
 $fg80 punctuation.accessor # .
@@ -45,7 +45,7 @@ $support support.type
 $support support.function
 $special variable.language.(x|this)
 $special variable.parameter
-$special80 punctuation.definition.parameters | punctuation.separator.parameter.function
+$special68 punctuation.definition.parameters | punctuation.separator.parameter.function
 $special entity
 $function storage.type
 $function string.regexp
@@ -61,7 +61,7 @@ $invalid invalid
 
 $keyword punctuation.text
 $keyword [italic] markup.hashtag.hash
-$fgc8 [italic] markup.hashtag
+$const [italic] markup.hashtag
 #ff487e punctuation.text.heart
 #5AC767 bg #296E31 punctuation.text.me
 #D54D47 punctuation.text.them

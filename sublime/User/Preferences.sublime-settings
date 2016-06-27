@@ -5,7 +5,7 @@
 	"bold_folder_labels": true,
 	"caret_style": "phase",
 	"close_windows_when_empty": false,
-	"color_scheme": "Packages/User/ὄνειρον.tmTheme",
+	"color_scheme": "Packages/User/.bin/ὄνειρον.tmTheme",
 	"default_line_ending": "unix",
 	"draw_indent_guides": false,
 	"enable_tab_scrolling": false,
@@ -14,6 +14,11 @@
 	"find_selected_text": true,
 	"font_size": 14,
 	"highlight_line": true,
+	"ignored_packages":
+	[
+		"GotoTab",
+		"Vintage"
+	],
 	"margin": 0,
 	"match_brackets": false,
 	"open_files_in_new_window": false,

@@ -1,6 +1,5 @@
 # i have always wished there was some good way of doing units, like `16 newtons` or `6 meters` (could not super-smart primitive wrappers do the trick?)
 # consider aliasing :: to prototype
-# fat arrow => binds the function to the current value of this #notes-from-coffeescript
 # #don't-forget chained comparisons (e.g. a == b == c)
 # ruby &:symbol is super cute
 # #don't-forget nullsafing

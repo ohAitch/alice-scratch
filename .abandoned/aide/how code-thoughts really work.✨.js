@@ -17,7 +17,6 @@ something like "constraint programming", incl genex(/-?\d/)
 custom fuzzing http://danluu.com/everything-is-broken/
 6.824 http://pdos.csail.mit.edu/6.824-2013/labs/lab-1.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-2.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-3.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-4.html
 real-time text?
-> Generate an equation randomly with a large number of variables, and random operators between them. The player gets to select values for each of the variables, and then see the result. Player attempts to maximize score given a time allotment. I think it could teach people a huge amount about exploration/exploitation, complex systems, inference, etc.
 
 then i think we have a good model.
 
@@ -387,10 +386,8 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	$.prototype.make_equal_to o path type ←
 		// oops, this won't work - the element doesn't exist yet
 		id ← path s/\W/_/g
-		@.attr('id',id)
-		@.attr('type',type)
-		$('#'+id).val(eval('o.'+path))
-		$('#'+id).on('input',λ(){t ← $('#'+id).val(); eval('o.'+path+' = t')})
+		@.attr({id,type})
+		$('#'+id).val(eval('o.'+path)).on('input',λ(){t ← $('#'+id).val(); eval('o.'+path+' = t')})
 		↩ @
 	$.prototype.for ← ⋈⋈ stuff ⋈⋈; ↩ @
 

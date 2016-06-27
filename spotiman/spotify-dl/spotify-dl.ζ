@@ -3,7 +3,7 @@ async ← require('async','1.5.0')
 cn ← {log:print}
 
 arg ← {
-	cache_dir: '~/ali/misc/music_cache',
+	cache_dir: '~/file/misc/music_cache',
 	}
 
 APP ← '\x1b[34m[spotify dl]\x1b[0m'

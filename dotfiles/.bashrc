@@ -4,52 +4,47 @@ __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 
 #################################### private ###################################
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
-_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(ζ 'encodeURIComponent(ι)' "$1")")"; }
 chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; ζ 'osaᵥ`chrome: activate`'; }
+_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(ζ 'encodeURIComponent(ι)' "$1")")"; }
 _alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message ${a1}`} …${a2 && osa`giving up after ${a2}`}` ;' "$@"; }
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-this_term_is_frontmost(){ ζ 'set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07"); t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); r'; } # x
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.mov'; &>/dev/null popd; } # /
 ########## external ##########
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # index.ζ terminal_do_script
 
-################################ not interactive ###############################
-sfx(){ ( afplay "$__dirname/$1.wav" &); } #! duplicate
+############################## call functions in ζ #############################
+sfx(){ ( ζ 'sfx`'"done"'`' &); } 
+](){ ζ 'robot_keys_hacky(a.join(" "))' "$@"; }
 
 ################################## .keyrc only #################################
-](){ ζ 'ι = a.join(" "); 
-	// you can also use `key code`s, which are the same as the ones specified in `[keycode]` !
-	ι = ι.split(/ +] +/g).map(ι=>
-		(t=ι.re`^FnF(.)$`)? "key code "+[,107,113][t[1]]||‽ :
-		(t={"↩":36}[ι])? "key code "+t :
-			osa`keystroke ${ι.replace(/^⌘/,"")} …${ι.re`^⌘` && "using command down"}`
-		).join("\n")
-	osaᵥ`system events: …${ι}`
-	;' "$@"; }
 _in_new_terminal(){ ζ 'terminal_do_script("{ "+ι+"; } &>/dev/null; exit");' "$1"; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> osaᵥ`system events: key code ${ι > 0.5? 113 : 107} using {shift down, option down}`); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
+_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_keys_hacky("⇧⌥FnF"+(ι > 0.5? 2 : 1))); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
 
 ############################ interactive & external ############################
-x(){ local E=$?; this_term_is_frontmost || { [[ $E = 0 ]] && sfx done || ζ 'sfx`fail`; osaᵥ`terminal: activate`;'; }; [[ $E = 0 ]] && exit; return $E; }
+x(){ local E=$?; ζ '
+	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
+	this_term_is_frontmost ← λ(){ t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
+	this_term_is_frontmost() || (a0==="0"? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
+	' $E; [[ $E = 0 ]] && exit; return $E; }
 build.*(){
+	[[ $PWD = ~/file/github/scratch/dotfiles ]] && { ~/file/github/scratch/keyrc.ζ; return $?; }
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo [b]uild{,.*}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
 	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
-# ζ(){ if [[ $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; }
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; }
 
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
-dgrey=$'\e[1;30m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
+dgrey=$'\e[90m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
 export PROMPT_COMMAND='    lx=$?;    _PC_t    '; last_dir=~; _PC_t(){
 	hash -r
 	if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi
@@ -75,9 +70,9 @@ man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb
 googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
 pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 /(){
-	# would be nice to search the text parts of ~/ali/history but it's probably too illegible for that right now
-	if [[ $1 = -h ]]; then _ag ~/ali/notes "$2" .{,/.history}
-	else _ag ~/ali/github "$1" .{,/scratch/dotfiles/.{key,bash}rc} --ignore 'public/lib/'; _ag ~/ali "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+	# would be nice to search the text parts of ~/file/history but it's probably too illegible for that right now
+	if [[ $1 = -h ]]; then _ag ~/file/notes "$2" .{,/.history}
+	else _ag ~/file/github "$1" .{,/scratch{/dotfiles/.{key,bash}rc,/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 	fi | sb; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
@@ -93,7 +88,17 @@ ps2(){ ζ '
 		.filter(ι=> !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
 		._.sortBy(ETIME).reverse()
 		.join("\n")+"\n"'; }
-alias diff='wdiff -n -w $'\''\e[30;41m'\'' -x $'\''\e[0m'\'' -y $'\''\e[30;42m'\'' -z $'\''\e[0m'\'''
+diff(){ ζ '
+	t ← shᵥ`wdiff -n -w ${"\x1b[30;41m"} -x ${"\x1b[0m"} -y ${"\x1b[30;42m"} -z ${"\x1b[0m"} ${a} ;:`+""
+	t = t.split("\n")
+	iL ← t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length)))._.sortBy()._.uniq(true)
+	iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
+	t = iG.map(ι=> ι.map(i=> [t[i],i]))
+	t.forEach(λ(ι){ while (ι[-1][0]==="") ι.pop(); while (ι[0][0]==="") ι.shift() })
+	t.map(ι=> ι.map(([ι,i])=> "\x1b[90m"+i+"\x1b[0m "+ι)
+		.join("\n")+"\n")
+		.join("\x1b[90m"+"-".repeat(30)+"\x1b[0m"+"\n")
+	' "$@"; }
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
@@ -107,12 +112,12 @@ im_concat(){
 	local out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,t+".jpg") })  ;' "$@"; }
+im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = "", φ(ι).φ`../PANO/tmp`.ι = null), "PANO/") : "")+t+".jpg") })  ;' "$@"; }
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 
 ################## single-purpose commands (interactive only) ##################
-rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
+rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
 d(){ ζ 'a ← ι || "."
 	sum ← 0
 	q ← (ι,fl)=> cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
@@ -127,15 +132,16 @@ d(){ ζ 'a ← ι || "."
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
-cache_imgurs(){ for v in "$@"; do local o=~/ali/misc/.cache/imgur/"$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
+cache_imgurs(){ for v in "$@"; do local o=~/file/misc/.cache/imgur/"$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
 youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1"; }
 youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 kc(){ sudo killall coreaudiod; }
 ############ nlog ############
-nlog(){ f ~/ali/history/text\ logs/nihil/; }
-nlog₋₁(){ ql "$(ζ 'φ`~/ali/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
-nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/ali/history/text\ logs/nihil/; }
+nlog(){ f ~/file/history/text\ logs/nihil/; }
+nlog₋₁(){ ql "$(ζ 'φ`~/file/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
+nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/file/history/text\ logs/nihil/; }
 ##############################
+ζlog(){ cat /usr/local/lib/node_modules/zeta-lang/log.txt; }
 email(){ ζ '
 	sfx`ack`
 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
@@ -161,25 +167,29 @@ bookmarks(){ ζ '
 alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
-	o←; diy_stdin(λ(ι){if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
+	o←; diy_stdin(λ(ι){ sfx`nack`; if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
 	;'; }
 
 ############################# system configuration #############################
-# -q which brew || ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # from http://brew.sh/
-# -q which realpath || { echo $'\e[41mrealpath not found\e[0m'; echo 'git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx'; echo $'\e[41m--------\e[0m'; }
+# &>/dev/null which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# &>/dev/null which realpath || { cd ~; git clone git@github.com:harto/realpath-osx.git && cd realpath-osx && make && cp realpath /usr/local/bin/ && cd .. && rm -rf realpath-osx; }
 
-# # for v in /* ~/* ~/Library/LaunchAgents/*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
+# # for v in {/,~/,~/Library/LaunchAgents/}{.[^.],}*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
-# ln -sf ~/ali/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/ali/books ~
-# ln -sf ~/books/\#papers ~/papers
-# ln -sf ~/books/#misc/page_cache ~/pg
-# ln -sf ~/ali/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
-# ln -sf ~/Library/Spelling/LocalDictionary ~/Library/'Application Support/Sublime Text 3'/Local ~/Library/'Application Support'/Google/Chrome/Default/Bookmarks ~/ali/notes/#auto
-# for v in ~/ali/github/scratch/*; do [ -f "$v" ] && [ -x "$v" ] && ln -sf "$v" /usr/local/bin; done
+# # ln -sf ~/file/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/file/books ~
+# ln -sf ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/books ~
+# # ln -sf ~/books/#papers ~/papers
+# # ln -sf ~/books/#misc/page_cache ~/pg
+# ln -sf ~/file/github ~
+# ln -sf ~/file/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
+# ln -sf ~/Library/Spelling/LocalDictionary ~/Library/'Application Support/Sublime Text 3'/Local ~/Library/'Application Support'/Google/Chrome/Default/Bookmarks ~/file/notes/#auto
+# for v in ~/file/github/scratch/*; do [ -f "$v" ] && [ -x "$v" ] && ln -sf "$v" /usr/local/bin; done
 
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 # defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
 # defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+# duti -s com.sublimetext.3 public.plain-text all
+# duti -s com.sublimetext.3 .md all
 
 ################################## deprecated ##################################
 # ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(ι=> /\/subl stdin /.λ(ι+''))._.sortBy(λ(ι){↩ ι.birthtime})[-1]

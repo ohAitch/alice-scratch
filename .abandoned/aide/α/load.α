@@ -56,14 +56,14 @@ reader_or.prototype.reduce   ←! λ(s){r ← [];           while (s ≠ '') {t 
 //===------------------------===// characters //===------------------------===//
 
 js_valid_symbol ← new (λ(){
-	//! _short should be short
-	_short ← ")0 !1 @2 #3 %5 ^6 &7 *8 (9 ∀A 'b {B ,C :c .d =E →e ≥ge >gt `k [L ≤le <lt -m ¬n ≠N |o +p ?q …r /s ~t ←w ǂǂ".split(' ').concat([' _']).map(λ{[v₀,v[1:]]})
-	encode_short ← _short.map(λ{[v₀,'ǂ'+v₁]}).object()
-	decode_short ← _short.map(λ{[v₁,v₀]}).object()
+	short ← ")0 !1 @2 #3 %5 ^6 &7 *8 (9 ∀A 'b {B ,C :c .d =E →e ≥ge >gt `k [L ≤le <lt -m ¬n ≠N |o +p ?q …r /s ~t ←w ǂǂ".split(' ').concat([' _']).map(λ{[v₀,v[1:]]})
+	encode_short ← short.map(λ{[v₀,'ǂ'+v₁]}).object()
+	decode_short ← short.map(λ{[v₁,v₀]}).object()
 	is_start ← memoize_o(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]}).object(),λ(v){try {eval('var '+v )} catch (e) {return false} return true})
 	is_part  ← memoize_o(seq(';ǂ \t\n\x0b\x0c\x0d').map(λ{[v,false]}).object(),λ(v){try {eval('var a'+v)} catch (e) {return false} return true})
 	encode_char ← memoize_o(encode_short, λ(v){return is_part(v)? v : 'ǂu'+hex(ord(v),4)})
 
+	es6_reserved ← 'await break case catch class const continue debugger default delete do else enum export extends finally for function if implements import in instanceof interface let new package private protected return super switch this throw try typeof var void while with yield'.split(' ')
 	keywords ← ['break','do','instanceof','typeof','case','else','new','var','catch','finally','return','void','continue','for','switch','while','debugger','function','this','with','default','if','throw','delete','in','try','class','enum','extends','super','const','export','import','implements','let','private','public','yield','interface','package','protected','static']
 
 	decoder ← new reader_or()
@@ -143,7 +143,7 @@ reader_macros ← [
 [~/^(\/\/.*|\/\*[^]*?(\*\/|$)|[ \t\n\x0c\x0d])+/, λ{SPACE}],
 [~/^(['"])((.*?[^\\])?(\\\\)*)\1/, λ{new Quote(v₂.match(~/\\u....|\\x..|\\.|./g).map(λ(v){return v.length>2? chr(parseInt(v[2:],16)) : v.length=2? {'\'':'\'','\"':'\"','\\':'\\','b':'\b','f':'\f','n':'\n','r':'\r','t':'\t','v':'\v'}[v₁] || err('bad escape: '+v) : v}).join(''))}],
 [~/^~\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/, λ{new Quote(eval('/'+v₁+'/'+v₂))}],
-[new RegExp('^('+[['~@','¬in'],seq('()[]{}‹›`~?:,;'),subscript_ops].m_concat().join('|').replace(~/([()\[\]{}?])/g,'\\$1')+')'), λ{S(v₁)}],
+[re`^(…${['~@','¬in',…seq('()[]{}‹›`~?:,;'),…subscript_ops].map(ι=> re(ι).source).join('|')})`, λ{S(v₁)}],
 [~/^(0[xX][\da-fA-F]+|\d+[rR][\da-zA-Z]+|(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)/, λ{new Quote(parseFloat(v₀))}],
 ]
 
@@ -224,27 +224,27 @@ def_operator ← λ(prec_l,prec_r,bnf){
 			operators[(left_space?' ':'')+op] ←! {prec_l, prec_r, left_eat, op, right:bnf}
 			}) }) }
 
-;[	'400 401 .`\\.. .ᵥ .\\[ .(',
-	'390 391 ¬. -.',
+;[	'800 801 .`\\.. .\\[ .(',
+	'390 391 !. -.',
 	'380 381 .*. ./. .%.',
 	'370 371 .+. .-.',
 	'350 350 .=. .≠. .<. .>. .≤. .≥.',
 	'340 341 .&. .|.',
 	'331 330 .?.:.',
-	'321 322 .+=.',
-	'323 320 .←. .←!.',
-	'300 301 \\`. ~. ~@.',
-	'290 291 ¬_.',
+	'321 322 .←=. .+=.',
+	'323 320 .←.',
+	'300 301 \\`. ~. ~….',
+	'290 291 !_. -_.',
 	'280 281 ._*_. ._/_. ._%_.',
 	'270 271 ._+_. ._-_.',
-	'260 260 ._isa_.',
+	'260 261 .`isa`.',
 	'250 250 ._=_. ._≠_. ._<_. ._>_. ._≤_. ._≥_.',
 	'240 241 ._&_. ._|_.',
-	'231 230 .?_._:_.',
-	'221 222 ._+=_.',
-	'223 220 ._←_. ._←!_.',
+	'231 230 .`?_._:_.',
+	'221 222 ._←=_. ._+=_.',
+	'223 220 ._←_.',
 	'210 211 λ.`. if`.[`:]`.[[`,]`else`.] while`.[`:]`. return[`.] try`.[[`,]`catch`.][[`,]`finally`.] new.`.',
-	'200 201 \\`_. ~_. ~@_.',
+	'200 201 \\`_. ~_. ~…_.',
 	'100 100 , :',
 	].map(λ(v){t ← v.split(' '); t[2:].map(λ(v){def_operator(i(t₀),i(t₁),v)})})
 

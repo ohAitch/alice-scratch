@@ -1,7 +1,7 @@
 {
 	"auto_complete": false,
 	"auto_match_enabled": false,
-	"color_scheme": "Packages/User/ὄνειρον.tmTheme",
+	"color_scheme": "Packages/User/.bin/ὄνειρον.tmTheme",
 	"draw_centered": false,
 	"draw_indent_guides": false,
 	"gutter": false,

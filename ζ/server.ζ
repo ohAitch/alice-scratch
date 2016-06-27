@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ
-APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
-log ← (…a)=> cn.log(APP,Time(),…a)
+// APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
+log ← (…a)=> console.log([Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' '))
 
 // ------------------------ should be in standard lib ----------------------- //
 on_off ← λ(){ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(λ([ee,m,f]){ ee.removeListener(m,f) }); ons = [] } }}
@@ -39,7 +39,7 @@ procify ← (a,code)=> ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+
 
 // -------------------------------------------------------------------------- //
 new net.Server()
-	.listen(+φ`PORT`.text.re`\d+`[0],'localhost',λ(){})
+	.listen(+φ(__dirname).φ`PORT`.text.re`\d+`[0],'localhost',λ(){ log('server started') })
 	.on('connection',λ(socket){t←;
 		worker←; ended←;
 		c_send ← λ(type,ι){ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.length,0); socket.write(Buffer.concat([a,b,c])) }
@@ -65,6 +65,7 @@ new net.Server()
 			break; case '.': // worker.stdin.end()
 			}}
 		})
+process.on('exit',()=> log('server exiting'))
 
 // old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
 // new issue: ignores stdin because it's complicated on the node side

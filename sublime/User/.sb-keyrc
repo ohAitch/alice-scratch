@@ -1,32 +1,39 @@
-⌘←     cmd.move_to({"to": "hardbol"})
-⌘→     cmd.move_to({"to": "hardeol"})
+# ------------------------------ should be builtins ------------------------------
+⌘←     cmd.move_to({ "to":"hardbol" })
+⌘→     cmd.move_to({ "to":"hardeol" })
 ⌘t     cmd.new_file()
 ⌘n     cmd.new_window()
 ^⇥     cmd.next_view()
 ^⇧⇥    cmd.prev_view()
-⌘9     cmd.goto_tab({"tab":"last"})
-⌘l     cmd.show_overlay({"overlay": "goto", "show_files": true})
-⌘p     cmd.show_overlay({"overlay": "command_palette"})
+⌘9     cmd.goto_last_tab()
+⌘0     cmd.unbound()
+⌘l     cmd.show_overlay({ "overlay":"goto", "show_files":true })
+⌘p     cmd.show_overlay({ "overlay":"command_palette" })
 
-⌘f     cmd.show_panel({"panel": "replace", "reverse": false})
-⌘↩     cmd.find_all({"close_panel": true}) @ [{"key": "panel", "operand": "find"}, {"key": "panel_has_focus"}]
-⌘↩     cmd.find_all({"close_panel": true}) @ [{"key": "panel", "operand": "replace"}, {"key": "panel_has_focus"}]
-⌘⌥↩    cmd.replace_all({"close_panel": true}) @ [{"key": "panel", "operand": "replace"}, {"key": "panel_has_focus"}]
+# ---------------------------------- find stuff ----------------------------------
+⌘f     cmd.show_panel({ "panel":"replace", "reverse":false })
+⌘↩     cmd.find_all({ "close_panel":true }) @ [ {"key":"panel", "operand":"find"}, {"key":"panel_has_focus"} ]
+⌘↩     cmd.find_all({ "close_panel":true }) @ [ {"key":"panel", "operand":"replace"}, {"key":"panel_has_focus"} ]
+⌘⇧↩    cmd.replace_all({ "close_panel":true }) @ [ {"key":"panel", "operand":"replace"}, {"key":"panel_has_focus"} ]
+⌘↩     cmd.find_all_under() @ [ {"key":"panel", "operator":"not_equal", "operand":"replace"} ]
+⌘m     cmd.find_under_expand()
 
+# ---------------------- custon names for existing commands ----------------------
 ⌘⌥↑    cmd.swap_line_up()
 ⌘⌥↓    cmd.swap_line_down()
 ⌘d     cmd.duplicate_line()
 ⌘⇧d    cmd.find_under_expand()
 ^t     cmd.clone_file()
-⌘⇧⌥^⌫  cmd.run_macro_file({"file": "res://Packages/Default/Delete Line.sublime-macro"})
+⌘⇧⌥^⌫  cmd.run_macro_file({ "file":"res://Packages/Default/Delete Line.sublime-macro" })
 ⌘⇧[    cmd.fold()
 ⌘⇧]    cmd.unfold()
-⌘⌥←    cmd.bh_key({ "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "left"} } })
-⌘⌥→    cmd.bh_key({ "lines" : true, "plugin": { "type": ["__all__"], "command": "bh_modules.bracketselect", "args": {"select": "right"} } })
+⌘⌥←    cmd.bh_key({ "lines":true, "plugin":{ "type":["__all__"], "command":"bh_modules.bracketselect", "args":{"select":"left"} } })
+⌘⌥→    cmd.bh_key({ "lines":true, "plugin":{ "type":["__all__"], "command":"bh_modules.bracketselect", "args":{"select":"right"} } })
 
-⌘⇧⌥^↩  cmd.open_context({"type": "link"})
-⌘⇧-    cmd.make_divider({"length": 30})
-⌘⇧=    cmd.make_divider({"length": 80})
+# -------------------------------- custom commands -------------------------------
+⌘⇧⌥^↩  cmd.open_context({ "type":"link" })
+⌘⇧-    cmd.make_divider({ "length":30 })
+⌘⇧=    cmd.make_divider({ "length":80 })
 ⌘⇧⌥^;  cmd.inline_eval_zeta()
 ⌘b     cmd.build_dollar()
-⌘;     cmd.open_context({"type": "terminal"})
+⌘;     cmd.open_context({ "type":"terminal" })

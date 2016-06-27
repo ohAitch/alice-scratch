@@ -1,24 +1,30 @@
 #!/usr/bin/env bash
-rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,ali/**/}.DS_STORE ) }
+[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || export PATH="/usr/local/bin:$PATH"
+rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ) }
 date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 date_month(){ date -u +"%Y-%m"; }
 
 rm_bad_cache
 
-cd ~/ali/history/auto/
+cd ~/file/history/auto/
 
-cp -a ~/.ssh ~/.auth ~/.gitconfig ~/.meteorsession ~/.npmrc '#mirrors'
+cp -a ~/.ssh ~/.auth ~/.gitconfig ~/.npmrc '#mirrors'
 cp ~/'Library/Application Support/Google/Chrome/Default/History' "#mirrors/chrome History $(date_month).db"
 cp ~/'Library/Application Support/Skype/alice0meta/main.db' "#mirrors/skype alice0meta macbook $(date_month).db"
+tar -c ~/Library/Preferences | xz -v > "#mirrors/Preferences $(date_month).tar.xz"
+tar -c ~/Library/Fonts > "#mirrors/Fonts $(date_month).tar"
+tar -c ~/'Library/Application Support/Google/Chrome/Default/Pepper Data/Shockwave Flash/WritableRoot/#SharedObjects' | xz -v > "#mirrors/#SharedObjects $(date_month).tar.xz"
+tar -c ~/'Library/Application Support' > "#mirrors/Application Support $(date_month).tar"
 
-ls -AloR ~/ali > "ls/$(date_i) ~⟩ali"
-ls -Alo ~/Downloads > "ls/$(date_i) ~⟩Downloads"
+ls -AloR ~/file > "ls/$(date_i) ~%2Ffile"
+ls -AloR ~/Downloads > "ls/$(date_i) ~%2FDownloads"
 
-ls -Alo /Applications > "ls/$(date_i) ⟩Applications"
-ls -Alo ~/Applications > "ls/$(date_i) ~⟩Applications"
-ls -Alo ~/'Applications/Chrome Apps.localized' > "ls/$(date_i) ~⟩Applications⟩Chrome Apps.localized"
-printf %s $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)"$'# npm -g ls\n'"$(npm -g ls | sed -E 's/^[│ ] [│├└ ].*//' | sed '/^$/d')"$'\n' > "ls/$(date_i) package manager ls"
+ls -Alo /Applications > "ls/$(date_i) %2FApplications"
+ls -Alo /Applications/Utilities > "ls/$(date_i) %2FApplications%2FUtilities"
+ls -Alo ~/Applications > "ls/$(date_i) ~%2FApplications"
+printf %s $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)"$'\n\n# npm -g ls\n'"$(npm -g ls | sed -E 's/^[│ ] [│├└ ].*//' | sed '/^$/d')"$'\n' > "ls/$(date_i) package manager ls"
+defaults read > "ls/$(date_i) defaults read"
 
-~/spotiman/backup.ζ
+# ~/file/github/scratch/spotiman/backup.ζ
 
 brew update

@@ -3,7 +3,10 @@
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
+_ ← require('underscore')
+
 // ------------------------------ browser fixes ----------------------------- //
+NODEP ← typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
 BROWSERP ← typeof window!=='undefined'
 if (BROWSERP) if (!module.parent) module.parent = '<unknown>'
 if (BROWSERP) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
@@ -11,7 +14,7 @@ if (BROWSERP) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').
 // -------------------------- local metaprogramming ------------------------- //
 E ← {} // exports
 patches ← []
-P ← λ(_ι){r ← λ(G){ι ← _ι(); (_.isArray(ι)? ι : _(ι).pairs()).forEach(λ([name,ι]){genex_0(name).map(λ(name){
+P ← λ(_ι){r ← λ(G){ι ← _ι(); (Tarr(ι)? ι : _(ι).pairs()).forEach(λ([name,ι]){genex_0(name).map(λ(name){
 	name = name.split('.'); last ← name.pop()
 	t ← name.reduce((r,ι)=> r[ι], G); Tfun(ι)? (ι.name && (ι.super = t[last]), t[last] = ι) : def(t,last,ι)
 	}) }) }; r(global); patches.push(r)}
@@ -28,12 +31,31 @@ lazy ← λ(name,ι){↩ {get(){↩ @[name] = ι()}}}
 prop_assign ← λ(from,to){Object.getOwnPropertyNames(from).forEach(ι=> Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι)))}
 
 // ------------------------ should be in standard lib ----------------------- //
+T ← E.T = λ(ι){ 
+	ty ← typeof ι; if (ty!=='object') ↩ ty; if (ι===null) ↩ 'null'
+	p ← Object.getPrototypeOf(ι); if (p===Object.prototype || p===null) ↩ 'object'
+	for (var t of is_l) if (t[1](ι)) ↩ t[0]
+	↩ 'object' }
+internal_util ← process.binding('util')
+is_l ← [
+	['Array',Array.isArray],
+	…['ArrayBuffer','DataView','Date','Map','MapIterator','Promise','RegExp','Set','SetIterator','TypedArray'].map(ι=> [ι,internal_util['is'+ι]]),
+	…['Error','String','Boolean','Number'].map(ty=> [ty,ι=> Object.prototype.toString.call(ι)==='[object '+ty+']']),
+	]
+_(T).assign(_(is_l).object())
+T.NaN = Number.isNaN
+T['-0'] = ι=> ι===0 && 1/ι < 0
+T.symbol = ι=> typeof ι === 'symbol'
 Tstr ← E.Tstr = ι=> typeof ι === 'string'
 Tnum ← E.Tnum = ι=> typeof ι === 'number'
 Tbool ← E.Tbool = ι=> typeof ι === 'boolean'
 Tfun ← E.Tfun = ι=> typeof ι === 'function'
-Tarr ← E.Tarr = ι=> Array.isArray(ι)
-Tobj ← E.Tobj = λ(ι){t←; ↩ ι!==null && ((t=typeof(ι))==='object' || t==='function') }
+Tarr ← E.Tarr = T.Array
+
+Tprim ← E.Tprim = λ(ι){ switch(typeof(ι)){case 'undefined': case 'boolean': case 'number': case 'string': case 'symbol': ↩ true; case 'object': ↩ ι===null; default: ↩ false} }
+Tbox ← E.Tbox = λ(ι){ if (ι===null || typeof ι!=='object') ↩ false; t ← Object.getPrototypeOf(ι); t = t.constructor&&t.constructor.name; ↩ (t==='Boolean'||t==='String'||t==='Number') && /^\[object (Boolean|String|Number)\]$/.test(Object.prototype.toString.call(ι)) }
+Tprim.ι = {undefined:1,boolean:1,number:1,string:1,symbol:1,null:1}
+Tbox.ι = {Boolean:1,String:1,Number:1}
 
 // -------------------------------- requires -------------------------------- //
 ;[ ['child_process'],['events','EventEmitter'],['http'],['https'],['module','Module'],['net'],['os'],['punycode'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],
@@ -41,7 +63,6 @@ Tobj ← E.Tobj = λ(ι){t←; ↩ ι!==null && ((t=typeof(ι))==='object' || t=
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
 global._ && (E._ = global._)
 global.stream = E.stream
-_ ← E._
 path ← require('path')
 fs ← require('fs')
 moment ← require('moment')
@@ -72,9 +93,12 @@ E.ζ_compile['⁻¹'] = λ(ι){↩ ι.replace(/\b(?:function|return|this)\b(?!['
 ;[process,module,global].map(ι=> ι.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) //‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 E.ζ_repl_start = λ(){
 	global.In = []; global.Out = []
+	global.depth = {ι:'some', type:'some|most|all'}
 	repl._builtinLibs = []
 	t ← repl.REPLServer.prototype; rRpc ← t.complete; t.complete = λ(line,cb){line.trim()===''? cb([]) : rRpc.call(@,line,cb)}
 	self ← repl.start({useGlobal:true, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '})
+	global.repl_self = self
+	inspect ← ι=> util.inspect(ι,{colors:self.useColors, depth:global.depth.ι==='some'? 2 : global.depth.ι==='most'? 5 : global.depth.ι==='all'? null : ‽})
 	self.removeAllListeners('line').on('line',λ(cmd){
 		if (cmd==='') ↩;
 		if (self.bufferedCommand) {self.history[1] += '\n'+self.history[0]; self.history.shift()}
@@ -94,10 +118,10 @@ E.ζ_repl_start = λ(){
 		if (!err && ret !== undefined) {
 			global.__ = ret
 			try {
-				if (Array.isArray(ret) && ret.length > 1 && ret.every(ι=> ι===ret[0]) && _.range(ret.length).every(ι=> ι in ret))
-					t ← self.writer([ret[0]])+' * '+self.writer(ret.length)
+				if (Tarr(ret) && ret.length > 1 && ret.every(ι=> ι===ret[0]) && _.range(ret.length).every(ι=> ι in ret))
+					t ← inspect([ret[0]])+' * '+inspect(ret.length)
 				else
-					t ← self.writer(ret)
+					t ← inspect(ret)
 			}catch(e){t ← '<repl inspect failed>:\n'+(e&&e.stack)}
 			self.outputStream.write(t+'\n') }
 		self.displayPrompt()
@@ -122,9 +146,9 @@ memo_frp ← λ(names,within,f){
 genex_0 ← λ(ι){
 	parse ← λ(ι){
 		q ← λ(ι){↩ ι.match(/\(.*?\)|\[.*?\]|\\.|./g).map(λ(ι){↩ ι[0]==='('? q(ι.slice(1,-1)) : ι[0]==='['? {or:_(ι.slice(1,-1).match(/.-.|./g).map(ι=> ι.length === 1? [ι] : _.range(ι[0].charCodeAt(),ι[2].charCodeAt()+1).map(String.fromCharCode.X))).flatten(true)} : ι})}
-		w ← λ(ι){if (!_.isArray(ι)) ↩ ι; t←; r ← []; while ((t=_(ι).indexOf('|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
+		w ← λ(ι){if (!Tarr(ι)) ↩ ι; t←; r ← []; while ((t=_(ι).indexOf('|')) !== -1) {r.push(ι.slice(0,t)); ι = ι.slice(t+1)}; ↩ r.length? (r.push(ι),{or:r}) : ι.map(w)}
 		↩ w(q(ι))}
-	q ← ι=> ι.or? ι.or.map(q) : _.isArray(ι)? ι.map(q).reduce((a,b)=> _(a.map(a=> b.map(b=> a+b))).flatten(true),['']) : [ι]
+	q ← ι=> ι.or? ι.or.map(q) : Tarr(ι)? ι.map(q).reduce((a,b)=> _(a.map(a=> b.map(b=> a+b))).flatten(true),['']) : [ι]
 	↩ q(parse(ι)) }
 Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
 pretty_time_num ← ι=> new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
@@ -140,7 +164,7 @@ if (!BROWSERP) E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : 
 E.busywait = λ(ι){h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && shᵥ`sleep ${ι-h-0.02}`);}
 E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
-E.rand = ι=> arguments.length===0? Math.random() : Tnum(ι)? rand()*ι |0 : _.sample(ι)
+E.rand = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? rand()*ι |0 : _.sample(ι) }
 E.rand_id = L=> L.map(ι=> rand(az09||(az09=/[0-9a-z]/.genex_0()))).join(''); az09←;
 E.fs_ipc = {
 	emit: λ(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
@@ -196,28 +220,32 @@ P(()=>({
 }))
 hash ← λ(ι){t←;↩ JSON.stringify(Object.prototype.toString.call(ι)==='[object Object]'? (t={}, ι._.keys().sort().forEach(k=> t[k]=ι[k]), t) : ι) }
 _.mixin({difference_eq:λ(ι,…a){ t ← ι._.groupBy(hash); a.forEach(ι=> ι.forEach(ι=> delete t[hash(ι)])); ↩ t._.values()._.flatten(true) }})
-t ← setImmediate(λ(){}); clearImmediate(t); if (Tobj(t)){
-Immediate ← Object.getPrototypeOf(t)
+if (NODEP){
+t ← setImmediate(λ(){}); clearImmediate(t); Immediate ← Object.getPrototypeOf(t)
 t ← setTimeout(λ(){},0); clearTimeout(t); Timeout ← Object.getPrototypeOf(t)
 Immediate.clear = λ(){ clearImmediate(@) }
 Timeout.clear = λ(){ @._repeat? clearInterval(@) : clearTimeout(@) }
 Immediate.ref = Immediate.unref = λ(){}
 }
 E.schema = (λ(){
-	sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b); bk._.difference(ak).forEach(k=> a[k] = b[k]); _.intersection(ak,bk).forEach(k=> a[k] = Tobj(a[k])? sc_merge(a[k],b[k]) : Tobj(b[k])? 'error' : a[k]); ↩ a }
+	sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b); bk._.difference(ak).forEach(k=> a[k] = b[k]); _.intersection(ak,bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]); ↩ a }
 	↩ ι=> Tbool(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? ι.length===0? [] : [ι.map(schema).reduce(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
+E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
+E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
+E.robot_keys_hacky = ι=> npm('require-new@1.1.0')(φ`~/file/github/scratch/keyrc.ζ`+'').robot_keys_hacky(ι)
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
-write_object ← λ(θ,ι){ θ.end(Tstr(ι)? ι : util.inspect(ι,{depth:null})) }
-E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : write_object(child_process.spawn('pbcopy').stdin, ι === undefined? '' : ι) }
-E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : write_object(child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin,ι) }
+q0 ← ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null})
+q ← ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
+E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : child_process.spawn('pbcopy').stdin.end(q(ι === undefined? '' : ι)) }
+E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin.end(q(ι)) }
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=ι+''
 	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' //! bad hack
 
 	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
-	URL ← /\b(?:https?:\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
+	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
 	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι=> ({type:'text', ι})), (ι.match(URL)||[]).map(ι=> ({type:'url', ι})))._.flatten(true).filter(ι=> !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
 	// ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=urijs(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+''); ↩ ι})._.map('ι').join('')
@@ -285,7 +313,10 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 	// http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
 
 	↩ ι}
-E.sfx = λ(ss,…ιs){ child_process.exec(sh`afplay ~/ali/github/scratch/dotfiles/${ss[0]}.wav`) } //! duplicate
+E.sfx = λ(ss,…ιs){ ι ← ss[0]
+	child_process.exec(sh`afplay ~/file/github/scratch/dotfiles/${ι}.wav`)
+	if (ι==='done' && osaᵥ`get volume settings`.error.re`muted:true`){ br ← npm("brightness@3.0.0"); br.get().then(λ(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
+	}
 }
 
 // ----------------------------- metaprogramming ---------------------------- //
@@ -294,10 +325,10 @@ P(()=>({ 'RegExp.prototype.g':{get(){↩ RegExp(@.source,@.flags+'g')}} }))
 P(()=>({ 'RegExp.prototype.i':{get(){↩ RegExp(@.source,@.flags+'i')}} }))
 P(()=>({ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} }))
 // --- metaprogramming → runtime macros built on top of template literals --- //
-is_template ← λ(ss,ιs){↩ Array.isArray(ss) && ss.length-1 === ιs.length}
+is_template ← λ(ss,ιs){↩ Tarr(ss) && ss.length-1 === ιs.length}
 simple_template ← λ(ss,ιs,filter){ is_template(ss,ιs) || ‽
 	falsy ← ι=> ι===null||ι===undefined||ι===false
-	if (Array.isArray(filter)){ var [root,join] = filter; filter = ι=> Array.isArray(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
+	if (Tarr(filter)){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	filter_special ← ι=> falsy(ι)? '' : ι+''
 	ι ← _.zip( ss.raw.map(ι=> ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
 	for(i←0;i<ι.length-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){ ι[i+1] = filter_special(ι[i+1].raw); i++; ↩ '' })
@@ -319,7 +350,7 @@ E.JSON_pretty = λ(ι,replacer){
 			default:
 				if (seen.indexOf(ι) !== -1) throw TypeError('Converting circular structure to JSON')
 				seen.push(ι)
-				if (Array.isArray(ι)) { var [a,b] = '[]'; ι = ι.map(indent_show); for (i←0;i<ι.length;i++) ι[i]===undefined && (ι[i] = 'null') }
+				if (Tarr(ι)) { var [a,b] = '[]'; ι = ι.map(indent_show); for (i←0;i<ι.length;i++) ι[i]===undefined && (ι[i] = 'null') }
 				else { var [a,b] = '{}'; ι = ι._.pairs().filter(ι=> !(ι[1]===undefined || Tfun(ι[1]))).map(ι=> show(ι[0])+': '+indent_show(ι[1])) }
 				seen.pop()
 				↩ (t=a+ι.join(', ')+b).length <= wrap_width? t : a+'\n'+T+ι.join(',\n'+T)+'\n'+b
@@ -342,14 +373,16 @@ E.osa = λ(ss,…ιs){t←;
 	↩ ι.map(ι=> !Tstr(ι)? _osa.show(ι.raw) : ι.replace(/;/g,'\n')).join('') }
 if (!BROWSERP) E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
 if (!BROWSERP) E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
+E.chrome_simple_osaᵥ = (ι,tab)=> osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`
+E.chrome_simple_js_ᵥ = (ι,tab)=> osaᵥ`chrome: tell window 1's …${tab} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
 	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
-	// 	// E.chrome_js_sandboxᵥ = λ(ι,tab){↩ osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`}
 	// 	// E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+rand_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-2.1.4.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
+	// // probably add a rand_id(10) call to '#applescript_hack'
 	// 	t ← "t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"
-	// 	osaᵥ`chrome: tell …${tab} of window 1 to set URL to ${'javascript:'+ζ_compile(t)}`
+	//	chrome_simple_js_ᵥ(t,tab)
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
-	// 	↩ JSON.parse(osaᵥ`chrome: execute window 1's …${tab} javascript ${t}` || '""') }
+	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
 if (!BROWSERP) E.sublᵥ = λ(ss,…ιs){
 	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	t ← JSON.parse(fs_ipc.emit(34289,ι)); t===null && (t = undefined); ↩ t }
@@ -432,7 +465,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 		set json(ι){ write_file(@._ι, JSON_pretty(ι)) },
 		get json2(){ι ← @.json; (λ Λ(ι,k,o){if (ι.type==='Buffer') {
 			o[k] = 'data' in ι || 'utf8' in ι? Buffer(ι.data||ι.utf8) : 'base64' in ι? Buffer(ι.base64,'base64') : ‽
-			} else if (Tobj(ι)) _(ι).forEach(Λ)})(ι); ↩ ι},
+			} else if (!Tprim(ι)) _(ι).forEach(Λ)})(ι); ↩ ι},
 		set json2(ι){
 			@.text = JSON_pretty(ι,λ(ι){t←;
 			if (Buffer.isBuffer(ι)) ↩ ι.equals(Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
@@ -482,7 +515,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 					})
 				})
 			↩ new Φs(r) } }
-		else {ι ← ss; if (ιs.length || Array.isArray(ι)) ‽('not yet implemented'); if (ι instanceof Φs) ‽('not yet implemented')}
+		else {ι ← ss; if (ιs.length || Tarr(ι)) ‽('not yet implemented'); if (ι instanceof Φs) ‽('not yet implemented')}
 		if (tmpl){ι = normHs(ι).map(ι=> !Tstr(ι)? ENC(ι.raw+'') : ι).join('')}
 		else if (ι instanceof Φ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
 		else {ι = (ι+'').replace(/^~(?=\/|$)/,process.env.HOME)}
@@ -558,4 +591,4 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
 // 		})() }
 // 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
-// '(Buffer|Array|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i=> @.slice(i,i+L))},
+// '(Array|String|Buffer).prototype.windows':λ(L){↩ (@.length-L+1).map(i=> @.slice(i,i+L))},
