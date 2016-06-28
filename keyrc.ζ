@@ -82,9 +82,10 @@ show_private_xml ← λ({keycodes, mappings, homoiconic, non_special}){t←;
 			Key ← ι=> ι.length > 2? ι : 'KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← λ(ι){ t ← compile_keystring(ι,true); ↩ t.cmd+' '+t.ι }
-		compile_output ← λ(ι){t←;
-			↩ (t=/^\$ (.+)$/.λ(ι))? shell(t[1]) :
-			(t=/^\] (.*)/.λ(ι))? compile_keystring(t[1]).ι :
+		compile_output ← λ(ι){t←; ↩0,
+			(t=/^\] (.*)$/.λ(ι))? compile_keystring(t[1]).ι :
+			(t=/^\$ (.+)$/.λ(ι))? shell(t[1]) :
+			(t=/^ζ (.+)$/.λ(ι))? shell(sh`ζ ${t[1]}`) :
 				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← λ(ι){ ι = ι.toLowerCase().re`^@(.+)$`[1]; appdefs[ι] || ‽; ↩ ι }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if: ι.if? compile_appdef(ι.if) : undefined} }

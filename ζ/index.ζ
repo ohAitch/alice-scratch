@@ -233,7 +233,7 @@ E.schema = (λ(){
 	})()
 E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
 E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.robot_keys_hacky = ι=> npm('require-new@1.1.0')(φ`~/file/github/scratch/keyrc.ζ`+'').robot_keys_hacky(ι)
+E.robot_keys_hacky = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc.ζ`+'').robot_keys_hacky(ι)
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
@@ -314,7 +314,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 
 	↩ ι}
 E.sfx = λ(ss,…ιs){ ι ← ss[0]
-	child_process.exec(sh`afplay ~/file/github/scratch/dotfiles/${ι}.wav`)
+	child_process.exec(sh`afplay ~/github/scratch/dotfiles/${ι}.wav`)
 	if (ι==='done' && osaᵥ`get volume settings`.error.re`muted:true`){ br ← npm("brightness@3.0.0"); br.get().then(λ(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
 	}
 }

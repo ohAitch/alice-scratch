@@ -10,25 +10,25 @@ match_json_head ← ι=> _.range(ι.length).search(λ(i){ i>1e3 && ‽('ineffici
 compile_keys ← ι=> […ι].map(ι=> 0?0:{'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
 
 // -------------------------------------------------------------------------- //
-main ← λ(){
-	// shᵥ`ln -s ~/file/github/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
-	‽('φ todo')
-	from ← φ(__dirname).φ`Packages`
-	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
-	written ← []; R ← ι=> (written.push(ι+''), ι)
-// ------------------------------- broken part ------------------------------ //
-	from.φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice((from+'').length).replace(/^\//,'') // .root(from) ?
-		;(t=ι.match(/^(.*)\.json$/))?
-			( R(dest.φ(t[1])).buf = plist.build(from.φ(ι).json) )
-		: ( R(dest.φ(ι)).buf = from.φ(ι).buf )
-		})
-	roots ← from.φ`*`.φs.map(ι=> (ι+'').replace(from+'',dest+''))
-	out ← dest.φ`**`.filter(ι=> roots.some(r=> (ι+'').re`^${r}`)).filter(ι=> !ι.dir()).map(ι=> ι+'')
-// -------------------------------------------------------------------------- //
-	_.difference(out,written)
-		.filter(ι=> !/Package Control\./.λ(ι.replace(dest+'','')) )
-		.forEach(λ(ι){ φ(ι).ι = null })
-	}
+// main ← λ(){
+// 	// shᵥ`ln -s ~/github/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
+// 	‽('φ todo')
+// 	from ← φ(__dirname).φ`Packages`
+// 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
+// 	written ← []; R ← ι=> (written.push(ι+''), ι)
+// // ------------------------------- broken part ------------------------------ //
+// 	from.φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice((from+'').length).replace(/^\//,'') // .root(from) ?
+// 		;(t=ι.match(/^(.*)\.json$/))?
+// 			( R(dest.φ(t[1])).buf = plist.build(from.φ(ι).json) )
+// 		: ( R(dest.φ(ι)).buf = from.φ(ι).buf )
+// 		})
+// 	roots ← from.φ`*`.φs.map(ι=> (ι+'').replace(from+'',dest+''))
+// 	out ← dest.φ`**`.filter(ι=> roots.some(r=> (ι+'').re`^${r}`)).filter(ι=> !ι.dir()).map(ι=> ι+'')
+// // -------------------------------------------------------------------------- //
+// 	_.difference(out,written)
+// 		.filter(ι=> !/Package Control\./.λ(ι.replace(dest+'','')) )
+// 		.forEach(λ(ι){ φ(ι).ι = null })
+// 	}
 
 colors_to_tmTheme ← λ(from,to){
 	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
@@ -60,7 +60,7 @@ argv ← process.argv
 switch (argv[2]||'') {default: ‽
 	// break; case '': main()
 	break; case '':
-		P ← '~/file/github/scratch/sublime/User/'
+		P ← '~/github/scratch/sublime/User/'
 		colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
 		sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
 	// break; case 'to': to(argv[3], argv[4]||argv[3])

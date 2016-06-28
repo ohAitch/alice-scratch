@@ -25,6 +25,6 @@ ls -Alo ~/Applications > "ls/$(date_i) ~%2FApplications"
 printf %s $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)"$'\n\n# npm -g ls\n'"$(npm -g ls | sed -E 's/^[│ ] [│├└ ].*//' | sed '/^$/d')"$'\n' > "ls/$(date_i) package manager ls"
 defaults read > "ls/$(date_i) defaults read"
 
-# ~/file/github/scratch/spotiman/backup.ζ
+# ~/github/scratch/spotiman/backup.ζ
 
 brew update

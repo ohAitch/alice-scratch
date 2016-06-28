@@ -6,7 +6,7 @@
 
 # maybe require('wav') and npm('wav@ should be links to http://npmjs.com/package/wav
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
-# `~/file/github/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
+# `~/github/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
 
 # http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/ζ/builtins.ζ#L370-L384 is broken
 
@@ -69,9 +69,11 @@ def open(ι,app=None,focus=True,view=None):
 			ids ← [1,2]._.indexBy()
 			sfx`ack`
 			var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
-			unbusy ← _.zip(...osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
-			φ`/tmp/__·`.ι = sh`cd ${ι}; ${unbusy && 'clear'}`
-			osaᵥ`terminal: do script "·" …${unbusy && osa`in (window 1 whose id = ${unbusy})`}; …${focus && 'activate'}`
+			unbusy ← _.zip(…osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
+			terminal_do_script(
+				sh`cd ${ι}; ${!unbusy && 'clear'}`,
+				osa`…${unbusy && osa`in (window 1 whose id = ${unbusy})`}; …${focus && 'activate'}`
+				)
 			}
 		else
 			shᵥ`open …${app && sh`-a ${app}`} ${!focus && '-g'} ${ι}`

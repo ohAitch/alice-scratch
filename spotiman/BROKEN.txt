@@ -1,2 +1,0 @@
-this broke when we reinstalled osx and lost the working reference to libspotify in the node-spotify binary
-getting it working again might be a bit of a bother

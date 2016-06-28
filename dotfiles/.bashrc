@@ -16,11 +16,10 @@ clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # index.ζ terminal_do_script
 
 ############################## call functions in ζ #############################
-sfx(){ ( ζ 'sfx`'"done"'`' &); } 
+sfx(){ ( ζ 'sfx`'"$1"'`' &); } 
 ](){ ζ 'robot_keys_hacky(a.join(" "))' "$@"; }
 
 ################################## .keyrc only #################################
-_in_new_terminal(){ ζ 'terminal_do_script("{ "+ι+"; } &>/dev/null; exit");' "$1"; }
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
@@ -33,7 +32,7 @@ x(){ local E=$?; ζ '
 	this_term_is_frontmost() || (a0==="0"? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
 	' $E; [[ $E = 0 ]] && exit; return $E; }
 build.*(){
-	[[ $PWD = ~/file/github/scratch/dotfiles ]] && { ~/file/github/scratch/keyrc.ζ; return $?; }
+	[[ $PWD = ~/file/github/scratch/dotfiles ]] && { ~/github/scratch/keyrc.ζ; return $?; }
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo [b]uild{,.*}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
@@ -57,7 +56,7 @@ chx(){ chmod +x "$1"; }
 64e(){ base64; }
 64d(){ base64 -D; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a "Sublime Text.app" -f; else if [[ $# = 0 ]]; then printf %s 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 ll(){ ls -AGl "$@"; }
 la(){ ls -AG "$@"; }
 f(){ open -a 'Path Finder' "${1:-.}"; ζ 'osaᵥ`path finder: activate`'; }
@@ -72,7 +71,7 @@ pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http:/
 /(){
 	# would be nice to search the text parts of ~/file/history but it's probably too illegible for that right now
 	if [[ $1 = -h ]]; then _ag ~/file/notes "$2" .{,/.history}
-	else _ag ~/file/github "$1" .{,/scratch{/dotfiles/.{key,bash}rc,/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+	else _ag ~/github "$1" .{,/scratch{/dotfiles/.{key,bash}rc,/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 	fi | sb; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
@@ -177,13 +176,12 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 # # for v in {/,~/,~/Library/LaunchAgents/}{.[^.],}*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
 # # ln -sf ~/file/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/file/books ~
-# ln -sf ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/books ~
+# ln -sf ~/file/github ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/books ~
 # # ln -sf ~/books/#papers ~/papers
 # # ln -sf ~/books/#misc/page_cache ~/pg
-# ln -sf ~/file/github ~
 # ln -sf ~/file/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
 # ln -sf ~/Library/Spelling/LocalDictionary ~/Library/'Application Support/Sublime Text 3'/Local ~/Library/'Application Support'/Google/Chrome/Default/Bookmarks ~/file/notes/#auto
-# for v in ~/file/github/scratch/*; do [ -f "$v" ] && [ -x "$v" ] && ln -sf "$v" /usr/local/bin; done
+# for v in ~/github/scratch/*; do [ -f "$v" ] && [ -x "$v" ] && ln -sf "$v" /usr/local/bin; done
 
 # defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 # defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false

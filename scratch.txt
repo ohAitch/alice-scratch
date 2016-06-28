@@ -1,6 +1,6 @@
 ------------------------------------ git ops -----------------------------------
 ------------ merge -----------
-to_path=~/file/github/scratch
+to_path=~/github/scratch
 from='lang-alpha'
 from_url='git@github.com:alice0meta/lang-alpha.git'
 
@@ -15,9 +15,9 @@ git remote remove "$from"
 
 D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
 
-big_repo=~/file/github/scratch
+big_repo=~/github/scratch
 subfolder=ζ₀
-new_repo=~/file/github/lang-zeta-zero
+new_repo=~/github/lang-zeta-zero
 
 cd "$big_repo"
 git subtree split -P "$subfolder" -b "$subfolder-only"
