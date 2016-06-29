@@ -1,38 +1,44 @@
 #!/usr/bin/env ζ
-spotify_api ← new (npm('spotify-web-api-node@2.3.0'))(φ`~/.auth/spotiman`.json)
+spotify ← new (npm('spotify-web-api-node@2.3.0'))()
+async ← npm('async@2.0.0-rc.6')
 APP ← '\x1b[34m[spotiman]\x1b[0m'
+
+// -------------------------------------------------------------------------- //
+spotify.setCredentials(φ`~/.auth/spotiman`.json)
+update_creds ← λ(ι){ t ← spotify.getCredentials(); ι.access_token && (t.accessToken = ι.access_token); ι.refresh_token && (t.refreshToken = ι.refresh_token); spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
+
+depaginate ← λ(f,cbₐ){
+	r ← []; async.doWhilst(
+		cb=> f({offset:r.length}).then(λ(ι){ ι = ι.body; r.push(…ι.items); cb(null,ι) }).done(),
+		ι=> r.length < ι.total,
+		()=> cbₐ(r) ) }
+
+get_my_tracks ← λ(cb){
+	fₐ ← ι=> ι._.pick('name','uri')
+	tracks_r ← {}
+	intern_track ← ι=> tracks_r[ι.uri] || (tracks_r[ι.uri] = fₐ(ι)._.assign({ album:fₐ(ι.album), artists:ι.artists.map(fₐ), tags:[] }))
+	spotify.getMe().then(λ(ι){ ι = ι.body
+		depaginate(cb=> spotify.getUserPlaylists(ι.id,cb), λ(r){
+			async.eachSeries(r, λ(ι,cb){
+				depaginate(cb=> spotify.getPlaylistTracks(ι.owner.id,ι.id,cb), λ(r){
+					pl ← ι; r.map(ι=> intern_track(ι.track).tags.push({name:pl.name, added_at:ι.added_at}) )
+					cb() })
+			},λ(){
+				cb(null,tracks_r._.values())
+	}) }) }).done() }
 
 // ---------------------------------- main ---------------------------------- //
 switch(process.argv[2]||''){default:‽
 	break; case 'auth': 
-		t ← spotify_api.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify'])
+		t ← spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify'])
 		shᵥ`bash -c ${sh`. ~/.bashrc; _chrome ${t}`}`
 	break; case 'auth2':
-		spotify_api.authorizationCodeGrant(process.argv[3]).then(λ(ι){
-			spotify_api.setAccessToken(ι.body.access_token)
-			spotify_api.setRefreshToken(ι.body.refresh_token)
-			φ`~/.auth/spotiman`.json = spotify_api.getCredentials(); cn.log(APP,'auth finished')
-			})
+		spotify.authorizationCodeGrant(process.argv[3]).then(λ(ι){ ι = ι.body; update_creds(ι); cn.log(APP,'auth done') }).done()
 	break; case '':
-		spotify_api.refreshAccessToken().then(main)
-}
-
-λ main(){
-	spotify_api.getMe().then(λ(ι){ ι = ι.body
-		spotify_api.getUserPlaylists(ι.id,{limit:50}).then(λ(ι){ ι = ι.body
-			total ← ι.total
-			got ← ι.items
-			while got.length < total:
-				spotify_api.getUserPlaylists(ι.id,{limit:50,offset:got.length}).then(λ(ι){ ι = ι.body
-					got.push(…ι.items)
+		spotify.refreshAccessToken().then(λ(ι){ ι = ι.body; update_creds(ι)
+			get_my_tracks(λ(e,ι){
+				φ`~/file/history/auto/spotify/${Time().ymdhms}.json`.ι = ι
+				cn.log(APP,'backup done')
 				})
-		})
-	})
+			}).done()
 }
-
-gah
-https://github.com/watsonbox/exportify
-~/file/history/auto/spotify/2016-06-08T20:34:54Z.json
-https://github.com/mattduck/spotifytool
-https://developer.spotify.com/web-api/
-https://github.com/thelinmichael/spotify-web-api-node
