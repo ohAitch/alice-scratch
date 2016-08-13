@@ -16,3 +16,10 @@ think about that and figure out what we want to do with this
 	> 		# god i don't know. i'm sad.
 	> 		tracks where createTime * 0 group max size > 1
 	> 		tracks in some backup and not in latest backup
+	>		@2016-08-04 oh, it's easy
+	>			remove duplicate tracks in all of my playlists (expected behavior: removing the ones with later creation dates)
+	>			for playlists, tracks order:create_time group:id / size > 1 * { [1:] remove }
+	>			for playlists, tracks order:date group:id / size > 1 * { [1:] remove }
+	>			for playlists, tracks order:date group / size > 1 * { [1:] remove }
+	>			for playlists, tracks order:date uniq!
+	>			for playlists, tracks order:date uniq!:id

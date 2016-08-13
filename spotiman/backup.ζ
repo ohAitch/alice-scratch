@@ -18,9 +18,9 @@ get_my_tracks ← λ(cb){
 	tracks_r ← {}
 	intern_track ← ι=> tracks_r[ι.uri] || (tracks_r[ι.uri] = fₐ(ι)._.assign({ album:fₐ(ι.album), artists:ι.artists.map(fₐ), tags:[] }))
 	spotify.getMe().then(λ(ι){ ι = ι.body
-		depaginate(cb=> spotify.getUserPlaylists(ι.id,cb), λ(r){
+		depaginate(opt=> spotify.getUserPlaylists(ι.id,opt), λ(r){
 			async.eachSeries(r, λ(ι,cb){
-				depaginate(cb=> spotify.getPlaylistTracks(ι.owner.id,ι.id,cb), λ(r){
+				depaginate(opt=> spotify.getPlaylistTracks(ι.owner.id,ι.id,opt), λ(r){
 					pl ← ι; r.map(ι=> intern_track(ι.track).tags.push({name:pl.name, added_at:ι.added_at}) )
 					cb() })
 			},λ(){

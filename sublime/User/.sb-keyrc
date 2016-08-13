@@ -8,7 +8,8 @@
 ⌘9     cmd.goto_last_tab()
 ⌘0     cmd.unbound()
 ⌘l     cmd.show_overlay({ "overlay":"goto", "show_files":true })
-⌘p     cmd.show_overlay({ "overlay":"command_palette" })
+⌘⇧⌥^a  cmd.show_overlay({ "overlay":"command_palette" })
+⌘p     cmd.noop()
 
 # ---------------------------------- find stuff ----------------------------------
 ⌘f     cmd.show_panel({ "panel":"replace", "reverse":false })

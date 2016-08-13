@@ -1,101 +1,46 @@
-#!/usr/bin/env bash
-# USAGE: autowhite file
-#
-# PURPOSE: To automatically adjust the white balance of an image.
-# 
-# OPTIONS: 
-# -m method ... METHOD defines how the white balance adjustment will be handled. Method 1 uses a multiplicative adjustment using -recolor (-color-matrix), where the matrix values are the ratios of 100% to the  channel averages in percent graylevel. Method 2 uses an additive adjustment using -evaluate add, where the additive amount is the percent difference of the channel averages from 100%. Method 1 is generally superior. Method 2 often shifts the overall color oddly. The default is method=1.
-# -p percent ... PERCENT is the percentage of pixels closest in color to white that is used to compute the average graylevel of each RGB channel in the image. Values are floats between 0 and 100. Default=1
+#!/usr/bin/env ζ
+// USAGE: autowhite file
+//
+// PURPOSE: To automatically adjust the white balance of an image.
+// 
+// OPTIONS: 
+// -p percent ... PERCENT is the percentage of pixels closest in color to white that is used to compute the average graylevel of each RGB channel in the image. Values are floats between 0 and 100. Default=1
 
-t=`convert -list configure | sed '/^LIB_VERSION_NUMBER /!d;  s//,/;  s/,/,0/g;  s/,0*\([0-9][0-9]\)/\1/g' | head -n 1`
-[ "$t" -gt "06080504" ] || { echo "imagemagick version too low: $t"; exit 1; }
+// ------------------------------- general lib ------------------------------ //
+shᵥexit ← easy_template((ι,R)=> shᵥ(…R(['{ ',…ι,'; } &>/dev/null; echo $?']))+''==='0' )
 
-method=1				#1=multiplicative, 2=additive
-percent=1				#percent pixels closest to white
+// -------------------------------- requires -------------------------------- //
+t ← (shᵥ`convert -list configure ;:`+'').re`LIB_VERSION_NUMBER (.+)`[1].split(',').map(ι=> ('00'+ι).slice(-2)).join('')
+t >= '06080504' ||( cn.log(APP,'error: imagemagick version',t,' < 06080504'), ‽ )
 
-getChannelMean() { convert xc: -format "%[fx:100*$(convert $1 -format "%[mean]" info:)/quantumrange]" info:; }
+percent ← 1 // percent pixels closest to white
 
-getAverage() {
-	mean=$(getChannelMean "$1")
-	# get ave in range 0-100
-	# note both mean and mask_mean are in range 0-100
-	# note average of just near_white values mean of masked image divided by
-	# the fraction of white pixels (from mask)
-	# which is the mean in range 0 to 1 divided by 100
-	local ave=`convert xc: -format "%[fx:100*$mean/$2]" info:`
-	[ "$ave" = "0" -o "$ave" = "0.0" ] && ave=100
-	ratio=`convert xc: -format "%[fx:100/$ave]" info:`
-	diff=`convert xc: -format "%[fx:(100-$ave)]" info:`
+quantumrange ← parseInt(shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+'')
+get_channel_mean ← ι=> parseFloat(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'')/quantumrange
+get_average ← (a,b)=>{ a = get_channel_mean(a); b = get_channel_mean(b); ↩ a===0 || b===0? 1 : a/b }
+
+tmp ← φ`/tmp/im_autowhite_${rand_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); T ← tmp.φ.bind(tmp)
+
+main ← ι=>{
+	shᵥexit`convert -quiet ${ι} +repage ${T`A`}` ||( cn.log(APP,'error: file',ι,'is not an image'), ‽ )
+	cspace ← (shᵥ`identify -ping -verbose ${T`A`}`+'').re`Colorspace: (.+)`[1]
+	;(cspace==='sRGB' || cspace==='Grey') ||( cn.log(APP,'error: file',ι,'is not sRGB or Grey'), ‽ )
+
+	'RGB'._.map(ι=> shᵥ`convert ${T`A`} -channel ${ι} -separate ${T(ι)} ;:`)
+
+	// get mask of top percent closest to white
+	// approximation using negated saturation and brightness channels multiplied
+	shᵥ`convert ${T`A`} -colorspace HSB -channel G -negate -channel GB -separate +channel -compose multiply -composite +channel -contrast-stretch 0,${percent}% -fill black +opaque white ${T`M`} ;:`
+
+	// use mask image to isolate user supplied percent of pixels closest to white
+	// then get ave graylevel for each channel of mask selected pixels
+	avgs ← 'RGB'._.map(ι=>( shᵥ`convert ${T(ι)} ${T`M`} -compose multiply -composite ${T`T`} ;:`, get_average(T`T`,T`M`) ))
+	shᵥ`convert ${T`A`} -color-matrix ${[1/avgs[0],0,0,0,1/avgs[1],0,0,0,1/avgs[2]].join(' ')} ${ι} ;:`
 	}
 
-tmpA="/tmp/autowhite_1__"
-tmpM="/tmp/autowhite_M__"
-tmpT="/tmp/autowhite_T__"
-tmpR="/tmp/autowhite_R__"
-tmpG="/tmp/autowhite_G__"
-tmpB="/tmp/autowhite_B__"
-
-main() {
-	[ "$1" != "" ] || exit 1
-
-	# test infile exists and readable
-	convert -quiet "$1" +repage "$tmpA" || exit 1
-
-	#! this appears to be unimportant
-	# # get colorspace
-	# # colorspace swapped at IM 6.7.5.5, but not properly fixed until 6.7.6.6
-	# # before swap verbose info reported colorspace=RGB after colorspace=sRGB
-	# # not all formats report grayscale for colorspace (gif, tiff, jpg do not), but type will be grayscale
-	# colorspace=`identify -ping -verbose $tmpA | sed -n 's/^.*Colorspace: \([^ ]*\).*$/\1/p'`
-	# if [ "$colorspace" != "RGB" -a "$colorspace" != "sRGB" ]; then
-	# 	echo bwuh
-	# 	exit 1
-	# fi
-
-	# assume an RGB/sRGB input image colorspace
-	convert $tmpA -channel R -separate $tmpR
-	convert $tmpA -channel G -separate $tmpG
-	convert $tmpA -channel B -separate $tmpB
-
-	# process image
-
-	# get mask of top percent closest to white
-	# approximation using negated saturation and brightness channels multiplied
-	convert $tmpA -colorspace HSB -channel G -negate -channel GB -separate +channel \
-		-compose multiply -composite +channel \
-		-contrast-stretch 0,${percent}% -fill black +opaque white \
-		$tmpM
-
-	maskmean=$(getChannelMean $tmpM)
-
-	# use mask image to isolate user supplied percent of pixels closest to white
-	# then get ave graylevel for each channel of mask selected pixels
-
-	convert $tmpR $tmpM -compose multiply -composite $tmpT
-	getAverage "$tmpT" $maskmean
-	redratio=$ratio
-	[ $method -eq 2 ] && convert $tmpR -evaluate add $diff% $tmpR
-
-	convert $tmpG $tmpM -compose multiply -composite $tmpT
-	getAverage "$tmpT" $maskmean
-	greenratio=$ratio
-	[ $method -eq 2 ] && convert $tmpG -evaluate add $diff% $tmpG
-
-	convert $tmpB $tmpM -compose multiply -composite $tmpT
-	getAverage "$tmpT" $maskmean
-	blueratio=$ratio
-	[ $method -eq 2 ] && convert $tmpB -evaluate add $diff% $tmpB
-
-	if [ $method -eq 2 ]; then
-		convert $tmpR $tmpG $tmpB -combine -colorspace sRGB "$1"
-	elif [ $method -eq 1 ]; then
-		convert $tmpA -color-matrix "$redratio 0 0 0 $greenratio 0 0 0 $blueratio" "$1"
-	fi
-	}
-
-APP=$'\e[34m[im_autowhite]\e[0m'
-if [[ $# == 1 ]]; then main "$1"
-else i=1; for v in "$@"; do echo "$APP [$i/$#] $v"; main "$v"; ((i++)); done
-fi
-
-rm -f $tmpA $tmpM $tmpT $tmpR $tmpG $tmpB
+APP ← '\x1b[34m[im_autowhite]\x1b[0m'
+argv ← process.argv.slice(2)
+if (argv.length===1) main(argv[0])
+else argv.forEach((ι,i,l)=>{
+	shᵥexit`[ -f ${ι} ]` &&( cn.log(APP,'['+(i+1)+'/'+l.length+']',ι), main(ι) )
+	})

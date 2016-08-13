@@ -1046,6 +1046,11 @@ contexts:
       push:
         - meta_scope: meta.function-call.js
         - include: function-call-params
+    - match: '(cb|[abeirtxLι])(?=\s*\()'
+      scope: variable.language.x.js
+      push:
+        - meta_scope: meta.function-call.js
+        - include: function-call-params
     - match: '({{identifier}})(?=\s*\()'
       scope: variable.function.js
       push:
@@ -1162,7 +1167,7 @@ contexts:
       scope: variable.language.this.js
     - match: \b(self)\b
       scope: variable.language.self.js
-    - match: \b([abeirtxLι]|cb)\b
+    - match: \b(cb|[abeirtxLι])\b
       scope: variable.language.x.js
 
   dollar-identifiers:

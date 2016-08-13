@@ -10,20 +10,16 @@ _alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message 
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
-_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.mov'; &>/dev/null popd; } # /
+_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@"; &>/dev/null popd; } # /
 ########## external ##########
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # index.ζ terminal_do_script
-
-############################## call functions in ζ #############################
-sfx(){ ( ζ 'sfx`'"$1"'`' &); } 
-](){ ζ 'robot_keys_hacky(a.join(" "))' "$@"; }
 
 ################################## .keyrc only #################################
 _sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
 _imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
 _sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_keys_hacky("⇧⌥FnF"+(ι > 0.5? 2 : 1))); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
+_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap("⇧⌥FnF"+(ι > 0.5? 2 : 1))); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
 
 ############################ interactive & external ############################
 x(){ local E=$?; ζ '
@@ -32,6 +28,7 @@ x(){ local E=$?; ζ '
 	this_term_is_frontmost() || (a0==="0"? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
 	' $E; [[ $E = 0 ]] && exit; return $E; }
 build.*(){
+	# todo: run the current file if you can't find any build files? that would be ... unclean, gosh, but i want something here
 	[[ $PWD = ~/file/github/scratch/dotfiles ]] && { ~/github/scratch/keyrc.ζ; return $?; }
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo [b]uild{,.*}))
@@ -62,7 +59,7 @@ la(){ ls -AG "$@"; }
 f(){ open -a 'Path Finder' "${1:-.}"; ζ 'osaᵥ`path finder: activate`'; }
 ar (){ tar -c "$@" | xz -v    > "$(basename "$1").tar.xz"; }
 ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
-…(){ bash -s; }
+…(){ eval "$(cat)"; }
 del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ ( &>/dev/null qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
@@ -98,6 +95,7 @@ diff(){ ζ '
 		.join("\n")+"\n")
 		.join("\x1b[90m"+"-".repeat(30)+"\x1b[0m"+"\n")
 	' "$@"; }
+rm_empty_dirs(){ find . -type d -empty -delete; }
 
 ############################ im_ (interactive only) ############################
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
@@ -105,13 +103,13 @@ im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.p
 # im_to_png(){ ζ ' a.map(ι=> /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
-im_resize(){ ζ 'for (t of a.slice(1)) shᵥ`convert -scale ${a0} ${t} ${t}`' "$@"; } #! wth are you using scale
+im_resize(){ ζ 'for (t of a.slice(1)) shᵥ`convert -scale ${a0} ${t} ${t}` ;' "$@"; } #! wth are you using scale
 im_concat(){
 	local tile=$(ζ '!!ι.re`^(\d+x\d*|x\d+)$`' "$1" && { echo "$1"; shift; } || echo x1)
 	local out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){dry? cn.log("mv",[a,b]) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = "", φ(ι).φ`../PANO/tmp`.ι = null), "PANO/") : "")+t+".jpg") })  ;' "$@"; }
+im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = "", φ(ι).φ`../PANO/tmp`.ι = null), "PANO/") : "")+t+".jpg") })  ;' "$@"; }
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 
@@ -166,8 +164,31 @@ bookmarks(){ ζ '
 alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
-	o←; diy_stdin(λ(ι){ sfx`nack`; if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
+	o←; diy_stdin(λ(ι){ sfx`nacksoft`; if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
 	;'; }
+# document.write('<button id="pad" style="width:100%;height:100%;"></button>'); $('#pad').click((e)=>{ console.log('foo') })
+cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2"; }
+ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
+push(){ ζ '
+	//! the date code is borked
+
+	get_day_in_year ← ι=> round( (ι - new Date(ι.getUTCFullYear(),0,0))/1e3 / 86400 ) - 1
+	add_days ← (ι,x)=> Time(ι/1e3 + 86400*x)
+
+	argv ← process.argv.slice(2)
+	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
+
+	label_fmt ← ι=> ("..."+ι).slice(-3)
+	label_now ← ()=>{ t ← Time(); ↩ label_fmt(get_day_in_year(t) + (t.getUTCHours() < 10? -1 : -1)) }
+	start ← Time(data.start)
+	labels ← 180..map(ι=> label_fmt(get_day_in_year(add_days(start,ι))) )
+
+	if (argv[1]){ ι = argv[1]; set_data(ι,!data[ι]) }
+
+	color_now ← ι=> "\x1b[43m"+ι+"\x1b[0m"
+	"5×5 pushups: "+start+"::->"+"\n"+
+		labels.partition(floor(80/4)).map(ι=>{ var r = _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?" ✓ ":" · "]; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(" ")).join("\n") }).join("\n")+"\n"
+	' "$@"; }
 
 ############################# system configuration #############################
 # &>/dev/null which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -175,8 +196,8 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 
 # # for v in {/,~/,~/Library/LaunchAgents/}{.[^.],}*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
-# # ln -sf ~/file/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/file/books ~
-# ln -sf ~/file/github ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/books ~
+# # ln -sf ~/file/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/file/consume/books ~
+# ln -sf ~/file/github ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/consume/books ~
 # # ln -sf ~/books/#papers ~/papers
 # # ln -sf ~/books/#misc/page_cache ~/pg
 # ln -sf ~/file/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/
@@ -192,3 +213,6 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 ################################## deprecated ##################################
 # ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(ι=> /\/subl stdin /.λ(ι+''))._.sortBy(λ(ι){↩ ι.birthtime})[-1]
 # cdw(){ local t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }
+
+export NVM_DIR="/Users/home/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm

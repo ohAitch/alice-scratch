@@ -22,8 +22,7 @@ ls -AloR ~/Downloads > "ls/$(date_i) ~%2FDownloads"
 ls -Alo /Applications > "ls/$(date_i) %2FApplications"
 ls -Alo /Applications/Utilities > "ls/$(date_i) %2FApplications%2FUtilities"
 ls -Alo ~/Applications > "ls/$(date_i) ~%2FApplications"
-printf %s $'# brew leaves\n'"$(brew leaves)"$'\n\n# brew cask list\n'"$(brew cask list)"$'\n\n# npm -g ls\n'"$(npm -g ls | sed -E 's/^[│ ] [│├└ ].*//' | sed '/^$/d')"$'\n' > "ls/$(date_i) package manager ls"
-defaults read > "ls/$(date_i) defaults read"
+{ echo '# brew leaves'; brew leaves; echo $'\n# brew cask list'; brew cask list; echo $'\n# npm -g ls'; npm -g ls --depth=0; } > "ls/$(date_i) package manager ls"
 
 ~/github/scratch/spotiman/backup.ζ
 

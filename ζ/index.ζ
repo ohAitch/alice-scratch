@@ -132,7 +132,7 @@ E.ζ_repl_start = λ(){
     })
 	delete self.context._; global._ = E._
 	↩ self}
-if (require.extensions) require.extensions['.ζ'] = λ(module,ι){ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
+if (require.extensions) (()=>{ o ← require.extensions['.js']; require.extensions['.js'] = λ(module,ι){ d ← _.once(()=> fs.readFileSync(ι,'utf8')); t ← path.extname(ι); t==='.ζ' || (t==='' && d().re`#!/usr/bin/env ζ\s`)? module._compile(ζ_compile(d()),ι) : o(module,ι) } })()
 
 // ------------------------ should be in standard lib ----------------------- //
 memo_frp ← λ(names,within,f){
@@ -151,7 +151,7 @@ genex_0 ← λ(ι){
 	q ← ι=> ι.or? ι.or.map(q) : Tarr(ι)? ι.map(q).reduce((a,b)=> _(a.map(a=> b.map(b=> a+b))).flatten(true),['']) : [ι]
 	↩ q(parse(ι)) }
 Number_toFixed ← λ(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+''}
-pretty_time_num ← ι=> new Number(ι)._.assign({inspect:λ(ˣ,opts){P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number')}})
+pretty_time_num ← ι=> new Number(ι)._.assign({inspect:λ(ˣ,opts){ P ← 20; ι←@; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opts.stylize(Number_toFixed(ι,-max(-3,floor(ln10(ι/P))))+u,'number') }})
 
 if (!BROWSERP) E.hook_stdouterr = λ(){
 	r ← ['stdout','stderr'].map(λ(stdio){
@@ -161,8 +161,9 @@ E.cn = { log:λ(…a){ console.log(…(BROWSERP? a : a.map(ι=> Tstr(ι)? ι : u
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log','log10','log2','max','min','PI','pow','round','sqrt')); _(E).assign({ln:E.log, ln2:E.log2, ln10:E.log10})
 E.multiline = λ(ι){ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); ↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n')}
 if (!BROWSERP) E.hrtime = λ(ι){t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9}
-E.busywait = λ(ι){h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && shᵥ`sleep ${ι-h-0.02}`);}
-E.bench = λ(f,l){TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r)} //! really should include a confidence interval or smth
+E.busywait = λ(ι){h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
+E.bench = λ(f,l){ TH←0.4; r←0; I←1; for(hr←hrtime(); hrtime(hr) < TH;) {if (l) for(i←0;i<I;i++) l.push(f()); else for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5)}; ↩ pretty_time_num(hrtime(hr) / r) } //! really should include a confidence interval or smth
+E.bench1 = λ(f){ hr ← hrtime(); f(); ↩ pretty_time_num(hrtime(hr)) }
 E.GET_L = λ(ι,within){↩ memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`)} //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.rand = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? rand()*ι |0 : _.sample(ι) }
 E.rand_id = L=> L.map(ι=> rand(az09||(az09=/[0-9a-z]/.genex_0()))).join(''); az09←;
@@ -173,10 +174,10 @@ E.fs_ipc = {
 		end ← ι=> res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
 		}).listen(port)},
 	}
-E.catch_ = f=> λ(){try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e }}
-E._↩ = λ(ι){throw {__catchable:ι}}
+E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e } }
+E._↩ = ι=>{ throw {__catchable:ι} }
 TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
-P(()=>({
+P(()=>0?0:{
 'RegExp.prototype.genex_0':λ(){↩ genex_0(@.source)},
 'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r},
 'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
@@ -197,15 +198,15 @@ P(()=>({
 'Function.prototype.every':λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); ↩ !(opt&&opt.leading)? r : new TimerCons(@.in(0),r) },
 
 'stream.Readable.prototype.read_all':λ(cb){t ← []; @.resume().on('data',λ(ι){t.push(ι)}).on('end',λ(){cb(null,Buffer.concat(t))})}, //! are you sure end doesn’t also pass any data?
-'(Array|String|Buffer).prototype.-0':{get(){}, set(ι){@.push(ι)}},
-'(Array|String|Buffer).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1]}, set(ι){@.length<1 || (@[@.length-1] = ι)}},
-'(Array|String|Buffer).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2]}, set(ι){@.length<2 || (@[@.length-2] = ι)}},
-'(Array|String|Buffer).prototype.-3':{get(){↩ @.length<3? undefined : @[@.length-3]}, set(ι){@.length<3 || (@[@.length-3] = ι)}},
-'(Array|String|Buffer).prototype.-4':{get(){↩ @.length<4? undefined : @[@.length-4]}, set(ι){@.length<4 || (@[@.length-4] = ι)}},
-}))
+'(Array|String|Buffer).prototype.-0':{get(){ },set(ι){ @.push(ι) }},
+'(Array|String|Buffer).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1] },set(ι){ @.length<1 || (@[@.length-1] = ι) }},
+'(Array|String|Buffer).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2] },set(ι){ @.length<2 || (@[@.length-2] = ι) }},
+'(Array|String|Buffer).prototype.-3':{get(){↩ @.length<3? undefined : @[@.length-3] },set(ι){ @.length<3 || (@[@.length-3] = ι) }},
+'(Array|String|Buffer).prototype.-4':{get(){↩ @.length<4? undefined : @[@.length-4] },set(ι){ @.length<4 || (@[@.length-4] = ι) }},
+})
 E.Time = λ(ι){r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι); r.toString = λ(){↩ util.inspect(@)}; ↩ r}
 fmt ← λ(a,b){t ← @.__local? moment(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString(); t = t.slice(a,b); if (!@.__local && b > 10) t += 'Z'; ↩ t}
-P(()=>({
+P(()=>0?0:{
 'Date.prototype.inspect':λ(d,opts){↩ opts.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')},
 'Date.prototype.local':{get(){↩ new Date(@)._.assign({__local:true})}},
 'Date.prototype.i':{get(){↩ +@ / 1e3}},
@@ -217,7 +218,7 @@ P(()=>({
 'Date.prototype.ymdhmss': {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
 'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
 'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.length,'YYYY-MM-DDTHH:mm:ss'.length)}},
-}))
+})
 hash ← λ(ι){t←;↩ JSON.stringify(Object.prototype.toString.call(ι)==='[object Object]'? (t={}, ι._.keys().sort().forEach(k=> t[k]=ι[k]), t) : ι) }
 _.mixin({difference_eq:λ(ι,…a){ t ← ι._.groupBy(hash); a.forEach(ι=> ι.forEach(ι=> delete t[hash(ι)])); ↩ t._.values()._.flatten(true) }})
 if (NODEP){
@@ -233,7 +234,7 @@ E.schema = (λ(){
 	})()
 E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
 E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.robot_keys_hacky = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc.ζ`+'').robot_keys_hacky(ι)
+E.robot_key_tap = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc.ζ`+'').robot_key_tap(ι)
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
@@ -246,7 +247,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 
 	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
 	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
-	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι=> ({type:'text', ι})), (ι.match(URL)||[]).map(ι=> ({type:'url', ι})))._.flatten(true).filter(ι=> !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
+	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι=> 0?0: {type:'text', ι}), (ι.match(URL)||[]).map(ι=> 0?0: {type:'url', ι}))._.flatten(true).filter(ι=> !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
 	// ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=urijs(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+''); ↩ ι})._.map('ι').join('')
 
@@ -290,7 +291,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 					uri.filename().re`^ref=[\w_]+$` && uri.filename('')
 					if (t=uri.resource().re`^/(?:[\w-]+/)?(?:dp|gp)/(?:product/)?(\w+)/?$`) {ι.ι = 'http://amzn.com/'+t[1]; ↩ ι}
 				break; case 'fb.com': uri.removeSearch(['fref','hc_location','_rdr','pnref'])
-				break; case 'google.com': if (uri.segment()._.isEqual(['search'])) {uri.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); uri.hasSearch('q') && uri.removeSearch('oq')}
+				break; case 'google.com': if (uri.segment()._.isEqual(['search'])){ uri.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); uri.hasSearch('q') && uri.removeSearch('oq') }
 				}; ι.ι = uri+'' }
 		↩ ι})._.map('ι').join('')
 
@@ -320,20 +321,26 @@ E.sfx = λ(ss,…ιs){ ι ← ss[0]
 }
 
 // ----------------------------- metaprogramming ---------------------------- //
-P(()=>({ 'RegExp.prototype.λ':λ(ι){↩ ι===undefined || ι===null? null : ι.match(@) } }))
-P(()=>({ 'RegExp.prototype.g':{get(){↩ RegExp(@.source,@.flags+'g')}} }))
-P(()=>({ 'RegExp.prototype.i':{get(){↩ RegExp(@.source,@.flags+'i')}} }))
-P(()=>({ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} }))
+P(()=>0?0:{ 'RegExp.prototype.λ':λ(ι){↩ ι===undefined || ι===null? null : ι.match(@) } })
+P(()=>0?0:{ 'RegExp.prototype.g':{get(){↩ RegExp(@.source,@.flags+'g')}} })
+P(()=>0?0:{ 'RegExp.prototype.i':{get(){↩ RegExp(@.source,@.flags+'i')}} })
+P(()=>0?0:{ 'RegExp.prototype.m':{get(){↩ RegExp(@.source,@.flags+'m')}} })
 // --- metaprogramming → runtime macros built on top of template literals --- //
-is_template ← λ(ss,ιs){↩ Tarr(ss) && ss.length-1 === ιs.length}
+is_template ← (ss,ιs)=> Tarr(ss.raw) && ss.raw.length-1 === ιs.length
+tmpl_flatten ← (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
 simple_template ← λ(ss,ιs,filter){ is_template(ss,ιs) || ‽
 	falsy ← ι=> ι===null||ι===undefined||ι===false
 	if (Tarr(filter)){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	filter_special ← ι=> falsy(ι)? '' : ι+''
-	ι ← _.zip( ss.raw.map(ι=> ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>({raw:ι})) )._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
+	ι ← tmpl_flatten( ss.raw.map(ι=> ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>0?0:{raw:ι}) )
 	for(i←0;i<ι.length-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){ ι[i+1] = filter_special(ι[i+1].raw); i++; ↩ '' })
 	filter && (ι = ι.map(λ(ι){t←; ↩ Tstr(ι)? ι : (t=filter(ι.raw), t===undefined? ι : t) }))
 	↩ ι}
+E.easy_template = (λ(){
+	read ← (ss,ιs)=> tmpl_flatten(ss.raw,ιs.map(ι=>[ι]))
+	show ← λ(ι){ raw ← ['']; ιs ← []; ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι), raw.push('')) ); ↩ [{raw},…ιs] }
+	↩ f=> (ss,…ιs)=> f(read(ss,ιs),show)
+	})()
 E.JSON_pretty = λ(ι,replacer){
 	seen ← []
 	T ← '  ' // tab
@@ -358,7 +365,7 @@ E.JSON_pretty = λ(ι,replacer){
 	↩ show(ι)}
 
 E.re = λ(ss,…ιs){ι ← simple_template(ss,ιs,[(…a)=>re(…a).source,'']); ENC ← ι=> (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join(''),'u')}
-P(()=>({ 'String.prototype.re':{get(){↩ (ss,…ιs)=> @.match(re(ss,…ιs))}} }))
+P(()=>0?0:{ 'String.prototype.re':{get(){↩ (ss,…ιs)=> @.match(re(ss,…ιs))}} })
 E.sh = λ(ss,…ιs){ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
 if (!BROWSERP) E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
@@ -532,7 +539,7 @@ E.ζ_main = λ(){
 	argv[0] = 'ζ'
 	argv[2]==='--fresh' && argv.splice(2,1)
 	if (argv.length===2){ argv[1] = '<repl>'; global.rl = ζ_repl_start() }
-	else if (φ(argv[2]).BAD_exists() || argv[2].re`^\.?/`){ argv.splice(1,1); t ← φ(argv[1]).root('/')+''; Module._load(t,null,true); delete Module._cache[Module._resolveFilename(t,null,true)] }
+	else if (φ(argv[2]).BAD_exists() || argv[2].re`^\.?/`){ argv.splice(1,1); t ← φ(argv[1]).root('/')+''; o←Module._cache;m←Module._resolveFilename(t,null,true);oι←o[m]; o[m] = undefined; Module._load(t,null,true); o[m] = oι }
 	else { argv[1] = '<eval>'
 		global.require = require; global.code = argv[2]; global.a = argv.slice(3); global.ι = a[0]; a.map((ι,i)=> global['a'+i] = ι)
 		use_r ← !code.re`;\s*$`; r ← eval_(ζ_compile(code)); use_r && process.stdout.write(sh_ify(r)) }
