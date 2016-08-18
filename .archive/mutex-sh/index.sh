@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Fernando Ipar -  2002 - fipar@acm.org
-# file-system based mutual exclusion lock for shell scripts, with no active wait. this script is released under the GNU GPL. see the file COPYING for more info, or lynx to http://www.gnu.org
-# edits and bugfixes by [second author @2016]
 -q(){ "$@" 2>/dev/null; }
 
 #! issue: forgetting to release and then randomly getting a new process with the same pid
@@ -9,6 +6,8 @@
 
 # [[ ${BASH_VERSION:0:1} = 4 ]] || { >&2 echo 'mutex-sh requires bash v4'; exit 1; }
 # _my_pid(){ [[ ${BASH_VERSION:0:1} = 4 ]] && echo $BASHPID || bash -c 'echo $PPID'; } # do not call from a subshell
+
+if [[ $3 != '' ]]; then my_pid=$3; else my_pid=$PPID; fi
 
 _proc_exist(){ ps -p "$1" &>/dev/null; }
 
@@ -24,15 +23,15 @@ _get(){ lock="$(_init "$1")"
 	# i didn't use one single file and the >> redirection operator, precisely for mutual exclusion reasons, 
 	# i have no way to prevent two processes waiting on the same lock to overwrite each other's pid if i append it to a single queue file. 
 	[ -f $lock ] &&
-		{ echo $PPID > "$lock-queue-$PPID"; : add myself to the queue; kill -SIGSTOP $PPID; : sleep on the lock; } ||
-		{ echo $PPID > $lock
+		{ echo $my_pid > "$lock-queue-$my_pid"; : add myself to the queue; kill -SIGSTOP $my_pid; : sleep on the lock; } ||
+		{ echo $my_pid > $lock
 			sleep $( echo "scale=6; ${RANDOM}/1000000" | bc )
 			# we only have some active wait if there's an inconsistency while attempting to obtain the lock
-			-q [ "$(-q cat $lock)" -eq $PPID ] && return 0 || _get $lock; }; }
+			-q [ "$(-q cat $lock)" -eq $my_pid ] && return 0 || _get $lock; }; }
 
 # releases the lock. returns non-zero exit code if the client is not the owner of the lock
 _release(){ lock="$(_init "$1")"
-	-q [ "$(-q cat $lock)" -eq $PPID ] && {
+	-q [ "$(-q cat $lock)" -eq $my_pid ] && {
 		waiting=$(find $_tmpd -type f -name "$(basename $lock)-queue-*" 2>/dev/null|head -1) # there is no real schedulling here...
 		[ -z "$waiting" ] && rm -f $lock || { pid=$(cat $waiting); rm -f $waiting; : remove from queue; echo $pid > $lock; : grant him the lock; kill -SIGCONT $pid; : let him continue; }
 		} || return 1; }
