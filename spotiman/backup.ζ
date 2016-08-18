@@ -30,8 +30,7 @@ get_my_tracks ← λ(cb){
 // ---------------------------------- main ---------------------------------- //
 switch(process.argv[2]||''){default:‽
 	break; case 'auth': 
-		t ← spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify'])
-		shᵥ`bash -c ${sh`. ~/.bashrc; _chrome ${t}`}`
+		browser( spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify']) )
 	break; case 'auth2':
 		spotify.authorizationCodeGrant(process.argv[3]).then(λ(ι){ ι = ι.body; update_creds(ι); cn.log(APP,'auth done') }).done()
 	break; case '':

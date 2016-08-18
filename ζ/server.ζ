@@ -6,8 +6,9 @@ log ← (…a)=> console.log([Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(
 on_off ← λ(){ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(λ([ee,m,f]){ ee.removeListener(m,f) }); ons = [] } }}
 
 // ----------------------------------- lib ---------------------------------- //
-hash ← λ(ι){t ← require('crypto').createHash('sha256'); t.update(ι); ↩ t.digest().toString('hex')}
-as_module ← λ(ι){ t ← φ`/tmp/node_${hash(ι)}.js`; t.ι = ι; ↩ t+'' }
+hash ← ι=> require('crypto').createHash('sha256').update(ι).digest()
+b36 ← ι=> npm('base-x@1.0.4')(/[0-9a-z]/.genex_0().join('')).encode(ι)
+as_module ← λ(ι){ t ← φ`/tmp/node_${b36(hash(ι)).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }
 eval_in_new_worker ← λ(code){ t ← as_module('require("/usr/local/lib/node_modules/zeta-lang")(global);'+code); ↩ require('child_process').fork(t,[],{silent:true}) }
 eval_in_worker ← (λ(){
 	busy ← new Set(); free ← new Set()

@@ -233,16 +233,32 @@ E.schema = (λ(){
 	↩ ι=> Tbool(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? ι.length===0? [] : [ι.map(schema).reduce(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
+E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_reduce(ι,f,k,o)), f(ι,k,o) ) : ( ι = _(ι).map((ι,k,o)=> [k,walk_reduce(ι,f,k,o)])._.object(), f(ι,k,o) )
 E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.robot_key_tap = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc.ζ`+'').robot_key_tap(ι)
+E.robot_key_tap = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc/keyrc.ζ`+'').robot_key_tap(ι)
+E.KEY_once = (…a)=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc/keyrc.ζ`+'').KEY_once(…a)
 
 // ---------------------------------- .ζrc ---------------------------------- //
 if (!BROWSERP){
+process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…process.env.PATH.split(':'),'.']._.uniq().join(':')
 q0 ← ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null})
 q ← ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
 E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : child_process.spawn('pbcopy').stdin.end(q(ι === undefined? '' : ι)) }
 E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin.end(q(ι)) }
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=ι+''
+	// very nice google maps urls
+	// if url ≈ google.com/maps/
+	// fetch short url:
+	// 	wait-click $('#searchbox-hamburger')
+	// 	wait-click $('[jsaction="settings.share"]')
+	// 	wait-check $('#share-short-url')
+	// 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
+	// 	return t
+	// 	$('.modal-container').click()
+	// wait-check: if not $`${ι}:checked`; ι.click(); wait for $`${ι}:checked`
+	// wait-click: wait for ι.length; ι.click()
+	// decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
+
 	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' //! bad hack
 
 	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
@@ -269,6 +285,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 	\b(http://youtu\.be/[\w-_]+)[?&]feature=youtu\.be  $1
 	\b(http://youtu\.be/[\w-_]+)&(\S*)$                $1?$2
 	 - YouTube( http://youtu\.be/)                     $1
+	 \([oO]fficial [vV]ideo\)( http://youtu\.be/)      $1
 	\b(http://)smile\.(amazon\.com/)                   $1$2
 	\b(http://docs\.google\.com/document/d/[\w_-]+)/edit(?:[?&]ts=\w+)?$  $1
 	\b(http://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
@@ -317,6 +334,27 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 E.sfx = λ(ss,…ιs){ ι ← ss[0]
 	child_process.exec(sh`afplay ~/github/scratch/dotfiles/${ι}.wav`)
 	if (ι==='done' && osaᵥ`get volume settings`.error.re`muted:true`){ br ← npm("brightness@3.0.0"); br.get().then(λ(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
+	}
+E._alert = (a,b,c)=> child_process.exec(sh`osascript -e ${osa`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}`}`)
+E.browser = ι=>{
+	ι = ι.re`^https?://`? ι : 'https://www.google.com/search?q='+encodeURIComponent(ι)
+	child_process.exec(sh`(${'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'} ${ι} &); osascript -e ${osa`chrome: activate`}`);
+	}
+E._bright = dir=>{
+	br ← npm("brightness@3.0.0")
+	set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap("⇧⌥FnF"+(ι > 0.5? 2 : 1)))
+	ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16)
+	br.get().then(ι=> set(dir==="up"? ιs.find(t=> t > ι)||1 : ιs.filter(t=> t < ι)[-1]||0) )
+	}
+E._sc = (…a)=> shᵥ`screencapture ${a}`
+E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
+E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${rand_id(9)}.png`; _sc(…a,t); _alert("uploading to imgur","...",1.5); ι ← _imgur(t); browser(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
+E.keep_alive = prog=>{
+	Label ← 'local.'+φ(prog).name
+	t ← φ`~/Library/LaunchAgents/${Label}.plist`
+	t.text = npm('plist@2.0.1').build({Label, KeepAlive:true, ProgramArguments:['sh','-c',sh`export PATH=${process.env.PATH}; ${prog}`]})
+	shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}`
 	}
 }
 

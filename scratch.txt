@@ -130,20 +130,6 @@ ax.set_ylabel('G Label')
 ax.set_zlabel('B Label')
 plt.show()
 
--------------------------------------- ooh -------------------------------------
-We've installed your MySQL database without a root password. To secure it run:
-    mysql_secure_installation
-
-To connect run:
-    mysql -uroot
-
-To have launchd start mysql at login:
-  ln -sfv /usr/local/opt/mysql/*.plist ~/Library/LaunchAgents
-Then to load mysql now:
-  launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
-Or, if you don't want/need launchctl, you can just run:
-  mysql.server start
-
 ------------------------------ sublime api things ------------------------------
 sublᵥ`window.focus_view(window.views()[-1])`
 T ← 10; i←0; (λ(){sublᵥ`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
@@ -183,4 +169,3 @@ entities_decode ← typeof(window)==='undefined'? npm('html-entities@1.2.0').All
 (new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'
 ------- not in node yet ------
 http://es6-features.org/#BlockScopedVariables (not yet supported outside of strict mode)
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive and more

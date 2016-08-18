@@ -4,9 +4,6 @@ __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 
 #################################### private ###################################
 home_link(){ [[ $HOME = ${1:0:${#HOME}} ]] && printf %s "~${1:${#HOME}}" || printf %s "$1"; } # should instead be a function that compresses all of the standard symlinks
-chrome(){ /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"; ζ 'osaᵥ`chrome: activate`'; }
-_chrome(){ chrome "$([[ $1 =~ ^https?:// ]] && printf %s "$1" || printf %s "https://www.google.com/search?q=$(ζ 'encodeURIComponent(ι)' "$1")")"; }
-_alert(){ ζ ' osaᵥ`system events: display alert ${a0} …${a1 && osa`message ${a1}`} …${a2 && osa`giving up after ${a2}`}` ;' "$@"; }
 ####### single-purpose #######
 _pastebin_id(){ local v=$(cat); curl -s 'http://pastebin.com/api/api_post.php' -d "api_option=paste&api_paste_private=1&$(cat ~/.auth/pastebin)" --data-urlencode "api_paste_code=$v" | sed -e 's/.*com\///'; } # pb
 # _pastebin(){ local v=$(cat); c=--$'BtJctBOZ9e8RBV3JgbU\nContent-Disposition: form-data; name='; printf %s "http://pastebin.com/raw$(curl -s -D - 'http://pastebin.com/post.php' -H 'Content-Type: multipart/form-data; boundary=BtJctBOZ9e8RBV3JgbU' --data-binary "$c"$'"csrf_token"\n\nMTQ1MDQwNDA0NHZscEhXME9Scm12Q2l2V0ZPVFdqaGFLcWxQeXRZN3lS\n'"$c"$'"submit_hidden"\n\nsubmit_hidden\n'"$c"$'"paste_code"\n\n'"$v"$'\n'"$c"$'"paste_private"\n\n1\n--'$'BtJctBOZ9e8RBV3JgbU\n' | grep location | sed -e 's/location: //')"; }
@@ -14,12 +11,6 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@"; &>/dev/null popd; }
 ########## external ##########
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; } # munge_stuff.py open terminal
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # index.ζ terminal_do_script
-
-################################## .keyrc only #################################
-_sc(){ mutex get sc; screencapture "$@"; mutex release sc; }
-_imgur(){ mutex get imgur; curl -sH "Authorization: Client-ID 3e7a4deb7ac67da" -F "image=@$1" "https://api.imgur.com/3/upload" | jq -r .data.link; mutex release imgur; }
-_sc_imgur(){ t=/tmp/sc_$RANDOM.png; _sc $1 "$t"; (_alert 'uploading to imgur' '...' 1.5 &); v="$(_imgur "$t")"; _chrome "$v"; echo "$(echo "$v" | googl)#imgur" | p; rm "$t"; }
-_bright(){ ζ '  br ← npm("brightness@3.0.0"); set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap("⇧⌥FnF"+(ι > 0.5? 2 : 1))); ιs ← [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); br.get().then(ι=> set(a0==="up"? ιs.filter(t=> t > ι)[0]||1 : ιs.filter(t=> t < ι)[-1]||0))  ;' "$1"; }
 
 ############################ interactive & external ############################
 x(){ local E=$?; ζ '
@@ -29,7 +20,6 @@ x(){ local E=$?; ζ '
 	' $E; [[ $E = 0 ]] && exit; return $E; }
 build.*(){
 	# todo: run the current file if you can't find any build files? that would be ... unclean, gosh, but i want something here
-	[[ $PWD = ~/file/github/scratch/dotfiles ]] && { ~/github/scratch/keyrc.ζ; return $?; }
 	local t=$(while :; do
 		t=($(shopt -s nullglob; echo [b]uild{,.*}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
@@ -63,8 +53,7 @@ ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
 del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 ql(){ ( &>/dev/null qlmanage -p "$@" &); }
 man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb; }
-googl(){ local v=$(cat); curl -s 'https://www.googleapis.com/urlshortener/v1/url?key='"$(cat ~/.auth/googl)" -H 'Content-Type: application/json' -d '{"longUrl": '"$(echo "$v" | jq -R .)"'}' | jq -r .id; }
-pb(){ local v="$(_pastebin_id)"; _chrome "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
+pb(){ local v="$(_pastebin_id)"; ζ 'browser(ι)' "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 /(){
 	# would be nice to search the text parts of ~/file/history but it's probably too illegible for that right now
 	if [[ $1 = -h ]]; then _ag ~/file/notes "$2" .{,/.history}
@@ -154,13 +143,24 @@ alias ct=chrome_tabs; chrome_tabs(){ ζ '
 	' "$1"; }
 bookmarks(){ ζ '
 	//! should use nice_url
-	ι = φ(ι||"~/Library/Application Support/Google/Chrome/Default/Bookmarks").json.roots.bookmark_bar.children
-	t ← (λ λ(ι){↩ ι instanceof Array? ι.map(λ).join("\n") :
-		ι.children? (ι.name+"\n"+ι.children.map(λ).join("\n")).replace(/\n/g,"\n  ") :
-		ι.url === "http://transparent-favicon.info/favicon.ico"? ι.name :
-		ι.url? (!ι.name || ι.url === ι.name? ι.url : ι.name+" "+ι.url) :
-			JSON.stringify(ι)})(ι); sb(t)
-	;' "$1"; }
+	use_chrome ← true
+	safari_bookmarks ← ι=>{
+		ι = npm("plist@1.2.0").parse(shᵥ`plutil -convert xml1 -o - ${ι||φ`~/Library/Safari/Bookmarks.plist`+""}`+"")
+		my_walk ← ι=>
+			ι.WebBookmarkType==="WebBookmarkTypeProxy"? [] :
+			ι.WebBookmarkType==="WebBookmarkTypeLeaf"? [{name:ι.URIDictionary.title, ι:ι.URLString}] :
+			ι.WebBookmarkType==="WebBookmarkTypeList"? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.mapcat(ι=> my_walk(ι))}] :
+				{name:"", ι:JSON.stringify(ι)}
+		↩ my_walk(ι)[0].ιs }
+	chrome_bookmarks ← ι=>{
+		ι = φ(ι||"~/Library/Application Support/Google/Chrome/Default/Bookmarks").json.roots.bookmark_bar.children
+		my_walk_a ← ι=> ι.map(ι=> my_walk(ι))
+		my_walk ← ι=> ι.children? {name:ι.name, ιs:my_walk_a(ι.children)} : ι.url? {name:ι.name, ι:ι.url} : {name:"", ι:JSON.stringify(ι)}
+		↩ my_walk_a(ι) }
+	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
+	walk(ι,ι=> ι.ι === "http://transparent-favicon.info/favicon.ico" && (ι.ι = null))
+	ι = walk_reduce(ι,ι=> Tarr(ι)? ι.join("\n") : ι.ιs? (ι.name+"\n"+ι.ιs).replace(/\n/g,"\n  ") : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+" "+ι.ι))
+	sb(ι) ;' "$@"; }
 alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
@@ -209,6 +209,8 @@ push(){ ζ '
 # defaults write com.apple.desktopservices DSDontWriteNetworkStores true
 # duti -s com.sublimetext.3 public.plain-text all
 # duti -s com.sublimetext.3 .md all
+
+# keep_alive(φ`~/file/github/scratch/log_fs_changes.ζ`+'')
 
 ################################## deprecated ##################################
 # ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(ι=> /\/subl stdin /.λ(ι+''))._.sortBy(λ(ι){↩ ι.birthtime})[-1]
