@@ -1,10 +1,4 @@
 #!/usr/bin/env ζ
-// install https://pqrs.org/osx/karabiner/
-// go to System Preferences → Keyboard → Input Sources → + → Others → Unicode Hex Input and ensure that the layout is enabled
-// (alternately, run https://github.com/alice0meta/scratch/blob/master/Unicode%20Hex%20Input%20%2B/install.sh and use the .keyrc layout - it fixes a couple issues)
-// run this program if ~/.keyrc has changed
-// if remapping the power key, install https://github.com/pkamb/PowerKey and set it to the script ~/Documents/keyrc_power_key.sh (after having run this program at least once)
-
 xmlbuilder ← npm('xmlbuilder@4.1.0')
 
 as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
@@ -18,8 +12,8 @@ split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ 
 
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
+M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
 transpose_str ← ι=> _.zip(…ι.split('\n')).map(ι=> ι.join('')).join('\n')
-sloppyjsonparse ← ι=> eval('('+ι+')')
 
 macros ← {}
 parse_boards0 ← ι=>
@@ -65,21 +59,20 @@ system ← parse_boards([multiline(λ(){/*
 	└──────────────────────────────┘ └──────────────────────────────┘
 	*/})])
 text_keys ← […system._.map('trigger').filter(ι=> ι[0]!=='⇧'), ' ']
-macros['X'] = 'ζ sfx`nack`'
+macros['X'] = '; sfx`nack`'
 
 parse_keyrc ← λ(src){
-	appdefs ← {}; src = src.replace(/^appdef\((.*)\)$/mg,λ(ˣ,ι){ appdefs._.assign(sloppyjsonparse(ι)); ↩ ''})
-	tₐ ← []
-	tₑ ← parse_boards(
+	tₐ ← []; tₑ ← parse_boards(
 		(src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
 		.replace(/(?:^|\n)(?![│┌└])(.+)/g,λ(ˣ,ι){ t ← ι.match(/^ *(@\w+)? *(\S+) +(.+)/); tₐ.push(M(t[2],t[3],t[1])); ↩ ''})
 		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(ι=> ι.replace(/\n$/,''))
 		)
-	↩ {mappings:[…tₐ, …tₑ]._.difference_eq(system), appdefs} }
-show_private_xml ← λ({mappings,appdefs}){t←;
+	↩ […tₐ, …tₑ]._.difference_eq(system) }
+show_private_xml ← λ(mappings){t←;
 	Mod ← ι=> 0?0: {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"}[ι]
-	shells ← {}; shell ← λ(ι){ι = sh`/bin/bash -ci ${ι}`; ↩ shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.keys().length)}
+	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
+	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = osaᵥ`id of app ${ι}`, φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← λ(ι){
@@ -90,42 +83,43 @@ show_private_xml ← λ({mappings,appdefs}){t←;
 		compile_trigger ← λ(ι){ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← λ(ι){t←; ↩0,
 			(t=/^\] (.*)$/.λ(ι))? compile_keystring(t[1]).ι :
-			(t=/^\$ (.+)$/.λ(ι))? shell(t[1]) :
-			(t=/^ζ (.+)$/.λ(ι))? shell(sh`(ζ ${t[1]} &)`) :
+			(t=/^; (.+)$/.λ(ι))? shell(sh`export PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
-		compile_appdef ← ι=> (ι = ι.toLowerCase().re`^@(.+)$`[1], appdefs[ι] || ‽, ι)
+		compile_appdef ← ι=> (ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι) || ‽, ι)
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if: ι.if? compile_appdef(ι.if) : undefined} }
-	t ← mappings._.partition(ι=> /^☝/.λ(ι.trigger)); touchmaps ← t[0]; mappings = t[1]
+	t ← mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) ); onces ← t[0]; mappings = t[1]
 	↩ {root: {
-		appdef: appdefs._.map((ι,k)=> 0?0: {appname:k, equal:ι}),
-		item: [
-			…touchmaps.map(λ(ι){t←;
-				ι.trigger+ι.output === '☝☝] ⌘' || ‽
-				//[ ☝☝⇪   ] ^⇧L⇥
-				//[ ☝☝⇥   ] ^⇥
-				//[ ☝☝`   ] ^`
-				↩ {name:(t='notsave.'+ι.trigger.length+'touch'), identifier:t, autogen:builtin_keys.filter(ι=> !Mod(ι)).map(ι=> compile_mapping(M(ι,'] '+({'⇥':'^⇥','⇪':'^⇧⇥','`':'^`'}[ι]||('⌘'+ι)))).ι)}
-				}),
-			{name:(t='notsave.power_key'), identifier:t, autogen:_.difference(builtin_keys,text_keys).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell(KB+' disable notsave.power_key'))},
-			…(t=mappings.map(compile_mapping)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map((ι,i)=> 0?0: {name:'lackey'+i, identifier:'lackey'+i, only:ι[0].if, autogen:ι._.map('ι').reverse()} ),
+		item:[
+			M2( 'notsave.2touch', { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ) ),
+			M2( t='notsave.power_key', _.difference(builtin_keys,text_keys).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell(sh`${KB} disable ${t}`)) ),
+			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
+			…(t=mappings.map(compile_mapping)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'lackey '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
 			],
 		vkopenurldef: shells._.map((name,ι)=> 0?0: {name, url:{'@type':'shell', '#text':ι}}),
+		appdef: appdefs._.map((ι,k)=> 0?0: {appname:k, equal:ι}),
 		}} }
 
 // ---------------------------------- main ---------------------------------- //
-if (!module.parent){
-ι ← show_private_xml(parse_keyrc(φ`~/.keyrc`.text))
-φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι
-shᵥ`${KB} reloadxml`; ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
-}
+regen ← ()=>{
+	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …(φ`~/.keyrc.json`.json||{})._.values()])
+	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι
+	shᵥ`${KB} reloadxml`
+	↩ ι }
+main ← ()=>{
+	ι ← regen()
+	ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
+	if (φ`/Applications/PowerKey.app/`.BAD_exists()) φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
+	}
+if (!module.parent){ main(); npm('chokidar@1.6.0').watch(φ`~/.keyrc`+'').on('all',λ(ev,ι){ main() }) }
 
-// mild todo:
-// right command is maybe problematic
-// if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
-// 2d regexes would be wonderful for parsing .keyrc
-// remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
-
+// -------------------------------------------------------------------------- //
+module.exports.KEY_once = λ(trigger,f,…a){
+	code ← '('+f+')(…'+JSON.stringify(a)+')'
+	fi ← 'notsave.KEY_once_'+rand_id(9)
+	db ← (φ`~/.keyrc.json`.json||{}); id ← rand_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
+	regen()
+	shᵥ`${KB} enable ${fi}`
+	}
 module.exports.robot_key_tap = λ(ι){t←; c←;
 	robot ← npm('robotjs@0.4.4')
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
@@ -138,3 +132,11 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 		c = c._.map(ι=> 0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
 		ι = text_keys._.contains(ι)? ι : { '^':'control', F1:'f1', F2:'f2', F3:'f3', F4:'f4', F5:'f5', F6:'f6', F7:'f7', F8:'f8', F9:'f9', Fa:'f10', Fb:'f11', Fc:'f12', FnF1:'lights_mon_down', FnF2:'lights_mon_up', FnF5:'lights_kbd_down', FnF6:'lights_kbd_up', FnF7:'audio_prev', FnF8:'audio_pause', FnF9:'audio_next', FnFa:'audio_mute', FnFb:'audio_vol_down', FnFc:'audio_vol_up', '←':'left', '↑':'up', '→':'right', '↓':'down', '↩':'enter', '⇥':'tab', '⇧':'shift', '⌥':'alt', '⌘':'command', '⌫':'backspace', '⎋':'escape', '␣':'space', }[ι] || ‽
 		robot.keyTap(ι,c) } }
+
+// mild todo:
+// right command is maybe problematic
+// if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
+// 2d regexes would be wonderful for parsing .keyrc
+// remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
+
+// todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it repeat even if it's a VK_OPEN_URL_*
