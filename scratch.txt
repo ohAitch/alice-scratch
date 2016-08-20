@@ -52,7 +52,7 @@ namegen ← gen2fn(λ*(){
 # # 46 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
 # ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
-tesseract ← require('node-tesseract')
+tesseract ← npm('node-tesseract@0.2.7')
 φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 ------------------------------------- dunno ------------------------------------

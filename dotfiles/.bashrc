@@ -21,10 +21,20 @@ x(){ local E=$?; ζ '
 build.*(){
 	# todo: run the current file if you can't find any build files? that would be ... unclean, gosh, but i want something here
 	local t=$(while :; do
-		t=($(shopt -s nullglob; echo [b]uild{,.*}))
+		t=($(shopt -s nullglob; echo {[b]uild{,.*},[p]ackage.json}))
 		[[ $t != '' ]] && echo "$PWD/$t" || [[ $PWD != / ]] && { cd ..; continue; }
 		break; done)
-	[ -z "$t" ] && { echo "no “main” command found"; return 1; } || { echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"; chmod +x "$t"; "$t" "$@"; }; }
+	[ -z "$t" ] && { echo "no buildable found"; return 1; } || {
+		echo $'\e[35m'"$(home_link "$t")"$'\e[0m'; cd "$(dirname "$t")"
+		if [[ $(basename "$t") = package.json ]]; then
+			if [[ $(jq .version package.json) != null ]]; then
+				[[ $(jq .version package.json) = $(jq .version /usr/local/lib/node_modules/$(jq -r .name package.json)/package.json) ]] && npm --no-git-tag-version version patch
+				npm -g i .
+			else
+				echo "package.json not buildable"; return 1
+			fi
+		else chmod +x "$t"; "$t" "$@"; fi
+		}; }
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; }
 
 ################# should be system commands (interactive only) #################

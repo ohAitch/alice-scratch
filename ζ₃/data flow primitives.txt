@@ -1,0 +1,26 @@
+while, map, filter (& do, reduce, some, every, sortBy, )
+
+async map (error goes to g immediately)
+l←[…]; r += f(l[0]);
+     ; r += f(l[1]);
+     ...           ;
+                   ; g(r)
+
+async parallel (error goes to g immediately)
+fs←[…]; r += fs[0]();
+      ; r += fs[1]();
+      ...           ;
+                    ; g(r)
+
+synchronous-use
+f(); → a; g(a)
+
+synchronous-ignore
+f(); → a; h()
+
+asynchronous-branch
+f(); → a; g(a)
+   ; h()
+
+asynchronous-ignore
+f(); h()
