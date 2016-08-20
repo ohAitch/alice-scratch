@@ -1,8 +1,6 @@
 #!/usr/bin/env ζ
-xmlbuilder ← npm('xmlbuilder@4.1.0')
-
 as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
-
+APP ← '\x1b[34m[keyrc]\x1b[0m'
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
@@ -72,28 +70,30 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι=> 0?0: {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
-	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = osaᵥ`id of app ${ι}`, φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
+	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = (λ(){ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(), φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← λ(ι){
 			var [md,ky] = split_with(/FnF.|F.|.[LR]|./g.λ(ι), Mod)
 			if (md.length === 1 && ky.length === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
-			if (!{1:1,2:1}[ky.length]) ‽('[lackey] invalid keystring: '+util.inspect(ι))
+			if (!{1:1,2:1}[ky.length]) ‽(APP+' invalid keystring: '+util.inspect(ι))
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← λ(ι){ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← λ(ι){t←; ↩0,
 			(t=/^\] (.*)$/.λ(ι))? compile_keystring(t[1]).ι :
 			(t=/^; (.+)$/.λ(ι))? shell(sh`export PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
-		compile_appdef ← ι=> (ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι) || ‽, ι)
-		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if: ι.if? compile_appdef(ι.if) : undefined} }
+		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),null) )
+		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ null }
+		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if:if_} }
 	t ← mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) ); onces ← t[0]; mappings = t[1]
 	↩ {root: {
+		keyrc:true,
 		item:[
-			M2( 'notsave.2touch', { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ) ),
+			M2( 'notsave.2touch', { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ) ),
 			M2( t='notsave.power_key', _.difference(builtin_keys,text_keys).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
-			…(t=mappings.map(compile_mapping)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'lackey '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
+			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
 			],
 		vkopenurldef: shells._.map((name,ι)=> 0?0: {name, url:{'@type':'shell', '#text':ι}}),
 		appdef: appdefs._.map((ι,k)=> 0?0: {appname:k, equal:ι}),
@@ -108,9 +108,10 @@ regen ← ()=>{
 main ← ()=>{
 	ι ← regen()
 	ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-	if (φ`/Applications/PowerKey.app/`.BAD_exists()) φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777)
+	if (φ`/Applications/PowerKey.app`.BAD_exists()){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }
 	}
-if (!module.parent){ main(); npm('chokidar@1.6.0').watch(φ`~/.keyrc`+'').on('all',λ(ev,ι){ main() }) }
+main2 ← ()=>{ try{ main() }catch(e){ _alert('@',e+'',2) } }
+if (!module.parent){ main2(); npm('chokidar@1.6.0').watch(φ`~/.keyrc`+'').on('all',λ(ev,ι){ main2() }) }
 
 // -------------------------------------------------------------------------- //
 module.exports.KEY_once = λ(trigger,f,…a){

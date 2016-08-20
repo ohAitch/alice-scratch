@@ -72,17 +72,14 @@ if (0){ require('util'); require('stream'); require('moment'); require('priority
 process.env.PATH || (process.env.PATH = ''); _(process.env.PATH.split(':')).includes('/usr/local/bin') || (process.env.PATH = […process.env.PATH.split(':'), '/usr/local/bin'].join(':'))
 
 // --------------------------------- ζ infra -------------------------------- //
-if (!BROWSERP) E.npm = λ(ι){a←;b←; var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
+if (!BROWSERP) E.npm = λ(ι){var [ι,version] = ι.split('@'); ιv ← ()=> ι+'@'+version
 	APP ← '\x1b[34m[npm]\x1b[0m'
 	if (version){
-		cache ← φ`~/.npm/${ι}/${version}`
-		try {↩ require(cache+'/node_modules/'+ι)}
-		catch (e) {if (!(e.code==="MODULE_NOT_FOUND")) throw e
-			cn.log(APP,'installing',ιv())
-			cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ιv()}`
-			;(a=cache.φ`package.json`).ι = {description:"-",repository:1,license:"ISC"}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm i ${ιv()}`; a.ι = b.ι = null
-			cn.log(APP,'done')
-			↩ require(cache+'/node_modules/'+ι) } }
+		cache ← φ`~/.npm/${ι}/${version}`; final ← cache.φ`/node_modules/${ι}`
+		if (final.BAD_exists()) try{ ↩ require(final+'') }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
+		cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ιv()}`
+		a←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm i ${ιv()}`; a.ι = b.ι = null
+		↩ require(final+'') }
 	else {
 		sfx`ack`
 		version = shᵥ`npm show ${ι} version`+''
@@ -243,8 +240,8 @@ if (!BROWSERP){
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…process.env.PATH.split(':'),'.']._.uniq().join(':')
 q0 ← ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null})
 q ← ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
-E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : child_process.spawn('pbcopy').stdin.end(q(ι === undefined? '' : ι)) }
-E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : child_process.spawn('open',['-a','Sublime Text.app','-f']).stdin.end(q(ι)) }
+E.p = λ(ι){↩ arguments.length === 0? shᵥ`pbpaste`+'' : shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }
+E.sb = λ(ι){↩ arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=ι+''
 	// very nice google maps urls
 	// if url ≈ google.com/maps/
@@ -332,14 +329,13 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); var {sourcemap} = ι; ι=�
 
 	↩ ι}
 E.sfx = λ(ss,…ιs){ ι ← ss[0]
-	child_process.exec(sh`afplay ~/github/scratch/dotfiles/${ι}.wav`)
-	if (ι==='done' && osaᵥ`get volume settings`.error.re`muted:true`){ br ← npm("brightness@3.0.0"); br.get().then(λ(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
+	shₐ`afplay ~/github/scratch/dotfiles/${ι}.wav`
+	if (ι==='done' && osaᵥ`get volume settings`.parse_error.re`muted:true`){ br ← npm("brightness@3.0.0"); br.get().then(λ(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
 	}
-E._alert = (a,b,c)=> child_process.exec(sh`osascript -e ${osa`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}`}`)
+E._alert = (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}`
 E.browser = ι=>{
 	ι = ι.re`^https?://`? ι : 'https://www.google.com/search?q='+encodeURIComponent(ι)
-	child_process.exec(sh`(${'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'} ${ι} &); osascript -e ${osa`chrome: activate`}`);
-	}
+	shₐ`'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' ${ι}`; osaₐ`chrome: activate` }
 E._bright = dir=>{
 	br ← npm("brightness@3.0.0")
 	set ← ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap("⇧⌥FnF"+(ι > 0.5? 2 : 1)))
@@ -404,10 +400,25 @@ E.JSON_pretty = λ(ι,replacer){
 
 E.re = λ(ss,…ιs){ι ← simple_template(ss,ιs,[(…a)=>re(…a).source,'']); ENC ← ι=> (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join(''),'u')}
 P(()=>0?0:{ 'String.prototype.re':{get(){↩ (ss,…ιs)=> @.match(re(ss,…ιs))}} })
+
 E.sh = λ(ss,…ιs){ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
-if (!BROWSERP) E.shᵥ = λ(ss,…ιs){ι ← sh(ss,…ιs); ι = child_process.execSync(ι); ι.toString = λ(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι}; ↩ ι} //! ? should throw exception if exit code ≠ 0
+ellipsify ← ι=> util.inspect(ι.slice(0,100))+(ι.length>100?'…':'')
+if_sh_err ← (name,code,ι)=>{ if (ι.status || ι.stderr.length) throw Error(name+'`'+code+'` → status:'+ι.status+', stderr:'+ellipsify(ι.stderr+''))._.assign(ι._.pick('status','stdout','stderr')) }
+E.shᵥ = λ(ss,…ιs){code ← sh(ss,…ιs)
+	ι ← child_process.spawnSync(code,{shell:true})
+	if_sh_err('shᵥ',code,ι)
+	↩ ι.stdout._.assign({ toString(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι} }) }
+_shₐ ← λ(ss,ιs,opt){
+	if (ss.length===2 && ss[0]==='' && ss[1].re`^ *\|$`){ stdin ← ιs[0]; ↩ opt.stdin? ‽ : (ss,…ιs)=> _shₐ(ss,ιs,{stdin}) }
+	code ← sh(ss,…ιs)
+	ι ← child_process.spawn(code,{shell:true})
+		.on('exit',λ(status){ if_sh_err('shₐ',code,{status}._.assign(ι)) })
+	opt.stdin && ι.stdin.end(opt.stdin)
+	↩ λ(cb){ ‽ } }
+E.shₐ = (ss,…ιs)=> _shₐ(ss,ιs,{})
+
 _osa ← { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
-	read: λ(ι){ι+=''; try {↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join(''))} catch (e) {↩ {error:ι}}},
+	read: λ(ι){ι+=''; try{ ↩ {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(λ(ι){↩ /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')}).join('')) }catch(e){ ↩ {parse_error:ι} }},
 	show: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : ‽,
 	}
 E.osa = λ(ss,…ιs){t←;
@@ -416,8 +427,10 @@ E.osa = λ(ss,…ιs){t←;
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)) {ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, …ι, '; end tell']}
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, …ι, '; end tell'] }
 	↩ ι.map(ι=> !Tstr(ι)? _osa.show(ι.raw) : ι.replace(/;/g,'\n')).join('') }
-if (!BROWSERP) E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
-if (!BROWSERP) E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
+E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ _osa.read(shᵥ`osascript -ss -e ${ι}`) }
+E.osaₐ = λ(ss,…ιs){ ι ← osa(ss,…ιs); shₐ`osascript -ss -e ${ι}` }
+
+E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
 E.chrome_simple_osaᵥ = (ι,tab)=> osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,tab)=> osaᵥ`chrome: tell window 1's …${tab} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
@@ -428,7 +441,7 @@ E.chrome_simple_js_ᵥ = (ι,tab)=> osaᵥ`chrome: tell window 1's …${tab} to 
 	//	chrome_simple_js_ᵥ(t,tab)
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
-if (!BROWSERP) E.sublᵥ = λ(ss,…ιs){
+E.sublᵥ = λ(ss,…ιs){
 	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	t ← JSON.parse(fs_ipc.emit(34289,ι)); t===null && (t = undefined); ↩ t }
 if (!BROWSERP) def(E,'φ',λ(){
@@ -485,10 +498,10 @@ if (!BROWSERP) def(E,'φ',λ(){
 			if (ι == null) {try{fs.unlinkSync(@._ι)} catch(e){}; ↩}
 			e ← path.extname(@._ι)
 			if (e==='.csv') {@.csv = ι; ↩}
+			if (e==='.xml') {@.xml = ι; ↩}
 			ι = e==='.json'? JSON_pretty(ι) :
 				Tstr(ι)? ι :
-				e==='.xml'? npm('xmlbuilder@4.2.1').create(ι).end({pretty:true}) :
-					JSON_pretty(ι)
+				JSON_pretty(ι)
 			write_file(@._ι,ι) },
 		get buf(){↩ read_file(@._ι) || Buffer(0) },
 		set buf(ι){ write_file(@._ι,ι) },
@@ -519,6 +532,9 @@ if (!BROWSERP) def(E,'φ',λ(){
 		// set ini(ι){},
 		// get csv(){↩},
 		set csv(ι){t ← φ`/tmp/csv_${rand_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${@.root('/')+''}`},
+		// get xml(){↩  },
+		// npm('xml2js@0.4.17').parseString(sb(),λ(e,ι){ cn.log(ι) })
+		set xml(ι){ @.text = npm('xmlbuilder@8.2.2').create(ι).end({pretty:true}) },
 		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
 			if (ιs.length) ‽('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')

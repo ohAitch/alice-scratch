@@ -63,13 +63,13 @@ sd  ι
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉
 # whoa, ≈ as _.isEqual
 
-# if you want to expand on this, check out http://orderedbytes.com/controllermate/ to see what they've made and then use http://hammerspoon.org/ to program lots of stuff
+# to expand on this,  use http://hammerspoon.org/ to program lots of stuff
 
 FnF1  ; _bright('down')
 FnF2  ; _bright('up')
 FnF3  ] ⌘^f
 @sublime_text FnF3  ] ⌘⇧^f
-@chrome  FnF3  ; var [i,t] = osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; urijs ← require('urijs'); urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()','tab '+i) : robot_key_tap('⌘^f')
+@chrome  FnF3  ; var [i,t] = osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; urijs ← npm('urijs@1.18.1'); urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()','tab '+i) : robot_key_tap('⌘^f')
 @flowstate FnF3  ; osaᵥ`system events: tell front window of (first process whose frontmost is true); set value of attribute "AXFullScreen" to not (value of attribute "AXFullScreen"); end tell`
 ^⇪    ] ^⇧L⇥
 ⌘⇧3   ; _sc(      φ`~/Downloads/${Time()}.png`)
@@ -83,14 +83,14 @@ FnF3  ] ⌘^f
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot ← npm('robotjs@0.4.4'); robot.mouseClick.every(1/6)
 ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot ← npm('robotjs@0.4.4'); (λ(){ 6..map(()=> robot.mouseClick()) }).every(0.3)
 ⌥^b  ; robot ← npm('robotjs@0.4.4'); φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(robot.getMousePos())+'\n'
-@path_finder  ⌘⇧t  ; osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`
+@path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, '; activate')
 @photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
 @sublime_text  ⇪   ] ⌘⇧⌥^a
 @sublime_text  ⌫=  ] ⌘⇧⌥^⌫
 @sublime_text  ;'  ] ⌘⇧⌥^;
 @sublime_text  /↩  ] ⌘⇧⌥^↩
-/↩  ; sfx`ack`; S ← rand_id(25); p(S); (λ(){ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? start+1 < Time().i && Λ.defer() : browser(t) })() }).in(0.01)
+/↩  ; sfx`ack`; S ← rand_id(25); p(S); (λ(){ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : browser(t) })() }).in(0.01)
 # @path_finder ⌘c   ; robot_key_tap('⌘c'); t ← p(); if (t[0]==='/') p(t.split('\n').map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,'~').replace(re`^~/file/books/papers(?=/|$)`,'~/papers').replace(re`^~/file/books(?=/|$)`,'~/books').replace(/ /g,'%20').replace(/^\/|(?=~)/,'file:/').replace()}).join('\n'))
 @chrome  ⌘⇧l       ; robot_key_tap('⌘l'); sfx`ack`; var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; p(nice_url(t))
 @terminal  ⌘r      ; ['⌘t','⌘⇧[','⌘w'].map(robot_key_tap)
@@ -115,3 +115,7 @@ FnF4             ; sfx`nack`
 @path_finder   ⌘1   ; sfx`nack`
 @path_finder   ⌘2   ; sfx`nack`
 @path_finder   ⌘3   ; sfx`nack`
+
+# 0?0: { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=>```
+# ☝☝${k} ; ι ← ${ι}; ι[1] && robot_key_tap('^'+ι[1]); osaᵥ`${ι[0]}: activate`
+# ```)
