@@ -1,30 +1,26 @@
-// in a good programmer, code-thoughts are in a fuzzy sloppy half-wrong frame that`s pretty alien to the existing field
-// what is that frame?
-// well, what code-thoughts would we have if our computer understood them? and what programs would we write?
-// ... i don`t know. that`s a really hard question.
-// i think there would be absolute technical grace "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
-// http://baconjs.github.io/api.html might be really useful for the implementation of this
-// http://worrydream.com/KillMath/ http://worrydream.com/LadderOfAbstraction/ is relevant to the implementation of this
-// > i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
+# the arithlang we'd write if we had the tools for it
+# i think there would be absolute technical grace
+# #define technical grace "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
+# #relevant? http://baconjs.github.io/api.html
+# #relevant bret victor
+# ‡ i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
 
 if we have a model of code-thoughts that allows for expressing
-
-// all of the below
-more attempts at generation of beautiful things, like terrain or cities
-IAFF
-cryptopals
-something like "constraint programming", incl genex(/-?\d/)
-custom fuzzing http://danluu.com/everything-is-broken/
-6.824 http://pdos.csail.mit.edu/6.824-2013/labs/lab-1.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-2.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-3.html http://pdos.csail.mit.edu/6.824-2013/labs/lab-4.html
-real-time text?
-
+	# the below
+	more attempts at generation of beautiful things, like terrain or cities
+	IAFF
+	cryptopals
+	something like "constraint programming", incl genex(/-?\d/)
+	custom fuzzing http://danluu.com/everything-is-broken/
+	http://pdos.csail.mit.edu/6.824-2013/labs/lab-1.html , http://pdos.csail.mit.edu/6.824-2013/labs/lab-2.html , http://pdos.csail.mit.edu/6.824-2013/labs/lab-3.html , http://pdos.csail.mit.edu/6.824-2013/labs/lab-4.html
+	real-time text
+	logging, bret victor style
+	aah little atlantis http://www.newgrounds.com/portal/view/553979
 then i think we have a good model.
 
-... what about logging? we`ve never interacted with logging, but it might be important.
-
-http://fb.com/strohl89/posts/10153433406284598 ?
-
 //2015-12-26// mv ./etc/sudoers{,.bak}
+
+latency (modeling, profiling)
 
 // ------------------- thing generation #fail #unfinished ------------------- //
 	// so i tried generating some cities. but i failed. i will try again later!
@@ -59,7 +55,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	> Hmm...you might want to look at planning algorithms like a*
 	> Maybe you want to have high level actions like "move this cube here"
 	> And you can use planning to assign costs to actions
-	⋈ but i don`t wanna hardcode them
+	‡ but i don`t wanna hardcode them
 	> Hmm.  Perhaps you want to use reinforcement learning?
 	> You learn a policy mapping features about current situation to action
 	> You would have to select features strategically
@@ -67,8 +63,8 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	> I think there`s a variant with features but I have not found it
 	> Perhaps you could look at what deepmind is doing
 	> It`s like neural net reinforcement learning
-	⋈ what if i do the eurisko thing and make a really good space of algorithms that could be useful to run here and then do simple genetic programming on that?
-	⋈ but uh, i do not know how to do that
+	‡ what if i do the eurisko thing and make a really good space of algorithms that could be useful to run here and then do simple genetic programming on that?
+	‡ but uh, i do not know how to do that
 
 // ---------------------------- IAFF #unfinished ---------------------------- //
 
@@ -240,7 +236,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 	$ ← require jquery
 	require rc, sync, ping_file from aux
 
-	⋈⋈ oh, um, we should call sync after closing the window
+	‡‡ oh, um, we should call sync after closing the window
 
 	dirty.setWindowOptions({
 		title:'tagtime prompt',
@@ -389,7 +385,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 		@.attr({id,type})
 		$('#'+id).val(eval('o.'+path)).on('input',λ(){t ← $('#'+id).val(); eval('o.'+path+' = t')})
 		↩ @
-	$.prototype.for ← ⋈⋈ stuff ⋈⋈; ↩ @
+	$.prototype.for ← ‡‡ stuff ‡‡; ↩ @
 
 	--- aux module ---
 
@@ -536,7 +532,7 @@ http://fb.com/strohl89/posts/10153433406284598 ?
 			fb.api('/me', {access_token: token})
 			print .name sans newline
 
-// ----------------------------- perfect-history ---------------------------- //
+// ----------------------------- log fs changes ----------------------------- //
 
 	CLI: <root>
 		within root:
@@ -813,22 +809,22 @@ but when reading them they both feel perfectly excellent
 but if i take this and try to make lackey more like timer-tab it`s very hard but seems to improve it a great deal
 something Funky is up here
 
-// a bug i noticed: in an interactive environment, we would start sketching out something like dance, and -
-// oh
-// right
-// i was taking the text of dance as canon and dutifully transcribing it
-// that was silly
-// the goal here is to write down each individual concept required
-// right
-// okay
-// let`s do this differently.
-// :D
+# a bug i noticed: in an interactive environment, we would start sketching out something like dance, and -
+# oh
+# right
+# i was taking the text of dance as canon and dutifully transcribing it
+# that was silly
+# the goal here is to write down each individual concept required
+# right
+# okay
+# let`s do this differently.
+# :D
 
 there`s a certain pattern of the things we want to say being the interesting things and the things we don`t want to say being simple things where we could take the thing we wanted to say and in an automatic fashion implement the other parts
 this suggests a compiler that sometimes says "i don`t know a way to do this - can you help me?"
 
 // ---------------------------- I want to say ... --------------------------- //
-require <library> ⋈this is a bit of a felt sense; what am I really trying to say here?⋈
+require <library> ‡this is a bit of a felt sense; what am I really trying to say here?‡
 	require npm::fb@^0.7.0
 machine, know that $fact is true
 	fb.api uses value-callback
@@ -869,8 +865,8 @@ a filename
 	read auth from ./arc/fb_auth.json
 $filename without extension
 	write @file as plist to file without extension
-⋈stuff⋈ where the machine will have to independently choose sensible places to force evaluation / do reduction / have strictness points (maybe by asking for help)
-⋈stuff⋈ where the output of a computation has some parts that the machine will have to arbitrarily choose
+‡stuff‡ where the machine will have to independently choose sensible places to force evaluation / do reduction / have strictness points (maybe by asking for help)
+‡stuff‡ where the output of a computation has some parts that the machine will have to arbitrarily choose
 	write /*it::seq*/ to distinct .sublime-snippet files in same dir as file
 (machine, make sure that) this file is read only if the program does something with this var or this file
 	read auth from ./arc/fb_auth.json    (note: should be lazy)
@@ -889,14 +885,14 @@ lazy `and` `or` and in both directions
 semantic whitespace
 	read auth from ./arc/fb_auth.json   or error
 	we wrote to it earlier  ||  within in and ≈/Package Control\./
-⋈i expect⋈ top-level errors to be printed sanely with text filled in from surrounding code and the program name
+‡i expect‡ top-level errors to be printed sanely with text filled in from surrounding code and the program name
 a CLI // implicitly with all the nice things, e.g. --version and --help
 	CLI:
 		verify <token> <user_id>
 			⟨...⟩
 		get-name <token>
 			⟨...⟩
-⋈something already written in javascript⋈
+‡something already written in javascript‡
 	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
 call $function
 	fb.api('/debug_token', {access_token: auth.id+'|'+auth.secret, input_token: token})
@@ -947,7 +943,7 @@ convert $it to $type
 /*view $it as*/ lines
 	'a\nb\nc'. lines[0] as str = 'a'
 	'a\nb\nc'. lines[1:] as str = 'b\nc'
-⋈implicitly⋈ view file as type
+‡implicitly‡ view file as type
 	read auth from ./arc/fb_auth.json. ⟨...⟩. auth.id
 has this program done $thing in the course of its current execution?
 	we wrote to it earlier
@@ -989,7 +985,7 @@ extend (the nodes of) a (graph) (data structure) type with attributes
 	define: ⟨...⟩
 		the first nodes each have a slot for an agent // implicit-refers to a previous clause
 		the second nodes each have a well of “soul” (numeric) // implicit-refers to a previous clause
-⋈something⋈ which refers to a previously defined thing by using the ordering of definition in the text
+‡something‡ which refers to a previously defined thing by using the ordering of definition in the text
 	define: rectangular grid of nodes w/ adjacency north/east/west/south, plus for each of those a node connected below it
 		the first nodes ⟨...⟩
 		the second nodes ⟨...⟩
@@ -1000,12 +996,12 @@ extend $this type with a typed property (without any name)
 	the first nodes each have a slot for an agent
 extend $this type with a typed, named property with english $alias
 	the second nodes each have a well of “soul” (numeric)
-$type spends all its $property on creating a ⋈type which has some mechanics that haven`t been defined yet⋈
+$type spends all its $property on creating a ‡type which has some mechanics that haven`t been defined yet‡
 	/*it*/ spend/*s*/ all its soul on the action of sending an agent with code well_code_gen() to the node above it
 construct an instance of $type with $values
 	the action of sending an agent with code well_code_gen() to the node above it
 
-⋈ ⋈ ⋈
+‡ ‡ ‡
 
 	each tick, each agent may choose an action to attempt
 		send X soul or fire to adjacent node
@@ -1057,168 +1053,15 @@ construct an instance of $type with $values
 
 	soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
 
-// --------------------------------- weather -------------------------------- //
-
-2d`~`
-(merge weather images @ hour 0, index 0 2 3     ) (″ @ hour 48)
-(merge weather images @ hour 0, index 9 10 11 12) (″ @ hour 48)
-→ @test.png
-
-where
-	weather_image(hour, index) = GET "http://forecast.weather.gov/meteograms/Plotter.php?lat=37.872&lon=-122.265&wfo=MTR&zcode=CAZ508&gset=18&gdiff=3&unit=0&tinfo=PY8&ahour="+hour+"&pcmd="+("000000000000000000000000000000000000000000000000000000000" [index]= "1")+"&lg=en&indu=1!1!1!&dd=&bw=&hrspan=48&pqpfhr=6&psnwhr=6"
-	merge a set of weather images = average(it s/\grey/black/g) + average(it s/[^\grey]/black/g)
-
-// --------------------------------- lackey --------------------------------- //
-
-make ~/Library/Keyboard\ Layouts/lackey.icns equal ./lackey.icns
-make ~/Library/Keyboard\ Layouts/lackey.keylayout equal make_keylayout()
-	if any write happened: print '
-	!! system keyboard layout changed !!
-	you may need to manually set the new layout in System Preferences → Keyboard → Input Sources and then reboot your computer
-	new id: ${.id}'
-make ~/Library/Application\ Support/Karabiner/private.xml equal make_karabiner()
-	if any write happened:
-	/Applications/Karabiner.app/Contents/Library/bin/karabiner reloadxml
-	/Applications/Karabiner.app/Contents/Library/bin/karabiner enable lackey
-
-make_keylayout:
-	read lackey.keylayout
-	$('keyMapSet').@ = [
-		'asdfhgzxcv\xa7bqweryt123465=97-80]ou[ip\x0dlj\'k;\\,/nm.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-		'ASDFHGZXCV\xb1BQWERYT!@#$^%+(&_*)}OU{IP\x0dLJ"K:|<?NM>\x09 ~\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.**\x00++\x1b=\x00\x00/\x03/-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-		'ASDFHGZXCV\xa7BQWERYT123465=97-80]OU[IP\x0dLJ\'K;\\,/NM.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-		[[10],,[13],[15],,,,,[12],,,[11],,,[14],,,,[1],[2],[3],[4],[6],[5],,[9],[7],,[8],[0],,,,,,,,,,,,,,,,,,,,,,0x08,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,[0],[1],[2],[3],[4],[5],[6],[7],,[8],[9],,,,,,,,,,,,,,,,,,,,,,0x05,0x01,0x0b,0x7f,0x10,0x04,0x10,0x0c,0x10,0x1c,0x1d,0x1f,0x1e,]
-		'\x01\x13\x04\x06\x08\x07\x1a\x18\x03\x160\x02\x11\x17\x05\x12\x19\x14123465=97\x1f80\x1d\x0f\x15\x1b\x09\x10\x0d\x0c\x0a\'\x0b;\x1c,/\x0e\x0d.\x09 `\x08\x03\x1b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00.\x1d*\x00+\x1c\x1b\x1f\x00\x00/\x03\x1e-\x00\x00=01234567\x0089\x00\x00\x00\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x05\x01\x0b\x7f\x10\x04\x10\x0c\x10\x1c\x1d\x1f\x1e\x00'
-		] * <keyMap index="$i"> $(* <key code="$i" $(isa Array? action="$₀" : output="&#x$(as char to hex);")/>) </>
-	$('keyboard').id = hash it into -100..-30000-100..-30000
-
-make_karabiner:
-	//! right command is maybe problematic
-	//! need to enable multi-modifier chords. maybe do this by changing the keylayout so that the hex codes are hidden away?
-
-	.lackey files are formatted like
-		/^(\S+) : (\S+)$/ -> chord
-		interrupted (labeled) ascii box ->
-			should have 4 or 6 lines
-			transform each line by /\S\S?/g
-			if 4 lines: interpret as a [1:-1] view of (box 'homoiconic' with all atoms = '_'), and de-view
-			flatten lines.					
-		/#.*$/ -> null
-		/\s/ -> null
-
-	read default.lackey → boxes, chords
-	discard boxes '','⇧' //! todo
-	prepend-zip boxes with boxes pop 'homoiconic'. discard pairs ≈ [,'_'].
-	let keycodes ← boxes pop 'keycode' as dict
-	chords ~= (remove boxes) ** {keys:[0], out:[1]} ** (.keys= ^.label+.keys) / ~
-
-	let KeyCode x = 'KeyCode::'+(x≈/\d/? 'KEY_'+x : x≈/[a-z]/? uppercase x : 'RawValue::0x'+keycodes[x])
-	let kc_hex x = x * (it as char to hex * (KeyCode it)+',ModifierFlag::OPTION_L,'). flatten. as string.
-	let shells ← []
-	let gen_shell x = (shells ~= [[kc,x]]; kc) where kc ← 'KeyCode::VK_OPEN_URL_'+(random ∈ ≈/\w{8}/)
-	gen_shell 'echo dummy'
-	let autogens ←
-		['__KeyToKey__ KeyCode::PC_APPLICATION, VK_CONTROL, KeyCode::TAB,ModifierFlag::CONTROL_L|ModifierFlag::SHIFT_L'] ~
-		['__KeyToKey__ KeyCode::PC_APPLICATION, ModifierFlag::NONE, KeyCode::RawValue::0x82'] ~
-		(chords -= .keys.length ≠ 2); chords *
-			.keys[0] = '⌥'? '__KeyToKey__ '+(KeyCode .keys[1])+', VK_OPTION|ModifierFlag::NONE,' :
-				'__SimultaneousKeyPresses__ '+(KeyCode .keys[0])+', '+(KeyCode .keys[1])+','
-			//.keys[0] = 'R⌘'? '__KeyToKey__ '+KeyCode(.keys[1])+', ModifierFlag::COMMAND_R,' :
-			+
-			out isa string? kc_hex out : (gen_shell out[0])+','
-	↩ xml <root>
-		$(shells * <vkopenurldef> <name>$(it[0])</> <url type="shell">$(it[1])</> </>)
-		<item> <name>lackey</> <identifier>lackey</> $(autogens * <autogen>$it</>) </>
-		</>
-
-// -------------------------------- timer-tab ------------------------------- //
-// this is a first-pass sketch of a clone of timer-tab.com. the intent is to experiment with it more *after* it's been first rendered.
-// major implementation requirement: auto-kerning or at least separation-of-concerns kerning
-// implentation: i expect the stripe cut out will be aligned to pixels
-
-// desired feature: can edit and stuff to help account for distraction/failure
-// desired feature: should help user think in kiloseconds and such
-
-webapp. single page no scroll. offlined fully.
-
-as the central element, a 900×150px box made of these controls:
-	|     [h]:[m] [s]     |      [h]:[m] [s]      |                     |
-	| [> start countdown] | [> start alarm clock] | [> start stopwatch] |
-
-start buttons set current control and display action
-	action has a value :: duration
-	action appears below control
-
-countdown action: count time down from control fields as .value / [|| pause]
-alarm action: count time down from (control fields - now) as .value / until (control fields as hh:mm)
-	control fields represent the next datetime matching them
-stopwatch action: count time up from 0 as .value / [|| pause]
-
-if counting time down reaches 0, stop counting, and append to control action
-	|         [# stop] button             (removing any existing button)
-	| embed http://youtu.be/PS5KAEgrtMA
-
-pause button pauses or resumes count and toggles self with [> resume]
-stop button stops&removes a video embed and [greys out self (if replacing a button) or removes self (if there was no button to start with)]
-	☝ video embed -> same action
-
---- style ---
-
-plain white background is default. background images are centered and fill-sized.
-font is Lato
-
-button,field:
-	color is #666 or #333 on hover
-	bg #fff.7 or bg #fff.95 on hover
-	ease-in-out these over 0.3s
-button text is 13px uppercase. '>' = play glyph, '||' = pause glyph, '#' = stop glyph
-buttons are 4px rounded
-
-glyphs are #ccc 32×32px. round visual corners 1.5px.
-play glyph: filled 1,1,1× triangle w/ one edge flush left
-pause glyph: filled w/ 0.19× centered vertical stripe cut out
-stop glyph: filled
-
-':' in fields adds nothing to layout size
-field font is 35px
-fields have space for /\d\d/
-'s' fields are 0.7× size
-start buttons are kept same width
-
-counter font is 105px or reduced to keep width comfortable
-counter font is #444, plus α=.3 when paused (ease-in-out over 0.3s)
-alarm "until" font is 15px
-
-two stripes project from the current control to edges of window, overlapping on the control
-	stripes have bg #d0d0d0.58
-	stripes move smoothly when their position changes
-
-action.value shows in page title w/ seconds truncated if hours>0
-	and in page icon, similarly
-
-// ---------------------- cute point redemption webapp ---------------------- //
-
-webapp. public db.
-
-db is a single table:
-	humans         cute points
-	matt reyes     1
-
-first, ask who you are (dropdown of humans ∈ db)
-then, display "you have $n cute points. [redeem?]"
-	☝ redeem -> the cute points ←! 0. send an email to [alice0meta@gmail.com, the user`s email] saying "cute point redemption request: $n"
-
-if need and don`t know the user`s email, ask for it with a modal dialog
-
 // --------------------------------- <impl> --------------------------------- //
 
-// <noteified>
-// you can watch descendants ∈ path by /* explains how to implement watch from above */
-// subscribe to <event name>: <function> /* implicitly on `it` */
-// /* should guess that when told how to do a thing that takes a callback and there's a single subscription in the explanation, the callback is called at the end of it */
-// change <var> by <dict>
-// (change <var> by <expr>. <var> was changed) should be true iff the change statement altered <var>
-// (a, b -> a += 5) isa function
+# <noteified>
+# you can watch descendants ∈ path by /* explains how to implement watch from above */
+# subscribe to <event name>: <function> /* implicitly on `it` */
+# /* should guess that when told how to do a thing that takes a callback and there's a single subscription in the explanation, the callback is called at the end of it */
+# change <var> by <dict>
+# (change <var> by <expr>. <var> was changed) should be true iff the change statement altered <var>
+# (a, b -> a += 5) isa function
 
 you can watch descendants ∈ path by
 	require npm::chokidar
@@ -1228,7 +1071,7 @@ you can watch descendants ∈ path by
 read plist: npm::plist.parse(it)
 show plist: npm::plist.build(it)
 
-// this is my first attempt at stringifying json nicely. i do not think it will be my last.
+# this is my first attempt at stringifying json nicely. i do not think it will be my last.
 let pretty-print 'json' = λ λ(it):
 	let wrap_width = 150
 	let TAB = '  '

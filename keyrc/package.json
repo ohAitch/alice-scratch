@@ -1,6 +1,6 @@
 {
   "name": "keyrc",
-  "version": "0.0.18",
+  "version": "0.0.41",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {
     "postinstall": "./postinstall.sh"

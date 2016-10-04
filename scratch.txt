@@ -137,7 +137,7 @@ T ← 10; i←0; (λ(){sublᵥ`view.insert(edit,view.sel()[0].begin(),"\n")`}).e
 ------------------------------------- life -------------------------------------
 sublime_set_buffer ← λ(ι){sublᵥ`view.replace(edit,Region(0,view.size()),${ι})`}
 braille_table ← 0x100.map(ι=> String.fromCharCode('⠀'.charCodeAt()+ι))
-braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.partition(ι.X) : ι).partition(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
+braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
@@ -169,3 +169,25 @@ entities_decode ← typeof(window)==='undefined'? npm('html-entities@1.2.0').All
 (new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'
 ------- not in node yet ------
 http://es6-features.org/#BlockScopedVariables (not yet supported outside of strict mode)
+
+------------------------------------ stats? ------------------------------------
+normal_PDF ← λ(x){ μ ← 0; v ← 1; ↩ 1/sqrt(v*τ)*exp(-pow(x-μ,2)/(2*v)) }
+
+------------------------ fun with fraction approximation -----------------------
+wu ← npm('wu@2.1.0')
+Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.length), f(ι,i,l) )) }
+gcd ← (a,b)=> b>0? gcd(b, a%b) : a
+reduced ← (a,b)=>{ t ← gcd(a,b); ↩ [a/t,b/t] }
+bits ← ι=> log2(ι[0]*ι[1])
+list_approx ← λ*(ι){ Rp ← (a,b)=> gcd(a,b)===1; a←1; b←1; for(;;){
+	while (a/b > ι) b++; if (Rp(a,b-1)) yield [a,b-1]; if (Rp(a,b)) yield [a,b]
+	while (a/b < ι) a++; if (Rp(a-1,b)) yield [a-1,b]; if (Rp(a,b)) yield [a,b]
+	} }
+error ← (ι,approx)=>{ t ← (approx[0]/approx[1]) / (ι[0]/ι[1]); ↩ 1 - (t<1? t : 1/t) }
+score ← (ι,approx)=> ((ι[0]*ι[1]) / (approx[0]*approx[1])) * (1/error(ι,approx))
+best_approx ← x=>{ size_x ← x[0]*x[1]; ↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
+
+to ← 1e5
+bench(()=> cn.log(
+	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
+	) )

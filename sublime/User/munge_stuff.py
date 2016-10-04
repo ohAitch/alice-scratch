@@ -61,7 +61,7 @@ def open(ι,app=None,focus=True,view=None):
 
 		if view and view.file_name() and t[0] != '/': t = os.path.normpath(os.path.join(os.path.dirname(view.file_name()),t)); ι = 'file:'+urllib.parse.quote(t.encode('utf-8'))
 		if os.path.isdir(t): app = "Path Finder"
-		elif os.path.splitext(t)[1] in ['.pdf','.m4a','.epub']: pass
+		elif os.path.splitext(t)[1] in ['.pdf','.m4a','.epub','.mobi']: pass
 		# elif os.path.splitext(t)[1] in ['.png','.jpg']: make app be ql
 		else: app = "Sublime Text"
 	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""

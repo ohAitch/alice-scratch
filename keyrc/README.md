@@ -7,3 +7,4 @@ bonus:
 ```
 
 * will overwrite any existing private.xml (ignore if that means nothing to you)
+* bug workaround: extraplanar characters count as two characters; if in a ┌┐└┘ grid, remove the space following them

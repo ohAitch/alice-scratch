@@ -1,0 +1,92 @@
+// -------------------- macro evaluation & encoding to js ------------------- //
+js_repr ← ι=>
+	Tnum(ι) || Tstr(ι) || T.RegExp(ι)? util.inspect(ι) :
+	Tarr(ι)? '['+ι.map(js_repr).join(', ')+']' :
+	Tfun(ι)? ι+'' :
+		‽('inspect:',ι)
+
+is_stmt ← ι=> ι.T==='seq'? ι.ι.some(is_stmt) : ι.T.re`^stmt_`
+
+S_ast_to_js←; C←; S_ast_to_js = C = (ι,top,t,par)=> // t,par: hack to get local variable
+	ι.is_macro__bad? js_repr(eval('('+C(ι.ι)+')')) :
+	ι.T==='void'? top? '' : ι.ι :
+	ι.T==='ident'? ι.ι :
+	ι.T==='number'? ι.ι :
+	ι.T==='regex'? '/'+ι.ι+'/' :
+	ι.T==='set'?
+		ι.ι.T==='regex'? C(ι.ι)+'.genex_0()' :
+			‽(ι) :
+	ι.T==='array'? '['+ι.ι.map(C.X).join(', ')+']' :
+	ι.T==='op'?
+		ι.A==='2 left' && ι.op==='÷'? C(ι.a,top)+' / '+C(ι.b) :
+		ι.A==='2 left' && ι.op==='*'? C(ι.a,top)+'.map('+C(ι.b)+')' :
+		// ι.A==='1 left'? C({T:'λ', params:[{T:'ident',ι:'a'}], code:{T:'seq',ι:[ {T:'stmt_var',name:{T:'ident',ι:'b'},ι:ι.ι} , {T:'op', A:'2 left', op:ι.op, a:{T:'ident',ι:'a'}, b:{T:'ident',ι:'b'}} ]}}) :
+		ι.A==='1 left'? C({T:'λ', params:[{T:'void',ι:'left'}], code:{T:'op', A:'2 left', op:ι.op, a:{T:'void',ι:'left'}, b:ι.ι} },top) :
+			‽(ι) :
+	ι.T==='λ'?
+		is_stmt(ι.code)?
+			'function('+ι.params.map(C.X).join(',')+'){'+C({T:'stmt_return', ι:ι.code})+'}' :
+		top && ι.params._.isEqual([{T:'void',ι:'left'}]) && ι.code.T==='op' && ι.code.a._.isEqual({T:'void',ι:'left'})?
+			C(ι.code,true) :
+			( par = ι.params.map(ι=> ι.T==='void'? _({}).assign(ι,{T:'ident'}) : ι), t = par.map(C.X).join(','), par.length===1 && par[0].T==='ident'? t : '('+t+')')+'=> '+C(ι.code) :
+	ι.T==='seq'? is_stmt(ι)? ι.ι.map(C.X).join('; ') : '('+ι.ι.map(C.X).join(', ')+')' :
+	ι.T==='stmt_var'? 'var '+C(ι.name)+' = '+C(ι.ι) :
+	ι.T==='stmt_return'?
+		ι.ι.T==='seq'?( ι.ι.ι[-1] = {T:'stmt_return', ι:ι.ι.ι[-1]}, C(ι.ι) ):
+		is_stmt(ι.ι)? ‽(ι) :
+			'return '+C(ι.ι) :
+		‽(ι)
+
+// ---------------------------------- parse --------------------------------- //
+P ← npm('parsimmon@0.9.2')
+P.Parser.prototype.type = λ(x){↩ @.map(ι=> 0?0:{T:x,ι}) }
+P_ ← (ι,…a)=> Tfun(ι)? P.lazy(ι,…a) : Tstr(ι)? P.string(ι) : P.regex(ι,…a)
+P_spaced ← p=> wso.then(p).skip(wso); wso ← P_(/\s*/)
+
+P_build_operators ← λ(unit,ops){
+	op_ps ← {
+		'1 left':λ(ops_p, next_p){ r ← P_(()=> P.seqMap(ops_p, r, (op,ι)=>0?0: {T:'op', A:'1 left', op, ι}).or(next_p) ); ↩ r },
+		// A1_RIGHT ← (ops_p, next_p)=> P.seqMap( next_p, ops_p.many(), (x,suffixes)=> suffixes.reduce((r,x)=> [x,r], x) ),
+
+		// Takes a parser for all the operators at this precedence level, and a parser that parsers everything at the next precedence level, and returns a parser that parses as many binary operations as possible, associating them to the right. (e.g. 1^2^3 is 1^(2^3) not (1^2)^3)
+		// A2_RIGHT ← λ(ops_p, next_p){ r ← P_(()=> next_p.chain((next)=> P.seq(ops_p, P.of(next), r).or(P.of(next)) ) ); ↩ r },
+
+		// Takes a parser for all the operators at this precedence level, and a parser that parsers everything at the next precedence level, and returns a parser that parses as many binary operations as possible, associating them to the left. (e.g. 1-2-3 is (1-2)-3 not 1-(2-3))
+		// A2_LEFT ← (ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> rest.reduce((r,t)=> [t[0],r,t[1]], first) ),
+		'2 left':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> rest.reduce((r,t)=>0?0: {T:'op', A:'2 left', op:t[0], a:r, b:t[1]}, first) ),
+
+		// A2_CENTER ← (ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> ['A2_CENTER', first, …rest._.flatten(true)] ),
+		'2 center':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=>0?0: {T:'op', A:'2 center', ι:[first, …rest._.flatten(true)]} ),
+		}
+	// Operators should allow whitespace around them, but not require it. This helper combines multiple operators together with names. Example: operators({Add: "+", Sub: "-"}). Gives back an operator that parses either + or - surrounded by optional whitespace, and gives back the word "Add" or "Sub" instead of the character.
+	operators ← ops=> P.alt( …ops._.map(ι=> P_spaced(P_(ι)).result(ι) ) )
+
+	↩ P_spaced( ops.reduce((a,ι)=> op_ps[ι.type](operators(ι.ops),a), unit) ) }
+
+S_parse ← λ(src){
+	expr_unit ← P_(()=> P_spaced(P.alt(
+		P_(/\d+(?:\.\d+)?/).type('number'),
+		P_(/\/((\[[^\]]*\]|\\.|[^/\n])*)\//,1).type('regex'),
+		P_('{').then(expr).skip(P_('}')).type('set'),
+		P_('[').then(P.sepBy(expr,P_(','))).skip(P_(']')).type('array'),
+		P.fail('‽') )) )
+	expr ← P_build_operators(expr_unit,[
+		// ordered by precedence
+		// {type: A2_RIGHT, ops: operators({Exponentiate: '^'})},
+		{type:'1 left', ops:['×','÷']},
+		{type:'2 left', ops:['×','÷']},
+		{type:'1 left', ops:['*']},
+		{type:'2 left', ops:['*']},
+		// {type: A2_LEFT, ops: operators({Add: '+', Subtract: '-'})},
+		// {type: A1_LEFT, ops: operators({Negate: '-'})},
+		// {type: A2_CENTER, ops: operators({ LE:'<', EQ:'=', })},
+		// {type: A1_RIGHT, ops: operators({Factorial: '!'})},
+		])
+	root ← P.seqMap(P_('°').or(P.of('')), expr, λ(is_macro,ι){ ↩ is_macro? {is_macro__bad:true, ι} : ι })
+	ι ← root.parse(src)	
+	ι.status || ‽('§ tried to parse',src,'and got',ι)
+	↩ ι.value }
+
+// -------------------------------------------------------------------------- //
+module.exports = ι=> S_ast_to_js(S_parse(ι),true)
+if (!module.parent) cn.log(ζS_compile(φ`~/github/scratch/§/index.ζ§`.text))

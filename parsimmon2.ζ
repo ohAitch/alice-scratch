@@ -1,0 +1,203 @@
+_lazy ← λ(f){ r ← p_wrap((stream,i)=> (r._ = f()._)(stream,i) ); ↩ r}
+_string ← ι=> p_wrap(λ(stream,i){
+  head ← stream.slice(i,i+ι.length)
+  ↩ head===ι? make_win(i+ι.length,head) : make_lose(i,ι)
+  })
+_regex ← λ(re,group=0){ T.RegExp(re) || ‽; Tnum(group) || ‽
+  re.flags.re`^[imu]*$` || ‽('bad regex flag ∈',re)
+  expected ← re+''; re = RegExp('^(?:'+re.source+')',re.flags)
+  ↩ p_wrap(λ(stream,i){ t ← re.exec(stream.slice(i)); ↩ t && !(t[group]===null || t[group]===undefined)? make_win(i+t[0].length, t[group]) : make_lose(i,expected) }) }
+
+P ← (ι,…a)=> Tfun(ι)? _lazy(ι) : Tstr(ι)? _string(ι) : T.RegExp(ι)? _regex(ι,…a) : ‽('cant make parser from',ι)
+
+p_wrap ← ι=> new Parser(ι)
+// The Parser object is a wrapper for a parser function.
+Parser ← λ(action){ @._ = action }
+P.proto = Parser.prototype
+P.proto[Symbol.iterator] = λ*(){ yield _(p_wrap(@._)).assign({spread:true}) }
+
+make_win ← (index,value)=> 0?0: { status:true, index, value, furthest:-1, expected:[], }
+make_lose ← (index,expected)=> 0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
+
+merge_replies ← λ(r,last){
+  if (!last) ↩ r
+  if (r.furthest > last.furthest) ↩ r
+  expected ← r.furthest===last.furthest? unsafe_union(r.expected, last.expected) : last.expected
+  ↩ 0?0: { status:r.status, index:r.index, value:r.value, furthest:last.furthest, expected, } }
+
+// Returns the sorted set union of two arrays of strings. Note that if both arrays are empty, it simply returns the first array, and if exactly one array is empty, it returns the other one unsorted. This is safe because expectation arrays always start as [] or [x], so as long as we merge with this function, we know they stay in sorted order.
+unsafe_union ← λ(xs,ys){
+  xL ← xs.length
+  yL ← ys.length
+  if (xL===0) ↩ ys; else if (yL===0) ↩ xs
+  r ← {}
+  for (i ← 0; i < xL; i++) r[xs[i]] = true
+  for (i ← 0; i < yL; i++) r[ys[i]] = true
+  ↩ _.keys(r).sort() }
+
+P.format_error = λ(stream,error){
+  t ← error.expected; ex ← t.length===1? t[0] : 'one of '+t.join(', ')
+
+  index ← error.index
+  i ← index.offset
+
+  if (i===stream.length) ↩ ', got the end of the stream'
+
+  prefix ← (i > 0 ? "'..." : "'")
+  suffix ← (stream.length - i > 12 ? "...'" : "'")
+
+  got ← ' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix
+
+  ↩ 'expected '+ex+got }
+
+P.proto.parse = λ(stream){ Tstr(stream) || ‽
+  r ← @.skip(eof)._(stream,0)
+  ↩ r.status?
+    { status:true, value:r.value, } :
+    { status:false, index:make_line_col_index(stream, r.furthest), expected:r.expected, } }
+
+// [Parser a] -> Parser [a]
+seq ← P.seq = λ(…ps){ ps.map(ι=> ι instanceof Parser || ‽)
+  r ← p_wrap(λ(stream,i){
+    r←;
+    accum ← new Array(ps.length)
+    for (j ← 0; j < ps.length; j += 1){
+      r = merge_replies(ps[j]._(stream,i), r)
+      if (!r.status) ↩ r
+      accum[j] = r.value
+      i = r.index
+      }
+    ↩ merge_replies(make_win(i,accum), r) })
+  if (ps.some(ι=> ι.spread)){
+    f ← eval('ι=>['+ps.map((p,i)=> (p.spread?'...':'')+'ι['+i+']').join(',')+']')
+    r = r.map(f) }
+  ↩ r}
+
+seq_map ← P.seq_map = λ(…a){ f ← a[-1]; a = a.slice(0,-1); Tfun(f) || ‽; ↩ seq(…a).map(ι=> f(…ι)) }
+
+// Allows to add custom primitive parsers
+P.custom = f=> p_wrap(f(make_win,make_lose))
+
+alt ← P.alt = λ(…ps){ ps.map(ι=> ι instanceof Parser || ‽)
+  if (!ps.length) ↩ fail('zero alternates')
+  ↩ p_wrap(λ(stream,i){
+    r←;
+    for (j ← 0; j < ps.length; j += 1){
+      r = merge_replies(ps[j]._(stream,i), r)
+      if (r.status) ↩ r
+    }
+    ↩ r
+  })
+}
+
+// P.sep_by_all = (p,sep)=> P.sep_by_1_all(p,sep).or(P.of([]))
+// P.sep_by_1_all = λ(p,sep){ p instanceof Parser || ‽; sep instanceof Parser || ‽
+//   ↩ P.seq_map( p, P.seq(sep,p).many().map(ι=> ι._.flatten(true)), (a,b)=>[a,…b] ) }
+
+P.sep_by = (p,sep)=> P.sep_by1(p,sep).or(P.of([]))
+P.sep_by1 = λ(p,sep){ p instanceof Parser || ‽; sep instanceof Parser || ‽
+  pairs ← sep.then(p).many()
+  ↩ p.chain(r=> pairs.map(rs=> [r].concat(rs) ) ) }
+
+// -*- primitive combinators -*- //
+P.proto.or = λ(ι){↩ alt(@,ι) }
+P.proto.then = λ(next){ next instanceof Parser || ‽; ↩ seq(@,next).map(ι=> ι[1]) }
+
+// -*- optimized iterative combinators -*- //
+// equivalent to:
+// P.proto.many = λ(){↩ @.times(0,Infinity) }
+P.proto.many = λ(){
+  self ← @
+  ↩ p_wrap(λ(stream,i){
+    accum ← []
+    r←;
+    for (;;){
+      r = merge_replies(self._(stream,i), r)
+      if (r.status){ i = r.index; accum.push(r.value) }
+      else ↩ merge_replies(make_win(i,accum), r)
+    }
+  })
+}
+
+// equivalent to:
+// P.proto.times = λ(min,max){
+//   if (arguments.length < 2) max = min
+//   self ← @
+//   if (min > 0){
+//     ↩ self.then(λ(x){
+//       ↩ self.times(min-1, max-1).then(λ(xs){
+//         ↩ [x].concat(xs)
+//       })
+//     })
+//   }
+//   else if (max > 0){
+//     ↩ self.then(λ(x){
+//       ↩ self.times(0, max-1).then(λ(xs){
+//         ↩ [x].concat(xs)
+//       })
+//     }).or(P.of([]))
+//   }
+//   else ↩ P.of([])
+// }
+P.proto.times = λ(min,max){
+  self ← @
+  if (arguments.length < 2) max = min
+  Tnum(min) || ‽; Tnum(max) || ‽
+
+  ↩ p_wrap(λ(stream,i){
+    accum ← []
+    r←;
+    prev_r←;
+
+    for (times ← 0; times < min; times += 1){
+      r = self._(stream,i)
+      prev_r = merge_replies(r,prev_r)
+      if (r.status){ i = r.index; accum.push(r.value) }
+      else ↩ prev_r
+      }
+    for (; times < max; times += 1){
+      r = self._(stream,i)
+      prev_r = merge_replies(r,prev_r)
+      if (r.status){ i = r.index; accum.push(r.value) }
+      else break
+      }
+    ↩ merge_replies(make_win(i,accum), prev_r)
+  })
+}
+
+// -*- higher-level combinators -*- //
+P.proto.result = λ(ι){↩ @.map(()=> ι) }
+P.proto.at_most = λ(n){↩ @.times(0,n) }
+P.proto.at_least = λ(n){↩ seq_map(@.times(n), @.many(), (init,r)=> init.concat(r) ) }
+P.proto.map = λ(f){ Tfun(f) || ‽; self ← @; ↩ p_wrap(λ(stream,i){ r ← self._(stream,i); ↩ !r.status? r : merge_replies(make_win(r.index, f(r.value)), r) }) }
+P.proto.skip = λ(next){↩ seq(@,next).map(ι=> ι[0]) }
+P.proto.mark = λ(){↩ seq_map(index,@,index,(start,value,end)=>0?0: { start, value, end } ) }
+P.proto.desc = λ(expected){ self ← @; ↩ p_wrap(λ(stream,i){ r ← self._(stream,i); if (!r.status) r.expected = [expected]; ↩ r }) }
+
+// -*- primitive parsers -*- //
+P.of = (value)=> p_wrap((stream,i)=> make_win(i,value) )
+fail ← P.fail = (expected)=> p_wrap((stream,i)=> make_lose(i,expected) )
+P.any = p_wrap((stream,i)=> i >= stream.length? make_lose(i,'any character') : make_win(i+1, stream[i]) )
+P.all = p_wrap((stream,i)=> make_win(stream.length, stream.slice(i)) )
+eof ← P.eof = p_wrap((stream,i)=> i < stream.length? make_lose(i,'EOF') : make_win(i,null) )
+test ← P.test = test=>( Tfun(test) || ‽, 
+  p_wrap((stream,i)=> i < stream.length && test(stream[i])? make_win(i+1,stream[i]) : make_lose(i,'a character matching '+test) )
+  )
+P.one_of = s=> test(ch=> s.indexOf(ch) >= 0 )
+P.none_of = s=> test(ch=> s.indexOf(ch) < 0 )
+P.take_while = test=>( Tfun(test) || ‽,
+  p_wrap(λ(stream,i){ j ← i; while (j < stream.length && test(stream[j])) j++; ↩ make_win(j,stream.slice(i,j)) })
+  )
+
+make_line_col_index ← λ(stream,i){ lines ← stream.slice(0,i).split('\n'); ↩ { offset:i, line:lines.length, column:lines[-1].length+1, } }
+
+index ← P.index = p_wrap((stream,i)=> make_win(i,make_line_col_index(stream,i)) )
+
+//- fantasyland compat
+//- Monad
+P.proto.chain = λ(f){ self ← @; ↩ p_wrap(λ(stream,i){ r ← self._(stream,i); ↩ !r.status? r : merge_replies(f(r.value)._(stream,r.index), r) }) }
+
+// --------- misc --------- //
+P.proto.flat = λ(){↩ @.map(ι=> _(ι).flatten(true)) }
+
+module.exports = P

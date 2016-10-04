@@ -18,6 +18,7 @@ contexts:
     - include: comments-top-level
     - include: keywords-top-level
     - include: statements
+    - { scope: punctuation.text.me, match: '‡' }
 
   keywords-top-level:
     - match: \bimport\b
@@ -403,7 +404,7 @@ contexts:
       scope: constant.character.escape.js
 
   regexp-complete:
-    - match: '/(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimy]*(?!\s*[a-zA-Z0-9_$]))'
+    - match: '/(?=(?:[^/\\\[]|\\.|\[([^\]\\]|\\.)+\])+/(?![/*])[gimyu]*(?!\s*[a-zA-Z0-9_$]))'
       scope: punctuation.definition.string.begin.js
       push: regexp
     - match: 're`'
@@ -412,7 +413,7 @@ contexts:
 
   regexp:
       - meta_scope: string.regexp.js
-      - match: "(/)([gimy]*)"
+      - match: "(/)([gimyu]*)"
         captures:
           1: punctuation.definition.string.end.js
           2: keyword.other.js
@@ -555,7 +556,8 @@ contexts:
         %    | # modulus         left-to-right   both
         \*   | # multiplication  left-to-right   both
         \+   | # addition        left-to-right   both
-        -      # subtraction     left-to-right   both
+        -    | # subtraction     left-to-right   both
+        ∪|∩|∃|∄|∈|∉|∀|≈
       scope: keyword.operator.arithmetic.js
       push: after-operator
     - match: '\?|:'

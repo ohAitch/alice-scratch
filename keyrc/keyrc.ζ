@@ -1,9 +1,9 @@
 #!/usr/bin/env ζ
-as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
 APP ← '\x1b[34m[keyrc]\x1b[0m'
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
+as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
 take_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
 drop_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
 split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
@@ -72,7 +72,7 @@ show_private_xml ← λ(mappings){t←;
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
 	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = (λ(){ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(), φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
 	compile_mapping ← λ(ι){
-		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : 'RawValue::0x'+keycodes[ι])).replace(/^(.+)°$/,'Consumer$1')
+		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← λ(ι){
 			var [md,ky] = split_with(/FnF.|F.|.[LR]|./g.λ(ι), Mod)
 			if (md.length === 1 && ky.length === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
@@ -86,11 +86,13 @@ show_private_xml ← λ(mappings){t←;
 		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),null) )
 		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ null }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if:if_} }
-	t ← mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) ); onces ← t[0]; mappings = t[1]
+	var [onces,mappings] = mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) )
 	↩ {root: {
-		keyrc:true,
 		item:[
-			M2( 'notsave.2touch', { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ) ),
+			M2( 'notsave.2touch', […{ b:['ibooks'], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], p:['preview'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ),
+				// compile_mapping(M('c','; osaᵥ`on activateWin(a, w); tell application "System Events"; click menu item (name of w) of menu 1 of menu bar item "Window" of menu bar 1 of process (name of a); end tell; activate a; end activateWin; tell application "Chrome" to my activateWin(it, window 1)`')).ι] ),
+				// System Events got an error: osascript is not allowed assistive access
+				compile_mapping(M('c','; terminal_do_script(sh`ζ --fresh ${\'osaᵥ`on activateWin(a, w); tell application "System Events"; click menu item (name of w) of menu 1 of menu bar item "Window" of menu bar 1 of process (name of a); end tell; activate a; end activateWin; tell application "Chrome" to my activateWin(it, window 1)` ;\'}; exit`)')).ι] ),
 			M2( t='notsave.power_key', _.difference(builtin_keys,text_keys).map(ι=> /^F[^n]$/.λ(ι)? M('Fn'+ι,ι) : /^[⌥⇧⌘][RL]$/.λ(ι)? M(ι,ι[0]) : M(ι,ι)).map(ι=> compile_mapping(ι).ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
 			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
@@ -110,7 +112,7 @@ main ← ()=>{
 	ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
 	if (φ`/Applications/PowerKey.app`.BAD_exists()){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }
 	}
-main2 ← ()=>{ try{ main() }catch(e){ _alert('@',e+'',2) } }
+main2 ← ()=>{ try{ main() }catch(e){ _alert('@',e+'',5) } }
 if (!module.parent){ main2(); npm('chokidar@1.6.0').watch(φ`~/.keyrc`+'').on('all',λ(ev,ι){ main2() }) }
 
 // -------------------------------------------------------------------------- //
@@ -122,7 +124,6 @@ module.exports.KEY_once = λ(trigger,f,…a){
 	shᵥ`${KB} enable ${fi}`
 	}
 module.exports.robot_key_tap = λ(ι){t←; c←;
-	robot ← npm('robotjs@0.4.4')
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
 	c._.uniq().length === c.length || ‽
 	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.length : true)){

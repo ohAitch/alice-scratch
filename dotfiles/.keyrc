@@ -24,10 +24,10 @@
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌───────────── ⌥ ──────────────┐ ┌───────────── ⇧⌥ ─────────────┐
 │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │ │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │
-│ _ _ _ ∃ _ _ _ _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ _ _ _ _ _ _  │
-│  _ ℚ _ ∈ ℝ _ ✓ _ ∞ ◍ _ _ _ _ │ │  _ _ _ ∉ _ _ _ _ _ _ _ _ _ _ │
-│  _ ∀ _ ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ _ _ _ _ _ _  _  │
-│  _  ℤ ‡ ℂ _ _ ℕ _ _ _ _  _   │ │  _  _ _ _ _ _ _ _ _ _ _  _   │
+│ _ _ _ ∃ _ _ § _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ _ _ _ _ _ _  │
+│  _ _ _ ∈ √ _ ✓ ∪ ∞ ◍ _ _ _ _ │ │  _ ℚ _ ∉ ℝ _ _ ∩ _ _ ℙ _ _ _ │
+│  _ ∀ § ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ _ _ _ _ _ _  _  │
+│  _  _ ‡ _ _ ⊥ _ ⧫ _ _ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ _ _ _  _   │
 │ _ _ _ _     _    _ _ _ _ _ _ │ │ _ _ _ _     _    _ _ _ _ _ _ │
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌───────────── 1 ──────────────┐
@@ -36,20 +36,24 @@
 │  _ ♈ ♐ _ _ ♊ _ _ _ ♎ _ _  _  │
 │  _  _ _ ♋ ♍ _ _ _ _ _ _  _   │
 └──────────────────────────────┘
-`=  ≈
-`/  ≉
-1/  ‽
-=/  ≠
-.;  …
-=,  ≤
-=.  ≥
--,  ←
--.  →
-`1  ¬
--1  ₋₁
-,.  ↔
--=  ±
-sd  ι
+⌥^e  ∋
+⌥^⇧e ∌
+`=   ≈
+⇧`=  ≉
+1/   ‽
+=/   ≠
+.;   …
+=,   ≤
+=.   ≥
+-,   ←
+-.   →
+`1   ¬
+-1   ₋₁
+,.   ↔
+-=   ±
+sd   ι
+⌥r3  ∛
+⌥r4  ∜
 
 # retiring
 # fun     ↯✨⟨⟩‘’ ⋈
@@ -57,9 +61,9 @@ sd  ι
 # lang    := ｢｣ ′″‴ ≒≓≔≕≝ ≪≫
 # bbold   ℙℍ
 
-# lang actually want: ∪∩ ∋∌ ⌊⌈⌋⌉ ∕−÷ ¢ ⊥
+# lang actually want: ∋∌ ⌊⌈⌋⌉ ∕− ¢
 # want:
-# fun     卍∴ ⋱ ⌂ ⌕ ◊⟠⧫ ‹›⟪⟫⸨⸩ ☥ § ※⁜ ⁞⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
+# fun     卍∴ ⋱ ⌂ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※⁜ ⁞⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉
 # whoa, ≈ as _.isEqual
 
@@ -80,9 +84,6 @@ FnF3  ] ⌘^f
 ⌘⇧⌥4  ; _sc_imgur('-io')
 ⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ) // ! should timeout in 1s and alert user of failure
 ⌥^l  ; sfx`ack`; browser('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(" - "))
-# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot ← npm('robotjs@0.4.4'); robot.mouseClick.every(1/6)
-⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot ← npm('robotjs@0.4.4'); (λ(){ 6..map(()=> robot.mouseClick()) }).every(0.3)
-⌥^b  ; robot ← npm('robotjs@0.4.4'); φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util.inspect(robot.getMousePos())+'\n'
 @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, '; activate')
 @photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
@@ -94,7 +95,7 @@ FnF3  ] ⌘^f
 # @path_finder ⌘c   ; robot_key_tap('⌘c'); t ← p(); if (t[0]==='/') p(t.split('\n').map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,'~').replace(re`^~/file/books/papers(?=/|$)`,'~/papers').replace(re`^~/file/books(?=/|$)`,'~/books').replace(/ /g,'%20').replace(/^\/|(?=~)/,'file:/').replace()}).join('\n'))
 @chrome  ⌘⇧l       ; robot_key_tap('⌘l'); sfx`ack`; var [title,url] = osaᵥ`chrome: get {title,URL} of active tab of window 1`; t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; p(nice_url(t))
 @terminal  ⌘r      ; ['⌘t','⌘⇧[','⌘w'].map(robot_key_tap)
-@terminal  ⌘⇧r     ; npm('robotjs@0.4.4').typeString('. ~/.bashrc'); robot_key_tap('↩')
+@terminal  ⌘⇧r     ; robot.typeString('. ~/.bashrc'); robot_key_tap('↩')
 @terminal  ⌘←      ] ^a
 @terminal  ⌘→      ] ^e
 @terminal  ⌘⌫      ] ^u
@@ -116,6 +117,23 @@ FnF4             ; sfx`nack`
 @path_finder   ⌘2   ; sfx`nack`
 @path_finder   ⌘3   ; sfx`nack`
 
+⌥^b  ; φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util_inspect_autodepth(robot.getMousePos())+'\n'
+# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot.mouseClick.every(1/6)
+# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); (λ(){ 6..map(()=> robot.mouseClick()) }).every(0.3)
+# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); polar_to_rect ← ([r,θ])=> [r*cos(θ), r*sin(θ)]; offsets ← _.range(0,1,0.02).map(ι=> polar_to_rect([300,ι*τ])); orig ← robot.getMousePos(); move_to_next ← (λ(){ i ← 0; ↩ λ(){ ι ← offsets[i++ % offsets.length]; robot.moveMouse(orig.x+ι[0],orig.y+ι[1]) } })(); robot.mouseToggle('down'); move_to_next.every(0.01)
+⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
+
 # 0?0: { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=>```
 # ☝☝${k} ; ι ← ${ι}; ι[1] && robot_key_tap('^'+ι[1]); osaᵥ`${ι[0]}: activate`
 # ```)
+
+# @sublime_text ⌘⌥b ; robot_key_tap('⌘s'); osaᵥ`terminal: activate`; (λ(){ robot_key_tap('⌘'); robot.typeString('eval('); ['⌥0', '⌥3', '⌥b', '⌥6'].map(robot_key_tap); robot.typeString('_compile(sb()))'); robot_key_tap('↩') }).in(0.01)
+@sublime_text ⌘⌥b ; osaᵥ`terminal: activate`; (λ(){ robot_key_tap('⌘'); robot.typeString('eval('); ['⌥0', '⌥3', '⌥b', '⌥6'].map(robot_key_tap); robot.typeString('_compile(sb()))'); robot_key_tap('↩') }).in(0.01)
+
+# ⌘⌥d ; chrome_simple_js_ᵥ('var dl = (url,name)=>{ var a = jQuery("<a>").attr("href",url).attr("download",name+url.match(/\\.\\w+$/)[0]).appendTo("body"); a[0].click(); a.remove() }; dl(jQuery(".view-image").css("background-image").match(/"(.*)"/)[1], jQuery("[ng-bind=\\"::post.post_title\\"]").text())','active tab')
+
+# @chrome f ; t ← '1'; var {PNG} = npm('pngjs@3.0.0'); show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); busywait(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
+# @chrome f ; t ← '1'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+# @chrome g ; t ← '2'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+# @chrome b ; t ← '9'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+# @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)

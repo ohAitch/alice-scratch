@@ -1,0 +1,145 @@
+// --------------------------------- DEFUNCT -------------------------------- //
+// --------------------------------- DEFUNCT -------------------------------- //
+// --------------------------------- DEFUNCT -------------------------------- //
+
+// ------- what we've learned ------- //
+// ast nodes need
+// 	type
+// 	ordered list of {abstraction-irrelevant token}s and {abstract node}s
+// 	ι.tok[ι.ι.op]
+// 	sub(ι,'op')
+// 	sub{ast nodes}, named in various ways
+// 	?maybe? other abstract data ?
+
+// AST ← (type,tokens,content)=>0?0: {T:type, tok:tokens}._.assign(content)
+// O ← ι=>0?0: {at:ι[0]}
+AST ← (type,rest)=>0?0: {T:type}._.assign(rest)
+
+// ------------------ ? macro evaluation & encoding to js ? ----------------- //
+
+// js_repr ← ι=>
+// 	Tnum(ι) || Tstr(ι) || T.RegExp(ι)? util.inspect(ι) :
+// 	Tarr(ι)? '['+ι.map(js_repr).join(', ')+']' :
+// 	Tfun(ι)? ι+'' :
+// 		‽('inspect:',ι)
+
+// is_stmt ← ι=> ι.T==='seq'? ι.ι.some(is_stmt) : ι.T.re`^stmt_`
+// ast_to_js←; C←; ast_to_js = C = (ι,top,t,par)=> // t,par: hack to get local variable
+// 	ι.is_macro__bad? js_repr(eval('('+C(ι.ι)+')')) :
+// 	ι.T==='void'? top? '' : ι.ι :
+// 	ι.T==='ident'? ι.ι :
+// 	ι.T==='number'? ι.ι :
+// 	ι.T==='regex'? '/'+ι.ι+'/' :
+// 	ι.T==='set'?
+// 		ι.ι.T==='regex'? C(ι.ι)+'.genex_0()' :
+// 			‽(ι) :
+// 	ι.T==='array'? '['+ι.ι.map(C.X).join(', ')+']' :
+// 	ι.T==='op'?
+// 		ι.A==='2 left' && ι.op==='÷'? C(ι.a,top)+' / '+C(ι.b) :
+// 		ι.A==='2 left' && ι.op==='*'? C(ι.a,top)+'.map('+C(ι.b)+')' :
+// 		// ι.A==='1 left'? C({T:'λ', params:[{T:'ident',ι:'a'}], code:{T:'seq',ι:[ {T:'stmt_var',name:{T:'ident',ι:'b'},ι:ι.ι} , {T:'op', A:'2 left', op:ι.op, a:{T:'ident',ι:'a'}, b:{T:'ident',ι:'b'}} ]}}) :
+// 		ι.A==='1 left'? C({T:'λ', params:[{T:'void',ι:'left'}], code:{T:'op', A:'2 left', op:ι.op, a:{T:'void',ι:'left'}, b:ι.ι} },top) :
+// 			‽(ι) :
+// 	ι.T==='λ'?
+// 		is_stmt(ι.code)?
+// 			'function('+ι.params.map(C.X).join(',')+'){'+C({T:'stmt_return', ι:ι.code})+'}' :
+// 		top && ι.params._.isEqual([{T:'void',ι:'left'}]) && ι.code.T==='op' && ι.code.a._.isEqual({T:'void',ι:'left'})?
+// 			C(ι.code,true) :
+// 			( par = ι.params.map(ι=> ι.T==='void'? _({}).assign(ι,{T:'ident'}) : ι), t = par.map(C.X).join(','), par.length===1 && par[0].T==='ident'? t : '('+t+')')+'=> '+C(ι.code) :
+// 	ι.T==='seq'? is_stmt(ι)? ι.ι.map(C.X).join('; ') : '('+ι.ι.map(C.X).join(', ')+')' :
+// 	ι.T==='stmt_var'? 'var '+C(ι.name)+' = '+C(ι.ι) :
+// 	ι.T==='stmt_return'?
+// 		ι.ι.T==='seq'?( ι.ι.ι[-1] = {T:'stmt_return', ι:ι.ι.ι[-1]}, C(ι.ι) ):
+// 		is_stmt(ι.ι)? ‽(ι) :
+// 			'return '+C(ι.ι) :
+// 		‽(ι)
+
+ast_to_S ← ι=>
+	Tstr(ι)? ι :
+	ι.T? (
+		ι.T===' '? [ι.a,ι.ι,ι.b] :
+		ι.T==='number'? [ι.ι] :
+		ι.T==='regex'? [ι.ι] :
+		ι.T==='op' && ι.A==='1 left'? [ι.op,ι.ι] :
+		ι.T==='op' && ι.A==='1 right'? [ι.ι,ι.op] :
+		//! shit, here we get to a part that breaks on a transformed AST
+		ι.T==='op' && ι.A==='2 left'? [ι.a,ι.op,ι.b] :
+		ι.T==='op' && ι.A==='2 right'? [ι.a,ι.op,ι.b] :
+		// ι.T==='macro?'
+		// ι.T==='set'
+		// ι.T==='op' && ι.A==='2 center'
+			ι.ι
+			).map(C).join('') :
+		‽(ι)
+C ← ast_to_S
+
+// ---------------------------------- parse --------------------------------- //
+P ← npm('require-new@1.1.0')('/Users/home/file/github/scratch/parsimmon2.ζ')
+
+WS ← P(/\s*/)
+P.proto.type = λ(T){↩ @.map(ι=> AST(T,{ι}) ) }
+P_spaced ← p=> P.seq_map(WS,p,WS,(a,ι,b)=> a||b? AST(' ',{a,ι,b}) : ι)
+// P_spaced ← p=> P.seq_map(ws,p,ws,(a,ι,b)=> a||b? AST(' ',[a,O`ι`,b],{ι}) : ι); ws ← P(/\s*/)
+
+// {ws syn ws NODE syn ws NODE ws} ws ws {NODE syn NODE {syn syn} ws}
+
+
+op_ps ← {
+	'1 left':λ(ops_p,next_p){ r ← P(()=> P.seq_map(ops_p, r, (op,ι)=> AST('op',{A:'1 left', op, ι})).or(next_p) ); ↩ r },
+	'1 right':(ops_p,next_p)=> P.seq_map( next_p, ops_p.many(), (x,r)=> r.reduce((ι,op)=> AST('op',{A:'1 right', op, ι}), x) ),
+	// binary left: 1-2-3 = (1-2)-3 ; binary right: 1^2^3 = 1^(2^3)
+	'2 left':(ops_p,next_p)=> P.seq_map( next_p, P.seq(ops_p,next_p).many(), (x,r)=> r.reduce((a,[op,b])=> AST('op',{A:'2 left', op, a, b}), x) ),
+	'2 right':λ(ops_p,next_p){ r ← P(()=> next_p.chain(a=> P.seq_map(ops_p, r, (op,b)=> AST('op',{A:'2 right', op, a, b}) ).or(P.of(a)) ) ); ↩ r },
+	'2 center':(ops_p,next_p)=> P.seq_map( next_p, P.seq(ops_p,next_p).many().flat(), (a,op_bs)=> !op_bs.length? a : AST('op',{A:'2 center', ι:[a, …op_bs]}) ),
+	}
+P_build_operators ← (unit,ops)=> ops.reduce((x,ι)=> op_ps[ι[0]]( P.alt(…ι.slice(1).map(P.X)), x ), unit)
+
+parse ← (λ(){
+	expr_unit ← P(()=> P.alt(
+		P('⧫').type('MISSING'),
+		P(/\d+(?:\.\d+)?/).type('number'),
+		P(/\/((\[[^\]]*\]|\\.|[^/\n])*)\//).type('regex'),
+		P.seq( P('{'), WS, expr, WS, P('}') ).map(ι=> AST('set',{ι})),
+		P.seq( P('['), WS, …P.seq( expr,WS,P(/,?/),WS ).many().flat(), P(']') ).map(ι=> AST('array',{ι})),
+		P.fail('‽') ) )
+	expr ← P_build_operators(expr_unit,[
+		// precedence
+		['2 right','^'],
+		['1 left','×','÷'],
+		['2 left','×','÷'],
+		['1 left','*'],
+		['2 left','*'],
+		// ['2 left','+','-'],
+		// ['1 left','-'],
+		['2 center','=','≠','<','>','≤','≥'],
+		['1 right','!'],
+		])
+	// root ← P.seq_map(P('°').or(P.of('')), expr, λ(is_macro,ι){ ↩ is_macro? {is_macro__bad:true, ι} : ι })
+	root ← P.seq(P('°').or(P.of('')), WS, expr, WS).map(ι=> AST('macro?',{ι}))
+	↩ λ(src){ ι ← root.parse(src); ι.status || ‽('§ tried to parse',[src],'and got',ι); ↩ ι.value } })()
+
+// -------------------------------------------------------------------------- //
+// module.exports = ι=> ast_to_js(parse(ι))
+if (!module.parent){
+srcs ← [
+	'° {/[0-9a-z]/} ',
+	// ' * ÷16 ',
+	' ⧫ * ⧫÷16 ',
+	'[0! 1, 2.5, ]',
+	'5 < 7 = 7 ≤ 9^2^3 > 2',
+	]
+srcs.map(ι=> cn.log`parse(${ι}) = ${parse(ι)}`)
+cn.log('testing recursion')
+srcs.map(λ(ι){
+	ι = [ι]; q ← ()=> ι.push(Tstr(ι[-1])? parse(ι[-1]) : ast_to_S(ι[-1])); q(); q(); q()
+	_.isEqual(ι[0],ι[2]) ||( cn.log`${ι[0]} ≠ ${ι[2]}`, ‽('fail02') )
+	_.isEqual(ι[1],ι[3]) ||( cn.log`${ι[1]} ≠ ${ι[3]}`, ‽('fail13') )
+	})
+cn.log('pass')
+}
+
+//! minor todo: add version info to ast
+
+// --------------------------------- DEFUNCT -------------------------------- //
+// --------------------------------- DEFUNCT -------------------------------- //
+// --------------------------------- DEFUNCT -------------------------------- //

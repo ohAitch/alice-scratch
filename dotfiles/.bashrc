@@ -42,6 +42,7 @@ shopt -s no_empty_cmd_completion
 shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
 dgrey=$'\e[90m'; red=$'\e[31m'; green=$'\e[32m'; purple=$'\e[35m'; reset=$'\e[0m'; goX(){ printf %s $'\e['$1'G'; }
 export PROMPT_COMMAND='    lx=$?;    _PC_t    '; last_dir=~; _PC_t(){
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $(hostname) $PWD $(history 1)" >> ~/.history_bash_full
 	hash -r
 	if [[ $last_dir != $PWD ]]; then last_dir="$PWD"; if [[ $PWFdirty = 0 ]]; then PWFdirty=1; else PWF=""; fi; do_ls=1; else do_ls=0; fi
 	printf %s '=== '; [[ $lx = 0 ]] || { printf %s "$red"; goX 1; [[ $lx = 1 ]] && printf %s === || printf %s "$lx "; goX 5; }
@@ -66,7 +67,8 @@ man(){ local t="$(/usr/bin/man "$@")"; [[ $? = 1 ]] || echo "$t" | col -bfx | sb
 pb(){ local v="$(_pastebin_id)"; ζ 'browser(ι)' "http://pastebin.com/raw/$v"; v="http://alice.sh/txt#$v"; echo "$v" | p; echo "copied: $v"; }
 /(){
 	# would be nice to search the text parts of ~/file/history but it's probably too illegible for that right now
-	if [[ $1 = -h ]]; then _ag ~/file/notes "$2" .{,/.history}
+	if [[ $1 = -H ]]; then _ag ~/file/notes "$2" .{,/.history{,/.sublime}}
+	elif [[ $1 = -h ]]; then _ag ~/file/notes "$2" .{,/.history}
 	else _ag ~/github "$1" .{,/scratch{/dotfiles/.{key,bash}rc,/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 	fi | sb; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
@@ -83,17 +85,23 @@ ps2(){ ζ '
 		.filter(ι=> !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
 		._.sortBy(ETIME).reverse()
 		.join("\n")+"\n"'; }
-diff(){ ζ '
-	t ← shᵥ`wdiff -n -w ${"\x1b[30;41m"} -x ${"\x1b[0m"} -y ${"\x1b[30;42m"} -z ${"\x1b[0m"} ${a} ;:`+""
-	t = t.split("\n")
-	iL ← t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length)))._.sortBy()._.uniq(true)
-	iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
-	t = iG.map(ι=> ι.map(i=> [t[i],i]))
-	t.forEach(λ(ι){ while (ι[-1][0]==="") ι.pop(); while (ι[0][0]==="") ι.shift() })
-	t.map(ι=> ι.map(([ι,i])=> "\x1b[90m"+i+"\x1b[0m "+ι)
-		.join("\n")+"\n")
-		.join("\x1b[90m"+"-".repeat(30)+"\x1b[0m"+"\n")
-	' "$@"; }
+diff(){ ζ ' base ← a0; edit ← a1
+	if( φ(base).is_dir ){
+		a ← new Set(fs.readdirSync(base))
+		b ← new Set(fs.readdirSync(edit))
+		var [same,changed] = […a["∩"](b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+""==="0" )
+		;[ ["\x1b[30;47m=\x1b[0m",same], ["\x1b[30;42m+\x1b[0m",b["-"](a)], ["\x1b[30;41m-\x1b[0m",a["-"](b)], ["\x1b[30;46mx\x1b[0m",changed] ].mapcat(([n,l])=> l.map(ι=> n+" "+ι)).join("\n")+"\n"
+	}else{
+		t ← shᵥ`wdiff -n -w ${"\x1b[30;41m"} -x ${"\x1b[0m"} -y ${"\x1b[30;42m"} -z ${"\x1b[0m"} ${base} ${edit} ;:`+""
+		t = t.split("\n")
+		iL ← t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length)))._.sortBy()._.uniq(true)
+		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
+		t = iG.map(ι=> ι.map(i=> [t[i],i]))
+		t.forEach(λ(ι){ while (ι[-1][0]==="") ι.pop(); while (ι[0][0]==="") ι.shift() })
+		t.map(ι=> ι.map(([ι,i])=> "\x1b[90m"+i+"\x1b[0m "+ι)
+			.join("\n")+"\n")
+			.join("\x1b[90m"+"-".repeat(30)+"\x1b[0m"+"\n")
+	}' "$@"; }
 rm_empty_dirs(){ find . -type d -empty -delete; }
 
 ############################ im_ (interactive only) ############################
@@ -120,7 +128,7 @@ d(){ ζ 'a ← ι || "."
 	fs.readdirSync(a).map(λ(fl){
 		if (φ(fl).is_dir){
 			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
-			b ← +(t+"").re`^\d+`[0] * 1024 }
+			b ← +((t+"").re`^\d+`||[0])[0] * 1024 }
 		else b ← φ(fl).size
 		sum += b; q(b,fl) })
 	q(sum,a)
@@ -180,24 +188,23 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2"; }
 ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
 push(){ ζ '
-	//! the date code is borked
+	moment ← npm("moment@2.14.1")
 
-	get_day_in_year ← ι=> round( (ι - new Date(ι.getUTCFullYear(),0,0))/1e3 / 86400 ) - 1
-	add_days ← (ι,x)=> Time(ι/1e3 + 86400*x)
+	day_of_year ← ι=> ι.dayOfYear()-1
+	label_fmt ← ι=> ("..."+ι).slice(-3)
 
-	argv ← process.argv.slice(2)
 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
 
-	label_fmt ← ι=> ("..."+ι).slice(-3)
-	label_now ← ()=>{ t ← Time(); ↩ label_fmt(get_day_in_year(t) + (t.getUTCHours() < 10? -1 : -1)) }
-	start ← Time(data.start)
-	labels ← 180..map(ι=> label_fmt(get_day_in_year(add_days(start,ι))) )
+	label_now ← ()=> label_fmt(day_of_year(moment()))
+	starts ← data.starts.map(ι=> moment.utc(ι))
+	labels ← 180..map(ι=> label_fmt(day_of_year(moment(starts[0]).add(ι,"days"))) )
 
-	if (argv[1]){ ι = argv[1]; set_data(ι,!data[ι]) }
+	a0 && set_data(a0,!data[a0])
 
 	color_now ← ι=> "\x1b[43m"+ι+"\x1b[0m"
-	"5×5 pushups: "+start+"::->"+"\n"+
-		labels.partition(floor(80/4)).map(ι=>{ var r = _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?" ✓ ":" · "]; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(" ")).join("\n") }).join("\n")+"\n"
+	starts_f ← starts.map(ι=> ι.format("YYYY")+"-"+label_fmt(day_of_year(ι)))
+	"5×5 pushups: "+starts_f[0]+"::->"+" ; "+"many knee pushups: "+starts_f[1]+"::->"+"\n"+
+		labels.chunk(floor(80/4)).map(ι=>{ var r = _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?" ✓ ":" · "]; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(" ")).join("\n") }).join("\n")+"\n"
 	' "$@"; }
 
 ############################# system configuration #############################
@@ -225,6 +232,3 @@ push(){ ζ '
 ################################## deprecated ##################################
 # ls|sbᵥ|… looks hard. a start: φ`/tmp/*`.φs.filter(ι=> /\/subl stdin /.λ(ι+''))._.sortBy(λ(ι){↩ ι.birthtime})[-1]
 # cdw(){ local t="$(which "$1")"; [[ $? != 0 ]] && return 1; cd "$(realpath "$t/..")"; }
-
-export NVM_DIR="/Users/home/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm

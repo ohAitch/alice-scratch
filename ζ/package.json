@@ -1,6 +1,6 @@
 {
   "name": "zeta-lang",
-  "version": "0.11.228",
+  "version": "0.11.279",
   "description": "simple js util lib",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {
@@ -12,10 +12,12 @@
     "url": "https://github.com/alice0meta/scratch.git"
   },
   "dependencies": {
-    "moment": "^2.11.2",
+    "lodash": "^4.16.2",
+    "moment": "^2.15.1",
+    "parsimmon": "^0.9.2",
     "priorityqueuejs": "^1.0.0",
     "underscore": "^1.8.3",
-    "urijs": "^1.17.0"
+    "urijs": "^1.18.2"
   },
   "main": "./bin/index.js",
   "bin": {
