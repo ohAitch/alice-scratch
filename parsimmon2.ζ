@@ -52,9 +52,8 @@ P.format_error = λ(stream,error){
 
 P.proto.parse = λ(stream){ Tstr(stream) || ‽
   r ← @.skip(eof)._(stream,0)
-  ↩ r.status?
-    { status:true, value:r.value, } :
-    { status:false, index:make_line_col_index(stream, r.furthest), expected:r.expected, } }
+  r.status || ‽({ index:make_line_col_index(stream, r.furthest), expected:r.expected, })
+  ↩ r.value }
 
 // [Parser a] -> Parser [a]
 seq ← P.seq = λ(…ps){ ps.map(ι=> ι instanceof Parser || ‽)

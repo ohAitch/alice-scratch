@@ -18,7 +18,6 @@ contexts:
     - include: comments-top-level
     - include: keywords-top-level
     - include: statements
-    - { scope: punctuation.text.me, match: '‡' }
 
   keywords-top-level:
     - match: \bimport\b
@@ -331,6 +330,7 @@ contexts:
         - meta_scope: comment.line.double-slash.js
         - match: \n
           pop: true
+    - { scope: punctuation.text.me, match: '‡' }
 
   special-comments-conditional-compilation:
     - match: /\*(?=@)

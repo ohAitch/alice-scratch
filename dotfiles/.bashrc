@@ -1,5 +1,5 @@
-[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || export PATH="/usr/local/bin:$PATH"
-[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || export PATH="./node_modules/.bin:$PATH:."
+[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
+[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
 __dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 
 #################################### private ###################################
@@ -73,35 +73,6 @@ pb(){ local v="$(_pastebin_id)"; ζ 'browser(ι)' "http://pastebin.com/raw/$v"; 
 	fi | sb; }
 alias ,='home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; }
-ps2(){ ζ '
-	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+"").split("\n").slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
-	bad ← startup_procs()._.countBy()
-	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+"").split("\n")
-	h ← r.shift()
-	CMD ← ι=> ι.slice(h.search("COMMAND"))
-	ETIME ← ι=> ι.slice(5,h.search("ELAPSED")+"ELAPSED".length)
-	h+"\n"+r
-		.filter(ι=> !bad[ι.re`^ *(\d*)`[1]])
-		.filter(ι=> !ι.includes("3vf2pkkz1i2dfgvi") && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/|/Applications/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool).app/)`)
-		._.sortBy(ETIME).reverse()
-		.join("\n")+"\n"'; }
-diff(){ ζ ' base ← a0; edit ← a1
-	if( φ(base).is_dir ){
-		a ← new Set(fs.readdirSync(base))
-		b ← new Set(fs.readdirSync(edit))
-		var [same,changed] = […a["∩"](b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+""==="0" )
-		;[ ["\x1b[30;47m=\x1b[0m",same], ["\x1b[30;42m+\x1b[0m",b["-"](a)], ["\x1b[30;41m-\x1b[0m",a["-"](b)], ["\x1b[30;46mx\x1b[0m",changed] ].mapcat(([n,l])=> l.map(ι=> n+" "+ι)).join("\n")+"\n"
-	}else{
-		t ← shᵥ`wdiff -n -w ${"\x1b[30;41m"} -x ${"\x1b[0m"} -y ${"\x1b[30;42m"} -z ${"\x1b[0m"} ${base} ${edit} ;:`+""
-		t = t.split("\n")
-		iL ← t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length)))._.sortBy()._.uniq(true)
-		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
-		t = iG.map(ι=> ι.map(i=> [t[i],i]))
-		t.forEach(λ(ι){ while (ι[-1][0]==="") ι.pop(); while (ι[0][0]==="") ι.shift() })
-		t.map(ι=> ι.map(([ι,i])=> "\x1b[90m"+i+"\x1b[0m "+ι)
-			.join("\n")+"\n")
-			.join("\x1b[90m"+"-".repeat(30)+"\x1b[0m"+"\n")
-	}' "$@"; }
 rm_empty_dirs(){ find . -type d -empty -delete; }
 
 ############################ im_ (interactive only) ############################
@@ -116,23 +87,11 @@ im_concat(){
 	local out="${@: -1}"; if ! [ -e "$out" ]; then set -- "${@:1:$(($#-1))}"; else while [ -e "$out" ]; do out="${out%.*}~.${out##*.}"; done; fi
 	montage -mode concatenate -tile "$tile" "$@" "$out"; }
 im_rotate_jpg(){ jpegtran -rotate "$1" -outfile "$2" "$2"; }
-im_dateify(){ ζ '  dry ← a0==="-d"; dry && a.shift(); mv ← λ(a,b){a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}; a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){ t ← (shᵥ`identify -verbose ${ι}`+"").re`exif:DateTimeOriginal: (.*)`; if (!t) ↩; t = t[1].split(" "); t = t[0].replace(/:/g,"-")+"T"+t[1]; mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = "", φ(ι).φ`../PANO/tmp`.ι = null), "PANO/") : "")+t+".jpg") })  ;' "$@"; }
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 
 ################## single-purpose commands (interactive only) ##################
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
-d(){ ζ 'a ← ι || "."
-	sum ← 0
-	q ← (ι,fl)=> cn.log( (" ".repeat(17)+(ι+"").split("").reverse().join("").replace(/(...(?!$))/g,"$1,").split("").reverse().join("")).slice(-17)+"  "+fl )
-	fs.readdirSync(a).map(λ(fl){
-		if (φ(fl).is_dir){
-			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
-			b ← +((t+"").re`^\d+`||[0])[0] * 1024 }
-		else b ← φ(fl).size
-		sum += b; q(b,fl) })
-	q(sum,a)
-	;' "$1"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
@@ -140,45 +99,7 @@ cache_imgurs(){ for v in "$@"; do local o=~/file/misc/.cache/imgur/"$v"; [ -f "$
 youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1"; }
 youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 kc(){ sudo killall coreaudiod; }
-############ nlog ############
-nlog(){ f ~/file/history/text\ logs/nihil/; }
-nlog₋₁(){ ql "$(ζ 'φ`~/file/history/text logs/nihil/*`.φs.sort()[-1]+""')"; }
-nlog↩(){ mv ~/Downloads/{nlog\ *.json,201[6-9]-??-??T??:??:??*Z.png} ~/file/history/text\ logs/nihil/; }
-##############################
 ζlog(){ cat /usr/local/lib/node_modules/zeta-lang/log.txt; }
-email(){ ζ '
-	sfx`ack`
-	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split("\n"); c = c.join("\n"); ↩ ("mailto:"+a+"?subject="+b+"&body="+c).replace(/\n/g,"%0A")})
-		.map(ι=> osaᵥ`chrome: open location ${ι}`)
-	osaᵥ`chrome: activate`
-	;'; }
-alias ct=chrome_tabs; chrome_tabs(){ ζ '
-	nice_ ← λ(title,url){t ← new String(title+" "+url); t.sourcemap = {title:[0,title.length], url:[(title+" ").length,(title+" "+url).length]}; ↩ nice_url(t)}
-	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
-	i ← ι
-	if (i) {i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+"\n<copied>\n"}
-	else {t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join("\n")).join("\n\n"); sb(t)}
-	' "$1"; }
-bookmarks(){ ζ '
-	//! should use nice_url
-	use_chrome ← true
-	safari_bookmarks ← ι=>{
-		ι = npm("plist@1.2.0").parse(shᵥ`plutil -convert xml1 -o - ${ι||φ`~/Library/Safari/Bookmarks.plist`+""}`+"")
-		my_walk ← ι=>
-			ι.WebBookmarkType==="WebBookmarkTypeProxy"? [] :
-			ι.WebBookmarkType==="WebBookmarkTypeLeaf"? [{name:ι.URIDictionary.title, ι:ι.URLString}] :
-			ι.WebBookmarkType==="WebBookmarkTypeList"? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.mapcat(ι=> my_walk(ι))}] :
-				{name:"", ι:JSON.stringify(ι)}
-		↩ my_walk(ι)[0].ιs }
-	chrome_bookmarks ← ι=>{
-		ι = φ(ι||"~/Library/Application Support/Google/Chrome/Default/Bookmarks").json.roots.bookmark_bar.children
-		my_walk_a ← ι=> ι.map(ι=> my_walk(ι))
-		my_walk ← ι=> ι.children? {name:ι.name, ιs:my_walk_a(ι.children)} : ι.url? {name:ι.name, ι:ι.url} : {name:"", ι:JSON.stringify(ι)}
-		↩ my_walk_a(ι) }
-	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
-	walk(ι,ι=> ι.ι === "http://transparent-favicon.info/favicon.ico" && (ι.ι = null))
-	ι = walk_reduce(ι,ι=> Tarr(ι)? ι.join("\n") : ι.ιs? (ι.name+"\n"+ι.ιs).replace(/\n/g,"\n  ") : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+" "+ι.ι))
-	sb(ι) ;' "$@"; }
 alias kp=keypresses; keypresses(){ ζ --fresh '
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
@@ -187,25 +108,9 @@ alias kp=keypresses; keypresses(){ ζ --fresh '
 # document.write('<button id="pad" style="width:100%;height:100%;"></button>'); $('#pad').click((e)=>{ console.log('foo') })
 cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2"; }
 ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
-push(){ ζ '
-	moment ← npm("moment@2.14.1")
 
-	day_of_year ← ι=> ι.dayOfYear()-1
-	label_fmt ← ι=> ("..."+ι).slice(-3)
-
-	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
-
-	label_now ← ()=> label_fmt(day_of_year(moment()))
-	starts ← data.starts.map(ι=> moment.utc(ι))
-	labels ← 180..map(ι=> label_fmt(day_of_year(moment(starts[0]).add(ι,"days"))) )
-
-	a0 && set_data(a0,!data[a0])
-
-	color_now ← ι=> "\x1b[43m"+ι+"\x1b[0m"
-	starts_f ← starts.map(ι=> ι.format("YYYY")+"-"+label_fmt(day_of_year(ι)))
-	"5×5 pushups: "+starts_f[0]+"::->"+" ; "+"many knee pushups: "+starts_f[1]+"::->"+"\n"+
-		labels.chunk(floor(80/4)).map(ι=>{ var r = _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?" ✓ ":" · "]; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(" ")).join("\n") }).join("\n")+"\n"
-	' "$@"; }
+################################################################################
+eval "$(ζ ' require_new(φ`~/.bashrc.ζ`+"")._.keys().map(ι=> ι+sh`(){ ζ ${js`require_new(φ("~/.bashrc.ζ")+"")[${ι}](…a)`} "$@"; }`).join("\n") ')"
 
 ############################# system configuration #############################
 # &>/dev/null which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -214,7 +119,7 @@ push(){ ζ '
 # # for v in {/,~/,~/Library/LaunchAgents/}{.[^.],}*; do [ -h "$v" ] && printf %s "$v"$'\t'; readlink "$v"; done
 # sudo ln -sfh ~ /~
 # # ln -sf ~/file/github/scratch/{spotiman,bandcamp-dl,dotfiles/{.bashrc,.keyrc}} ~/file/consume/books ~
-# ln -sf ~/file/github ~/file/github/scratch/dotfiles/{.bashrc,.keyrc} ~/file/consume/books ~
+# ln -sf ~/file/github ~/file/github/scratch/dotfiles/{.bashrc{,.ζ},.keyrc} ~/file/consume/books ~
 # # ln -sf ~/books/#papers ~/papers
 # # ln -sf ~/books/#misc/page_cache ~/pg
 # ln -sf ~/file/github/scratch/LaunchAgents/* ~/Library/LaunchAgents/

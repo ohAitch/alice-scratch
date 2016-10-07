@@ -74,7 +74,7 @@ ast_to_S ← ι=>
 C ← ast_to_S
 
 // ---------------------------------- parse --------------------------------- //
-P ← npm('require-new@1.1.0')('/Users/home/file/github/scratch/parsimmon2.ζ')
+P ← require_new(φ`~/github/scratch/parsimmon2.ζ`)
 
 WS ← P(/\s*/)
 P.proto.type = λ(T){↩ @.map(ι=> AST(T,{ι}) ) }

@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ
 // S_compile ← ι=> S_[ι] || (S_[ι] = require('/Users/home/file/github/scratch/§/§'+ι+'.ζ')); S_ ← {}
-S_compile ← ι=> npm('require-new@1.1.0')('/Users/home/file/github/scratch/§/§'+ι+'.ζ')
+S_compile ← ι=> require_new('/Users/home/file/github/scratch/§/§'+ι+'.ζ')
 
 S_macro_transform ← ι=> ι.replace(/\/\/.*|§(.)([^]*?)§/g,(ˣ,ver,ι)=> ˣ[0]==='§'? S_compile(ver)(ι) : ˣ)
 

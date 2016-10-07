@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || export PATH="/usr/local/bin:$PATH"
+[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
 rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ) }
 date_i(){ date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 date_month(){ date -u +"%Y-%m"; }

@@ -81,7 +81,7 @@ show_private_xml ← λ(mappings){t←;
 		compile_trigger ← λ(ι){ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← λ(ι){t←; ↩0,
 			(t=/^\] (.*)$/.λ(ι))? compile_keystring(t[1]).ι :
-			(t=/^; (.+)$/.λ(ι))? shell(sh`export PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
+			(t=/^; (.+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),null) )
 		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ null }

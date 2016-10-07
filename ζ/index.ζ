@@ -68,6 +68,7 @@ fs ← require('fs')
 moment ← require('moment')
 if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } // browserify
 def(E,'robot',lazy('robot',()=> npm('robotjs@0.4.4') ))
+def(E,'require_new',lazy('require_new',()=>{ t ← npm('require-new@1.1.0'); ↩ ι=> t(ι+'') }))
 
 // ------------------------------ desktop fixes ----------------------------- //
 process.env.PATH || (process.env.PATH = ''); _(process.env.PATH.split(':')).includes('/usr/local/bin') || (process.env.PATH = […process.env.PATH.split(':'), '/usr/local/bin'].join(':')) //! duplicate with later ?
@@ -311,8 +312,8 @@ E.schema = (λ(){
 E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
 E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_reduce(ι,f,k,o)), f(ι,k,o) ) : ( ι = _(ι).map((ι,k,o)=> [k,walk_reduce(ι,f,k,o)])._.object(), f(ι,k,o) )
 E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.robot_key_tap = ι=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc/keyrc.ζ`+'').robot_key_tap(ι)
-E.KEY_once = (…a)=> npm('require-new@1.1.0')(φ`~/github/scratch/keyrc/keyrc.ζ`+'').KEY_once(…a)
+E.robot_key_tap = ι=> require_new(φ`~/github/scratch/keyrc/keyrc.ζ`).robot_key_tap(ι)
+E.KEY_once = (…a)=> require_new(φ`~/github/scratch/keyrc/keyrc.ζ`).KEY_once(…a)
 E.util_inspect_autodepth = λ(ι,opt={}){ opt.L || (opt.L = 20e3); last←; for(i←1;;i++){ r ← util.inspect(ι,{maxArrayLength:opt.L/3 |0, depth:i}._.assign(opt)); if (r===last || r.length > opt.L) ↩ last; last = r } }
 
 // ---------------------------------- .ζrc ---------------------------------- //
@@ -429,7 +430,7 @@ E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshorten
 E.keep_alive = prog=>{
 	Label ← 'local.'+φ(prog).name
 	t ← φ`~/Library/LaunchAgents/${Label}.plist`
-	t.text = npm('plist@2.0.1').build({Label, KeepAlive:true, ProgramArguments:['sh','-c',sh`export PATH=${process.env.PATH}; ${prog}`]})
+	t.text = npm('plist@2.0.1').build({Label, KeepAlive:true, ProgramArguments:['sh','-c',sh`PATH=${process.env.PATH}; ${prog}`]})
 	shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}`
 	}
 }
@@ -450,7 +451,7 @@ simple_template ← λ(ss,ιs,filter){ is_template([ss,…ιs]) || ‽
 	for(i←0;i<ι.length-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,λ(){ ι[i+1] = filter_special(ι[i+1].raw); i++; ↩ '' })
 	filter && (ι = ι.map(λ(ι){t←; ↩ Tstr(ι)? ι : (t=filter(ι.raw), t===undefined? ι : t) }))
 	↩ ι}
-E.easy_template = (λ(){
+easy_template ← E.easy_template = (λ(){
 	read ← (ss,ιs)=> tmpl_flatten(ss.raw,ιs.map(ι=>[ι]))
 	show ← λ(ι){ raw ← ['']; ιs ← []; ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι), raw.push('')) ); ↩ [{raw},…ιs] }
 	↩ f=> (ss,…ιs)=> f(read(ss,ιs),show)
@@ -480,6 +481,8 @@ E.JSON_pretty = λ(ι,replacer){
 
 E.re = λ(ss,…ιs){ι ← simple_template(ss,ιs,[(…a)=>re(…a).source,'']); ENC ← ι=> (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); ↩ RegExp(ι.map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join(''),'u')}
 P(()=>0?0:{ 'String.prototype.re':{get(){↩ (ss,…ιs)=> @.match(re(ss,…ιs))}} })
+
+E.js = λ(ss,…ιs){ENC ← JSON.stringify; ↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
 
 E.sh = λ(ss,…ιs){ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
 ellipsify ← ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.length>100?'…':'')
@@ -567,6 +570,7 @@ if (!BROWSERP) def(E,'φ',λ(){
 		get is_dir(){ try{↩ fs.statSync(@._ι).isDirectory() }catch(e){↩ false } },
 		get name(){↩ path.basename(@._ι) },
 		BAD_exists(){↩ existsSync(@._ι) },
+		TMP_children(){↩ (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).mapcat(Λ) : [ι] })(@._ι) },
 		root(x){switch(arguments.length){default: ‽
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
 			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
