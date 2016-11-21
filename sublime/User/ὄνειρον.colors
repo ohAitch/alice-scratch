@@ -63,8 +63,8 @@ $keyword punctuation.text
 $keyword [italic] markup.hashtag.hash
 $const [italic] markup.hashtag
 #ff487e punctuation.text.heart
-#5AC767 bg #296E31 punctuation.text.me
-#D54D47 punctuation.text.them
+#5ac767 bg #296e31 punctuation.text.me
+#d54d47 bg #642b28 punctuation.text.them
 #ff0000 [bold] punctuation.text.alert
 $link markup.underline.link
 $link26 markup.underline.link.quiet

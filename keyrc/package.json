@@ -1,6 +1,6 @@
 {
   "name": "keyrc",
-  "version": "0.0.43",
+  "version": "0.0.49",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {
     "postinstall": "./postinstall.sh"
@@ -10,6 +10,6 @@
     "url": "https://github.com/alice0meta/scratch.git"
   },
   "dependencies": {
-    "set-input-source": "*"
+    "set-input-source": "^1.0.0"
   }
 }

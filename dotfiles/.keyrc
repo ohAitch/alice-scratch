@@ -36,6 +36,12 @@
 │  _ ♈ ♐ _ _ ♊ _ _ _ ♎ _ _  _  │
 │  _  _ _ ♋ ♍ _ _ _ _ _ _  _   │
 └──────────────────────────────┘
+┌───────────── 2 ──────────────┐
+│ ̀ _ _ _ _ _ _ _ _ _ _ _ _ _  │
+│  _ _ _ ́ _ _ _ _ ̂ _ _ _ _ _ │
+│  _ _ ç _ _ _ _ _ _ _ _ _  _  │
+│  _  _ _ _ _ _ ̃ _ _ _ _  _   │
+└──────────────────────────────┘
 ⌥^e  ∋
 ⌥^⇧e ∌
 `=   ≈
@@ -56,7 +62,7 @@ sd   ι
 ⌥r4  ∜
 
 # retiring
-# fun     ↯✨⟨⟩‘’
+# fun     ↯⟨⟩‘’
 # math    ∑∏⊂⊃⊆⊇ ¬∀ ⊄⊅⊈⊉ ∓ ∧∨ ⊨⊢⊤
 # lang    := ｢｣ ′″‴ ≒≓≔≕≝ ≪≫
 # bbold   ℙℍ
@@ -66,6 +72,9 @@ sd   ι
 # fun     卍∴ ⋱ ⌂ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※⁜ ⁞⁑⁕⁖⁘⁙⁚⁝∵▶▷▸▹►▻◆◇○◌◍◎●◯★☆➤
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉
 # whoa, ≈ as _.isEqual
+# https://github.com/4Lang/4/blob/master/emoji_generator/cpp/emoji-data.txt
+# 🏃🌑🌒🌓🌔🌕🌖🌗🌘⌚⌛⌨⏰⏱⏲⛏⛓⛔⛽✨🌀🌐🌡🌲🌶🍀🍎🎁🎙🎥🎧🎨🎫🎲🎵🏢🏭👀👁👂👄👍👎👤💀💠💤💧💩💬💭💰💻📁📄📅📊📋📚📓📝📦📧📱📷🔅🔆🔇🔈🔉🔊🔋🔌🔑🔒🔔🔥🔨🔮🖥🖨🗑🗜🚦🚪🚫❓❗⭕️
+# ∅ ↺ ↻
 
 # to expand on this,  use http://hammerspoon.org/ to program lots of stuff
 
@@ -80,9 +89,9 @@ FnF3  ] ⌘^f
 ⌘⇧4   ; _sc('-io',φ`~/Downloads/${Time()}.png`)
 ⌘⇧^3  ; _sc(      '-cr')
 ⌘⇧^4  ; _sc('-io','-cr')
-⌘⇧⌥3  ; _sc_imgur(     )
-⌘⇧⌥4  ; _sc_imgur('-io')
-⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ) // ! should timeout in 1s and alert user of failure
+⌘⇧⌥3  ; _sc_imgur(     ) // i suspect this is outdated
+⌘⇧⌥4  ; _sc_imgur('-io') // also this
+⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ); !t && robot_key_tap('FnF6') // ! should timeout in 1s and alert user of failure
 ⌥^l  ; sfx`ack`; browser('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(" - "))
 @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, '; activate')
@@ -118,10 +127,10 @@ FnF4             ; sfx`nack`
 @path_finder   ⌘3   ; sfx`nack`
 
 ⌥^b  ; φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util_inspect_autodepth(robot.getMousePos())+'\n'
-# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot.mouseClick.every(1/6)
+⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); robot.mouseClick.every(1/40)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); (λ(){ 6..map(()=> robot.mouseClick()) }).every(0.3)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); polar_to_rect ← ([r,θ])=> [r*cos(θ), r*sin(θ)]; offsets ← _.range(0,1,0.02).map(ι=> polar_to_rect([300,ι*τ])); orig ← robot.getMousePos(); move_to_next ← (λ(){ i ← 0; ↩ λ(){ ι ← offsets[i++ % offsets.length]; robot.moveMouse(orig.x+ι[0],orig.y+ι[1]) } })(); robot.mouseToggle('down'); move_to_next.every(0.01)
-⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
+# ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
 
 # 0?0: { c:['chrome',1], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=>```
 # ☝☝${k} ; ι ← ${ι}; ι[1] && robot_key_tap('^'+ι[1]); osaᵥ`${ι[0]}: activate`
@@ -137,3 +146,5 @@ FnF4             ; sfx`nack`
 # @chrome g ; t ← '2'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 # @chrome b ; t ← '9'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 # @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+
+# d ; slow_drag ← (time,path)=>{ steps ← ceil(time*30); start_time ← Time().i; start ← robot.getMousePos(); robot.mouseToggle('down'); while ((Time().i - start_time) / time < 1.01){ progress ← min(1-1e-9, (Time().i - start_time) / time); progress *= path.length; b ← path[floor(progress)]; a ← floor(progress)<=0? {x:0,y:0} : path[floor(progress)-1]; x ← (b.x-a.x)*(progress % 1)+a.x; y ← (b.y-a.y)*(progress % 1)+a.y; robot.moveMouse(start.x+x,start.y+y); busywait(1/30) }; robot.mouseToggle('up'); robot.moveMouse(start.x,start.y) }; slow_drag(0.2,[{x:100,y:-100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:0}]); slow_drag(0.2,[{x:0,y:100}]); slow_drag(0.2,[ {x:-50,y:50}, {x:50,y:50}, {x:0,y:100}, ])

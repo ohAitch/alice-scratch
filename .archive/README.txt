@@ -68,6 +68,7 @@ contents:
 	zin                                    ‡
 	zutil 2012-may - 2012-dec              ‡ minor utils i used from clojure but couldn't code nicely inside clojure
 	mutex-sh - 2016-08-16                  ‡ mutex implementation in shell script. outgrew and discarded.
+	image match - 2015-11 ish              ‡ attempt at using statistics to find the overlapping orientation of two images. gave up on.
 
 not yet fully combed for useful ideas / code
 	befunge
@@ -79,7 +80,7 @@ not yet fully combed for useful ideas / code
 	http://github.com/alice0meta/11-scheduler
 	http://github.com/dreeves/beeminder
 	http://github.com/machine-intelligence/research-forum
-	hydrocarboner
+	hydrocarboner , especially 570.ζ
 	jbullet+batteries
 	jeta
 	kxlq

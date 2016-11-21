@@ -9,4 +9,4 @@ to='Hex Input +'; [[ $(set-input-source) = $to ]] || {
 	set-input-source -s "$to"
 }
 
-ζ ' keep_alive(φ`keyrc.ζ`.root("/")+"") ;'
+ζ ' restart_and_keep_alive(φ`keyrc.ζ`.root("/")+"") ;'

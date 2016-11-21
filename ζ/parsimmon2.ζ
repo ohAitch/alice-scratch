@@ -16,8 +16,8 @@ Parser ← λ(action){ @._ = action }
 P.proto = Parser.prototype
 P.proto[Symbol.iterator] = λ*(){ yield _(p_wrap(@._)).assign({spread:true}) }
 
-make_win ← (index,value)=> 0?0: { status:true, index, value, furthest:-1, expected:[], }
-make_lose ← (index,expected)=> 0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
+make_win ← (index,value)=>0?0: { status:true, index, value, furthest:-1, expected:[], }
+make_lose ← (index,expected)=>0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
 
 merge_replies ← λ(r,last){
   if (!last) ↩ r
@@ -198,5 +198,8 @@ P.proto.chain = λ(f){ self ← @; ↩ p_wrap(λ(stream,i){ r ← self._(stream,
 
 // --------- misc --------- //
 P.proto.flat = λ(){↩ @.map(ι=> _(ι).flatten(true)) }
+
+Pretty_Typed ← λ(ι){ @._.assign(ι) }; Pretty_Typed.prototype.inspect = λ(d,opt){↩ (@.T==='ident'?'i':@.T)+util.inspect(@.ι,opt) }
+P.proto.type = λ(T){↩ @.map(ι=> new Pretty_Typed({T,ι}) ) }
 
 module.exports = P

@@ -71,7 +71,7 @@ ast_to_S ← ι=>
 C ← ast_to_S
 
 // ---------------------------------- parse --------------------------------- //
-P ← npm('require-new@1.1.0')('/Users/home/file/github/scratch/parsimmon2.ζ')
+P ← require_new(φ`~/github/scratch/ζ/parsimmon2.ζ`)
 
 WS ← P(/\s*/)
 P.proto.type = λ(T){↩ @.map(ι=> AST(T,{ι}) ) }
@@ -144,43 +144,109 @@ if (!module.parent) ζ_main({compile:ι=> S_compile(parse(ι))})
 
 ‡ if i wanted to parse: ‡
 
-diff(a,b)=>
+‡ to get this to self-optimize, the ∄ fn needs to be told in advance how many times it''s going to get run? i think? so that it can know it has that much optimization budget?
+‡ the concept here is, autoindexing
+diff(a,b :: φ)=>
 	using ansi_color
 	if a,b are file:
-		‡ to get this to self-optimize, the ∄ fn needs to be told in advance how many times it''s going to get run? i think? so that it can know it has that much optimization budget?
-		‡ the concept here is, autoindexing
 		full ← shᵥ`wdiff -n -w ${black.bg_red} -x ${reset} -y ${black.bg_green} -z ${reset} ${a} ${b} ;:` as lines * {ι,i}
 		full replace (x+ : ∄ ∈full : .ι≈color & abs(.i - x.i) ≤ 3) with '-'
 			* (='-'? dark_grey('-'×30) : dark_grey(.i+1)+' '+.ι)
 	else:
 		A,B ← a,b flat
-		t ← A ∩ B
-		compare by .name | .data
-		A ∩ B
-		A,B ← 
-		is_same(a,b)=> shᵥ`diff -q ${a} ${b} &>/dev/null; echo $?` ≈ '0'
-		is_same_data
-		this doesn''t even work
-		sober me can you spend ten hours on this? that would be great
-		a,b ←* φ`/*`
-		{ n,l: grey`=`,a∩b/is_same , green`+`,b-a , red`-`,a-b , cyan`x`,a∩b-is_same } *… (n,ιs=> ιs * n+' '+) as lines
+		same(x)=> a,b +x .data =
+		[ B-A,green`+` , A-B,red`-` , A∩B∩same,grey`=` , A∩B-same,cyan`x` ] *… [l,t]=> l*{ι,t} sort by .ι * .t+' '+.ι as lines
+‡ minus the file branch, expands to ‡
+
+fucking shit, it worked!
 
 ‡ then i could go about a parse tree kind of like ‡
+‡ well, the naive version would be overcomplicated and poorly designed, but ... maybe it''s actually the good route, like, flexibility? ‡
+‡ no, right, i have to start over with imagining the program i''d rather have written; like, that up there is still way Literal ‡
 
-function params '=>' fnbody
-params '(' structure ')'
-structure id`a` ',' id`b`
-fnbody \n [while INDENT > parent.INDENT] stmt
-stmt stmt* expr
-stmt \t id`using` ' ' id`ansi_color` \n
-expr \t (if test:expr a:expr b:expr) \n
-op expr ' ' id`are` ' ' type
-type id`file`
-template fn:expr (string|expr)*
-. id`black` id`bg_red`
-as expr type
-← structure expr
-op id`full` ' ' '*' ' ' function
-function '{' id`ι` ',' id`i` '}'
+sep_by_or_end(ι,s)=> ι (s ι)* s?
+#function ident '(' structure ')' '=>' expr
+#function expr # looks for holes in the expr & those become arguments
+#ident
+#structure ident (',' structure)? | '[' structure ']'
+#expr (\n expr : INDENT > parent.INDENT)+
+#expr 'if' ' ' test:expr ':' a:expr 'else:' b:expr
+#expr 'using' ' ' ident
+#expr expr ' are ' expr
+#expr expr ' as ' expr
+#expr expr ' * ' function
+#expr expr <template string>
+#expr expr '.' ident
+#expr structure '←' expr
+#expr '{' sep_by_or_end(( ident (: expr)? ) ',') '}'
+#expr expr ' replace ' expr ' with ' expr
+lots more, very complicated
+the thing is i have a fairly complicated way of saying things!
+it's a mishmash of *all languages*
 
-‡ the naive version would be overcomplicated and poorly designed, but ... maybe it''s actually the good route, like, flexibility? ‡
+‡ i wonder if i could mention the primary elements of it ‡
+
+various atoms like 5.7, atoms, 'atoms'
+binary ∪ operator    !prefix    postfix[:-1]    using name    things replace pattern with things
+whitespace-clued precedence
+data structure atoms & structure atoms used for destructuring
+code sequence (stackless, stack-based); flow control; errors
+
+‡ i've tried that before. it never went anywhere. ‡
+
+‡ 
+
+// -------------------------------------------------------------------------- //
+you were halfway into creating ORM(filesystem, js)
+you didn''t realize what you were really doing
+do the right thing
+
+the right thing is an ORM built out of patterns? doesn't free you from working with the underlying layer; you have to implement patterns and understand pattern implementations; but does free you from having to remember it
+
+storage
+* persistent vs not
+* simple & complex data structures
+* migration strategy
+* local vs remote
+* isomorphism over dissimilar logical substrate
+* many specific data structures
+* pseudostorage
+* exotic foul apis
+
+filesystem
+* paths
+* errors & handling
+* listening for events
+* streams (a few configurations of path and options)
+* symlinks
+* files as buffers as data structures
+* files, metadata of
+! by default don't believe in content-independent dir existence
+! by default don't believe in hard links
+‡ ∀ fs.*() either add a final cb param or add Sync to the name
+#path fs.realpath(path[, options])
+#path path.basename(path[, ext])
+#path path.dirname(path)
+#path path.extname(path)
+#path path.normalize(path)
+#path path.relative(from, to)
+#path path.resolve([path[, ...]])
+#symlink fs.readlink(path[, options])
+#symlink fs.symlink(target, path[, type])
+#file fs.rename(oldPath, newPath)
+#file fs.unlink(path)
+#file fs.open(path, flags[, mode])
+#file fs.close(fd)
+#file fs.fsync(fd)
+#file fs.fdatasync(fd)
+#file fs.read(fd, buffer, offset, length, position_in_file)
+#file fs.write(fd, buffer, offset, length, position_in_file)
+#file fs.ftruncate(fd, len)
+#metadata fs.access(path[, mode])
+#metadata fs.(|f|l)stat(f?fd:path)
+#metadata fs.(|f|l)chmod(f?fd:path, mode)
+#metadata fs.(|f|l)chown(f?fd:path, uid, gid)
+#metadata fs.(|f)utimes(f?fd:path, atime, mtime)
+#dir fs.mkdir(path[, mode])
+#dir fs.rmdir(path)
+#dir fs.readdir(path[, options])

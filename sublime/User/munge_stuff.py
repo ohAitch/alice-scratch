@@ -10,15 +10,24 @@
 
 # http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/ζ/builtins.ζ#L370-L384 is broken
 
+# the clickable search results are currently implemented in a horrifying way, because we are not properly associating data across multiple contexts that make it hard to share data. with the right builtins, this is easily resolveable.
+
 import sublime, sublime_plugin
 from sublime import Region
 import os, subprocess, re, urllib, json
 
-def ζ(*a): return subprocess.check_output(['/usr/local/bin/node','/usr/local/lib/node_modules/zeta-lang/bin/index.js']+list(a)).decode('utf-8')
+t = (os.environ.get('PATH') or '').split(':')
+if not '/usr/local/bin' in t: os.environ['PATH'] = ':'.join(t+['/usr/local/bin'])
+
+def ζfresh(*a): return subprocess.check_output(['ζ','--fresh']+list(a)).decode('utf-8')
+def ζ(*a): return subprocess.check_output(['ζλ']+list(a)).decode('utf-8')
+
+clear_term = """/usr/bin/clear && printf %s $'\e[3J'"""
 
 ################################## munge_stuff #################################
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
+FIND_RESULT = r'^(?:github|history|misc|notes|alice0meta\.github\.io|projection|scratch)/.{1,70}:\d+:'
 
 def merge_overlapping_regions(ι):
 	for i in range(len(ι)-1):
@@ -31,10 +40,11 @@ def expand_empty_region_to_url(view,ι,mouse_mode=False):
 	if not ι.empty(): return ι
 	l = expand_empty_region_to_line(view,ι)
 	if l.size() > 1000000: return ι
-	for t in re.finditer(URL,view.substr(l)):
-		s = l.a + t.start(); e = l.a + t.end()
-		if (s < ι.a < e if mouse_mode else s <= ι.a <= e):
-			return Region(s,e)
+	for REG in [URL, re.compile(FIND_RESULT,re.MULTILINE)]:
+		for t in re.finditer(REG,view.substr(l)):
+			s = l.a + t.start(); e = l.a + t.end()
+			if (s < ι.a < e if mouse_mode else s <= ι.a <= e):
+				return Region(s,e)
 	return ι
 def left_trim_region(view,ι):
 	t = len(re.match(r'^\s*',view.substr(ι)).group(0))
@@ -65,13 +75,19 @@ def open(ι,app=None,focus=True,view=None):
 		# elif os.path.splitext(t)[1] in ['.png','.jpg']: make app be ql
 		else: app = "Sublime Text"
 	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""
-		if (app==='Terminal'){
+		if ("""+json.dumps(bool(re.match(FIND_RESULT,ι)))+"""){ !app || ‽
+			app = 'Sublime Text'
+			var [ˣ,ι,line] = ι.re`^(.+):(\d+):$`
+			ι = [φ('~/file/'+ι),φ('~/github/'+ι)].find(ι=>ι.BAD_exists())
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}`
+			}
+		else if (app==='Terminal'){
 			ids ← [1,2]._.indexBy()
 			sfx`ack`
 			var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 			unbusy ← _.zip(…osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
 			terminal_do_script(
-				sh`cd ${ι}; ${!unbusy && 'clear'}`,
+				sh`cd ${ι}; …${!unbusy && """+json.dumps(clear_term)+"""}`,
 				osa`…${unbusy && osa`in (window 1 whose id = ${unbusy})`}; …${focus && 'activate'}`
 				)
 			}
@@ -104,7 +120,7 @@ class open_context(sublime_plugin.TextCommand):
 			if mouse: t = view.sel()[0]; ι = [] if not t.empty() else [ι for ι in [expand_empty_region_to_url(view, view.sel()[0], True)] if not ι.empty()]
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
 			if mouse and len(ι): view.sel().clear(); view.sel().add(Region(ι[0].end(),ι[0].end())) # workaround for a bug
-			for ι in ι: open(omnibox(view.substr(ι)),focus=focus,view=view)
+			for ι in ι: t = view.substr(ι); t = t if re.match(FIND_RESULT,t) else omnibox(t); open(t,focus=focus,view=view)
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
@@ -133,8 +149,8 @@ class inline_compile_zeta_js(sublime_plugin.TextCommand):
 		sel = expand_empty_regions_to_lines(view, sel)
 		for reg in list(sel)[::-1]:
 			ι = view.substr(reg)
-			r = ζ('ζ_compile(ι)',ι)
-			if r == ι: r = ζ('ζ_compile["⁻¹"](ι)',ι)
+			r = ζfresh('ζ_compile(ι)',ι)
+			if r == ι: r = ζfresh('ζ_compile["⁻¹"](ι)',ι)
 			view.replace(edit, reg, r)
 
 class nice_url(sublime_plugin.TextCommand):
@@ -160,5 +176,4 @@ class build_dollar(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")
-		ζ("""  terminal_do_script(sh`clear; cd ${ι}; build.*; x`) """, os.path.dirname(view.file_name()))
-
+		ζ("""  terminal_do_script(sh`"""+clear_term+"""; cd ${ι}; build.*; x`) """, os.path.dirname(view.file_name()))

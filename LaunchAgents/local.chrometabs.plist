@@ -16,6 +16,7 @@
 		<string>https://calendar.google.com/calendar/render#main_7%7Ccustom,5</string>
 		<string>https://facebook.com/messages</string>
 		<string>https://www.duolingo.com/</string>
+		<string>https://keep.google.com/</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

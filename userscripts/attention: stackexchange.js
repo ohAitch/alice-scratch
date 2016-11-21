@@ -1,8 +1,8 @@
 // @match       *://*.stackexchange.com/*
-// @match       *://stackoverflow.com/*
-// @match       *://serverfault.com/*
-// @match       *://superuser.com/*
-// @match       *://askubuntu.com/*
+// @match       *://*.stackoverflow.com/*
+// @match       *://*.serverfault.com/*
+// @match       *://*.superuser.com/*
+// @match       *://*.askubuntu.com/*
 
 $('#hot-network-questions li > a:not([href^="http://math."])'/*:not([href^="http://physics."])'*/).closest('li').remove()
 $('#hot-network-questions li').removeClass('dno').removeClass('js-hidden')

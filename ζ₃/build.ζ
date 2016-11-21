@@ -21,11 +21,11 @@ check ← λ(ι,…any){ t ← ι._.omit('type','loc',…any); t._.isEqual({}) |
 loc_eq ← _.isEqual
 _code←; src ← ι=> _code.slice(ι.loc.start.i, ι.loc.end.i)
 
-mk_js ← ι=> 0?0: {type:'js', loc:ι.loc, src:src(ι)}
-// mk_js ← ι=> 0?0: {type:'js', loc:ι.loc}
-mk_leaf ← ι=> 0?0: {type:'leaf', loc:ι.loc}
+mk_js ← ι=>0?0: {type:'js', loc:ι.loc, src:src(ι)}
+// mk_js ← ι=>0?0: {type:'js', loc:ι.loc}
+mk_leaf ← ι=>0?0: {type:'leaf', loc:ι.loc}
 mk_ornament ← (ι,child)=> !child? {type:'ornament', loc:ι.loc} : loc_eq(ι.loc,child.loc)? child : {type:'ornament', loc:ι.loc, ι:child}
-mk_childs ← (ι,childs)=> 0?0: {type:'childs', loc:ι.loc, a:childs}
+mk_childs ← (ι,childs)=>0?0: {type:'childs', loc:ι.loc, a:childs}
 
 t←;
 table ← {

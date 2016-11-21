@@ -1,10 +1,10 @@
 {
   "name": "zeta-lang",
-  "version": "0.11.286",
-  "description": "simple js util lib",
+  "version": "0.12.42",
+  "description": "simple js utility library",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {
-    "preinstall": "./preinstall.sh",
+    "preinstall": "ln -sf index.js .bin/ζλ",
     "postinstall": "./postinstall.sh"
   },
   "repository": {
@@ -19,9 +19,9 @@
     "underscore": "^1.8.3",
     "urijs": "^1.18.2"
   },
-  "main": "./bin/index.js",
+  "main": "./.bin/index.js",
   "bin": {
-    "ζ": "./bin/index.js",
-    "ζλ": "./bin/ζλ"
+    "ζ": "./.bin/index.js",
+    "ζλ": "./.bin/ζλ"
   }
 }

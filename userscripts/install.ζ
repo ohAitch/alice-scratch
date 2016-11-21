@@ -4,16 +4,16 @@ arg ← {ι: process.argv[2]}
 diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 
 gen ← λ(ι){name←;
-	t ← multiline(λ(){/*
+	t ← multiline`
 		// ==UserScript==
 		// @name        NAME
 		REST
 		// @require     FILE
 		// @grant       none
 		// ==/UserScript==
-		*/})
+		`
 		.replace('NAME',name=require('path').basename(ι,'.js'))
-		.replace('REST',φ(ι).text.match(/^(?:\/\/ (?:@r|@m).*\n)+/)[0].trim())
+		.replace('REST',φ(ι).text.re`^(?:// (?:@r|@m).*\n)+`[0].trim())
 		.replace('FILE',φ(ι).url)
 	p(t); sfx`ack`; osaᵥ`chrome: open location ${'chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html'}; activate`
 

@@ -1,4 +1,5 @@
 // in theory this really ought to just reboot once an hour and not bother with grabbing focus from other clients
+// the current thing is ... closer ... but a fucking hack :D
 
 lame ← require('lame')
 async ← require('async','1.5.0')
@@ -11,7 +12,7 @@ quiet_skipping ← false
 
 APP ← '\x1b[34m[spotify dl]\x1b[0m'
 rc ← ι=> util.inspect(ι,{colors:true})
-poll ← λ(f,cb){(λ λ(){if (f()) cb(); else λ.in(0.05)})()}
+poll ← λ(f,cb){(λ Λ(){if (f()) cb(); else Λ.in(0.05)})()}
 is_playlist ← ι=> ι.type === undefined || ι.type === 0 // spotify.constants.PLAYLIST_TYPE_PLAYLIST = 0
 getTracks    ← ι=> _.range(ι.numTracks   ).map(i=> ι.getTrack(i))
 getPlaylists ← ι=> _.range(ι.numPlaylists).map(i=> ι.getPlaylist(i))._.filter()
@@ -65,16 +66,18 @@ ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 			cb&&cb.in(); ↩} // spotify.constants.SP_TRACK_AVAILABILITY_AVAILABLE = 1
 		player_bufs = []
 		spotify.player.play(ι)
-		q ← (λ(){
-			process.stdout.write('\x0d'+APP+' '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration)) //! should be done with an improved console.log
-			spotify.player.resume()
-			}).every(0.1)
+		stop ← [
+			(λ(){ process.stdout.write('\x0d'+APP+' '+prettyname+' @'+' '+rc(spotify.player.currentSecond)+' / '+rc(ι.duration)) }).every(0.1), //! should be done with an improved console.log
+			(λ(){ spotify.player.resume() }).every(3600),
+			(λ(){ spotify.player.resume() }).in(),
+			]
 		spotify.player.on({endOfTrack: λ(){(λ(){
-			clearInterval(q); cn.log('\x0d'+APP,prettyname+' \x1b[31;1m✓\x1b[0m            ')
+			stop.map(ι=>( clearTimeout(ι), clearInterval(ι) )); cn.log('\x0d'+APP,prettyname+' \x1b[31;1m✓\x1b[0m            ')
 			data ← Buffer.concat(player_bufs); player_bufs = null
 			t ← new lame.Encoder({channels:2, bitDepth:16, sampleRate:44100, bitRate:256, outSampleRate:22050, mode:lame.STEREO})
 			t.end(data)
 			t.pipe(fs.createWriteStream(fs(out).path)).on('finish',λ(){ mp3_id3(out).$ = metadata; cb&&cb.in() })
+			//! bug: will leave half-finished tracks if program is cut during this write
 			}).in(1)}}) }) }
 
 login(λ(e,spotify){

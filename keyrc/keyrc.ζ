@@ -19,16 +19,16 @@ parse_boards0 ← ι=>
 		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
 		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/.λ(ι)[1]).map(ι=> /\S\S?/g.λ(ι)),
 		} })
-builtin_keys ← parse_boards0(multiline(λ(){/*
+builtin_keys ← parse_boards0(multiline`
 	┌──────── [homoiconic] ────────┐
 	│ ⎋ F1F2F3F4F5F6F7F8F9FaFbFc ⏻ │
-	│ ` 1 2 3 4 5 6 7 8 9 0 - = ⌫  │
-	│  ⇥ q w e r t y u i o p [ ] \ │
+	│ \` 1 2 3 4 5 6 7 8 9 0 - = ⌫  │
+	│  ⇥ q w e r t y u i o p [ ] \\ │
 	│  ⇪ a s d f g h j k l ; '  ↩  │
 	│  ⇧L z x c v b n m , . /  ⇧R  │
 	│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │
 	└──────────────────────────────┘
-	*/}))[0].keys._.flatten(true)
+	`)[0].keys._.flatten(true)
 parse_boards ← λ(ι){
 	ι ← ι.mapcat(parse_boards0)
 	ι.filter(ι=> ι.keys.length === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
@@ -37,7 +37,7 @@ parse_boards ← λ(ι){
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
 	ι = ι.mapcat(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 	↩ ι.map(ι=> M(…ι)) }
-keycodes ← parse_boards([multiline(λ(){/*
+keycodes ← parse_boards([multiline`
 	┌──────────────────────────────┐
 	│ 357A78637660616264656D676F00 │
 	│ 321213141517161A1C191D1B1833 │
@@ -46,16 +46,16 @@ keycodes ← parse_boards([multiline(λ(){/*
 	│  38 060708090B2D2E2B2F2C 3C  │
 	│ 3F3B3A37   31   363D7B7E7D7C │
 	└──────────────────────────────┘
-	*/})]).map(ι=> [ι.trigger,ι.output])._.object()
+	`]).map(ι=> [ι.trigger,ι.output])._.object()
 	._.assign({FnF1:'03°',FnF2:'02°',FnF3:'a0',FnF4:'83',FnF5:'16°',FnF6:'15°',FnF7:'14°',FnF8:'10°',FnF9:'13°',FnFa:'07°',FnFb:'01°',FnFc:'00°'})
-system ← parse_boards([multiline(λ(){/*
+system ← parse_boards([multiline`
 	┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
-	│ ` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
-	│  _ q w e r t y u i o p [ ] \ │ │  _ Q W E R T Y U I O P { } | │
+	│ \` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
+	│  _ q w e r t y u i o p [ ] \\ │ │  _ Q W E R T Y U I O P { } | │
 	│  _ a s d f g h j k l ; '  _  │ │  _ A S D F G H J K L : "  _  │
 	│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
 	└──────────────────────────────┘ └──────────────────────────────┘
-	*/})])
+	`])
 text_keys ← […system._.map('trigger').filter(ι=> ι[0]!=='⇧'), ' ']
 macros['X'] = '; sfx`nack`'
 
@@ -68,7 +68,7 @@ parse_keyrc ← λ(src){
 		)
 	↩ […tₐ, …tₑ]._.difference_eq(system) }
 show_private_xml ← λ(mappings){t←;
-	Mod ← ι=> 0?0: {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"}[ι]
+	Mod ← ι=>0?0: {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
 	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = (λ(){ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(), φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
 	compile_mapping ← λ(ι){
@@ -89,7 +89,9 @@ show_private_xml ← λ(mappings){t←;
 	var [onces,mappings] = mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) )
 	↩ {root: {
 		item:[
-			M2( 'notsave.2touch', […{ b:['ibooks'], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], p:['preview'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+'osaᵥ`'+ι[0]+': activate`')).ι ),
+			M2( 'notsave.2touch', […{ b:[['ibooks','preview']], e:['sublime text',2], f:['path finder',3], g:['github for mac',4], w:['flowstate'], s:['spotify'], t:['terminal'], v:['vlc'], }._.map((ι,k)=> compile_mapping(M(k,'; '+(ι[1]? 'robot_key_tap("^'+ι[1]+'");' : '')+(Tarr(ι[0])? ι[0] : [ι[0]]).map(ι=> 'osaᵥ`'+ι+': activate`;').join(''))).ι ),
+				[1,2,3,4,5].map(ι=> compile_mapping(M(ι+'','] ^'+ι)).ι ),
+				// that {preview ibooks} combination is a horrifying hack
 				// compile_mapping(M('c','; osaᵥ`on activateWin(a, w); tell application "System Events"; click menu item (name of w) of menu 1 of menu bar item "Window" of menu bar 1 of process (name of a); end tell; activate a; end activateWin; tell application "Chrome" to my activateWin(it, window 1)`')).ι] ),
 				// System Events got an error: osascript is not allowed assistive access
 				compile_mapping(M('c','; terminal_do_script(sh`ζ --fresh ${\'osaᵥ`on activateWin(a, w); tell application "System Events"; click menu item (name of w) of menu 1 of menu bar item "Window" of menu bar 1 of process (name of a); end tell; activate a; end activateWin; tell application "Chrome" to my activateWin(it, window 1)` ;\'}; exit`)')).ι] ),
@@ -97,8 +99,8 @@ show_private_xml ← λ(mappings){t←;
 			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
 			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
 			],
-		vkopenurldef: shells._.map((name,ι)=> 0?0: {name, url:{'@type':'shell', '#text':ι}}),
-		appdef: appdefs._.map((ι,k)=> 0?0: {appname:k, equal:ι}),
+		vkopenurldef: shells._.map((name,ι)=>0?0: {name, url:{'@type':'shell', '#text':ι}}),
+		appdef: appdefs._.map((ι,k)=>0?0: {appname:k, equal:ι}),
 		}} }
 
 // ---------------------------------- main ---------------------------------- //
@@ -127,11 +129,11 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
 	c._.uniq().length === c.length || ‽
 	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.length : true)){
-		c = c._.map(ι=> 0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
+		c = c._.map(ι=>0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
 		osaᵥ`system events: key code ${[,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}
 	else {
-		c = c._.map(ι=> 0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
+		c = c._.map(ι=>0?0: {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
 		ι = text_keys._.contains(ι)? ι : { '^':'control', F1:'f1', F2:'f2', F3:'f3', F4:'f4', F5:'f5', F6:'f6', F7:'f7', F8:'f8', F9:'f9', Fa:'f10', Fb:'f11', Fc:'f12', FnF1:'lights_mon_down', FnF2:'lights_mon_up', FnF5:'lights_kbd_down', FnF6:'lights_kbd_up', FnF7:'audio_prev', FnF8:'audio_pause', FnF9:'audio_next', FnFa:'audio_mute', FnFb:'audio_vol_down', FnFc:'audio_vol_up', '←':'left', '↑':'up', '→':'right', '↓':'down', '↩':'enter', '⇥':'tab', '⇧':'shift', '⌥':'alt', '⌘':'command', '⌫':'backspace', '⎋':'escape', '␣':'space', }[ι] || ‽
 		robot.keyTap(ι,c) } }
 
