@@ -1,6 +1,0 @@
-these plan-ideas are plan-ideas that exist:
-	object.member syntax is a nice implied-namespace mechanism, but can we imply the namespace in `new BufferedImage(<a superclass of BufferedImage>.TYPE_INT_ARGB)` ?
-
-notes to keep in mind:
-	clojure.set/intersection SHOULD implicitly require clojure.set (counterpoint: can be nasty (counterpoint: srsly?))
-		[2014-02-19 actually, clojure.set should just be automatically required.]

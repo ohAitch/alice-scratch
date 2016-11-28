@@ -1,1 +1,0 @@
-results as of 2014-07-31: 22,231,485 words read!

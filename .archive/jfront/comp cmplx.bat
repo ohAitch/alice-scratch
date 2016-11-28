@@ -1,2 +1,0 @@
-javac Complex.java
-pause

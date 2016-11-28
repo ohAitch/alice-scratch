@@ -1,1 +1,0 @@
-Mostly empty project; plans are for a 3d voxelish game.

@@ -1,1 +1,0 @@
-[wow.](http://htmlpreview.github.io/?https://github.com/alice0meta/such-zalgo/blob/master/index.html)

@@ -1,3 +1,0 @@
-I'm ... guessing the terrain-gen-type ideas are the only actual unique information in here?
-
-DELETE ME WHEN DONE

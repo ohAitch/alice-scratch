@@ -1,1 +1,0 @@
-java -ea -cp classviewer.jar;vrelta.jar;jCFL-2.0.161.jar classviewer.Main "C:/Users/vuntic/Desktop/AsmTest.class"
