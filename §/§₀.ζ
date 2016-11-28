@@ -15,7 +15,7 @@ S_compile ← λ(src){
 	wsd ← p=> wso.then(p).skip(wso)
 	expr ← P_(()=> wsd(P.alt(
 		P_('{').then(expr).skip(P_('}')).map(ι=>0?0: {T:'set',ι}),
-		P_(/\d+/).map(parseInt.X),
+		P_(/\d+/).map(ι=> ι|0),
 		P_(/\/((\[[^\]]*\]|\\.|[^/\n])*)\//,1).map(ι=> RegExp(ι)),
 		P.fail('‽') )) )
 	root ← P.seqMap(P_('°').or(P.of('')), expr, λ(is_macro,ι){ ↩ {is_macro,ι} })
@@ -26,4 +26,4 @@ S_compile ← λ(src){
 	↩ ι }
 
 module.exports = S_compile
-if (!module.parent) cn.log(ζS_compile(φ`/Users/home/file/github/scratch/§/index.ζ§`.text))
+if (!module.parent) cn.log(ζS_compile(φ`/Users/home/file/code/scratch/§/index.ζ§`.text))

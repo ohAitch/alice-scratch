@@ -6,9 +6,7 @@
 
 # maybe require('wav') and npm('wav@ should be links to http://npmjs.com/package/wav
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
-# `~/github/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
-
-# http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/ζ/builtins.ζ#L370-L384 is broken
+# `~/code/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
 
 # the clickable search results are currently implemented in a horrifying way, because we are not properly associating data across multiple contexts that make it hard to share data. with the right builtins, this is easily resolveable.
 
@@ -22,12 +20,10 @@ if not '/usr/local/bin' in t: os.environ['PATH'] = ':'.join(t+['/usr/local/bin']
 def ζfresh(*a): return subprocess.check_output(['ζ','--fresh']+list(a)).decode('utf-8')
 def ζ(*a): return subprocess.check_output(['ζλ']+list(a)).decode('utf-8')
 
-clear_term = """/usr/bin/clear && printf %s $'\e[3J'"""
-
 ################################## munge_stuff #################################
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
-FIND_RESULT = r'^(?:github|history|misc|notes|alice0meta\.github\.io|projection|scratch)/.{1,70}:\d+:'
+FIND_RESULT = r'^(?:code|history|misc|notes|alice0meta\.github\.io|projection|scratch)/.{1,70}:\d+:'
 
 def merge_overlapping_regions(ι):
 	for i in range(len(ι)-1):
@@ -77,8 +73,8 @@ def open(ι,app=None,focus=True,view=None):
 	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""
 		if ("""+json.dumps(bool(re.match(FIND_RESULT,ι)))+"""){ !app || ‽
 			app = 'Sublime Text'
-			var [ˣ,ι,line] = ι.re`^(.+):(\d+):$`
-			ι = [φ('~/file/'+ι),φ('~/github/'+ι)].find(ι=>ι.BAD_exists())
+			var [,ι,line] = ι.re`^(.+):(\d+):$`
+			ι = [φ('~/file/'+ι),φ('~/code/'+ι)].find(ι=>ι.BAD_exists())
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}`
 			}
 		else if (app==='Terminal'){
@@ -87,7 +83,7 @@ def open(ι,app=None,focus=True,view=None):
 			var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 			unbusy ← _.zip(…osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
 			terminal_do_script(
-				sh`cd ${ι}; …${!unbusy && """+json.dumps(clear_term)+"""}`,
+				sh`cd ${ι}; …${!unbusy && 'clear'}`,
 				osa`…${unbusy && osa`in (window 1 whose id = ${unbusy})`}; …${focus && 'activate'}`
 				)
 			}
@@ -169,11 +165,10 @@ class goto_last_tab(sublime_plugin.WindowCommand):
 	def run(self):
 		window = self.window
 		vs = window.views()
-		if len(vs) > 0: window.focus_view(vs[-1])
+		len(vs) and window.focus_view(vs[-1])
 
-################################# build_dollar #################################
-class build_dollar(sublime_plugin.TextCommand):
+class run_project(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")
-		ζ("""  terminal_do_script(sh`"""+clear_term+"""; cd ${ι}; build.*; x`) """, os.path.dirname(view.file_name()))
+		ζfresh(""" require_new(φ`~/.bashrc.ζ`).run_project(ι) """,view.file_name())

@@ -3,7 +3,7 @@ APP ← '\x1b[34m[keyrc]\x1b[0m'
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
-as_char_as_hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
+char16hex ← ι=> ('000'+ι.charCodeAt().toString(16)).slice(-4)
 take_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
 drop_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
 split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
@@ -11,13 +11,13 @@ split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ 
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
-transpose_str ← ι=> _.zip(…ι.split('\n')).map(ι=> ι.join('')).join('\n')
+transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(ι=> ι.join('')).join('\n')
 
 macros ← {}
 parse_boards0 ← ι=>
-	transpose_str(ι).split(/\n(?: +\n)+/).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
-		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/)||[,''])[1],
-		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/.λ(ι)[1]).map(ι=> /\S\S?/g.λ(ι)),
+	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
+		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,''])[1],
+		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/ug.λ(ι)),
 		} })
 builtin_keys ← parse_boards0(multiline`
 	┌──────── [homoiconic] ────────┐
@@ -82,7 +82,7 @@ show_private_xml ← λ(mappings){t←;
 		compile_output ← λ(ι){t←; ↩0,
 			(t=/^\] (.*)$/.λ(ι))? compile_keystring(t[1]).ι :
 			(t=/^; (.+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
-				ι._.map(ι=> as_char_as_hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
+				ι._.map(ι=> char16hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),null) )
 		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ null }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if:if_} }
@@ -103,26 +103,34 @@ show_private_xml ← λ(mappings){t←;
 		appdef: appdefs._.map((ι,k)=>0?0: {appname:k, equal:ι}),
 		}} }
 
-// ---------------------------------- main ---------------------------------- //
-regen ← ()=>{
+// -------------------------------------------------------------------------- //
+regen ← (opt={})=>{
 	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …(φ`~/.keyrc.json`.json||{})._.values()])
 	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι
 	shᵥ`${KB} reloadxml`
-	↩ ι }
-main ← ()=>{
-	ι ← regen()
-	ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-	if (φ`/Applications/PowerKey.app`.BAD_exists()){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }
-	}
-main2 ← ()=>{ try{ main() }catch(e){ _alert('@',e+'',5) } }
-if (!module.parent){ main2(); npm('chokidar@1.6.0').watch(φ`~/.keyrc`+'').on('all',λ(ev,ι){ main2() }) }
+	if( !opt.minimal ){
+		ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
+		if (φ`/Applications/PowerKey.app`.BAD_exists()){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		} }
+
+// ---------------------------------- main ---------------------------------- //
+if( !module.parent ) switch( process.argv[2] ){
+	default:
+		q ← ()=>{ try{ regen() }catch(e){ _alert('@',e+'',5) } }
+		require('chokidar').watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{ q() }); q()
+	break; case 'start':
+		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
+		restart_and_keep_alive(__filename)
+	break; case 'test':
+		cn.log(parse_keyrc(φ(process.argv[3]).text))
+}
 
 // -------------------------------------------------------------------------- //
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
 	fi ← 'notsave.KEY_once_'+rand_id(9)
 	db ← (φ`~/.keyrc.json`.json||{}); id ← rand_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
-	regen()
+	regen({minimal:true})
 	shᵥ`${KB} enable ${fi}`
 	}
 module.exports.robot_key_tap = λ(ι){t←; c←;
@@ -144,3 +152,9 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 // remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
 
 // todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it repeat even if it's a VK_OPEN_URL_*
+
+// https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/Tabs
+// https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/MediaStrategies
+// ⌘ + F8	Set Focused Browser tab as Active Player (effectively directing your commands to that tab)
+// ⌘ + F6	Focus Active Player (Shows the tab currently controlled by BeardedSpice)
+// ⌘ + F11	Show Track information (shows a notification with info about the currently playing tab)

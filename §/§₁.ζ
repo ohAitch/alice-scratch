@@ -89,4 +89,4 @@ S_parse ← λ(src){
 
 // -------------------------------------------------------------------------- //
 module.exports = ι=> S_ast_to_js(S_parse(ι),true)
-if (!module.parent) cn.log(ζS_compile(φ`~/github/scratch/§/index.ζ§`.text))
+if (!module.parent) cn.log(ζS_compile(φ`~/code/scratch/§/index.ζ§`.text))

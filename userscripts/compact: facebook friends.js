@@ -6,7 +6,7 @@ window.$ = $
 if ($('#pagelet_timeline_medley_friends').length) {
 
 var load_friends = cb=> {(function load_friends(){
-	if ($('.FriendButton').length < parseInt($('[data-tab-key="friends"] ._gs6').text())) {
+	if( $('.FriendButton').length < ($('[data-tab-key="friends"] ._gs6').text()|0) ){
 		window.scrollBy(0,1e9)
 		var t = $('.FriendButton').length; (function Λ(){if ($('.FriendButton').length !== t) load_friends(); else setTimeout(Λ,0.01*1e3)})()
 		} else cb&&cb() })() }

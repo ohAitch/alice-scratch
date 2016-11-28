@@ -36,5 +36,5 @@
 ⌘⇧-    cmd.make_divider({ "length":30 })
 ⌘⇧=    cmd.make_divider({ "length":80 })
 ⌘⇧⌥^;  cmd.inline_eval_zeta()
-⌘b     cmd.build_dollar()
+⌘b     cmd.run_project()
 ⌘;     cmd.open_context({ "type":"terminal" })

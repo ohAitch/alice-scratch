@@ -1,9 +1,6 @@
 #!/usr/bin/env ζ
-// USAGE: autowhite file
-//
-// PURPOSE: To automatically adjust the white balance of an image.
-// 
-// OPTIONS: 
+// im_autowhite file
+// adjusts white balance
 // -p percent ... PERCENT is the percentage of pixels closest in color to white that is used to compute the average graylevel of each RGB channel in the image. Values are floats between 0 and 100. Default=1
 
 // ------------------------------- general lib ------------------------------ //
@@ -16,8 +13,8 @@ t >= '06080504' ||( cn.log(APP,'error: imagemagick version',t,' < 06080504'), �
 
 percent ← 1 // percent pixels closest to white
 
-quantumrange ← parseInt(shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+'')
-get_channel_mean ← ι=> parseFloat(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'')/quantumrange
+quantumrange ← shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+''|0
+get_channel_mean ← ι=> +(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'') / quantumrange
 get_average ← (a,b)=>{ a = get_channel_mean(a); b = get_channel_mean(b); ↩ a===0 || b===0? 1 : a/b }
 
 tmp ← φ`/tmp/im_autowhite_${rand_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); T ← tmp.φ.bind(tmp)

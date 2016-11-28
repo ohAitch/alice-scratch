@@ -1,6 +1,6 @@
 ------------------------------------ git ops -----------------------------------
 ------------ merge -----------
-to_path=~/github/scratch
+to_path=~/code/scratch
 from='lang-alpha'
 from_url='git@github.com:alice0meta/lang-alpha.git'
 
@@ -10,32 +10,32 @@ git fetch "$from"
 git merge "$from/master"
 git remote remove "$from"
 
------ split out subfolder ----
-:( this ... breaks on unicode :(
+------------ split -----------
+split(){ repo=~/code/scratch; subfolder='Hex Input +'; out=~/code/misc; tmp_branch=kc8vu2z3a
+	# !!! this will destroy existing commit ids; use carefully
+	# may not work with unicode filenames
 
-D() { [ -d "$1" ] || mkdir -p "$1"; echo "$1"; }
+	cd "$repo"
+	git subtree split -P "$subfolder" -b "$tmp_branch"
 
-big_repo=~/github/scratch
-subfolder=ζ₀
-new_repo=~/github/lang-zeta-zero
+	mkdir -p "$out"; cd "$out"
+	git init
+	git pull "$repo" "$tmp_branch"
 
-cd "$big_repo"
-git subtree split -P "$subfolder" -b "$subfolder-only"
+	cd "$repo"
+	git filter-branch --index-filter "git rm -q -r -f --cached --ignore-unmatch ABC" --prune-empty HEAD
+	git branch -D "$tmp_branch"
 
-cd $(D "$new_repo")
-git init
-git pull "$big_repo" "$subfolder-only"
+	# cleanup?
+	rm -rf .git/refs/original/
+	git reflog expire --all
+	git gc --aggressive --prune=now
+	git reflog expire --all --expire-unreachable=0
+	git repack -A -d
+	git prune
 
-cd "$big_repo"
-# git rm -rf "$subfolder-only"
-git filter-branch --index-filter "git rm -q -r -f --cached --ignore-unmatch ABC" --prune-empty HEAD
-
-rm -rf .git/refs/original/ &&
-git reflog expire --all &&
-git gc --aggressive --prune=now
-git reflog expire --all --expire-unreachable=0
-git repack -A -d
-git prune
+	git push --force origin
+	}
 
 ------------------------------ this is pretty cute -----------------------------
 //! color names randomly in ansi 12359abc
@@ -97,10 +97,10 @@ sublime_set_buffer ← ι=> sublᵥ`view.replace(edit,Region(0,view.size()),${ι
 braille_table ← 0x100.map(ι=> String.fromCharCode('⠀'.charCodeAt()+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
+	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
-		r ← Buffer(ι)
-		get ← λ(x,y){↩ 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0}
+		r ← new Buffer(ι)
+		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
 		for(y←1;y<Y-1;y++) for(x←1;x<X-1;x++) {
 			n ← ι[(y-1)*X+x-1] + ι[(y-1)*X+x] + ι[(y-1)*X+x+1] + ι[y*X+x-1] + ι[y*X+x+1] + ι[(y+1)*X+x-1] + ι[(y+1)*X+x] + ι[(y+1)*X+x+1]
 			r[y*X+x] = (n===2? ι[y*X+x] : n===3? 1 : 0) }

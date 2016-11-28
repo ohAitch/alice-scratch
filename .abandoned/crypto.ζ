@@ -60,7 +60,7 @@ mt19937 ← λ(seed){
 			if (y % 2 !== 0) mt[i] ^= 0x9908b0df
 			} }
 
-	r ← λ λ(){
+	r ← λ(){
 		if (index === 624) {gen(); index = 0}
 		y ← mt[index]
 		y ^= y >>> 11

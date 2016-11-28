@@ -71,7 +71,7 @@ void sendChunk(unsigned int size, char chunkType, char* buf){
 	int sent_n = sendAll(nailgunsocket, header, 5);
 	if (sent_n != 0 && size > 0)
 		sent_n = sendAll(nailgunsocket, buf, size);
-	else if (sent_n == 0 && (chunkType != 'H' || !(errno == EPIPE || errno == ECONNRESET))){ perror("send"); handleSocketClose(); }
+	else if (sent_n == 0 && (chunkType != 'H' || !(errno == EPIPE || errno == ECONNRESET))){ perror("[mimic] send"); handleSocketClose(); }
 	}
 // Sends a null-terminated string with the specified chunk type.
 void sendText(char chunkType, char *text){ sendChunk(text ? strlen(text) : 0, chunkType, text); }
@@ -85,8 +85,8 @@ void recvToFD(HANDLE destFD, char *buf, unsigned long L){
 	while (got_n < L){
 		unsigned long todo_n = L - got_n;
 		int todo_n_t = (buf_SIZE < todo_n) ? buf_SIZE : todo_n;
-		int thisPass = recv(nailgunsocket, buf, todo_n_t, MSG_WAITALL); if (thisPass == 0 || thisPass == -1){ perror("recv_fd"); handleSocketClose(); }; got_n += thisPass;
-		int done_n = 0; while(done_n < thisPass){ int done_n_t = write(destFD, buf + done_n, thisPass - done_n); if (done_n_t == -1){ perror("write"); handleSocketClose(); }; done_n += done_n_t; }
+		int thisPass = recv(nailgunsocket, buf, todo_n_t, MSG_WAITALL); if (thisPass == 0 || thisPass == -1){ perror("[mimic] recv_fd"); handleSocketClose(); }; got_n += thisPass;
+		int done_n = 0; while(done_n < thisPass){ int done_n_t = write(destFD, buf + done_n, thisPass - done_n); if (done_n_t == -1){ perror("[mimic] write"); handleSocketClose(); }; done_n += done_n_t; }
 		}
 	}
 
@@ -94,7 +94,7 @@ unsigned long recvToBuffer(unsigned long L){
 	unsigned long got_n = 0;
 	while(got_n < L){
 		int thisPass = recv(nailgunsocket, buf + got_n, L - got_n, MSG_WAITALL);
-		if (thisPass == 0 || thisPass == -1){ perror("recv_buf"); handleSocketClose(); }
+		if (thisPass == 0 || thisPass == -1){ perror("[mimic] recv_buf"); handleSocketClose(); }
 		got_n += thisPass;
 		}; return got_n; }
 
@@ -116,7 +116,7 @@ void processnailgunstream(){unsigned long L; char ct;
 		| ((buf[2] <<  8) & 0x0000ff00)
 		| ((buf[3]      ) & 0x000000ff);
 	ct = buf[4];
-	switch(ct){default: fprintf(stderr, "Unexpected chunk type %d ('%c')\n", ct, ct); cleanUpAndExit(UNEXPECTED_CHUNKTYPE);
+	switch(ct){default: fprintf(stderr, "[mimic] unexpected chunk type %d ('%c')\n", ct, ct); cleanUpAndExit(UNEXPECTED_CHUNKTYPE);
 		break; case '1': recvToFD(STDOUT_FILENO, buf, L);
 		break; case '2': recvToFD(STDERR_FILENO, buf, L);
 		break; case 'X': processExit(buf, L);
@@ -141,15 +141,15 @@ int main(int argc, char *argv[], char *env[]){
 	// jump through a series of connection hoops
 
 	hostinfo = gethostbyname("127.0.0.1");
-	if (hostinfo == NULL){ fprintf(stderr, "gethostbyname failed\n"); cleanUpAndExit(CONNECT_FAILED); }
-	if ((nailgunsocket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("socket"); cleanUpAndExit(SOCKET_FAILED); }
+	if (hostinfo == NULL){ fprintf(stderr, "[mimic] gethostbyname failed\n"); cleanUpAndExit(CONNECT_FAILED); }
+	if ((nailgunsocket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[mimic] socket"); cleanUpAndExit(SOCKET_FAILED); }
 	server_addr_in.sin_family = AF_INET;
 	server_addr_in.sin_port = htons(PORT);
 	server_addr_in.sin_addr = *(struct in_addr *) hostinfo->h_addr;
 	memset(&(server_addr_in.sin_zero), '\0', 8);
 	server_addr = (struct sockaddr *)&server_addr_in;
 	server_addr_len = sizeof(server_addr_in);
-	if (connect(nailgunsocket, server_addr, server_addr_len) == -1){ perror("connect"); cleanUpAndExit(CONNECT_FAILED); }
+	if (connect(nailgunsocket, server_addr, server_addr_len) == -1){ perror("[mimic] connect"); cleanUpAndExit(CONNECT_FAILED); }
 
 	// ok, now we're connected.
 
@@ -170,8 +170,8 @@ int main(int argc, char *argv[], char *env[]){
 		FD_ZERO(&readfds);
 		if (readyToSend && !eof) FD_SET(STDIN_FILENO, &readfds); // don't select on stdin if we've already reached its end
 		FD_SET(nailgunsocket, &readfds);
-		memset(&readtimeout, '\0', sizeof(readtimeout)); readtimeout.tv_sec = 10; if (select(nailgunsocket + 1, &readfds, NULL, NULL, &readtimeout) == -1) perror("select");
+		memset(&readtimeout, '\0', sizeof(readtimeout)); readtimeout.tv_sec = 10; if (select(nailgunsocket + 1, &readfds, NULL, NULL, &readtimeout) == -1) perror("[mimic] select");
 		if (FD_ISSET(nailgunsocket, &readfds)) processnailgunstream();
-		else if (FD_ISSET(STDIN_FILENO, &readfds)){ int r = processStdin(); if (r == -1){ perror("read"); handleSocketClose(); }; if (r == 0) eof = 1; }
+		else if (FD_ISSET(STDIN_FILENO, &readfds)){ int r = processStdin(); if (r == -1){ perror("[mimic] read"); handleSocketClose(); }; if (r == 0) eof = 1; }
 		}
 	}

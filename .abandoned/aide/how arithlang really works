@@ -52,7 +52,7 @@ latency (modeling, profiling)
 	distance,type of nearest voxel in the six cardinal directions
 	cube score
 
-	> Hmm...you might want to look at planning algorithms like a*
+	> Hmm...you might want to look at planning algorithms like A*
 	> Maybe you want to have high level actions like "move this cube here"
 	> And you can use planning to assign costs to actions
 	‡ but i don`t wanna hardcode them

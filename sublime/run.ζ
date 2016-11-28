@@ -1,6 +1,9 @@
 #!/usr/bin/env ζ
 // translate sane stuff into weird sublime formats and put it in the sublime places
 // then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
+
+// action type: BUILD then RELEASE. should be: START service which watches for changes & {BUILD then RELEASE}s
+
 plist ← npm('plist@1.2.0')
 
 // ------------------------------- generic lib ------------------------------ //
@@ -11,7 +14,7 @@ compile_keys ← ι=> […ι].map(ι=>0?0: {'⌘':'super','⌥':'alt','^':'ctrl'
 
 // -------------------------------------------------------------------------- //
 // main ← λ(){
-// 	// shᵥ`ln -s ~/github/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
+// 	// shᵥ`ln -sf ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
 // 	‽('φ todo')
 // 	from ← φ(__dirname).φ`Packages`
 // 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
@@ -60,7 +63,7 @@ argv ← process.argv
 switch (argv[2]||'') {default: ‽
 	// break; case '': main()
 	break; case '':
-		P ← '~/github/scratch/sublime/User/'
+		P ← __dirname+'/User/'
 		colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
 		sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
 	// break; case 'to': to(argv[3], argv[4]||argv[3])

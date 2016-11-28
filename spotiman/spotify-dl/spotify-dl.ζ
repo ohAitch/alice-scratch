@@ -48,7 +48,7 @@ login ← λ(cb){
 
 player_bufs←;
 
-ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pairs(), λ(t,cb){i ← parseInt(t[0]); tr ← t[1]; ensure_track_cached(spotify,tr,ι.name,i,cb)}, cb)}
+ensure_playlist_cached ← λ(spotify,ι,cb){async.mapSeries(getTracks(ι)._.pairs(), λ(t,cb){i ← t[0]|0; tr ← t[1]; ensure_track_cached(spotify,tr,ι.name,i,cb)}, cb)}
 ensure_track_cached ← λ(spotify,ι,p_name,p_i,cb){
 	prettyname ← '\x1b[32m'+p_name+'\x1b[33m'+(p_i+'')._.map(ι=> '₀₁₂₃₄₅₆₇₈₉'[ι]).join('')+'\x1b[39m'
 	ι.album.browse(λ(e,t){

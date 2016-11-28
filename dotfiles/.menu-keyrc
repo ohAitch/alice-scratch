@@ -1,0 +1,20 @@
+#!/usr/bin/env ζ
+
+// todo: removed entries aren't unset; fix that
+
+keys ← multiline(λ(){/*
+org.wesnoth.Wesnoth  Enter Full Screen  ⌘^f
+org.wesnoth.Wesnoth  Exit Full Screen   ⌘^f
+com.spotify.client  Full Screen    ⌘^f
+com.spotify.client  Go back        ⌘[
+com.spotify.client  Go forward     ⌘]
+com.spotify.client  Seek Backward  ⌘~←
+com.spotify.client  Seek Forward   ⌘~→
+com.google.Chrome  Developer Tools  ^`
+com.cocoatech.PathFinder  Select Next Tab      ^⇥
+com.cocoatech.PathFinder  Select Previous Tab  ^$⇥
+*/}).split('\n').map(ι=> ι.split(/ {2,}/g) )
+
+encode_key ← ι=> '"'+ι.replace(/./g,ι=>0?0: {'⌘':'@','^':'^','⌥':'~','⇧':'$'}[ι]||ι ).replace(/./g,ι=>{ c ← ι.codePointAt(0); t←; ↩ c<0x80? ι : ( t = c.toString(16), t.length===4? '\\U'+t : ‽ ) })+'"'
+
+keys.map(ι=> shᵥ`defaults write ${[t[0],'NSUserKeyEquivalents','-dict-add',t[1],encode_key(t[2])]}` )

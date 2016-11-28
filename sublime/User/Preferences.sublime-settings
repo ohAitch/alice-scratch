@@ -17,7 +17,9 @@
 		"*.swf",
 		"*.jar",
 		"*.zip",
-		"*.mp3"
+		"*.mp3",
+		"*.min.*",
+		"*.dmg"
 	],
 	"bold_folder_labels": true,
 	"caret_style": "phase",
@@ -28,7 +30,38 @@
 	"enable_tab_scrolling": false,
 	"ensure_newline_at_eof_on_save": true,
 	"fade_fold_buttons": false,
+	"file_exclude_patterns":
+	[
+		"*.pyc",
+		"*.pyo",
+		"*.exe",
+		"*.dll",
+		"*.obj",
+		"*.o",
+		"*.a",
+		"*.lib",
+		"*.so",
+		"*.dylib",
+		"*.ncb",
+		"*.sdf",
+		"*.suo",
+		"*.pdb",
+		"*.idb",
+		".DS_Store",
+		"*.class",
+		"*.psd",
+		"*.db",
+		"*.sublime-workspace"
+	],
 	"find_selected_text": true,
+	"folder_exclude_patterns":
+	[
+		".svn",
+		".git",
+		".hg",
+		"CVS",
+		".bin"
+	],
 	"font_size": 14,
 	"highlight_line": true,
 	"ignored_packages":

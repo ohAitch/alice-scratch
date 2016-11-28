@@ -49,5 +49,5 @@ setInterval(catch_(()=>{
 // 	out ← process.env.HOME+"/pg"
 // 	fix ← ι=> ι
 // 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
-// 	fs.readdirSync(from).filter(ι=> /\.64$/.λ(ι)).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+// 	fs.readdirSync(from).filter(ι=> /\.64$/.λ(ι)).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), new Buffer(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
 // 	;'; }

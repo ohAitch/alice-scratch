@@ -1,19 +1,11 @@
 E ← module.exports
 
-// ------------------------------- very common ------------------------------ //
-
-E.x = ()=>{ E ← process.env['?']|0
-	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
-	this_term_is_frontmost ← ()=>{ t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
-	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
-	E===0 && exit_parent(); process.exitCode = E }
-
 // ---------------------------- .bashrc internal ---------------------------- //
 
 // should instead be a function that compresses all of the standard symlinks
 _home_link ← E._home_link = ι=> (ι+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')
 
-E._PC_t = (E,cmd)=>{ E = E|0
+E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	persist ← name=>{ o ← φ`/tmp/ζpersist_${name}.json`; ↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.ι = ι }}) }
 	out ← ι=> process.stdout.write(ι)
 
@@ -28,7 +20,13 @@ E._PC_t = (E,cmd)=>{ E = E|0
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
-// ----------------- should be system commands (interactve) ----------------- //
+// ------------------------ should be system commands ----------------------- //
+
+E.x = ()=>{ E ← process.env['?']|0
+	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
+	this_term_is_frontmost ← ()=>{ t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
+	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
+	E===0 && exit_parent(); process.exitCode = E }
 
 E.pb = ()=> _pastebin_id().then(ι=>{ browser('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
 _pastebin_id ← ()=> new Promise(yes=>
@@ -37,7 +35,7 @@ _pastebin_id ← ()=> new Promise(yes=>
 		yes( (t+'').replace(/.*\//,'') ) }) )
 
 E.ps2 = ()=>{
-	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(λ(ι){var [ˣ,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [parseInt(pid), Time(d).i]}); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
+	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ var [,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
 	bad ← startup_procs()._.countBy()
 	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	h ← r.shift()
@@ -80,6 +78,32 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = null), 'PANO/') : '')+t+'.jpg')
 		}) }
 
+// ------------------------ build/release/run project ----------------------- //
+
+// E.build = ...
+E.run_project = E.run = (file,isTTY)=>{ file||(file = φ.cwd.φ`any`)
+	if( !process.stdout.isTTY ){ isTTY && ‽; terminal_do_script(sh`clear; cd ${file}; run_project ${file} ✓; x`) }else{
+	
+	is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
+	
+	project ← φ(file).TMP_parents().filter(is_project)[0] || ‽
+
+	build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
+	package ← project.φ`package.json`.BAD_exists()
+	run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
+	;(build || package || run) || ‽
+
+	a ← ()=> build && shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
+	b ← ()=>{if (package){
+		p ← project.φ`package.json`.json
+		t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
+		if (p.version === (t&&t.version)) shᵥ`cd ${project}; npm --no-git-tag-version version patch`
+		shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
+		}}
+	c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
+	;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
+	} }
+
 // ------------------------- single-purpose commands ------------------------ //
 
 E.d = (a='.')=>{
@@ -94,7 +118,7 @@ E.d = (a='.')=>{
 	q(sum,a)
 
 	progress_bar ← (L,at)=>( L-=2, '['+('='.repeat(L)+'>').slice(-floor(at*L))+' '.repeat(L-floor(at*L))+']' )
-	var [ˣ,ʸ,used,free] = (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g); [used,free] = [used,free].map(ι=> (ι|0)*512 )
+	var [,,used,free] = (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g); [used,free] = [used,free].map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
@@ -108,8 +132,7 @@ E.d = (a='.')=>{
 E.ct = E.chrome_tabs = λ(i){
 	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; ↩ nice_url(t)}
 	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
-	i ← ι
-	if (i){ i = parseInt(i); t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
+	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
 	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb(t) }
 	}
 

@@ -11,10 +11,9 @@ data = {
 
 def detect_syntax(view):
 	ι = None
-	if os.path.basename(view.file_name()).find('.'): #! wat
-		t = re.match(r"#!\s*(\S+)\s*(\S+)?", view.substr(view.full_line(1)))
-		if t: a = t.group(1).split('/')[-1]; ι = t.group(2) if a == 'env' else a
-		else: ι = os.path.splitext(view.file_name())[1]
+	t = re.match(r"#!\s*(\S+)\s*(\S+)?", view.substr(view.full_line(1)))
+	if t: a = t.group(1).split('/')[-1]; ι = t.group(2) if a == 'env' else a
+	else: ι = os.path.splitext(view.file_name())[1]
 	return data[ι] if ι in data else view.settings().get('syntax')
 
 def t(view): t = detect_syntax(view); t == view.settings().get('syntax') or view.set_syntax_file(t)

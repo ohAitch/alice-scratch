@@ -4,4 +4,4 @@
 
 gcc -Wall -pedantic -O3 -o .bin/mimic mimic.c
 
-ζ ' restart_and_keep_alive(φ.cwd.φ`server.ζ`+"") ;'
+ζ --fresh ' restart_and_keep_alive(φ.cwd.φ`server.ζ`+"") ;'

@@ -1,6 +1,6 @@
 has ← (o,ι)=> Object.prototype.hasOwnProperty.call(o,ι)
 
-P ← require_new(φ`~/github/scratch/ζ/parsimmon2.ζ`)
+P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 spaced ← p=> WS.then(p).skip(WS); WS ← P(/\s*/)
 expr ← P(()=> spaced(P.alt( P(/'([^']*)'/,1).type('string'), P(/[^\s()]+/).type('ident'), P('(').then(expr.many()).skip(P(')')).type('list') )) )
 parse ← ι=> expr.parse(ι.replace(/\/\/.*/g,''))

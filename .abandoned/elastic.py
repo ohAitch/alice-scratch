@@ -10,7 +10,6 @@
 import sublime, sublime_plugin
 import re, sys, itertools
 
-"""
 def get_selected_rows(view):
 	selected_rows = set()
 	for s in view.sel():
@@ -418,4 +417,3 @@ public class ETTabstop
 	{
 	}
 }
-"""
