@@ -11,7 +11,7 @@ variables:
   dollar_only_identifier: '\$(?![_$[:alnum:]])'
   dollar_identifier: '(\$)[_$[:alnum:]]+'
   func_lookahead: '\s*\b(async\s+)?(?:function|λ)\s*(?:\*\s*)?(?:{{identifier}}\s*)?\('
-  arrow_func_lookahead: '\s*(\basync\s*)?([_$[:alpha:]][_$[:alnum:]]*|\([^\(]*?\))\s*=>'
+  arrow_func_lookahead: '\s*(\basync\s*)?([_$[:alpha:]][_$[:alnum:]]*|\([^\(]*?\))\s*(=>|⇒)'
 
 contexts:
   main:
@@ -503,7 +503,7 @@ contexts:
     - match: \b(in|of|typeof|void)\b
       scope: keyword.operator.js
       push: after-operator
-    - match: '&&|\|\|'
+    - match: '&&|\|\||‖|\b(and|or)\b'
       scope: keyword.operator.logical.js
       push: after-operator
     - match: '=(?!=)|←'
@@ -773,12 +773,12 @@ contexts:
       set: function-block
 
   arrow-function-declaration:
-    - match: '\s*(=>)(?=\s*\{)'
+    - match: '\s*(=>|⇒)(?=\s*\{)'
       scope: meta.function.declaration.js
       captures:
         1: storage.type.function.arrow.js
       set: function-block
-    - match: '(\s*(=>))\s*'
+    - match: '(\s*(=>|⇒))\s*'
       captures:
         1: meta.function.declaration.js
         2: storage.type.function.arrow.js

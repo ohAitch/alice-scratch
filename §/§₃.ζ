@@ -5,7 +5,7 @@ spaced ← p=> WS.then(p).skip(WS); WS ← P(/\s*/)
 expr ← P(()=> spaced(P.alt( P(/'([^']*)'/,1).type('string'), P(/[^\s()]+/).type('ident'), P('(').then(expr.many()).skip(P(')')).type('list') )) )
 parse ← ι=> expr.parse(ι.replace(/\/\/.*/g,''))
 
-Value ← ι=>0?0: {T:'value', ι}
+Value ← ι⇒ {T:'value', ι}
 
 eval_ ← (ctx,ι)=>{t←; ↩0,
 	ι.T==='string'? Value(ι.ι) :
@@ -20,7 +20,7 @@ ctx ← λ(){
 				t0 ← parse(`(←)`); t0.ι.push(a[0]); t1 ← parse(`(λ)`); t1.ι.push(…a.slice(1)); t0.ι.push(t1); ↩ eval_(ctx,t0)
 			}else{
 				a.length===2 || ‽
-				var [params,code] = a
+				[params,code] ← a
 				if (params.ι[0]._.isEqual(parse(`::`)) && params.ι[1].T==='list' && params.ι[1].ι[0]._.isEqual(parse(`,`)))
 					params.ι = params.ι[1].ι.slice(1).map(ι=>{ t ← parse(`(::)`); t.ι.push(ι,params.ι[2]); ↩ t })
 				↩ Value({call:λ(ctx,a){
@@ -41,7 +41,7 @@ ctx ← λ(){
 			ι.T==='var' && ι.ι.T==='value' && ι.type.T==='ident' && ι.type.ι==='φ' || ‽(ι)
 			↩ Value(φ(ι.ι.ι).TMP_children().map(Value.X))
 			}, },
-		}._.map((ι,name)=>0?0: {name,ι})._.indexBy('name')}], }
+		}._.map((ι,name)⇒ {name,ι})._.indexBy('name')}], }
 	ctx.resolve = λ(name){
 		for(var scope of @.stack._.clone().reverse()) if (has(scope.vars,name)) ↩ scope.vars[name]
 		‽('no var',name,'in',@) }

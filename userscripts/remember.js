@@ -6,7 +6,7 @@
 //‡ also, create a separate userscript for the *.google.com jquery import
 
 // this line should not be in this file but w/e
-if (location.host==='hangouts.google.com'){ var f = ()=>{ $('.g-Ue-v0h5Oe, .g-Qx-eb').remove() }; f(); setInterval(f,0.5*1e3) }
+if (location.host==='hangouts.google.com'){ var f = ()=>{ $('.g-Ue-v0h5Oe, .g-Qx-eb, .g-Qx-F').remove() }; f(); setInterval(f,0.5*1e3) }
 // var dl_data = (ι,name)=> {
 // 	var t = document.createElement('a')
 // 	t.href = 'data:application/octet-stream,'+ι

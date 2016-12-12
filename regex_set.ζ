@@ -1,9 +1,9 @@
 #!/usr/bin/env ζ
-process.stdin.read_all((e,ι)=>{ ι = (ι+'').replace(/\n$/,'')
+process.stdin.read_all().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
 
-t←[]; […ι].sort()._.uniq(true).map(λ(ι){ι = ι.charCodeAt(); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι])})
-x ← λ(ι){ι = String.fromCharCode(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x')}
-ι = t.map(λ(ι){↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1])}).join('')
+t←[]; […ι].sort()._.uniq(true).map(ι=>{ ι = ι.codePointAt(); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+x ← ι=>{ ι = String.fromCodePoint(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
 process.stdout.write(ι)
 
 })

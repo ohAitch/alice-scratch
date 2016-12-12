@@ -1,26 +1,28 @@
 import sublime, sublime_plugin
 from sublime import Region
-import threading, http.server, json, os, codecs, re
+import threading, http.server, json, os, codecs, re, weakref
 
 PORT = 34289
 
-def window_(): return sublime.active_window()
-def view_(): return sublime.active_window().active_view()
+#################################### helper ####################################
+tce_r = None
+def eval_(ι,vars): ι = re.sub('(\n|;|$)',r' = r\1',ι[::-1],1)[::-1]; exec(ι,None,vars); return vars.get('r')
+class tc_eval(sublime_plugin.TextCommand):
+	def run(self,edit,ι): global tce_r; tce_r = None; tce_r = eval_(ι,{'view':self.view,'edit':edit})
+def view_from(ι): return ι if type(ι) is sublime.View else next(t for t in sublime.windows() for t in t.views() if t.id() == ι)
 
-def exec_(ι,edit=None): t = {'window':window_(), 'view':view_(), 'edit':edit}; exec(ι,None,t); return t['ι'] if 'ι' in t else None
-class exec_edit(sublime_plugin.TextCommand):
-	def run(self,edit,ι): global ee_r; ee_r = None; ee_r = exec_(ι,edit)
-def exec_edit_(ι): view_().run_command("exec_edit",{'ι':ι}); return ee_r
+###################################### api #####################################
+def edit(view,code): view_from(view).run_command("tc_eval",{'ι':code}); return tce_r
 
+##################################### main #####################################
 class server_h(http.server.BaseHTTPRequestHandler):
 	def log_request(self,code='-',size='-'): pass
 	def do_PUT(self):
 		ι = codecs.open('/tmp/fs_ipc_'+str(PORT),'r','utf8').read()
-		ι = re.sub('(\n|;|$)',r' = ι\1',ι[::-1],1)[::-1]
-		ι = (exec_edit_ if re.search(r'\bview\.(insert|erase|replace)\b',ι) else exec_)(ι)
+		r = eval_(ι,{})
 		self.send_response(200)
-		self.wfile.write(bytes(json.dumps(ι)+'    \n','UTF-8'))
-server = http.server.HTTPServer(('127.0.0.1',PORT),server_h)
+		self.wfile.write(bytes(json.dumps(r)+'    \n','UTF-8'))
+server = http.server.HTTPServer(('localhost',PORT),server_h)
 def t():
 	APP = '[external eval]'
 	try: print(APP,'server starting'); server.serve_forever()

@@ -1,5 +1,6 @@
 ```
 install:
+	brew cask install hammerspoon
   brew cask install karabiner
   npm -g i zeta-lang
   npm -g i keyrc
@@ -8,6 +9,6 @@ bonus:
   if you want to remap the power key, install https://github.com/pkamb/PowerKey/issues/39 and set it to the script ~/Documents/keyrc_power_key.sh
 ```
 
-* will overwrite any existing private.xml (if that doesn't mean anything, don't worry about it)
+* will overwrite hammerspoon settings and karabiner private.xml
 
 \#todo remove npm::zeta-lang dependency

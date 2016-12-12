@@ -20,10 +20,11 @@ P.proto = Parser.prototype
 
 P.proto.parse = function(stream){ Tstr(stream) || !function(){throw Error("‽")}()
   G_opt.fast = true; var r = this.skip(eof)._(stream,0)
-  if (!r.status){ G_opt.fast = false; var r = this.skip(eof)._(stream,0); !!r.status && !function(){throw Error("‽")}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, }) }
+  if (!r.status){ G_opt.fast = false; var r = this.skip(eof)._(stream,0); !!r.status && !function(){throw Error("‽")}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
   return r.value }
 
-var make_win = (index,value)=>0?0: { status:true, index, value, }
+// make_win ← (index,value)⇒ { status:true, index, value, }
+var make_win = (index,value)=>0?0: { status:true, index, value, furthest:-1, expected:[], }
 var make_lose = (index,expected)=>0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
 
 var seq = P.seq = (...ps)=>{ ps.map(ι=> ι instanceof Parser || !function(){throw Error("‽")}())
@@ -65,7 +66,8 @@ P.proto.times = function(min,max){
   })
 }
 
-P.proto.map = function(f){ Tfun(f) || !function(){throw Error("‽")}(); return p_wrap((stream,i)=>{ var r = this._(stream,i); if (r.status) r.value = f(r.value); return r }) }
+P.proto.map    = function(f){ Tfun(f) || !function(){throw Error("‽")}(); return p_wrap((stream,i)=>{ var r = this._(stream,i); if (r.status) r.value = f(r.value); return r }) }
+P.proto.map_js = function(f){ Tfun(f) || !function(){throw Error("‽")}(); return p_wrap((stream,i)=>{ var r = this._(stream,i); if (r.status) r.value = f(r.value,[i,r.index],stream); return r }) }
 P.proto.skip = function(next){return seq(this,next).map(ι=> ι[0]) }
 
 var eof = P.eof = p_wrap((stream,i)=> i < stream.length? make_lose(i,'EOF') : make_win(i,null) )

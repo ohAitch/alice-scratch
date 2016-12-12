@@ -11,9 +11,10 @@ git merge "$from/master"
 git remote remove "$from"
 
 ------------ split -----------
-split(){ repo=~/code/scratch; subfolder='Hex Input +'; out=~/code/misc; tmp_branch=kc8vu2z3a
+split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_branch=kc8vu2z3a
 	# !!! this will destroy existing commit ids; use carefully
 	# may not work with unicode filenames
+	# may not work at all
 
 	cd "$repo"
 	git subtree split -P "$subfolder" -b "$tmp_branch"
@@ -61,9 +62,9 @@ E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.do
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
-	↩ {code: t[0] || Tnum(key)? key : key.charCodeAt(), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+	↩ {code: t[0] || Tnum(key)? key : key.codePointAt(), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] = arguments }
-	// var [key,…ns] = key.split(/(?=\.\w)/); ns = ns.join('')
+	// [key,…ns] ← key.split(/(?=\.\w)/); ns = ns.join('')
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
@@ -89,12 +90,16 @@ ax.set_zlabel('B Label')
 plt.show()
 
 ------------------------------ sublime api things ------------------------------
-sublᵥ`window.focus_view(window.views()[-1])`
-T ← 10; i←0; (λ(){sublᵥ`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
+sublᵥ`window = sublime.active_window(); window.focus_view(window.views()[-1])`
+
+view ← sublᵥ`sublime.active_window().active_view().id()`
+T ← 10; i←0; (λ(){sb_editᵥ(view)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
 ------------------------------------- life -------------------------------------
-sublime_set_buffer ← ι=> sublᵥ`view.replace(edit,Region(0,view.size()),${ι})`
-braille_table ← 0x100.map(ι=> String.fromCharCode('⠀'.charCodeAt()+ι))
+view ← sublᵥ`sublime.active_window().active_view().id()`
+sublime_set_buffer ← ι=> sb_editᵥ(view)`view.replace(edit,Region(0,view.size()),${ι})`
+
+braille_table ← 0x100.map(ι=> String.fromCodePoint('⠀'.codePointAt()+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
@@ -151,3 +156,13 @@ to ← 1e5
 bench(()=> cn.log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
+
+------------------------------ real clipboard api ------------------------------
+osaᵥ`set x to clipboard info; the clipboard as (item 1 of item 2 of x)`
+
+------------------------- go to specific chrome window -------------------------
+wnd ← 1
+is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
+// System Events got an error: osascript is not allowed assistive access
+// compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
+if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }

@@ -10,7 +10,6 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	out ← ι=> process.stdout.write(ι)
 
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
-	moon ← ι=>{ ι||(ι=Time()); moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘']; ↩ moons[floor((npm('suncalc@1.7.0').getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
 
 	//! oh hell, bug
 	last_cwd ← persist('last_cwd'); last_cwd.ι ||( last_cwd.ι = φ.cwd+'' )
@@ -35,23 +34,22 @@ _pastebin_id ← ()=> new Promise(yes=>
 		yes( (t+'').replace(/.*\//,'') ) }) )
 
 E.ps2 = ()=>{
-	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ var [,pid,d] = ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
-	bad ← startup_procs()._.countBy()
-	r ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
-	h ← r.shift()
+	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
+	bad ← new Set(startup_procs())
+	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
-	ETIME ← ι=> ι.slice(5,h.search('ELAPSED')+'ELAPSED'.length)
+	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.length + 1, h.search('ELAPSED')+'ELAPSED'.length)
 	↩ h+'\n'+r
-		.filter(ι=> !bad[ι.re`^ *(\d*)`[1]])
+		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool|iBooks|Preview|Path Finder|CIJScannerRegister|Image Capture Extension|Audacity|Karabiner|LaunchControl).app/`)
 		._.sortBy(ETIME).reverse()
 		.join('\n')+'\n' }
 
 E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
-		a ← new Set(fs.readdirSync(base))
+		a ← new Set(fs.readdirSync(base)) //! should walk all subfiles
 		b ← new Set(fs.readdirSync(edit))
-		var [same,changed] = […a['∩'](b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
+		[same,changed] ← […a['∩'](b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b['-'](a)], ['\x1b[30;41m-\x1b[0m',a['-'](b)], ['\x1b[30;46mx\x1b[0m',changed] ].mapcat(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
@@ -118,20 +116,20 @@ E.d = (a='.')=>{
 	q(sum,a)
 
 	progress_bar ← (L,at)=>( L-=2, '['+('='.repeat(L)+'>').slice(-floor(at*L))+' '.repeat(L-floor(at*L))+']' )
-	var [,,used,free] = (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g); [used,free] = [used,free].map(ι=> (ι|0)*512 )
+	[,,used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g); [used,free] = [used,free].map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
 // E.email = λ(){
 // 	sfx`ack`
-// 	sb().split(/\n{3,}/g).map(λ(ι){var [a,b,…c] = ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
+// 	sb().split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
 // 		.map(ι=> osaᵥ`chrome: open location ${ι}`)
 // 	osaᵥ`chrome: activate`
 // 	}
 
 E.ct = E.chrome_tabs = λ(i){
 	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; ↩ nice_url(t)}
-	var [title,url] = osaᵥ`chrome: get {title,URL} of tabs of windows`
+	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
 	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
 	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb(t) }
 	}
@@ -174,7 +172,7 @@ E.bookmarks = ι=>{
 // 	color_now ← ι=> '\x1b[43m'+ι+'\x1b[0m'
 // 	starts_f ← starts.map(ι=> ι.format('YYYY')+'-'+label_fmt(day_of_year(ι)))
 // 	↩ '5×5 pushups: '+starts_f[0]+'::->'+' ; '+'many knee pushups: '+starts_f[1]+'::->'+'\n'+
-// 		labels.chunk(floor(80/4)).map(ι=>{ var r = _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
+// 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
 
 E.kp = E.keypresses = ()=>{
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }

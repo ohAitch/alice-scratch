@@ -14,7 +14,7 @@ S_compile ← λ(src){
 	wso ← P_(/\s*/)
 	wsd ← p=> wso.then(p).skip(wso)
 	expr ← P_(()=> wsd(P.alt(
-		P_('{').then(expr).skip(P_('}')).map(ι=>0?0: {T:'set',ι}),
+		P_('{').then(expr).skip(P_('}')).map(ι⇒ {T:'set',ι}),
 		P_(/\d+/).map(ι=> ι|0),
 		P_(/\/((\[[^\]]*\]|\\.|[^/\n])*)\//,1).map(ι=> RegExp(ι)),
 		P.fail('‽') )) )

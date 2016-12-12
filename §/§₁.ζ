@@ -39,13 +39,13 @@ S_ast_to_js←; C←; S_ast_to_js = C = (ι,top,t,par)=> // t,par: hack to get l
 
 // ---------------------------------- parse --------------------------------- //
 P ← npm('parsimmon@0.9.2')
-P.Parser.prototype.type = λ(x){↩ @.map(ι=>0?0: {T:x,ι}) }
+P.Parser.prototype.type = λ(x){↩ @.map(ι⇒ {T:x,ι}) }
 P_ ← (ι,…a)=> Tfun(ι)? P.lazy(ι,…a) : Tstr(ι)? P.string(ι) : P.regex(ι,…a)
 P_spaced ← p=> wso.then(p).skip(wso); wso ← P_(/\s*/)
 
 P_build_operators ← λ(unit,ops){
 	op_ps ← {
-		'1 left':λ(ops_p, next_p){ r ← P_(()=> P.seqMap(ops_p, r, (op,ι)=>0?0: {T:'op', A:'1 left', op, ι}).or(next_p) ); ↩ r },
+		'1 left':λ(ops_p, next_p){ r ← P_(()=> P.seqMap(ops_p, r, (op,ι)⇒ {T:'op', A:'1 left', op, ι}).or(next_p) ); ↩ r },
 		// A1_RIGHT ← (ops_p, next_p)=> P.seqMap( next_p, ops_p.many(), (x,suffixes)=> suffixes.reduce((r,x)=> [x,r], x) ),
 
 		// Takes a parser for all the operators at this precedence level, and a parser that parsers everything at the next precedence level, and returns a parser that parses as many binary operations as possible, associating them to the right. (e.g. 1^2^3 is 1^(2^3) not (1^2)^3)
@@ -53,10 +53,10 @@ P_build_operators ← λ(unit,ops){
 
 		// Takes a parser for all the operators at this precedence level, and a parser that parsers everything at the next precedence level, and returns a parser that parses as many binary operations as possible, associating them to the left. (e.g. 1-2-3 is (1-2)-3 not 1-(2-3))
 		// A2_LEFT ← (ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> rest.reduce((r,t)=> [t[0],r,t[1]], first) ),
-		'2 left':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> rest.reduce((r,t)=>0?0: {T:'op', A:'2 left', op:t[0], a:r, b:t[1]}, first) ),
+		'2 left':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> rest.reduce((r,t)⇒ {T:'op', A:'2 left', op:t[0], a:r, b:t[1]}, first) ),
 
 		// A2_CENTER ← (ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=> ['A2_CENTER', first, …rest._.flatten(true)] ),
-		'2 center':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)=>0?0: {T:'op', A:'2 center', ι:[first, …rest._.flatten(true)]} ),
+		'2 center':(ops_p, next_p)=> P.seqMap( next_p, P.seq(ops_p, next_p).many(), (first, rest)⇒ {T:'op', A:'2 center', ι:[first, …rest._.flatten(true)]} ),
 		}
 	// Operators should allow whitespace around them, but not require it. This helper combines multiple operators together with names. Example: operators({Add: "+", Sub: "-"}). Gives back an operator that parses either + or - surrounded by optional whitespace, and gives back the word "Add" or "Sub" instead of the character.
 	operators ← ops=> P.alt( …ops._.map(ι=> P_spaced(P_(ι)).result(ι) ) )

@@ -23,7 +23,7 @@ def ζ(*a): return subprocess.check_output(['ζλ']+list(a)).decode('utf-8')
 ################################## munge_stuff #################################
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 IS_URL = r'^(?:https?://|(?:file|mailto):)'
-FIND_RESULT = r'^(?:code|history|misc|notes|alice0meta\.github\.io|projection|scratch)/.{1,70}:\d+:'
+FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:'
 
 def merge_overlapping_regions(ι):
 	for i in range(len(ι)-1):
@@ -73,14 +73,14 @@ def open(ι,app=None,focus=True,view=None):
 	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""
 		if ("""+json.dumps(bool(re.match(FIND_RESULT,ι)))+"""){ !app || ‽
 			app = 'Sublime Text'
-			var [,ι,line] = ι.re`^(.+):(\d+):$`
-			ι = [φ('~/file/'+ι),φ('~/code/'+ι)].find(ι=>ι.BAD_exists())
+			[,ι,line] ← ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}`
 			}
 		else if (app==='Terminal'){
 			ids ← [1,2]._.indexBy()
 			sfx`ack`
-			var [dir,base] = φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
+			[dir,base] ← φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
 			unbusy ← _.zip(…osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
 			terminal_do_script(
 				sh`cd ${ι}; …${!unbusy && 'clear'}`,

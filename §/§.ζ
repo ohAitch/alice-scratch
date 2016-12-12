@@ -8,9 +8,9 @@
 // 	sub{ast nodes}, named in various ways
 // 	?maybe? other abstract data ?
 
-// AST ← (type,tokens,content)=>0?0: {T:type, tok:tokens}._.assign(content)
-// O ← ι=>0?0: {at:ι[0]}
-AST ← (type,rest)=>0?0: {T:type}._.assign(rest)
+// AST ← (type,tokens,content)⇒ {T:type, tok:tokens}._.assign(content)
+// O ← ι⇒ {at:ι[0]}
+AST ← (type,rest)⇒ {T:type}._.assign(rest)
 
 // ------------------ ? macro evaluation & encoding to js ? ----------------- //
 

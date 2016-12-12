@@ -1,6 +1,5 @@
 [[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
 [[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
-__dirname="$(dirname $(realpath "${BASH_SOURCE[0]}"))"
 
 export PROMPT_COMMAND='_PC_t $? "$(history 1)"; hash -r'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
 
@@ -10,7 +9,7 @@ alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # terminal_do_script
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; }
 
 eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
-	ζ ${"pb kp keypresses run run_project".split(" ")._.contains(ι)? "--fresh" : null} ${js`
+	ζ ${"pb kp keypresses run run_project".split(" ").includes(ι)? "--fresh" : null} ${js`
 		exit_parent ← ()=> φ("/tmp/exit_parent").text = ""
 		process.env["?"] = a[0]
 		require_new(φ("~/.bashrc.ζ"))[${ι}](…a.slice(1))
@@ -30,13 +29,13 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; 
 /(){
 	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.history{,/.sublime}}
 	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.history}
-	else _ag ~/code "$1" .{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+	else _ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 	fi | sb; }
 alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; } # PWF(dirty) is not used elsewhere; it's an aborted experiment
 rm_empty_dirs(){ find . -type d -empty -delete; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view = sublime.active_window().active_view(); view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 
 ################## single-purpose commands (interactive only) ##################
 
@@ -74,3 +73,6 @@ ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
 # ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 # rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
 # kc(){ sudo killall coreaudiod; }
+
+##################################### tests ####################################
+# / 'charCodeAt|fromCharCode' # should be codePointAt,fromCodePoint

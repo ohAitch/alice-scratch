@@ -41,7 +41,7 @@ for i in xrange(sys.maxint):
 # mbox_to_json.py ~/file/history/text\ logs/2015-11-27\ alice0meta\@gmail.com.mbox ~/Downloads/alice0meta@gmail.com
 
 # r ← []
-# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); if (ι['X-Gmail-Labels'] && ι['X-Gmail-Labels'].split(',')._.contains('Chat') && ι.From === 'Alice Monday <alice0meta@gmail.com>') r.push(ι.parts._.map('content').join('\n'))}
+# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); if (ι['X-Gmail-Labels'] && ι['X-Gmail-Labels'].split(',').includes('Chat') && ι.From === 'Alice Monday <alice0meta@gmail.com>') r.push(ι.parts._.map('content').join('\n'))}
 # sb(r.join('\n'))
 
 # r ← []

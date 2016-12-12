@@ -1,12 +1,6 @@
 #!/usr/bin/env node
 var _ = require('underscore')
 
-// ------------------------------ browser fixes ----------------------------- //
-var NODEP = typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
-var BROWSERP = typeof window!=='undefined'
-if (BROWSERP) if (!module.parent) module.parent = '<unknown>'
-if (BROWSERP) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
-
 // -------------------------- local metaprogramming ------------------------- //
 var E = {} // exports
 var patches = []
@@ -67,54 +61,71 @@ def(E,'robot',lazy('robot',()=> npm('robotjs@0.4.5') ))
 def(E,'require_new',lazy('require_new',()=>{ var t = npm('require-new@1.1.0'); return ι=> t(ι+'') }))
 
 // --------------------------------- ζ infra -------------------------------- //
-if (!BROWSERP) E.npm = function(ι){var [ι,version] = ι.split('@'); var ιv = ()=> ι+'@'+version
-	var APP = '\x1b[34m[npm]\x1b[0m'
+E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
+	var [,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
+	var abs_name = ()=> name+'@'+version
 	if (version){
-		var [,ι,sub] = ι.re`^([^/]+)(/[^]*)?`
-		var cache = φ`~/.npm/${ι}/${version}`; var final = cache.φ`/node_modules/${ι}`
-		if (final.BAD_exists()) try{ return require(final+'') }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
-		cache.BAD_exists() || shᵥ`cd ~; npm cache add ${ιv()}`
-		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${ιv()}`; a.ι = b.ι = null
-		return require(final+(sub||'')) }
+		var cache = φ`~/.npm/${name}/${version}`; var final = cache.φ`/node_modules/${name}`+(sub||'')
+		try{ return require(final) }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
+		cache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`
+		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = null
+		return require(final) }
 	else {
 		sfx`ack`
 		version = shᵥ`npm show ${ι} version`+''
-		process.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm('+util_inspect_autodepth(ιv())+')'); process.stderr.write('\n')
+		process.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm('+util_inspect_autodepth(abs_name())+')'); process.stderr.write('\n')
 		} }
-var ζ_compile = E.ζ_compile = code=>{
-	var q = ι=> ι
-		.replace(/([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?)/g,(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
-		.replace(/↩ ?/g,'return ')
-		.replace(/…(?!\$\{|\(\?)/g,'...')
-		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
-		.replace(/@/g,'this')
-		.replace(/‽(\(?)/g,(ˣ,callp)=> callp? '!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}(' : '!function(){throw Error("‽")}()' )
-
-	var P = require('./parsimmon2.js')
-
-	var ident = P(/(?![0-9])[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+|@/)
-	var comment = /(\/\/.*|\/\*[^]*?(\*\/|$))+/
-	var simple_js = P(()=> P.alt(
-		P.seq( P.alt( ident, P(')'), P(']'), P(/[0-9]/) ), P(RegExp('[ \t]*(?!'+comment.source+')/')) ),
-		P.seq( P('`').type('template'), tmpl_ι.many(), P('`').type('template') ),
-		P(/(['"])(\1|((.*?[^\\])?(\\\\)*)\1)/).type('string'),
-		P(comment).type('comment'),
-		P(/\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/).type('regex'),
-		P.seq( P('{'), simple_js, P('}') ),
-		ident,
-		P(/[^{}/'"`)@\]A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+|[^}]/)
-		).many() )
-	var tmpl_ι = P.alt( P.seq( P('${').type('template'), simple_js, P('}').type('template') ), P(/\\[^]|(?!`|\$\{)[^]/).type('template') )
-	var js_file = P.seq( P(/(#!.*\n)?/).type('shebang'), simple_js )
-	var ι = js_file.parse(code)._.flatten()
-	var r = []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t); ι = r
-	return ι.map(ι=> ι.T? ι.ι : q(ι)).join('') }
-E.ζ_compile['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
-	// tok ← require('babylon').parse(code,{allowReturnOutsideFunction:true}).tokens
-	// tok = _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=>( a.end <= b.start || ‽, code.slice(a.end,b.start) )) )._.flatten(true).filter(ι=>ι)
+E.js_tokenize = code=>{
+	var tok = npm('babylon@6.14.1').parse(code,{allowReturnOutsideFunction:true}).tokens
+	return _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
+E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
+def(E,'ζ_compile',function(){
+	var word_extra = re`♈-♓🔅🔆`.source; var word_extra_gu = re`[…${word_extra}]`.g
+	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ…${word_extra}`.source
+	var ζ_parse = (function(){
+		var P = require('./parsimmon2.js')
+		var ident = P(re`(?![0-9])[…${word}]+|@`)
+		var comment = re`(//.*|/\*[^]*?(\*/|$))+`
+		var simple_js = P(()=> P.alt(
+			P(comment).type('comment'),
+			P.seq( P('{'), simple_js, P('}') ),
+			P.seq( P.alt(
+				P(/(['"])(((?!\1)[^\\]|\\.)*?\1)/).type('string'),
+				ident,
+				P.seq( P('`').type('template'), tmpl_ι.many(), P('`').type('template') ),
+				P(/[)\]0-9]/)
+				), P.alt( P(re`[ \t]*(?!…${comment.source})/`), P.of('') ) ),
+			P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).type('regex'),
+			P(re`[^{}/'"…${'`'})@\]…${word}]+|[^}]`)
+			).many() )
+		var tmpl_ι = P.alt( P.seq( P('${').type('template'), simple_js, P('}').type('template') ), P(/\\[^]|(?!`|\$\{)[^]/).type('template') )
+		var js_file = P.seq( P(/(#!.*\n)?/).type('shebang'), simple_js )
+		return code=>{
+			var ι = js_file.parse(code)._.flatten()
+			var r = []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
+			return r } })()
+	var ζ_compile_nonliteral = (function(){
+		var unicode_names = def({},'ι',()=>{
+			var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> npm('unicode@0.6.1/category/'+ι)._.values() )
+			return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
+			})
+		var is_var = re`(\[[…${word},…]+\]|\{[…${word},…]+\}|[…${word}]+)(\s*)←(;?)`.g
+		return ι=> ι
+			.replace(is_var,(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
+			.replace(/↩ ?/g,'return ')
+			.replace(/…(?!\$\{|\(\?)/g,'...')
+			.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
+			.replace(/@/g,'this')
+			.replace(/‽(\(?)/g,(ˣ,callp)=> callp? '!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}(' : '!function(){throw Error("‽")}()' )
+			.replace(word_extra_gu,ι=> unicode_names.ι[ι.codePointAt(0)] )
+			.replace(/⇒/g,'=>0?0:')
+		})()
+	var r = code=> ζ_parse(code).map(ι=> ι.T? ι.ι : ζ_compile_nonliteral(ι)).join('')
+	r['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
+	return r })
 ;[process,module,global].map(ι=> ι.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) //‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
-E.ζ_repl_start = function(opt={}){ opt.compile = opt.compile || ζ_compile
-	return (f=> f.call( repl.start({useGlobal:true, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '}) ))(function(){
+E.ζ_repl_start = function(opt){ opt={compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '}._.assign(opt)
+	return (f=> f.call( repl.start({useGlobal:true}._.assign(opt._.pick('prompt'))) ))(function(){
 	this.In = []; this.Out = []
 	var super_ = this.completer; this.completer = function(line,cb){ line.trim()===''? cb(null,[]) : super_.call(this,line,cb) }
 	var inspect = ι=> util_inspect_autodepth(ι,{colors:this.useColors})
@@ -166,6 +177,9 @@ if (require.extensions) (()=>{ var o = require.extensions['.js']; require.extens
 		o(module,ι) } })()
 
 // ------------------------ should be in standard lib ----------------------- //
+E.Π = ι=> Tfun(ι) && /(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι) : Promise.resolve(ι)
+var NODEp = typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
+var find_closest_ISU = (ιs,ι)=>{ for(var i=0;i<ιs.length;i++) if(ι <= ιs[i]) return i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1; return ιs.length-1 }
 var memo_frp = function(names,within,f){
 	var dir = φ`~/.memo_frp/${names}`
 	if (within){
@@ -207,14 +221,32 @@ var regex_parse = (function(){
 	var s_or = P.sepBy(unit.many(),P_('|')).map(ι=> ι.length > 1? {T:'or',ι:ι} : ι[0])
 	// reg.parse('^fo+o{,7}(?:\\b.ar|[a-c-e]|baz(?=gremlin)|)*')
 	return ι=> reg.parse(ι).value })()
+var _apsc_parse = _.memoize(function(){
+  var P = require('./parsimmon2.js')
+  var ws = ι=> ws_.then(ι).skip(ws_); var ws_ = P(/[ \t\n\r]*/)
+  var value = P(()=> P.alt(false_,true_,number,object,array,string,raw) )
+  var false_ = P('false').result(false)
+  var true_ = P('true').result(true)
+  var number = P(/-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][-+]?[0-9]+)?/).map(ι=> +ι)
+  var _member = P.seq(P(/[ a-z0-9-]+/i).skip(ws(P(':'))), value)
+  var object = ws(P('{')).then(P.sep_by(_member,ws(P(',')))).skip(ws(P('}'))).map(ι=> ι.length? _.object(ι) : [])
+  var array = ws(P('{')).then(P.sep_by(value,ws(P(',')))).skip(ws(P('}')))
+  var _char = P(/[\n\t\x20-\x21\x23-\x5B\x5D-\u{10FFFF}]|\\(["\\\/bfnrt]|u[0-9a-fA-F]{4})/u).map(ι=> ι[0]!=='\\'? ι : {'"':'"','\\':'\\','/':'/',b:'\b',f:'\f',n:'\n',r:'\r',t:'\t'}[ι[1]] || String.fromCodePoint(parseInt(ι.slice(2),16)) )
+  var string = P('"').then( _char.many().map(ι=> ι.join('')) ).skip(P('"'))
+  var raw = P(/[^,}"]+/).or(string.map_js((ι,[i0,i1],l)=> l.slice(i0,i1))).many().map(ι=>{ ι=ι.join(''); return ι==='missing value'? undefined : {T:'raw',ι} })
+  return ι=> ι===''? undefined : ws(value).parse(ι) })
+E.applescript = {
+	parse: ι=> _apsc_parse()(ι),
+	print: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : !function(){throw Error("‽")}(),
+	}
+
 // E.lenient_json_parse = (λ(){
-// 	// P ← npm('parsimmon@0.9.2')
 // 	P ← require('parsimmon')
 // 	P_ ← (…a)=> Tstr(a[0])? P.string(…a) : P.regex(…a)
 
 // 	whitespace ← P_(/\s*/m)
 // 	escapes ← { b:'\b', f:'\f', n:'\n', r:'\r', t:'\t', }
-// 	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/, (ˣ,escape)=> escape[0]==='u'? String.fromCharCode(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
+// 	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/, (ˣ,escape)=> escape[0]==='u'? String.fromCodePoint(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
 // 	comma_sep ← (parser)=> P.sepBy(parser, token(P_(',')))
 // 	token ← p=> p.skip(whitespace)
 
@@ -234,34 +266,39 @@ var genex_0 = function(ι){
 		ι.T==='or'? ι.ι.map(Λ) :
 		ι.T==='capture'? Λ(ι.ι) :
 		ι.T==='any'? ['.'] :
-		ι.T==='set'?( ι['^']&&!function(){throw Error("‽")}(), ι.ι.mapcat(ι=> ι.T==='range'? _.range(ι.ι[0].charCodeAt(),ι.ι[1].charCodeAt()+1).map(String.fromCharCode.X) : [ι]) ):
+		ι.T==='set'?( ι['^']&&!function(){throw Error("‽")}(), ι.ι.mapcat(ι=> ι.T==='range'? _.range(ι.ι[0].codePointAt(),ι.ι[1].codePointAt()+1).map(String.fromCodePoint.X) : [ι]) ):
 		Tarr(ι)? ι.map(Λ).reduce((a,b)=> _(a.map(a=> b.map(b=> a+b))).flatten(true),['']) :
 			[ι]
 	return Λ(regex_parse(ι)) }
 var Number_toFixed = function(θ,ι){θ = round(θ/pow(10,-ι))*pow(10,-ι); return ι>0? θ.toFixed(ι) : θ+''}
 var pretty_time_num = ι=> new Number(ι)._.assign({inspect:function(ˣ,opts){ var P = 20; var ι=this; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); return opts.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 
-if (!BROWSERP) E.hook_stdouterr = function(){
+E.hook_stdouterr = function(){
 	var r = ['stdout','stderr'].map(function(stdio){
 		var o = process[stdio].write; var r = []; process[stdio].write = function(ι){r.push(ι)}; return function(){process[stdio].write = o; return r.join('')}
 		}); return ()=> r.map(ι=> ι()) }
-if (BROWSERP) E.cn = { log:function(...a){ console.log(...a); window.__ = a[-1] } }
-else E.cn = { log:(...a)=> console.log(
+E.cn = { log:(...a)=> console.log(
 	is_template(a)?
 		easy_template(ι=>ι)(...a).map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι[0],{colors:true})).join('') :
 		a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{colors:true})).join(' ')
 		) }
 _(E).assign(_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','pow','round','sqrt','cos','sin','tan')); _(E).assign({ln:Math.log, π:Math.PI, τ:Math.PI*2})
 E.multiline = function(ι){ ι = (ι+'').split('\n').slice(1,-1); var t = ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); return (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
-if (!BROWSERP) E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); return t[0] + t[1]*1e-9 }
+E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); return t[0] + t[1]*1e-9 }
 E.busywait = function(ι){ var h; for(var hr=hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
-E.bench = (f,opt={})=>{ var TH = opt.TH || 0.4; var r=0; var I=1; for(var hr=hrtime(); hrtime(hr) < TH;){ for(var i=0;i<I;i++) f(); r += I; I = ceil(I*1.5) }; return pretty_time_num(hrtime(hr) / r) } //! really should include a confidence interval or smth
+E.bench = (f,opt={})=>{ var TH = opt.TH || 0.4
+	//! really should include a confidence interval or smth
+	var r=0; var I=1; var hr=hrtime(); var R = ()=> pretty_time_num(hrtime(hr) / r)
+	var t=f(); r++
+	if( T.Promise(t) ) return Π(yes=>{ t.then(function Λ(){ if( hrtime(hr) < TH ){ r++; f().then(Λ) }else yes(R()) }) })
+	else{ for(;hrtime(hr) < TH;){ for(var i=0;i<I;i++) f(); r += I; I = ceil(I*1.5) }; return R() } }
 E.bench1 = f=>{ var hr = hrtime(); f(); return pretty_time_num(hrtime(hr)) }
 E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.rand = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? rand()*ι |0 : _.sample(ι) }
 E.rand_id = L=> L.map(ι=> rand(az09||(az09=/[0-9a-z]/.genex_0()))).join(''); var az09; //§
 E.fs_ipc = {
 	emit: function(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; return shᵥ`curl -s -X PUT 127.0.0.1:${port}`+''},
+	emit2: function(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; return shᵥ`curl -s 127.0.0.1:${port}`+''},
 	on: function(port,cbₐ){http.createServer(function(ˣ,res){var a;
 		var t = (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
 		var end = ι=> res.end(ι === undefined? '' : ι+''); var r = hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
@@ -280,6 +317,7 @@ P(()=>0?0:{
 'Array.prototype.search':function(f){ var r; if (this.some(function(ι,i,l){ r = f(ι,i,l); if (r!==undefined) return true })) return r },
 'Object.prototype._':{get(){return _(this)}},
 '(Buffer|Array|String).prototype.chunk':function(L){return _.range(0,this.length,L).map(i=> this.slice(i,i+L)) },
+
 'Set.prototype.filter!':function(f){ this.forEach(ι=> f(ι) || this.delete(ι)) },
 'Set.prototype.pop':function(){ var t = this.values().next().value; this.delete(t); return t },
 'Set.prototype.∪':function(...a){return new Set([this,...a].map(ι=> [...ι])._.flatten(true)) },
@@ -288,14 +326,12 @@ P(()=>0?0:{
 'Set.prototype.map':function(f){return [...this].map(f) },
 
 'Function.prototype.P':function(...a1){ var ι=this; return function(...a2){return ι.apply(this, a1.concat(a2)) } },
-'Function.prototype.X' :{get(){ var ι=this; return function(a  ){return ι.call(this,a  ) } }},
-'Function.prototype.XX':{get(){ var ι=this; return function(a,b){return ι.call(this,a,b) } }},
-'Function.prototype._1':{get(){return _.once(this) }},
+'Function.prototype.X':{get(){ var ι=this; return function(a){return ι.call(this,a) } }},
 'Function.prototype.defer':function(){return setImmediate(this) },
-'Function.prototype.in':function(time){return setTimeout(this,max(0,time)*1e3) },
+'Function.prototype.in':function(time){return setTimeout(this,max(0,time||0)*1e3) },
 'Function.prototype.every':function(time,opt){ var r = setInterval(this,max(0,time)*1e3); return !(opt&&opt.leading)? r : new TimerCons(this.in(0),r) },
 
-'stream.Readable.prototype.read_all':function(cb){ var t = []; this.resume().on('data',ι=>{ t.push(ι) }).on('end',()=>{ cb(null,Buffer.concat(t)) }) }, //! are you sure end doesn’t also pass any data?
+'stream.Readable.prototype.read_all':function(){return Π(yes=>{ var t = []; this.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })},
 '(Array|String|Buffer).prototype.-0':{get(){ },set(ι){ this.push(ι) }},
 '(Array|String|Buffer).prototype.-1':{get(){return this.length<1? undefined : this[this.length-1] },set(ι){ this.length<1 || (this[this.length-1] = ι) }},
 '(Array|String|Buffer).prototype.-2':{get(){return this.length<2? undefined : this[this.length-2] },set(ι){ this.length<2 || (this[this.length-2] = ι) }},
@@ -304,8 +340,8 @@ P(()=>0?0:{
 
 '(Array|String|Buffer).prototype.windows':function(L){return (this.length-L+1).map(i=> this.slice(i,i+L)) },
 })
-E.Time = function(ι){var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι); r.toString = function(){return util.inspect(this)}; return r}
-var fmt = function(a,b){var t = this.__local? moment(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString(); t = t.slice(a,b); if (!this.__local && b > 10) t += 'Z'; return t}
+E.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι); r.toString = function(){return util.inspect(this) }; return r }
+var fmt = function(a,b){ var t = this.__local? moment(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString(); t = t.slice(a,b); if (!this.__local && b > 10) t += 'Z'; return t }
 P(()=>0?0:{
 'Date.prototype.inspect':function(d,opts){return opts.stylize(isNaN(+this)? 'Invalid Date' : this.getUTCSeconds()!==0? this.ymdhms : this.getUTCMinutes()!==0? this.ymdhm : this.getUTCHours()!==0? this.ymdh : this.ymd, 'date')},
 'Date.prototype.local':{get(){return new Date(this)._.assign({__local:true})}},
@@ -319,9 +355,9 @@ P(()=>0?0:{
 'Date.prototype.iso':     {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'.length)}},
 'Date.prototype.hms':     {get(){return fmt.call(this,'YYYY-MM-DDT'.length,'YYYY-MM-DDTHH:mm:ss'.length)}},
 })
-var hash = function(ι){var t;return JSON.stringify(Object.prototype.toString.call(ι)==='[object Object]'? (t={}, ι._.keys().sort().forEach(k=> t[k]=ι[k]), t) : ι) }
+var hash = ι=>{var t;return JSON.stringify(Object.prototype.toString.call(ι)==='[object Object]'? (t={}, ι._.keys().sort().forEach(k=> t[k]=ι[k]), t) : ι) }
 _.mixin({difference_eq:function(ι,...a){ var t = ι._.groupBy(hash); a.forEach(ι=> ι.forEach(ι=> delete t[hash(ι)])); return t._.values()._.flatten(true) }})
-if (NODEP){var t;
+if (NODEp){var t;
 var Immediate = Object.getPrototypeOf(t=setImmediate(function(){})); clearImmediate(t)
 var Timeout = Object.getPrototypeOf(t=setTimeout(function(){},0)); clearTimeout(t)
 Immediate.clear = function(){ clearImmediate(this) }
@@ -334,19 +370,18 @@ E.schema = (function(){
 	})()
 E.walk = (ι,f,k,o)=>( Tprim(ι)||ι._.forEach((ι,k,o)=> walk(ι,f,k,o)), f(ι,k,o), ι )
 E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_reduce(ι,f,k,o)), f(ι,k,o) ) : ( ι = _(ι).map((ι,k,o)=> [k,walk_reduce(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
+// E.walk_obj_map = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ι.map((ι,k,o)=> walk_obj_map(ι,f,k,o)) : ( ι = _(ι).map((ι,k,o)=> [k,walk_obj_map(ι,f,k,o)])._.object(), f(ι,k,o) )
 E.util_inspect_autodepth = function(ι,opt={}){ opt.L || (opt.L = 1e6); var last; for(var i=1;;i++){ var r = util.inspect(ι,{maxArrayLength:opt.L/3 |0, depth:i}._.assign(opt)); if (r===last || r.length > opt.L) return last===undefined? '<too large>' : last; last = r } }
 
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
 
 // ---------------------------------- .ζrc ---------------------------------- //
-if (!BROWSERP){
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']._.uniq().join(':')
 var q0 = ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null, maxArrayLength:null})
 var q = ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
 E.p = function(ι){return arguments.length === 0? shᵥ`pbpaste`+'' : shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }
-E.sb = function(ι){return arguments.length === 0? sublᵥ`view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
+E.sb = function(ι){return arguments.length === 0? sublᵥ`view = sublime.active_window().active_view(); view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
 E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} = ι; ι=ι+''
 	// very nice google maps urls
 	// if url ≈ google.com/maps/
@@ -363,7 +398,7 @@ E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} =
 
 	if (t=ι.re`^"(.*)"$`) return '“'+t[1]+'”' //! bad hack
 
-	var apply_regexes = regs=> multiline(regs).split(/\n/g).map(function(t){var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b)})
+	var apply_regexes = regs=> multiline(regs).split(/\n/g).map(function(t){ var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b) })
 	var URL = /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
 	var parse_alicetext = ι=> _.zip(ι.split(URL).map(ι=>0?0: {type:'text', ι}), (ι.match(URL)||[]).map(ι=>0?0: {type:'url', ι}))._.flatten(true).filter(ι=> !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
@@ -435,34 +470,36 @@ E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} =
 	return ι}
 E.sfx = function(ss,...ιs){ var ι = ss[0]
 	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if (ι==='done' && osaᵥ`get volume settings`.parse_error.re`muted:true`){ var br = npm("brightness@3.0.0"); br.get().then(function(old){ br.set(0); (()=> br.set(old)).in(0.2) }) }
+	if (ι==='done' && osaᵥ`volume settings`['output muted']){ var br = brightness; br.get().then(old=>{ br.set(0); (()=> br.set(old)).in(0.2) }) }
 	}
 E._alert = (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` //! design better, then rename to alert
 E.browser = ι=>{
 	ι = ι.re`^https?://`? ι : 'https://www.google.com/search?q='+encodeURIComponent(ι)
 	shₐ`'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' ${ι}`; osaₐ`chrome: activate` }
-E._bright = dir=>{
-	var br = npm("brightness@3.0.0")
-	var set = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap("⇧⌥FnF"+(ι > 0.5? 2 : 1)))
-	var ιs = [0,1,2.5,5.5,10.5,16].map(ι=>ι/16) //§
-	br.get().then(ι=> set(dir==="up"? ιs.find(t=> t > ι)||1 : ιs.filter(t=> t < ι)[-1]||0) )
-	}
-E._sc = (...a)=> shᵥ`screencapture ${a}`
-E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
-E._sc_imgur = (...a)=>{ var t = φ`/tmp/sc_${rand_id(9)}.png`; _sc(...a,t); _alert("uploading to imgur","...",1.5); var ι = _imgur(t); browser(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+def(E,'brightness',function(){
+	var br = hsᵥ? {
+		get(){return Π( hsᵥ`hs.brightness.get()`/100 )},
+		set(ι){return Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
+		ambient(){return hsᵥ`hs.brightness.ambient()` },
+		} : npm('brightness@3.0.0')
+	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
+	return br })
+var _low_brightness_symbol__high_brightness_symbol_ = go=>{ var ιs = [0,1,2.5,5.5,10.5,16].map(ι=>ι/16); return brightness.get().then(br=> brightness.set_overlay( ιs[min(max( 0, find_closest_ISU(ιs,br) + go ), ιs.length-1 )] )) }
+E._low_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(-1)
+E._high_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(1)
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 E.restart_and_keep_alive = prog=>{
 	var Label = 'local.'+prog.replace(/\W/g,'_')
 	var t = φ`~/Library/LaunchAgents/${Label}.plist`; t.ι = {Label, KeepAlive:true, ProgramArguments:['sh','-c',sh`PATH=${process.env.PATH}; ${prog}`]}
 	shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}`
 	}
-}
+E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗🌘']; return moons[floor((npm('suncalc@1.7.0').getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
 
 // ----------------------------- metaprogramming ---------------------------- //
 P(()=>0?0:{ 'RegExp.prototype.λ':function(ι){return ι===undefined || ι===null? null : ι.match(this) } })
-P(()=>0?0:{ 'RegExp.prototype.g':{get(){return RegExp(this.source,this.flags+'g')}} })
-P(()=>0?0:{ 'RegExp.prototype.i':{get(){return RegExp(this.source,this.flags+'i')}} })
-P(()=>0?0:{ 'RegExp.prototype.m':{get(){return RegExp(this.source,this.flags+'m')}} })
+P(()=>0?0:{ 'RegExp.prototype.g':{get(){return RegExp(this.source,this.flags+'g') }} })
+P(()=>0?0:{ 'RegExp.prototype.i':{get(){return RegExp(this.source,this.flags+'i') }} })
+P(()=>0?0:{ 'RegExp.prototype.m':{get(){return RegExp(this.source,this.flags+'m') }} })
 // --- metaprogramming → runtime macros built on top of template literals --- //
 var is_template = E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw.length-1 === ιs.length
 var tmpl_flatten = (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
@@ -505,7 +542,7 @@ E.JSON_pretty = function(ι,replacer){
 E.re = function(ss,...ιs){ var ι = simple_template(ss,ιs,[(...a)=>re(...a).source,'']); var ENC = ι=> (ι+'').replace(/([.*+?^=!:${}()\[\]|\\])/g, '\\$1'); return RegExp(ι.map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join(''),'u') }
 P(()=>0?0:{ 'String.prototype.re':{get(){return (ss,...ιs)=> this.match(re(ss,...ιs))}} })
 
-E.js = function(ss,...ιs){ var ENC = JSON.stringify; return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.js = E.py = function(ss,...ιs){ var ENC = JSON.stringify; return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = function(ss,...ιs){var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
 var ellipsify = ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.length>100?'…':'')
@@ -525,17 +562,13 @@ var _shₐ = (ss,ιs,opt={})=>{
 E.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
 
-var _osa = { // based on https://github.com/FWeinb/node-osascript/blob/master/lib/osa-parser.peg
-	read: function(ι){ι+=''; try{ return {'missing value':1,'':1}[ι.trim()]? undefined : JSON.parse(ι.split(/("(?:\\[^]|[^])*?")/g).map(ι=> /^"[^]*"$/.λ(ι.replace(/\n$/,''))? ι.replace(/\n$/,'').replace(/\n/g,'\\n').replace(/\t/g,'\\t') : ι.replace(/\{/g,'[').replace(/\}/g,']')).join('')) }catch(e){ return {parse_error:ι} }},
-	show: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : !function(){throw Error("‽")}(),
-	}
 E.osa = function(ss,...ιs){var t;
 	var ι = simple_template(ss,ιs)
 	//! jesus this is a mess
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)) {ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, ...ι, '; end tell']}
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, ...ι, '; end tell'] }
-	return ι.map(ι=> !Tstr(ι)? _osa.show(ι.raw) : ι.replace(/;/g,'\n')).join('') }
-E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs); return _osa.read(shᵥ`osascript -ss -e ${ι}`) }
+	return ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n')).join('') }
+E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs); return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
 E.osaₐ = function(ss,...ιs){ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
 
 E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
@@ -549,10 +582,18 @@ E.chrome_simple_js_ᵥ = (ι,tab)=> osaᵥ`chrome: tell window 1's …${tab} to 
 	//	chrome_simple_js_ᵥ(t,tab)
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
+
 E.sublᵥ = function(ss,...ιs){
 	var ENC = JSON.stringify; var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	var t = JSON.parse(fs_ipc.emit(34289,ι)); t===null && (t = undefined); return t }
-if (!BROWSERP) def(E,'φ',function(){
+E.sb_editᵥ = view=>(ss,...ιs)=>{ sublᵥ`edit(${view},${py(ss,...ιs)})` }
+
+def(E,'hsᵥ',()=> !(shᵥ`which hs ;:`+'')? undefined : function(ss,...ιs){
+	var ENC = ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : !function(){throw Error("‽")}(); var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	// -t       Uses the given argument timeout as the receive timeout, instead of the default of 4 seconds.
+	var t = (shᵥ`hs -c ${ι}`+'').split('\n')[-1]; try{return JSON.parse(t)[0] }catch(e){return t } } )
+
+def(E,'φ',function(){
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ['⁻¹'] = ι=> /%2F/i.λ(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 
@@ -575,7 +616,7 @@ if (!BROWSERP) def(E,'φ',function(){
 				if (from<0) from += fl.L; if (to<0) to += fl.L; from = min(max(0, from ),fl.L-1); to = min(max(-1, to ),fl.L)
 				if (!(step===-1 && from>to)) !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}('TODO')
 				var d = fl.read(to+1,from-to)
-				for(var i=from;i>to;i+=step) {if (d[i-(to+1)]===find) return i; else if (String.fromCharCode(d[i-(to+1)]).match(skip)); else return null}
+				for(var i=from;i>to;i+=step) {if (d[i-(to+1)]===find) return i; else if (String.fromCodePoint(d[i-(to+1)]).match(skip)); else return null}
 				},
 			}); fs.closeSync(fd)}
 	var globmatch = (glob,ι)=> re`^…${glob._.map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`.λ(ι)
@@ -645,7 +686,7 @@ if (!BROWSERP) def(E,'φ',function(){
 		// get csv(){↩},
 		set csv(ι){ var t = φ`/tmp/csv_${rand_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${this.root('/')+''}` },
 		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm('xml2js@0.4.17').parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
-		set xml(ι){ this.text = npm('xmlbuilder@8.2.2').create(ι).end({pretty:true}) },
+		set xml(ι){ this.text = npm('xmlbuilder@8.2.2').create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
 		// get plist(){↩  },
 		set plist(ι){ this.text = npm('plist@2.0.1').build(ι) },
 		get json_array__synchronized(){return function(...ιs){var _ι=this._ι
@@ -656,8 +697,8 @@ if (!BROWSERP) def(E,'φ',function(){
 			push(...a){a.map(function(ι){
 				d.push(ι)
 				open(_ι,'[]',function(fl){
-					var i = fl.indexOf_skipping(-1,-1e4,-1,']'.charCodeAt(),/[ \n\t]/) || !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}('bad file')
-					var is_0 = fl.indexOf_skipping(i-1,-1e4,-1,'['.charCodeAt(),/[ \n\t]/)!==null
+					var i = fl.indexOf_skipping(-1,-1e4,-1,']'.codePointAt(),/[ \n\t]/) || !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}('bad file')
+					var is_0 = fl.indexOf_skipping(i-1,-1e4,-1,'['.codePointAt(),/[ \n\t]/)!==null
 					fl.write((is_0?'':',')+JSON.stringify(ι,null,'  ')+']',i)
 					})
 				})},
@@ -708,7 +749,7 @@ var eval_ = function ᵃΘΛᴳᶜjεᴺ(ι){
 	try{ try{ new vm.Script(ι); return (0,eval)(ι) }catch(e){ if (!(e.name==='SyntaxError' && e.message==='Illegal return statement')) throw e; return (0,eval)('(()=>{'+ι+'})()') } }
 	catch(e){ e!==undefined && e!==null && Tstr(e.stack) && (e.stack = e.stack.replace(/    at ᵃΘΛᴳᶜjεᴺ[^]*/,'    at <eval>')); throw e }
 	}
-E.ζ_main = function(opt={}){ opt.compile = opt.compile || ζ_compile
+E.ζ_main = function(opt){ opt={compile:ζ_compile}._.assign(opt)
 	var argv = process.argv
 	// if (!opt.server_alive && !( argv.length===2 || argv[2].re`^\.?/` || argv[2]==='--fresh' ) && !argv[1].re`ζλ`)
 	// 	restart_and_keep_alive(φ(__dirname+'/../server.ζ')+'')
@@ -762,7 +803,18 @@ scratch/scratch.txt:107:φ`**`.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values(
 scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι=> !ι.dir()).map(ι=> ι+'')
 */
+
+// i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
+// Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
+
 // ---------------------------------- cruft --------------------------------- //
+
+// // ------------------------------ browser fixes ----------------------------- //
+// BROWSERp ← typeof window!=='undefined'
+// if (BROWSERp) if (!module.parent) module.parent = '<browser>'
+// if (BROWSERp) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
+// if (BROWSERp) E.cn = { log:λ(…a){ console.log(…a); window.__ = a[-1] } }
+
 // 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
 // 	// https://github.com/Automattic/kue
 // 	// https://github.com/rschmukler/agenda
@@ -774,6 +826,10 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
 // 		})() }
 // 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
+// 'Function.prototype._1':{get(){↩ _.once(@) }},
+// 'Function.prototype.XX':{get(){ ι←@; ↩ λ(a,b){↩ ι.call(@,a,b) } }},
 
-// i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
-// Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
+// E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
+// E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${rand_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); browser(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+// ⌘⇧⌥3  ; _sc_imgur(     ) // i suspect this is outdated
+// ⌘⇧⌥4  ; _sc_imgur('-io') // also this

@@ -32,10 +32,10 @@ eval_in_worker ← (λ(){
 		free.size || free.add(make()) }
 	↩ code=>{ cleanup(); t ← free.pop(); free.delete(t); busy.add(t); t.send(['eval',code]); ↩ t }
 	})()
-procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ Π ← process
-	err ← e=>( Π.stderr.write((e.stack||e)+'\n'), Π.exitCode || (Π.exitCode = 1) )
-	var {on,off} = on_off(); on(Π,'uncaughtException',λ(e){ err(e); Π.exit() }); on(Π,'beforeExit',()=> off())
-	Π.argv = [Π.argv[0],…a.argv]; φ.cwd = a.cwd; Π.env = a.env; [Π.stdin,Π.stdout,Π.stderr]._.zip(a.isTTY).map(([fd,t])=> fd.isTTY = t)
+procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
+	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode || (♓.exitCode = 1) )
+	{on,off} ← on_off(); on(♓,'uncaughtException',λ(e){ err(e); ♓.exit() }); on(♓,'beforeExit',()=> off())
+	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; [♓.stdin,♓.stdout,♓.stderr]._.zip(a.isTTY).map(([fd,t])=> fd.isTTY = t)
 	try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code) )
 
@@ -52,16 +52,17 @@ if (!module.parent){
 			socket.on('data',catch_(λ(ι){
 				if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
 				i←0; get ← n=> i+n <= ι.length || (buf = ι.slice(i), _↩())
-				while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← String.fromCharCode(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
+				while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← String.fromCodePoint(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 				})); buf←;
 			a ← {argv:[], cwd:'', env:{}, isTTY:[,,,]}
-			on_msg ← λ(ι){switch(ι.type){default: ‽
+			on_msg ← ι=>{switch(ι.type){default: ‽
 				break; case 'A': a.argv.push(ι.ι+'')
-				break; case 'E': var [,k,v] = (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
+				break; case 'E': [,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
 				break; case 'D': a.cwd = ι.ι+''
 				break; case 'R':
+					if (a.argv[1]==='TEST'){ c_send('X',5+''); ended = true; ↩ }
 					worker = eval_in_worker(procify(a,'ζ_main()'))
-					var {on,off} = on_off()
+					{on,off} ← on_off()
 					;[1,2].map(i=> on(worker.stdio[i],'data',ι=> c_send(i+'',ι)) )
 					on(worker,'pseudo_exit',λ(i){ c_send('X',i+''); ended = true; off() })
 					// c_send('S')
@@ -74,8 +75,6 @@ if (!module.parent){
 // old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
 // new issue: ignores stdin because it's complicated on the node side
 // (old code: fs.fstatSync(0).isFIFO()? read_stdin(t) : t() )
-
-// perf: excellent except mimic.c makes too many calls to `send\(`; to fix, batch the A,E,D,R messages together into an I init message
 
 // --------------------------------- ‡ todo --------------------------------- //
 // #! important features:

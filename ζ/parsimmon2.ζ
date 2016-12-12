@@ -20,11 +20,12 @@ P.proto = Parser.prototype
 
 P.proto.parse = λ(stream){ Tstr(stream) || ‽
   G_opt.fast = true; r ← @.skip(eof)._(stream,0)
-  if (!r.status){ G_opt.fast = false; r ← @.skip(eof)._(stream,0); !!r.status && ‽; ‽({ index:make_line_col_index(stream, r.furthest), expected:r.expected, }) }
+  if (!r.status){ G_opt.fast = false; r ← @.skip(eof)._(stream,0); !!r.status && ‽; ‽({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
   ↩ r.value }
 
-make_win ← (index,value)=>0?0: { status:true, index, value, }
-make_lose ← (index,expected)=>0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
+// make_win ← (index,value)⇒ { status:true, index, value, }
+make_win ← (index,value)⇒ { status:true, index, value, furthest:-1, expected:[], }
+make_lose ← (index,expected)⇒ { status:false, index:-1, value:null, furthest:index, expected:[expected], }
 
 seq ← P.seq = (…ps)=>{ ps.map(ι=> ι instanceof Parser || ‽)
   r ← p_wrap((stream,i)=>{r←;
@@ -65,7 +66,8 @@ P.proto.times = λ(min,max){
   })
 }
 
-P.proto.map = λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value); ↩ r }) }
+P.proto.map    = λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value); ↩ r }) }
+P.proto.map_js = λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value,[i,r.index],stream); ↩ r }) }
 P.proto.skip = λ(next){↩ seq(@,next).map(ι=> ι[0]) }
 
 eof ← P.eof = p_wrap((stream,i)=> i < stream.length? make_lose(i,'EOF') : make_win(i,null) )
@@ -120,7 +122,7 @@ P.proto.then = λ(next){ next instanceof Parser || ‽; ↩ seq(@,next).map(ι=>
 P.proto.result = λ(ι){↩ @.map(()=> ι) }
 P.proto.at_most = λ(n){↩ @.times(0,n) }
 P.proto.at_least = λ(n){↩ seq_map(@.times(n), @.many(), (init,r)=> init.concat(r) ) }
-P.proto.mark = λ(){↩ seq_map(index,@,index,(start,value,end)=>0?0: { start, value, end } ) }
+P.proto.mark = λ(){↩ seq_map(index,@,index,(start,value,end)⇒ { start, value, end } ) }
 P.proto.desc = λ(expected){↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (!r.status) r.expected = [expected]; ↩ r }) }
 
 P.of = (value)=> p_wrap((stream,i)=> make_win(i,value) )

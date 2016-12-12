@@ -1,4 +1,5 @@
 // totally neutral and unrelated to ζ; boxed with ζ because I'm not using it for anything else & because the server is ζ-specific
+// rename to ipc_shell.c
 
 // message/chunk types:
 // server -> client: 1 stdout, 2 stderr, X exit, S send stdin
