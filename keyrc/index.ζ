@@ -17,7 +17,7 @@ macros ← {}
 parse_boards0 ← ι=>
 	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,''])[1],
-		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/ug.λ(ι)),
+		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/gu.λ(ι)),
 		} })
 builtin_keys ← parse_boards0(multiline`
 	┌──────── [homoiconic] ────────┐
@@ -69,18 +69,19 @@ parse_keyrc ← λ(src){
 		)
 	↩ […tₐ, …tₑ]._.difference_eq(system) }
 show_private_xml ← λ(mappings){t←;
-	Mod ← ι⇒ {"⇧":"VK_SHIFT", "^":"ModifierFlag::CONTROL_L", "⌥":"VK_OPTION", "⌘":"VK_COMMAND", "⇧L":"ModifierFlag::SHIFT_L", "⌥L":"ModifierFlag::OPTION_L", "⌘L":"ModifierFlag::COMMAND_L", "⇧R":"ModifierFlag::SHIFT_R", "⌥R":"ModifierFlag::OPTION_R", "⌘R":"ModifierFlag::COMMAND_R", "Fn":"ModifierFlag::FN", " ":"ModifierFlag::NONE"}[ι]
+	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
-	appdefs ← φ`/tmp/keyrc_appdefs.json`.json||{}; appdef ← ι=> appdefs[ι] || ( appdefs[ι] = (λ(){ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(), φ`/tmp/keyrc_appdefs.json`.json = appdefs, appdefs[ι] ) //! crude cache
+	// appdef ← persist_tmp(ι=>{ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })
+	appdef ← ι=> appdefs[ι] = persist_tmp(ι=>{ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(ι); appdefs ← {}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
-		compile_keystring ← λ(ι){
+		compile_keystring ← ι=>{
 			[md,ky] ← split_with(/FnF.|F.|.[LR]|./g.λ(ι), Mod)
 			if (md.length === 1 && ky.length === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
 			if (!{1:1,2:1}[ky.length]) ‽(APP+' invalid keystring: '+util.inspect(ι))
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
-		compile_trigger ← λ(ι){ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
-		compile_output ← λ(ι){t←; ↩0,
+		compile_trigger ← ι=>{ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
+		compile_output ← ι=>{t←; ↩0,
 			(t=/^\] ([^]*)$/.λ(ι))? compile_keystring(t[1]).ι :
 			// (t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 			(t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
@@ -93,8 +94,9 @@ show_private_xml ← λ(mappings){t←;
 	↩ {root: {
 		item:[
 			M2( 'notsave.2touch', [
-				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc'].map(ι=>`
-				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.split(/\|/g)}.map(…${osa_activate_thingᵥ+''})` ),
+				// …['iBooks|preview','Chrome','path Finder','Github desktop','Vlc'].map(ι=>`
+				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
+				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),
 				// ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
@@ -131,15 +133,6 @@ if( !module.parent ) switch( process.argv[2] ){
 }
 
 // -------------------------------------------------------------------------- //
-osa_activate_thingᵥ ← app=>{t←; app=app.toLowerCase()
-	//! should gather most of this information periodically async & record it. should use FRP.
-	hint_screen ← {'sublime text':2, 'path finder':3, 'github desktop':4}
-	isnt_standalone ← {ibooks:1, preview:1}
-	if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap); ↩ }
-	// if (t=app.re`^desktop (\d+)$`){ robot_key_tap('^'+t[1]); ↩ }
-	hint_screen[app] && robot_key_tap('^'+hint_screen[app])
-	isnt_standalone[app]? osaᵥ`${app}: if it is running then; activate; end if` : osaᵥ`${app}: activate`
-	}
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
 	fi ← 'notsave.KEY_once_'+rand_id(9)
@@ -174,3 +167,5 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 // ⌘ + F11	Show Track information (shows a notification with info about the currently playing tab)
 
 // faster applescript http://stackoverflow.com/a/3757178/322866 ? or with background python program, i dont care really
+
+//! wtf is it needing to be build *twice* before changes happen?

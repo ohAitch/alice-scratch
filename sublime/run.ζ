@@ -29,7 +29,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 // 	out ← dest.φ`**`.filter(ι=> roots.some(r=> (ι+'').re`^${r}`)).filter(ι=> !ι.dir()).map(ι=> ι+'')
 // // -------------------------------------------------------------------------- //
 // 	_.difference(out,written)
-// 		.filter(ι=> !/Package Control\./.λ(ι.replace(dest+'','')) )
+// 		.filter(ι=> !ι.replace(dest+'','').re`Package Control\.` )
 // 		.forEach(λ(ι){ φ(ι).ι = null })
 // 	}
 
@@ -42,14 +42,14 @@ colors_to_tmTheme ← λ(from,to){
 	t = t.re`^\s*(\{[^]+?\})([^]*)`
 	r ← {name:φ(from).name.replace(/\.colors$/,''), settings:[
 		{settings:JSON.parse(t[1])},
-		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]]._.filter(1)._.object(), scope: re`…${t[4]}`.genex_0().join(',')} }),
+		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]]._.filter(1)._.object(), scope: […re`…${t[4].replace(/\./g,'\\.')}`].join(',')} }),
 		] }
 	φ(to).buf = plist.build(r)
 	}
 
 sb_keyrc_to_sublime_keymap ← λ(from,to){
 	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
-	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/mg).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
+	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
 		k ← compile_keys(ι[1])
 		cm ← ι[2]
 		t ← ι[3]; [a,t] ← t.re`^\)`? [undefined,t] : match_json_head(t); a||(a={}); t = t.replace(/^\) */,'')

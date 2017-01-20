@@ -17,12 +17,16 @@ eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
 	[ -e /tmp/exit_parent ] && { rm /tmp/exit_parent; exit; }
 	return $E; }`).join("\n") ')"
 
+# convert me to ζ
+# it'll be easy and it'll be fun, getting all of the design right
+# the key idea is “conf”
+
 ################# should be system commands (interactive only) #################
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 l(){ ls -AG "$@"; }
 f(){ open -a 'Path Finder' "${1:-.}"; ζ 'osaᵥ`path finder: activate`'; }
-ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; }
+ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9
 …(){ eval "$(cat)"; }
 man(){ /usr/bin/man "$@" > /tmp/man && { cat /tmp/man | col -bfx | sb; }; }
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; &>/dev/null popd; } # for /
@@ -35,14 +39,15 @@ alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; } # PWF(dirty) is not used elsewhere; it's an aborted experiment
 rm_empty_dirs(){ find . -type d -empty -delete; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view = sublime.active_window().active_view(); view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT 127.0.0.1:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view = sublime.active_window().active_view(); view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT localhost:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
 
 ################## single-purpose commands (interactive only) ##################
 
 ### im_ (interactive only) ###
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
-# im_to_png(){ ζ ' a.map(ι=> /\.png$/.λ(ι) || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
+# im_to_png(){ ζ ' a.map(ι=> ι.re`\.png$` || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_concat(){
 	local tile=$(ζ '!!ι.re`^(\d+x\d*|x\d+)$`' "$1" && { echo "$1"; shift; } || echo x1)
@@ -61,18 +66,3 @@ youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 ζlog(){ cat /usr/local/lib/node_modules/zeta-lang/log.txt; }
 cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2"; }
 ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
-
-################################### discarded ##################################
-# shopt -s histappend; HISTCONTROL=ignoredups; HISTSIZE=1000; HISTFILESIZE=10000
-# 64e(){ base64; }
-# 64d(){ base64 -D; }
-# ar9(){ tar -c "$@" | xz -v -9 > "$(basename "$1").tar.xz"; }
-# del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-# ql(){ ( &>/dev/null qlmanage -p "$@" &); }
-# im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
-# ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
-# rm_bad_cache(){ ( shopt -s globstar; rm -f ~/{,Desktop/,Downloads/,file/**/}.DS_STORE ); sudo find /private/var/folders -name com.apple.dock.iconcache -exec rm {} \;; }
-# kc(){ sudo killall coreaudiod; }
-
-##################################### tests ####################################
-# / 'charCodeAt|fromCharCode' # should be codePointAt,fromCodePoint

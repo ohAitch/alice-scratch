@@ -6,9 +6,7 @@ log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text
 on_off ← λ(){ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(λ([ee,m,f]){ ee.removeListener(m,f) }); ons = [] } }}
 
 // ----------------------------------- lib ---------------------------------- //
-hash ← ι=> require('crypto').createHash('sha256').update(ι).digest()
-b36 ← ι=> npm('base-x@1.0.4')(/[0-9a-z]/.genex_0().join('')).encode(ι)
-as_module ← ι=>{ t ← φ`/tmp/node_${b36(hash(ι)).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }
+as_module ← ι=>{ t ← φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }
 eval_in_new_worker ← code=>{ t ← as_module(js`require(${__dirname})(global);`+code); ↩ require('child_process').fork(t,[],{silent:true}) }
 eval_in_worker ← (λ(){
 	busy ← new Set(); free ← new Set()

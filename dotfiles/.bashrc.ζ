@@ -13,6 +13,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 
 	//! oh hell, bug
 	last_cwd ← persist('last_cwd'); last_cwd.ι ||( last_cwd.ι = φ.cwd+'' )
+	//! combine with persist_tmp
 
 	fs.appendFileSync(φ`~/.history_bash_full`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
@@ -27,7 +28,7 @@ E.x = ()=>{ E ← process.env['?']|0
 	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
 	E===0 && exit_parent(); process.exitCode = E }
 
-E.pb = ()=> _pastebin_id().then(ι=>{ browser('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
+E.pb = ()=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
 _pastebin_id ← ()=> new Promise(yes=>
 	process.stdin.read_all((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`

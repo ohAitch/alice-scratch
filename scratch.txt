@@ -46,7 +46,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.mapcat(ι=> 10..map(i=> ι+' '+i))._.shuffle()
 	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
-	c ← {}; for(;;){t ← '#'+4..map(ι=> rand(/[0-9a-z]/.genex_0())).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
+	c ← {}; for(;;){t ← '#'+4..map(ι=> rand([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
 # # used up: alice0meta@gmail.com
@@ -166,3 +166,65 @@ is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; g
 // System Events got an error: osascript is not allowed assistive access
 // compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
 if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
+
+----------------------- coding things that should be easy ----------------------
+find in story :on: fimfiction
+
+try out on http://www.fimfiction.net/story/317740/32/silver-glows-journal/january-26-humanity-i-love-you
+
+------------------------------
+find in (:on: fimfiction.net/story/${id}/ this page):
+	(get http://www.fimfiction.net/api/story.php?story=${id} ).story.chapters
+		:map: Page { .link, data: $`#chapter_container` or (get http://www.fimfiction.net/download_chapter.php?chapter=${.id} @ birth: .date_modified)
+
+------------------------------
+fimfiction ←
+	Story{id}
+		on: Page fimfiction.net/story/${.id}
+		api: get http://www.fimfiction.net/api/story.php?story=${.id} .story
+		modified: .api.date_modified
+		chapters: .api.chapters * Chapter{this,ι}
+	Chapter{story,ι}
+		on: Page ι.link
+		api: get http://www.fimfiction.net/download_chapter.php?chapter=${.id}
+		modified: ι.date_modified
+		data: .on.$`#chapter_container` or .api
+
+UI find_in fimfiction.Story = .chapters
+
+----------------------- coding things that should be easy ----------------------
+redirect m.wikipedia.org to wikipedia.org
+
+------------------------------
+:on: m.wikipedia.org : go_to s/$ι/wikipedia.org
+
+----------------------- coding things that should be easy ----------------------
+when a song is played, list it
+when spotify is up, show the list, with a button to clear it
+
+------------------------------
+spotify_song ← poll osaᵥ`spotify: {artist,album,name} of current track`
+
+@spotify: show overlay box
+	list spotify_song since last_clear
+	button “clear”: last_clear ← now
+		bind ⎋
+
+------------------------------
+duration_instrument ← f=>()=>{ t ← hrtime(); ι ← f(); ↩ [hrtime(t),ι] }
+stream ← ()⇒ {
+	ι: [],
+	push(time,ι){ @.ι.push({time,ι}) },
+	slice(a,b){↩ @.ι.filter(ι=> (!a || a < ι.time) && (!b || ι.time < b) ).map(ι=>ι.ι) },
+	last(){↩ @.ι[-1]&&@.ι[-1].ι }
+	}
+poll ← f=>{
+	r ← stream()
+	q ← ()=>{ [dur,ι] ← duration_instrument(f)(); r.slice().some(t=> _.isEqual(t,ι)) || r.push(Time().i,ι); q.in(min(max( 0.1, dur*10 ), 3 )) }; q.in()
+	↩ r }
+
+spotify_song ← poll(()=> osaᵥ`spotify: {artist,album,name} of current track` )
+
+---------------------------- i would like to make a ----------------------------
+⇪ command console
+http://www.hammerspoon.org/docs/hs.chooser.html would be useful

@@ -1,3 +1,14 @@
+# #3e3838 → bg
+# #ffffff → fg,variable
+# #908585 → comment # original color: #534b4b
+# #fce0dc → keyword
+# #fbd79f → const,num,string
+# #ffffff → function
+# #ffffffe0 → support
+# #71c0c3 → special,link
+# #ffffff bg #00a8c6 → invalid
+# #71c0c39c → sel
+# #ffffff → caret
 #2a2626 → bg
 #e8e8e8 → fg,variable
 #615858 → comment # original color: #534b4b

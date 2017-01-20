@@ -45,4 +45,4 @@ for i in xrange(sys.maxint):
 # sb(r.join('\n'))
 
 # r ← []
-# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts._.map('content').filter(ι=> /<\/a>/.λ(ι)).join(' '); t !== '' && r.push(t)}
+# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts._.map('content').filter(ι=> ι.re`</a>`).join(' '); t !== '' && r.push(t)}

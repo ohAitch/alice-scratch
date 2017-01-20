@@ -1,4 +1,4 @@
 // @match       *://*/*
-// @require     https://code.jquery.com/jquery-2.1.4.min.js
+// @require     https://code.jquery.com/jquery-3.1.1.min.js
 
 window.$ = $

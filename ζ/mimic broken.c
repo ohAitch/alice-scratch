@@ -135,7 +135,7 @@ int main(int argc, char *argv[], char *env[]){
 	struct timeval readtimeout;
 
 	// jump through a series of connection hoops
-	hostinfo = gethostbyname("127.0.0.1");
+	hostinfo = gethostbyname("localhost");
 	if (hostinfo == NULL){ fprintf(stderr, "[mimic] gethostbyname failed\n"); cleanup_and_exit(CONNECT_FAILED); }
 	if ((the_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[mimic] socket"); cleanup_and_exit(SOCKET_FAILED); }
 	server_addr_in.sin_family = AF_INET;

@@ -19,10 +19,10 @@ if not '/usr/local/bin' in t: os.environ['PATH'] = ':'.join(t+['/usr/local/bin']
 
 def ζfresh(*a): return subprocess.check_output(['ζ','--fresh']+list(a)).decode('utf-8')
 def ζ(*a): return subprocess.check_output(['ζλ']+list(a)).decode('utf-8')
+def E(ι): return json.dumps(ι)
 
 ################################## munge_stuff #################################
 URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
-IS_URL = r'^(?:https?://|(?:file|mailto):)'
 FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:'
 
 def merge_overlapping_regions(ι):
@@ -52,71 +52,34 @@ def expand_empty_regions_to_lines(view,regions): return merge_overlapping_region
 def left_trim_regions(view,regions): return [left_trim_region(view,ι) for ι in regions]
 def expand_empty_region_to_whole_buffer(view,regions): return [Region(0,view.size())] if len(view.sel()) == 1 and view.sel()[0].empty() else view.sel()
 
-def open(ι,app=None,focus=True,view=None):
-	print("#OPEN",ι,'∈',app)
-	if not focus: ζ('sfx`ack`')
-
-	if app is None and re.match(r'^file:',ι):
-		t = re.sub(r'^file:(//)?','',ι)
-		t = urllib.parse.unquote(t)
-		t = urllib.parse.quote(t.encode('utf-8'))
-		ι = 'file:'+t
-
-		t = re.sub(r'^file:(//)?','',ι)
-		t = urllib.parse.unquote(t)
-
-		if view and view.file_name() and t[0] != '/': t = os.path.normpath(os.path.join(os.path.dirname(view.file_name()),t)); ι = 'file:'+urllib.parse.quote(t.encode('utf-8'))
-		if os.path.isdir(t): app = "Path Finder"
-		elif os.path.splitext(t)[1] in ['.pdf','.m4a','.epub','.mobi']: pass
-		# elif os.path.splitext(t)[1] in ['.png','.jpg']: make app be ql
-		else: app = "Sublime Text"
-	ζ("""app ← """+json.dumps(app)+"""; focus ← """+json.dumps(focus)+"""; ι ← """+json.dumps(ι)+"""
-		if ("""+json.dumps(bool(re.match(FIND_RESULT,ι)))+"""){ !app || ‽
-			app = 'Sublime Text'
-			[,ι,line] ← ι.re`^(.+):(\d+):$`
-			ι = φ('~/file/'+ι)
-			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}`
-			}
-		else if (app==='Terminal'){
-			ids ← [1,2]._.indexBy()
-			sfx`ack`
-			[dir,base] ← φ(ι).is_dir? [ι] : [φ(ι).φ`..`+'', φ(ι).name]
-			unbusy ← _.zip(…osaᵥ`terminal: {name,id} of (windows whose busy = false)`).find(λ([ι,]){t ← /⌘(\d+)$/.λ(ι); ↩ t && ids[t[1]]}); if (unbusy) unbusy = unbusy[1]
-			terminal_do_script(
-				sh`cd ${ι}; …${!unbusy && 'clear'}`,
-				osa`…${unbusy && osa`in (window 1 whose id = ${unbusy})`}; …${focus && 'activate'}`
-				)
-			}
-		else
-			shᵥ`open …${app && sh`-a ${app}`} ${!focus && '-g'} ${ι}`
-		if (focus && app==='Path Finder') osaᵥ`${app}: activate` // workaround for bugs in those apps
-		;""")
-
-def omnibox(ι): return ι if re.match(IS_URL,ι) else "https://www.google.com/search?q="+urllib.parse.quote(ι.encode("utf-8")) # +"&btnI=I"
-
 class open_context(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,mouse=False):
 		view = self.view
-		if type == "github":
-			t = ζ("""
-				ι ← φ("""+repr(view.file_name() or '')+""").root('/')
-				root ← ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
-				if (root+'' !== '/') {
-					ι = (ι+'').slice((root+'/').length)
-					t ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-					↩ encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) }
+		ts = view.sel()[0]; h = [view.rowcol(ι)[0] for ι in [ts.begin(), ts.end()]]
+		if type == "github" or type == "terminal":
+			ζ('type ← '+E(type)+'; view_file_name ← '+E(view.file_name())+'; view_sel_0_rows ← '+E(h)+'; focus ← '+E(focus)+"""
+				if (type==='github'){
+					//! should be something more like: go_to('github',view_file_name,{focus,view_sel_0_rows})
+					github_remote_origin ← ι=>{
+						ι ← φ(ι).root('/')
+						root ← ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
+						if (root+'' !== '/') {
+							ι = (ι+'').slice((root+'/').length)
+							t ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
+							↩ encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) } }
+					t ← github_remote_origin(view_file_name||'')
+					if (!t){ hsᵥ`hs.alert(${'did not find github remote origin for '+view_file_name},4)`; ↩ }
+					h ← view_sel_0_rows; fm ← ι=> 'L'+(ι+1)
+					to_url ← t+(h[0]===0 && h[1]===0? '' : '#'+(h[0]===h[1]? fm(h[0]) : fm(h[0])+'-'+fm(h[1])))
+					go_to('url',to_url,{focus}) }
+				else if (type==='terminal')
+					go_to('path', view_file_name || process.env.HOME, {focus,in_app:'terminal'})
 				""")
-			if t:
-				ts = view.sel()[0]; h = [view.rowcol(ι)[0] for ι in [ts.begin(), ts.end()]]
-				def fm(ι): return 'L'+str(ι + 1)
-				open(t+('' if h[0] == h[1] == 0 else '#'+(fm(h[0]) if h[0] == h[1] else fm(h[0])+'-'+fm(h[1]))),focus=focus)
-		elif type == "terminal":
-			open(view.file_name() or os.getenv("HOME"),focus=focus,app="Terminal")
 		elif type == "link":
 			if mouse: t = view.sel()[0]; ι = [] if not t.empty() else [ι for ι in [expand_empty_region_to_url(view, view.sel()[0], True)] if not ι.empty()]
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
 			if mouse and len(ι): view.sel().clear(); view.sel().add(Region(ι[0].end(),ι[0].end())) # workaround for a bug
-			for ι in ι: t = view.substr(ι); t = t if re.match(FIND_RESULT,t) else omnibox(t); open(t,focus=focus,view=view)
+			for ι in ι: t = view.substr(ι); ζ('go_to('+E('path' if re.match(FIND_RESULT,t) else 'url')+','+E(t)+',{focus:'+E(focus)+',sb_view_file_name:'+E(view.file_name() or '')+'})')
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
@@ -126,15 +89,18 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		sel = left_trim_regions(view, sel)
 		ι = [view.substr(ι) for ι in sel]
 		r = json.loads(ζ("""
+			hook_stdouterr ← ()=>{
+				r ← ['stdout','stderr'].map(stdio=>{
+					o ← process[stdio].write; r ← []; process[stdio].write = λ(ι){r.push(ι)}; ↩ ()=>{ process[stdio].write = o; ↩ r.join('') }
+					}); ↩ ()=> r.map(ι=> ι()) }
 			global.i = 0
-			ι = JSON.parse(ι).map(λ(ι){
+			JSON.parse(ι).map(ι=>{
 				r ← hook_stdouterr()
 				t←; e←; (λ __special_es__u7h7zxgvi__(){try {global.code = ι; global.require = require; t = (0,eval)(ζ_compile(ι+''))} catch (e_) {e = e_}})()
 				r = r(); r = [(r[0]? r[0]+'\\n' : '')+r[1]]
 				t !== undefined && r.push(t+'')
 				e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e)
-				↩ r.join('')})
-			ι""",json.dumps(ι)))
+				↩ r.join('') }) """,E(ι)))
 		for i in range(len(sel))[::-1]:
 			view.replace(edit, sel[i], r[i])
 
@@ -171,4 +137,4 @@ class run_project(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		view.run_command("save")
-		ζfresh(""" require_new(φ`~/.bashrc.ζ`).run_project(ι) """,view.file_name())
+		ζfresh('require_new(φ`~/.bashrc.ζ`).run_project('+E(view.file_name())+')')

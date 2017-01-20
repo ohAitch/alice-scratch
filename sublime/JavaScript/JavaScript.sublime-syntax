@@ -1033,7 +1033,7 @@ contexts:
         )
       scope: constant.numeric.js
       push: after-identifier
-    - match: '(?:\B[-+]|\b)(Infinity)\b'
+    - match: '(?:\B[-+]|\b)(Infinity)\b|∞'
       scope: constant.language.infinity.js
       push: after-identifier
 
@@ -1048,7 +1048,7 @@ contexts:
       push:
         - meta_scope: meta.function-call.js
         - include: function-call-params
-    - match: '(cb|[abeirtxLι])(?=\s*\()'
+    - match: '(cb|yes|no|[abeirtxLι])(?=\s*\()'
       scope: variable.language.x.js
       push:
         - meta_scope: meta.function-call.js

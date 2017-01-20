@@ -13,10 +13,10 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/Applications/Google Chrome.app/Contents/MacOS/Google Chrome</string>
-		<string>https://calendar.google.com/calendar/render#main_7%7Ccustom,5</string>
+		<string>https://mail.google.com/mail/u/0/#inbox</string>
 		<string>https://facebook.com/messages</string>
-		<string>https://www.duolingo.com/</string>
 		<string>https://keep.google.com/</string>
+		<string>https://www.duolingo.com/</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
@@ -24,7 +24,7 @@
 	<array>
 		<dict>
 			<key>Hour</key>
-			<integer>7</integer>
+			<integer>6</integer>
 			<key>Minute</key>
 			<integer>0</integer>
 		</dict>

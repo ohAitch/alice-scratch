@@ -1,4 +1,7 @@
 #!/usr/bin/env ζ
+P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 
 ζ_main({prompt:'\x1b[30m\x1b[42mζ₃\x1b[0m '})
+
+// ws ← /[ \t]/
 

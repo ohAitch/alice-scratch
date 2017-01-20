@@ -47,12 +47,10 @@ function hs.ipc.handler(x) local fn, err = load('return '..x); if not fn then fn
 
 ------------ clock -----------
 time_bar = hs.menubar.new():priority(hs.menubar.priorities['system']):setClickCallback(function() Z(nil,'shᵥ`open /System/Library/PreferencePanes/DateAndTime.prefPane`') end)
+function update_time() local now = os.time(); time_bar:setTitle(os.date('%a -%m-%d %H:%M',now)..'⁝'..os.date('!%H:%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(.....)','%1 %2')) end
 tb_timer = nil
-loop = function()
-	local now = os.time()
-	time_bar:setTitle(os.date('%a -%m-%d %H:%M',now)..'⁝'..os.date('!%H:%M',now)..' Z')
-	tb_timer = hs.timer.doAfter(60 - now%60,loop)
-	end; loop()
+loop = function() update_time(); tb_timer = hs.timer.doAfter(60 - os.time()%60,loop) end; loop()
+start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_time() end end))
 
 -- local module = {}
 
@@ -144,3 +142,5 @@ loop = function()
 --     table.insert(module._visibleAlerts, alertEntry)
 --     return UUID
 -- end
+
+-- or, http://www.hammerspoon.org/docs/hs.canvas.html

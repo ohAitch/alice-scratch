@@ -24,10 +24,10 @@
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌───────────── ⌥ ──────────────┐ ┌───────────── ⇧⌥ ─────────────┐
 │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │ │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │
-│ _ _ _ ∃ _ _ § _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ _ _ _ _ _ _  │
+│ _ _ _ ∃ _ _ § _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ ⁘ _ _ _ _ _  │
 │  _ _ _ ∈ √ _ ✓ ∪ ∞ ◍ _ _ _ _ │ │  _ ℚ _ ∉ ℝ _ _ ∩ _ _ ℙ _ _ _ │
 │  _ ∀ § ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ _ _ _ _ _ _  _  │
-│  _  _ ‡ _ _ ⊥ _ ⧫ _ _ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ _ _ _  _   │
+│  _  _ ‡ _ _ _ _ ⧫ _ _ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ _ _ _  _   │
 │ _ _ _ _     _    _ _ _ _ _ _ │ │ _ _ _ _     _    _ _ _ _ _ _ │
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌───────────── 1 ──────────────┐
@@ -87,16 +87,15 @@ FnF3  ] ⌘^f
 ⌘⇧^3  ; shᵥ`screencapture     -cr`
 ⌘⇧^4  ; shᵥ`screencapture -io -cr`
 ⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ); !t && robot_key_tap('FnF6') // ! should timeout in 1s and alert user of failure
-⌥^l  ; sfx`ack`; browser('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(" - "))
-# @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
-@path_finder  ⌘⇧t  ; osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`
-@path_finder  ⌘;   ; terminal_do_script(sh`cd ${osaᵥ`path finder: POSIX path of the target of the front finder window`}; clear`, '; activate')
+⌥^l  ; sfx`ack`; go_to('search','genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(" - "))
+@path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
+@path_finder  ⌘;   ; go_to('path',osaᵥ`path finder: POSIX path of the target of the front finder window`,{in_app:'terminal'})
 @photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
-@sublime_text  ⇪   ] ⌘⇧⌥^a
 @sublime_text  ⌫=  ] ⌘⇧⌥^⌫
 @sublime_text  ;'  ] ⌘⇧⌥^;
 @sublime_text  /↩  ] ⌘⇧⌥^↩
-/↩  ; sfx`ack`; S ← rand_id(25); p(S).then(()=>{ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : browser(t) })() })
+@sublime_text  ⌘⇧v  ; t ← hsᵥ`hs.pasteboard.typesAvailable()`; if (t.image && !t.string){ out ← φ`~/.image_cache/${rand_id(6)}.png`.ensure_dir(); p('file:/'+(out+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')); hsᵥ`hs.pasteboard.readImage():saveToFile(${out+''})` }; robot_key_tap('⌘⇧v') // ! really should be ⌘v
+/↩  ; sfx`ack`; S ← rand_id(25); p(S).then(()=>{ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : go_to('search',t) })() })
 # @path_finder ⌘c   ; robot_key_tap('⌘c'); t ← p(); if (t[0]==='/') p(t.split('\n').map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,'~').replace(re`^~/file/books/papers(?=/|$)`,'~/papers').replace(re`^~/file/books(?=/|$)`,'~/books').replace(/ /g,'%20').replace(/^\/|(?=~)/,'file:/').replace()}).join('\n'))
 @chrome  ⌘⇧l       ; robot_key_tap('⌘l'); sfx`ack`; [title,url] ← osaᵥ`chrome: {title,URL} of active tab of window 1`; t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; p(nice_url(t))
 @terminal  ⌘r      ; ['⌘t','⌘⇧[','⌘w'].map(robot_key_tap)
@@ -107,11 +106,12 @@ FnF3  ] ⌘^f
 @terminal  ⌥⌫      ] ^w
 # @youtube  ⌘⌥←  ] j
 # @youtube  ⌘⌥→  ] l
+@sublime_text ⇪  ] ⌘⇧⌥^a
+⇪  ; sfx`nack`
 
 # bad habit keys
          ⌘h      ; sfx`nack`
 @chrome  ⌘h      ] ⌘y
-⇪                ; sfx`nack`
 FnF4             ; sfx`nack`
 FnF5             ; sfx`nack`
 FnF6             ; sfx`nack`
@@ -121,7 +121,7 @@ FnF6             ; sfx`nack`
 @path_finder   ⌘3   ; sfx`nack`
 
 ⌥^b  ; φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util_inspect_autodepth(robot.getMousePos())+'\n'
-⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); url ← osaᵥ`chrome: URL of active tab of window 1`; url.re`get-a-little-gold`? (()=>{ robot.mouseToggle('down'); busywait(0.05); robot.mouseToggle('up') }).every(1/3) : robot.mouseClick.every(1/40)
+⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); url ← osaᵥ`chrome: URL of active tab of window 1`; url.re`get-a-little-gold`? (()=>{ robot.mouseToggle('down'); busywait(0.05); robot.mouseToggle('up') }).every(1/3) : url.re`epic-friends`? (()=>{ robot.keyToggle(' ','down'); busywait(0.05); robot.keyToggle(' ','up') }).every(3) : robot.mouseClick.every(1/40)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); polar_to_rect ← ([r,θ])=> [r*cos(θ), r*sin(θ)]; offsets ← _.range(0,1,0.02).map(ι=> polar_to_rect([300,ι*τ])); orig ← robot.getMousePos(); move_to_next ← (λ(){ i ← 0; ↩ λ(){ ι ← offsets[i++ % offsets.length]; robot.moveMouse(orig.x+ι[0],orig.y+ι[1]) } })(); robot.mouseToggle('down'); move_to_next.every(0.01)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
 
@@ -139,3 +139,8 @@ FnF6             ; sfx`nack`
 
 # page ← _.zip(…osaᵥ`chrome: {id,URL} of tabs of windows`.map(ι=> ι._.flatten())).map(ι⇒ {id:ι[0],url:ι[1]}).find(ι=>ι.url==='http://www.kchungradio.org/stream.html')
 # osaᵥ`chrome: set t to tabs of windows whose id = ${page.id}; set r to {}; repeat with t2 in t; set r to r & t2; end repeat; set t to first item in r; t`
+
+# ^⌥r  ; ['⌘⌥i',…'⇥1800↩'].map(robot_key_tap.X)
+# ^⌥t  ; ['⌘⌥c',…'2880↩'].map(robot_key_tap.X)
+# ^⌥y  ; ['⌘⌥i',…'⇥1920↩','⌘⌥c',…'1080↩'].map(robot_key_tap.X)
+# ^⌥w  ; ['⌘s','↩','⌘w'].map(robot_key_tap.X)

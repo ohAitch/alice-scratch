@@ -1,19 +1,31 @@
 // this would be so fun to optimize
 // ok, i grok this now, & i see how i'd need to do various things b4 it's optimizeable. let's do this! later. yay grokking parser combinators :)
 
+// well, first i'd need a js parser
+
+_ins ← (name,f,m)=> λ(…a){↩ _(f.call(@,…a)).assign({inspect:(d,opt)=> (!m? '' : util.inspect(@,opt)+'.')+name+'('+util.inspect(a,opt).slice(1,-1)+')' }) }
+inspectify ← (…a)=> _ins(…a,false)
+inspectify_m ← (…a)=> _ins(…a,true)
+
 // ---------------------------------- core ---------------------------------- //
 
 // issue: makes parser not reentrant, as perf optimization
 G_opt ← {fast:null}
 
-_lazy ← f=> p_wrap(λ(stream,i){↩ (@._ = f()._)(stream,i) })
-_string ← ι=> p_wrap((stream,i)=>{ head ← stream.slice(i,i+ι.length); ↩ head===ι? make_win(i+ι.length,head) : make_lose(i,ι) })
-_regex ← (re,group=0)=>{ T.RegExp(re) || ‽; Tnum(group) || ‽
-  re = RegExp(re.source,re.flags.replace(/[^imu]/g,'')+'y'); re_s ← re+''
-  ↩ p_wrap((stream,i)=>{ t ← re.exec_at(stream,i); ↩ t && !(t[group]===null || t[group]===undefined)? make_win(i+t[0].length, t[group]) : make_lose(i,re_s) }) }
-
-P ← (ι,…a)=> Tfun(ι)? _lazy(ι) : Tstr(ι)? _string(ι) : T.RegExp(ι)? _regex(ι,…a) : ‽('cant make parser from',ι)
-
+P ← (ι,…ιs)=>
+  ι instanceof Parser? ι :
+  is_template([ι,…ιs])? (()=>{
+    ι = easy_template(ι=>ι)(ι,…ιs)
+    i ← ι.map((ι,i)=>[ι,i]).filter(([ι,i])=>Tarr(ι)).map(([ι,i])=>i)
+    ↩ P(ι.map(ι=> Tarr(ι)?ι[0]:ι)).map(ι=> i.length===1? ι[i[0]] : i.map(i=> ι[i]) )
+    })() :
+  Tfun(ι)? p_wrap(λ(stream,i){↩ (@._ = ι()._)(stream,i) }) :
+  Tstr(ι)? p_wrap((stream,i)=>{ head ← stream.slice(i,i+ι.length); ↩ head===ι? make_win(i+ι.length,head) : make_lose(i,ι) }) :
+  Tarr(ι)? P.seq(…ι) :
+  T.RegExp(ι)? (()=>{ group ← ιs[0]||0
+    re ← RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y'); re_s ← ι+''
+    ↩ p_wrap((stream,i)=>{ t ← re.exec_at(stream,i); ↩ t && !(t[group]===null||t[group]===undefined)? make_win(i+t[0].length, t[group]) : make_lose(i,re_s) }) })() :
+    ‽('cant make parser from',ι)
 p_wrap ← ι=> new Parser(ι)
 Parser ← λ(f){ @._ = f }
 P.proto = Parser.prototype
@@ -27,20 +39,19 @@ P.proto.parse = λ(stream){ Tstr(stream) || ‽
 make_win ← (index,value)⇒ { status:true, index, value, furthest:-1, expected:[], }
 make_lose ← (index,expected)⇒ { status:false, index:-1, value:null, furthest:index, expected:[expected], }
 
-seq ← P.seq = (…ps)=>{ ps.map(ι=> ι instanceof Parser || ‽)
-  r ← p_wrap((stream,i)=>{r←;
+P.seq = inspectify('P.seq', (…ps)=>{ ps = ps.map(P.X)
+  ↩ p_wrap((stream,i)=>{r←;
     accum ← []
     for (j←0;j<ps.length;j++){p←ps[j];  r = merge_replies(p._(stream,i), r); if (!r.status) ↩ r; accum.push(r.value); i = r.index  }
-    ↩ merge_replies(make_win(i,accum), r) })
-  ↩ r}
+    ↩ merge_replies(make_win(i,accum), r) }) })
 
-alt ← P.alt = (…ps)=>{ ps.map(ι=> ι instanceof Parser || ‽)
+alt ← P.alt = (…ps)=>{ ps = ps.map(P.X)
   if (!ps.length) ↩ fail('zero alternates')
   ↩ p_wrap((stream,i)=>{r←;
     for (j←0;j<ps.length;j++){p←ps[j];  r = merge_replies(p._(stream,i), r); if (r.status) ↩ r  }
     ↩ r }) }
 
-P.proto.many = λ(){↩ @.times(0,Infinity) }
+P.proto.many = λ(){↩ @.times(0,∞) }
 P.proto.times = λ(min,max){
   if (arguments.length < 2) max = min
   Tnum(min) || ‽; Tnum(max) || ‽
@@ -66,11 +77,13 @@ P.proto.times = λ(min,max){
   })
 }
 
-P.proto.map    = λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value); ↩ r }) }
+P.proto.map    = inspectify_m('map', λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value); ↩ r }) })
 P.proto.map_js = λ(f){ Tfun(f) || ‽; ↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (r.status) r.value = f(r.value,[i,r.index],stream); ↩ r }) }
-P.proto.skip = λ(next){↩ seq(@,next).map(ι=> ι[0]) }
+P.proto.skip = λ(next){↩ P([@,next]).map(ι=> ι[0]) }
 
 eof ← P.eof = p_wrap((stream,i)=> i < stream.length? make_lose(i,'EOF') : make_win(i,null) )
+
+P.proto.chain = λ(f){↩ p_wrap((stream,i)=>{ r ← @._(stream,i); ↩ !r.status? r : merge_replies(f(r.value)._(stream,r.index), r) }) }
 
 // -------------------------- extra (mostly unused) ------------------------- //
 
@@ -106,18 +119,18 @@ P.format_error = (stream,error)=>{
 
   ↩ 'expected '+ex+got }
 
-seq_map ← P.seq_map = (…a)=>{ f ← a[-1]; a = a.slice(0,-1); Tfun(f) || ‽; ↩ seq(…a).map(ι=> f(…ι)) }
+seq_map ← P.seq_map = (…a)=>{ f ← a[-1]; a = a.slice(0,-1); Tfun(f) || ‽; ↩ P(a).map(ι=> f(…ι)) }
 
 // Allows to add custom primitive parsers
 P.custom = f=> p_wrap(f(make_win,make_lose))
 
 P.sep_by = (p,sep)=> P.sep_by1(p,sep).or(P.of([]))
-P.sep_by1 = (p,sep)=>{ p instanceof Parser || ‽; sep instanceof Parser || ‽
+P.sep_by1 = (p,sep)=>{ p = P(p); sep = P(sep)
   pairs ← sep.then(p).many()
   ↩ p.chain(r=> pairs.map(rs=> [r].concat(rs) ) ) }
 
-P.proto.or = λ(ι){↩ alt(@,ι) }
-P.proto.then = λ(next){ next instanceof Parser || ‽; ↩ seq(@,next).map(ι=> ι[1]) }
+P.proto.or = λ(p){↩ alt(@,p) }
+P.proto.then = λ(next){ next = P(next); ↩ P([@,next]).map(ι=> ι[1]) }
 
 P.proto.result = λ(ι){↩ @.map(()=> ι) }
 P.proto.at_most = λ(n){↩ @.times(0,n) }
@@ -125,7 +138,7 @@ P.proto.at_least = λ(n){↩ seq_map(@.times(n), @.many(), (init,r)=> init.conca
 P.proto.mark = λ(){↩ seq_map(index,@,index,(start,value,end)⇒ { start, value, end } ) }
 P.proto.desc = λ(expected){↩ p_wrap((stream,i)=>{ r ← @._(stream,i); if (!r.status) r.expected = [expected]; ↩ r }) }
 
-P.of = (value)=> p_wrap((stream,i)=> make_win(i,value) )
+P.of = ι=> p_wrap((stream,i)=> make_win(i,ι) )
 fail ← P.fail = expected=> p_wrap((stream,i)=> make_lose(i,expected) )
 P.any = p_wrap((stream,i)=> i >= stream.length? make_lose(i,'any character') : make_win(i+1, stream[i]) )
 P.all = p_wrap((stream,i)=> make_win(stream.length, stream.slice(i)) )
@@ -143,34 +156,45 @@ make_line_col_index ← (stream,i)=>{ lines ← stream.slice(0,i).split('\n'); �
 
 index ← P.index = p_wrap((stream,i)=> make_win(i,make_line_col_index(stream,i)) )
 
-P.proto.chain = λ(f){↩ p_wrap((stream,i)=>{ r ← @._(stream,i); ↩ !r.status? r : merge_replies(f(r.value)._(stream,r.index), r) }) }
-
 // ---------------------------------- final --------------------------------- //
 
-Pretty_Typed ← λ(T,ι){ @.T = T; @.ι = ι }; Pretty_Typed.prototype.inspect = λ(d,opt){↩ (@.T==='ident'?'i':@.T)+util.inspect(@.ι,opt) }
-P.proto.type = λ(T){↩ @.map(ι=> new Pretty_Typed(T,ι) ) }
+Pretty_Typed ← λ(T,ι){ @.T = T; @.ι = ι }; Pretty_Typed.prototype.inspect = λ(d,opt){↩ @.T+':'+util.inspect(@.ι,opt) }
+P.T = (T,ι)=> new Pretty_Typed(T,ι)
+P.proto.T = inspectify_m('T',λ(ss,…ιs){↩ @.map(ι=> P.T(ss[0],ι) ) })
+
+// deprecated
+P.proto.type = λ(T){↩ _(@.map(ι=> new Pretty_Typed(T,ι) )).assign({inspect:(d,opt)=> util.inspect(@,opt)+'.T`'+T+'`' }) }
 
 typeof module !== 'undefined' && ( module.exports = P )
 
-// test ← ()=>{
-//   ident ← P(/(?![0-9])[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+|@/)
-//   comment ← /(\/\/.*|\/\*[^]*?(\*\/|$))+/
-//   simple_js ← P(()=> P.alt(
-//     P.seq( P.alt( ident, P(')'), P(']'), P(/[0-9]/) ), P(RegExp('[ \t]*(?!'+comment.source+')/')) ),
-//     P.seq( P('`').type('template'), tmpl_ι.many(), P('`').type('template') ),
-//     P(/(['"])(\1|((.*?[^\\])?(\\\\)*)\1)/).type('string'),
-//     P(comment).type('comment'),
-//     P(/\/((?:[^\/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)\/([a-z]*)/).type('regex'),
-//     P.seq( P('{'), simple_js, P('}') ),
-//     ident,
-//     P(/[^{}/'"`)@\]A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+|[^}]/)
-//     ).many() )
-//   tmpl_ι ← P.alt( P.seq( P('${').type('template'), simple_js, P('}').type('template') ), P(/\\[^]|(?!`|\$\{)[^]/).type('template') )
-//   js_file ← P.seq( P(/(#!.*\n)?/).type('shebang'), simple_js )
-//   cn.log('test parsimmon')
-//   test ← ()=> js_file.parse(in_); in_ ← φ`~/code/scratch/ζ/index.ζ`.text
-//   pass ← JSON.stringify(test())===φ`/tmp/aaaa`.text
-//   cn.log(pass?'pass ✓':'fail X')
-//   cn.log('perf',bench(test,{TH:3}))
-//   }
-// typeof @_ !== 'undefined' && test()
+ζ_parse ← (λ(){
+  word_extra ← re`♈-♓🔅🔆`.source; word_extra_gu ← re`[…${word_extra}]`.g
+  word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ…${word_extra}`.source
+  ident ← P(re`(?![0-9])[…${word}]+|@`)
+  comment ← re`(//.*|/\*[^]*?(\*/|$))+`
+  simple_js ← P(()=> P.alt(
+    P(comment).type('comment'),
+    P.seq( P('{'), simple_js, P('}') ),
+    P.seq( P.alt(
+      P(/(['"])(((?!\1)[^\\]|\\.)*?\1)/).type('string'),
+      ident,
+      P.seq( P('`').type('template'), tmpl_ι.many(), P('`').type('template') ),
+      P(/[)\]0-9]/)
+      ), P.alt( P(re`[ \t]*(?!…${comment.source})/`), P.of('') ) ),
+    P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).type('regex'),
+    P(re`[^{}/'"…${'`'})@\]…${word}]+|[^}]`)
+    ).many() )
+  tmpl_ι ← P.alt( P.seq( P('${').type('template'), simple_js, P('}').type('template') ), P(/\\[^]|(?!`|\$\{)[^]/).type('template') )
+  js_file ← P.seq( P(/(#!.*\n)?/).type('shebang'), simple_js )
+  ↩ code=>{
+    ι ← js_file.parse(code)._.flatten()
+    r ← []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
+    ↩ r } })()
+test ← ()=>{
+  cn.log('test parsimmon')
+  test ← ()=> ζ_parse(in_); in_ ← φ`~/code/scratch/ζ/index.ζ`.text
+  // pass ← JSON.stringify(test())===φ`/tmp/aaaa`.text
+  // cn.log(pass?'pass ✓':'fail X')
+  cn.log('perf',bench(test,{TH:3}))
+  }
+if (!module.parent) test()

@@ -1,5 +1,5 @@
 // @match       https://*.google.com/*
-// @require     https://code.jquery.com/jquery-2.1.4.min.js
+// @require     https://code.jquery.com/jquery-3.1.1.min.js
 
 //‡ this file is fucked up and mostly disabled
 //‡ to unfuck it, make a new userscript for the hangouts fixes, and then remove the primary function of this file, and rename it to be more appropriate for the new function

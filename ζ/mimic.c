@@ -141,7 +141,7 @@ int main(int argc, char *argv[], char *env[]){
 
 	// jump through a series of connection hoops
 
-	hostinfo = gethostbyname("127.0.0.1");
+	hostinfo = gethostbyname("localhost");
 	if (hostinfo == NULL){ fprintf(stderr, "[mimic] gethostbyname failed\n"); cleanUpAndExit(CONNECT_FAILED); }
 	if ((nailgunsocket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[mimic] socket"); cleanUpAndExit(SOCKET_FAILED); }
 	server_addr_in.sin_family = AF_INET;
