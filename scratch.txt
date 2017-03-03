@@ -46,7 +46,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.mapcat(ι=> 10..map(i=> ι+' '+i))._.shuffle()
 	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
-	c ← {}; for(;;){t ← '#'+4..map(ι=> rand([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
+	c ← {}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
 # # used up: alice0meta@gmail.com
@@ -57,7 +57,7 @@ tesseract ← npm('node-tesseract@0.2.7')
 φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 -------------------------------- jquery ish misc -------------------------------
-$.on_view = function(f){document.addEventListener('visibilitychange',function(){if (!document.hidden) f()})}
+$.on_view = f=> document.addEventListener('visibilitychange',()=> !document.hidden && f() )
 E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(null,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
 
 keyinfo ← λ(key){
@@ -90,19 +90,19 @@ ax.set_zlabel('B Label')
 plt.show()
 
 ------------------------------ sublime api things ------------------------------
-sublᵥ`window = sublime.active_window(); window.focus_view(window.views()[-1])`
+sbᵥ`window = sublime.active_window(); window.focus_view(window.views()[-1])`
 
-view ← sublᵥ`sublime.active_window().active_view().id()`
+view ← sbᵥ`sublime.active_window().active_view().id()`
 T ← 10; i←0; (λ(){sb_editᵥ(view)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
 ------------------------------------- life -------------------------------------
-view ← sublᵥ`sublime.active_window().active_view().id()`
+view ← sbᵥ`sublime.active_window().active_view().id()`
 sublime_set_buffer ← ι=> sb_editᵥ(view)`view.replace(edit,Region(0,view.size()),${ι})`
 
 braille_table ← 0x100.map(ι=> String.fromCodePoint('⠀'.codePointAt()+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ rand()<0.5 ?1:0})); ↩ ι} // 115,46
+	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ random()<0.5 ?1:0})); ↩ ι} // 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
 		r ← new Buffer(ι)
 		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
@@ -159,13 +159,6 @@ bench(()=> cn.log(
 
 ------------------------------ real clipboard api ------------------------------
 osaᵥ`set x to clipboard info; the clipboard as (item 1 of item 2 of x)`
-
-------------------------- go to specific chrome window -------------------------
-wnd ← 1
-is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
-// System Events got an error: osascript is not allowed assistive access
-// compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
-if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
 
 ----------------------- coding things that should be easy ----------------------
 find in story :on: fimfiction
@@ -228,3 +221,13 @@ spotify_song ← poll(()=> osaᵥ`spotify: {artist,album,name} of current track`
 ---------------------------- i would like to make a ----------------------------
 ⇪ command console
 http://www.hammerspoon.org/docs/hs.chooser.html would be useful
+
+------ neat chrome apis ------
+http://developer.chrome.com/extensions/accessibilityFeatures
+http://developer.chrome.com/extensions/debugger
+http://developer.chrome.com/extensions/devtools_inspectedWindow
+http://developer.chrome.com/extensions/devtools_network
+http://developer.chrome.com/extensions/downloads
+http://developer.chrome.com/extensions/extension
+http://developer.chrome.com/extensions/tabs
+http://developer.chrome.com/extensions/windows

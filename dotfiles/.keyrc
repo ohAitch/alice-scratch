@@ -26,7 +26,7 @@
 │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │ │ _ _ _ _ _ _ _  _ _ _ _ _ _ _ │
 │ _ _ _ ∃ _ _ § _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ ⁘ _ _ _ _ _  │
 │  _ _ _ ∈ √ _ ✓ ∪ ∞ ◍ _ _ _ _ │ │  _ ℚ _ ∉ ℝ _ _ ∩ _ _ ℙ _ _ _ │
-│  _ ∀ § ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ _ _ _ _ _ _  _  │
+│  _ ∀ § ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ ℍ _ _ _ _ _  _  │
 │  _  _ ‡ _ _ _ _ ⧫ _ _ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ _ _ _  _   │
 │ _ _ _ _     _    _ _ _ _ _ _ │ │ _ _ _ _     _    _ _ _ _ _ _ │
 └──────────────────────────────┘ └──────────────────────────────┘
@@ -70,16 +70,10 @@ sd   ι
 # ∅ ↺ ↻ ↯ ¢ £ ¥ ¿ ¡ ¶ ▲ ▼ ⌂
 # 🏃⌚⌛⌨⏰⏱⏲⛏⛓⛔⛽✨🌀🌐🌡🌲🌶🍀🍎🎁🎙🎥🎧🎨🎫🎲🎵🏢🏭👀👁👂👄👍👎👤💀💠💤💧💩💬💭💰🖥🖨🗑💻📁📄📅📊📋📚📓📝📦📧📱📷🔅🔆🔇🔈🔉🔊🔋🔌🔑🔒🔔🔥🔨🔮🗜🚦🚪🚫❓❗⭕️📏📐
 
-# FnF3 & chrome & it.tabs.active≈
-# 	'vimeo.com': it.eval` $('.fullscreen')[0]?.click() `
-# 	'youtube.com': it.eval` $('.ytp-fullscreen-button')[0]?.click() `
-# 	: ⌨tap`⌘^f`
-
 FnF1  ; 🔅()
 FnF2  ; 🔆()
 FnF3  ] ⌘^f
-# @sublime_text FnF3  ] ⌘⇧^f
-@chrome  FnF3  ; [i,t] ← osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; urijs ← npm('urijs@1.18.1'); urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()','tab '+i) : urijs(t).domain() === 'vimeo.com'? chrome_simple_js_ᵥ('t ← $(".fullscreen"); t && t.click()','tab '+i) : robot_key_tap('⌘^f')
+@chrome  FnF3  ; [i,t] ← osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; i -= 1; urijs ← npm('urijs@1.18.1'); urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()',{tab:i}) : urijs(t).domain() === 'vimeo.com'? chrome_simple_js_ᵥ('t ← $(".fullscreen"); t && t.click()',{tab:i}) : robot_key_tap('⌘^f')
 @flowstate FnF3  ; osaᵥ`system events: tell front window of (first process whose frontmost is true); set value of attribute "AXFullScreen" to not (value of attribute "AXFullScreen"); end tell`
 ^⇪    ] ^⇧⇥
 ⌘⇧3   ; shᵥ`screencapture     ${φ`~/Downloads/${Time()}.png`}`
@@ -87,16 +81,17 @@ FnF3  ] ⌘^f
 ⌘⇧^3  ; shᵥ`screencapture     -cr`
 ⌘⇧^4  ; shᵥ`screencapture -io -cr`
 ⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ); !t && robot_key_tap('FnF6') // ! should timeout in 1s and alert user of failure
-⌥^l  ; sfx`ack`; go_to('search','genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(" - "))
+⌥^l  ; sfx`ack`; go_to('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(' - '))
 @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; go_to('path',osaᵥ`path finder: POSIX path of the target of the front finder window`,{in_app:'terminal'})
 @photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
 @sublime_text  ⌫=  ] ⌘⇧⌥^⌫
 @sublime_text  ;'  ] ⌘⇧⌥^;
 @sublime_text  /↩  ] ⌘⇧⌥^↩
-@sublime_text  ⌘⇧v  ; t ← hsᵥ`hs.pasteboard.typesAvailable()`; if (t.image && !t.string){ out ← φ`~/.image_cache/${rand_id(6)}.png`.ensure_dir(); p('file:/'+(out+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')); hsᵥ`hs.pasteboard.readImage():saveToFile(${out+''})` }; robot_key_tap('⌘⇧v') // ! really should be ⌘v
-/↩  ; sfx`ack`; S ← rand_id(25); p(S).then(()=>{ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : go_to('search',t) })() })
-# @path_finder ⌘c   ; robot_key_tap('⌘c'); t ← p(); if (t[0]==='/') p(t.split('\n').map(λ(ι){↩ ι.replace(re`^${process.env.HOME}(?=/|$)`,'~').replace(re`^~/file/books/papers(?=/|$)`,'~/papers').replace(re`^~/file/books(?=/|$)`,'~/books').replace(/ /g,'%20').replace(/^\/|(?=~)/,'file:/').replace()}).join('\n'))
+@sublime_text  ⇪   ] ⌘⇧⌥^a
+@sublime_text  ⌘⇧v  ; t ← hsᵥ`hs.pasteboard.typesAvailable()`; if (t.image && !t.string){ out ← φ`~/.image_cache/${random_id(6)}.png`.ensure_dir(); p('file:/'+(out+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')); hsᵥ`hs.pasteboard.readImage():saveToFile(${out+''})` }; robot_key_tap('⌘⇧v') // ! really should be ⌘v
+@sublime_text ⌘⌥b ; go_to('app','terminal'); (λ(){ robot_key_tap('⌘'); robot.typeString('eval('); ['⌥0', '⌥3', '⌥b', '⌥6'].map(robot_key_tap); robot.typeString('_compile(sb()))'); robot_key_tap('↩') }).in(0.01)
+/↩  ; sfx`ack`; S ← random_id(25); p(S).then(()=>{ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : go_to(t) })() })
 @chrome  ⌘⇧l       ; robot_key_tap('⌘l'); sfx`ack`; [title,url] ← osaᵥ`chrome: {title,URL} of active tab of window 1`; t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; p(nice_url(t))
 @terminal  ⌘r      ; ['⌘t','⌘⇧[','⌘w'].map(robot_key_tap)
 @terminal  ⌘⇧r     ; robot.typeString('. ~/.bashrc'); robot_key_tap('↩')
@@ -106,8 +101,8 @@ FnF3  ] ⌘^f
 @terminal  ⌥⌫      ] ^w
 # @youtube  ⌘⌥←  ] j
 # @youtube  ⌘⌥→  ] l
-@sublime_text ⇪  ] ⌘⇧⌥^a
 ⇪  ; sfx`nack`
+@activity_monitor ⌘w  ] ⌘q
 
 # bad habit keys
          ⌘h      ; sfx`nack`
@@ -125,14 +120,13 @@ FnF6             ; sfx`nack`
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); polar_to_rect ← ([r,θ])=> [r*cos(θ), r*sin(θ)]; offsets ← _.range(0,1,0.02).map(ι=> polar_to_rect([300,ι*τ])); orig ← robot.getMousePos(); move_to_next ← (λ(){ i ← 0; ↩ λ(){ ι ← offsets[i++ % offsets.length]; robot.moveMouse(orig.x+ι[0],orig.y+ι[1]) } })(); robot.mouseToggle('down'); move_to_next.every(0.01)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
 
-@sublime_text ⌘⌥b ; osaᵥ`terminal: activate`; (λ(){ robot_key_tap('⌘'); robot.typeString('eval('); ['⌥0', '⌥3', '⌥b', '⌥6'].map(robot_key_tap); robot.typeString('_compile(sb()))'); robot_key_tap('↩') }).in(0.01)
-
 # ⌘⌥d ; chrome_simple_js_ᵥ('dl ← (url,name)=>{ a ← jQuery("<a>").attr("href",url).attr("download",name+url.match(/\\.\\w+$/)[0]).appendTo("body"); a[0].click(); a.remove() }; dl(jQuery(".view-image").css("background-image").match(/"(.*)"/)[1], jQuery("[ng-bind=\\"::post.post_title\\"]").text())','active tab')
 
 # @chrome f ; t ← '1'; {PNG} ← npm('pngjs@3.0.0'); show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); busywait(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
 # @chrome f ; t ← '1'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 # @chrome g ; t ← '2'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 # @chrome b ; t ← '9'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+# @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 # @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
 
 # d ; slow_drag ← (time,path)=>{ steps ← ceil(time*30); start_time ← Time().i; start ← robot.getMousePos(); robot.mouseToggle('down'); while ((Time().i - start_time) / time < 1.01){ progress ← min(1-1e-9, (Time().i - start_time) / time); progress *= path.length; b ← path[floor(progress)]; a ← floor(progress)<=0? {x:0,y:0} : path[floor(progress)-1]; x ← (b.x-a.x)*(progress % 1)+a.x; y ← (b.y-a.y)*(progress % 1)+a.y; robot.moveMouse(start.x+x,start.y+y); busywait(1/30) }; robot.mouseToggle('up'); robot.moveMouse(start.x,start.y) }; slow_drag(0.2,[{x:100,y:-100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:0}]); slow_drag(0.2,[{x:0,y:100}]); slow_drag(0.2,[ {x:-50,y:50}, {x:50,y:50}, {x:0,y:100}, ])
@@ -144,3 +138,8 @@ FnF6             ; sfx`nack`
 # ^⌥t  ; ['⌘⌥c',…'2880↩'].map(robot_key_tap.X)
 # ^⌥y  ; ['⌘⌥i',…'⇥1920↩','⌘⌥c',…'1080↩'].map(robot_key_tap.X)
 # ^⌥w  ; ['⌘s','↩','⌘w'].map(robot_key_tap.X)
+
+# ^⌥x  ; q ← ()=> ['⌘s','↩','⌘w','^2','⌘/','↓','⌘⇧⌥^↩'].map(ι=>{ robot_key_tap(ι); busywait(0.4) }); L ← 50; for (i←0;i<L;i++){ q(); busywait(10); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+# ^⌥x  ; q ← ()=> ['⌘r','^⇥'].map(ι=>{ robot_key_tap(ι); busywait(0.2) }); L ← 15; for (i←0;i<L;i++){ q(); busywait(0); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+# ^⌥x  ; robot.mouseClick('right'); busywait(0.05); {x,y} ← robot.getMousePos(); robot.moveMouse(x+20,y+5); robot.mouseClick(); busywait(0.05); robot.moveMouse(x,y); robot_key_tap('⌘w'); busywait(1); robot_key_tap('^⇥')
+# ^⌥x  ; q ← ()=>{ robot_key_tap('⌘s'); busywait(0.2); robot_key_tap('↩'); busywait(0.2); robot_key_tap('⌘w'); busywait(1) }; L ← 37; for (i←0;i<L;i++){ q(); hsᵥ`hs.alert(${(i+1)+'/'+L})` }

@@ -6,12 +6,14 @@ PORT = 34289
 
 #################################### helper ####################################
 tce_r = None
-def eval_(ι,vars): ι = re.sub('(\n|;|$)',r' = r\1',ι[::-1],1)[::-1]; exec(ι,None,vars); return vars.get('r')
+def eval_(ι,vars):
+	vars = dict(list({ 'view_from':view_from, 'edit':edit, }.items()) + list(vars.items()))
+	ι = re.sub('(\n|;|$)',r'=r\1',ι[::-1],1)[::-1]; exec(ι,vars); return vars.get('r')
 class tc_eval(sublime_plugin.TextCommand):
 	def run(self,edit,ι): global tce_r; tce_r = None; tce_r = eval_(ι,{'view':self.view,'edit':edit})
-def view_from(ι): return ι if type(ι) is sublime.View else next(t for t in sublime.windows() for t in t.views() if t.id() == ι)
 
 ###################################### api #####################################
+def view_from(ι): return ι if type(ι) is sublime.View else next(t for t in sublime.windows() for t in t.views() if t.id() == ι)
 def edit(view,code): view_from(view).run_command("tc_eval",{'ι':code}); return tce_r
 
 ##################################### main #####################################

@@ -17,7 +17,7 @@ quantumrange ← shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+''|0
 get_channel_mean ← ι=> +(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'') / quantumrange
 get_average ← (a,b)=>{ a = get_channel_mean(a); b = get_channel_mean(b); ↩ a===0 || b===0? 1 : a/b }
 
-tmp ← φ`/tmp/im_autowhite_${rand_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); T ← tmp.φ.bind(tmp)
+tmp ← φ`/tmp/im_autowhite_${random_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); T ← tmp.φ.bind(tmp)
 
 main ← ι=>{
 	shᵥexit`convert -quiet ${ι} +repage ${T`A`}` ||( cn.log(APP,'error: file',ι,'is not an image'), ‽ )

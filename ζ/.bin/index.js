@@ -15,7 +15,7 @@ var def = E.def = (o,name,ι)=>{
 	'configurable' in ι || (ι.configurable = true)
 	'value' in ι?
 		'writable' in ι || (ι.writable = true) :
-		'set' in ι || (ι.set = function(ι){def(this,name,{value:ι, enumerable:true})})
+		'set' in ι || (ι.set = function(ι){ def(this,name,{value:ι, enumerable:true}) })
 	Object.defineProperty(o,name,ι); return o }
 var lazy = (name,ι)=>0?0: {get(){return this[name] = ι()}}
 var prop_assign = (from,to)=> Object.getOwnPropertyNames(from).forEach(ι=> Object.defineProperty(to,ι,Object.getOwnPropertyDescriptor(from,ι)))
@@ -110,7 +110,7 @@ E.ζ_compile = lazy_fn(function(){
 			var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
 			return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 			})
-		var is_var = re`(\[[…${word},…]+\]|\{[…${word},…]+\}|[…${word}]+)(\s*)←(;?)`.g
+		var is_var = re`(\[[…${word},…]+\]|\{[…${word},:…]+\}|[…${word}]+)(\s*)←(;?)`.g
 		return ι=> ι
 			.replace(is_var,(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 			.replace(/↩ ?/g,'return ')
@@ -122,9 +122,8 @@ E.ζ_compile = lazy_fn(function(){
 			.replace(word_extra_gu,ι=> unicode_names.ι[ι.codePointAt(0)] )
 			.replace(/⇒/g,'=>0?0:')
 		})()
-	var r = code=> ζ_parse(code).map(ι=> ι.T? ι.ι : ζ_compile_nonliteral(ι)).join('')
-	r['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
-	return r })
+	return code=> ζ_parse(code).map(ι=> ι.T? ι.ι : ζ_compile_nonliteral(ι)).join('') })
+E.ζ_compile['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
 ;[process,module].map(ι=> ι.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) //‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 _(E.util.inspect.styles).assign({null:'grey',quote:'bold'})
 global.inspect = function(d,opt){return opt.stylize('global','quote') }
@@ -140,17 +139,17 @@ E.ζ_repl_start = function(opt){ opt=_({compile:ζ_compile, prompt:'\x1b[30m\x1b
 		if (t.re`^>`) t = '__SPECIAL__('+JSON.stringify(t.slice(1))+')' // hack: for apprentice
 		if (/(^\{[^]*\}$)|(^λ\()/.test(t)) t = '('+t+')'
 		t = opt.compile(t)
-		try{ var sc = new vm.Script(t, {filename:'repl', displayErrors:false}) }
+		try{ var sc = new vm.Script(t,{ filename:'repl', displayErrors:false }) }
 		catch(e){ if( e.name==='SyntaxError' ){ this.bufferedCommand += line+'\n'; this.outputStream.write('    '); return }; e.stack = e.name+': '+e.message+'\n    at <repl>'; var err = e }
 		if (sc)
-		try{ /*global.this_ = @;*/ var ret = sc.runInThisContext({displayErrors:false}) }
+		try{ /*global.this_ = @;*/ var ret = sc.runInThisContext() }
 		catch(e){ e && Tstr(e.stack) && (e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>')); var err = e }
 		φ`~/.history_ζ`.text = φ`~/.history_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
 		this.In.push(code); this.Out.push(err || ret)
 		if (err) this._domain.emit('error', err.err || err)
 		this.bufferedCommand = ''
 		if (!err && ret !== undefined) {
-			this.context.__ = ret
+			global.__ = ret
 			try{
 				if (Tarr(ret) && ret.length > 1 && ret.every(ι=> ι===ret[0]) && _.range(ret.length).every(ι=> ι in ret))
 					var t = inspect([ret[0]])+' * '+inspect(ret.length)
@@ -184,7 +183,7 @@ if (require.extensions) (()=>{ var o = require.extensions['.js']; require.extens
 var simple_hash_str = ι=> JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); return r } })
 var b36 = ι=> npm('base-x@1.0.4')([.../[0-9a-z]/].join('')).encode(ι)
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
-E.Π = ι=> Tfun(ι) && /(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι) : Promise.resolve(ι)
+E.Π = ι=> Tfun(ι) && /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι) : Promise.resolve(ι)
 var NODEp = typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
 var find_closest_ISU = (ιs,ι)=>{ for(var i=0;i<ιs.length;i++) if(ι <= ιs[i]) return i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1; return ιs.length-1 }
 var memo_frp = function(names,within,f){
@@ -194,7 +193,7 @@ var memo_frp = function(names,within,f){
 		var now = Time().i; t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within)[-1]
 		if (t) return dir.φ(t).json2.ι}
 	var a = Time().iso; var ι = f(); var b = Time().iso
-	dir.φ`${a} ${rand_id(10)}`.json2 = {names, date:[a,b], ι}; return ι}
+	dir.φ`${a} ${random_id(10)}`.json2 = {names, date:[a,b], ι}; return ι}
 var regex_parse = lazy_fn(function(){ // status: output format unrefined
 	var P = require('./parsimmon2.js')
 	var dehex = ι=> String.fromCodePoint(parseInt(ι,16))
@@ -294,8 +293,8 @@ E.bench = (f,opt={})=>{ var TH = opt.TH || 0.4
 	else{ for(;hrtime(hr) < TH;){ for(var i=0;i<I;i++) f(); r += I; I = ceil(I*1.5) }; return R() } }
 E.bench1 = f=>{ var hr = hrtime(); f(); return pretty_time_num(hrtime(hr)) }
 E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
-E.rand = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? rand()*ι |0 : _.sample(ι) }
-E.rand_id = L=> L.map(ι=> rand(az09||(az09=[.../[0-9a-z]/]))).join(''); var az09; //§
+E.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
+E.random_id = L=> L.map(()=> random(az09||(az09=[.../[0-9a-z]/]))).join(''); var az09; //§
 E.fs_ipc = {
 	emit: function(port,ι){φ`/tmp/fs_ipc_${port}`.ι = ι; return shᵥ`curl -s -X PUT localhost:${port}`+''},
 	// on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
@@ -307,6 +306,9 @@ E.catch_ = f=> function(){ try{ return f.apply(this,arguments) }catch(e){ if ('_
 E._return = ι=>{ throw {__catchable:ι} }
 var TimerCons = function(a,b){this.a=a;this.b=b}; TimerCons.prototype = {clear:function(){this.a.clear();this.b.clear()}, ref:function(){this.a.ref();this.b.ref()}, unref:function(){this.a.unref();this.b.unref()}}
 Eproto(()=>0?0:{
+'(Array|Set|Map).prototype._':{get(){return _(this)}},
+'Object.prototype._':{get(){return _(this)}},
+
 'RegExp.prototype.@@iterator':function*(){yield* genex(regex_parse(this)) },
 'RegExp.prototype.exec_at':function(ι,i){ this.lastIndex = i; return this.exec(ι) },
 'Number.prototype.map':function(f){'use strict'; var ι=+this; var r = Array(ι); for(var i=0;i<ι;i++) r[i] = f(i,i,ι); return r},
@@ -314,9 +316,12 @@ Eproto(()=>0?0:{
 'Array.prototype.mapcat':function(f){var r = []; for(var i=0;i<this.length;i++) {var t = f(this[i],i,this); for (var j=0;j<t.length;j++) r.push(t[j])}; return r}, // λ(f){↩ @.map(f)._.flatten(true)}
 'Array.prototype.repeat':function(x){return x<=0? [] : x.mapcat(()=> this)},
 'Array.prototype.search':function(f){ var r; if (this.some(function(ι,i,l){ r = f(ι,i,l); if (r!==undefined) return true })) return r },
-'(Array|Set|Map).prototype._':{get(){return _(this)}},
-'Object.prototype._':{get(){return _(this)}},
 '(Buffer|Array|String).prototype.chunk':function(L){return _.range(0,this.length,L).map(i=> this.slice(i,i+L)) },
+'Array.prototype.find_index_deep':function(f){
+	for(var i=0;i<this.length;i++){ var ι = this[i]
+		if (Tarr(ι)){ var t = ι.find_index_deep(f); if (t) return [i,...t] }
+		else{ if (f(ι)) return [i] }
+		} },
 
 'Set.prototype.filter!':function(f){ this.forEach(ι=> f(ι) || this.delete(ι)) },
 'Set.prototype.pop':function(){ var t = this.values().next().value; this.delete(t); return t },
@@ -367,7 +372,7 @@ E.schema = (function(){
 	return ι=> Tbool(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? ι.length===0? [] : [ι.map(schema).reduce(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 E.walk = (ι,f,k,o)=>( Tprim(ι)||_(ι).forEach((ι,k,o)=> walk(ι,f,k,o)), ι!==undefined && ι!==null && f(ι,k,o), ι )
-E.walk_both_obj = (ι,fᵃ,fᵇ,seen=[])=> !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι), seen.push(ι), _(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,seen)), seen.pop(), fᵇ(ι), ι )
+E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι), seen.push(ι), _(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)), seen.pop(), fᵇ(ι), ι )
 E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_reduce(ι,f,k,o)), f(ι,k,o) ) : ( ι = _(ι).map((ι,k,o)=> [k,walk_reduce(ι,f,k,o)])._.object(), f(ι,k,o) )
 E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (function(){ for (var k in ι) if (Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f); return f(ι) })()
 E.search_obj = (ι,f)=>{ var r=[]; walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)); return r }
@@ -384,7 +389,7 @@ process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH|
 var q0 = ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null, maxArrayLength:null})
 var q = ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
 E.p = function(ι){return arguments.length === 0? shᵥ`pbpaste`+'' : shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }
-E.sb = function(ι){return arguments.length === 0? sublᵥ`view = sublime.active_window().active_view(); view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
+E.sb = function(ι){return arguments.length === 0? sbᵥ`view = sublime.active_window().active_view(); view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
 E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} = ι; ι=ι+''
 	// very nice google maps urls
 	// if url ≈ google.com/maps/
@@ -497,8 +502,18 @@ E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗�
 E.has_doi = φι=>{
 	var is_doi = re`(doi:|doi\.org/) *…${npm`doi-regex@0.1.4`().source}`.i
 	return Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(false) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
-
-E.go_to = (...a)=>{ var opt = !Tprim(a[-1])? a.pop() : {}; var type = a.length===1? null : a.shift(); var ι = a[0]; var in_app = opt.in_app; var focus = opt.focus||true; var sb_view_file_name = opt.sb_view_file_name
+E.github_url = ι=>{ ι.type==='sublime.View' || !function(){throw Error("‽")}()
+	var github_remote_origin = file=>{
+		var ι = φ(file).root('/')
+		var root = ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
+		if (root+'' === '/'){ var e = Error(); e.human = 'did not find github remote origin for '+(file||'<anon>'); throw e }
+		ι = (ι+'').slice((root+'/').length)
+		var t = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
+		return encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) }
+	var [file,h] = sbᵥ`view = view_from(${ι.id}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
+	var fm = ι=> 'L'+(ι+1)
+	return github_remote_origin(file||'')+( _.isEqual(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+E.go_to = (...a)=>{ var opt = !Tprim(a[-1])? a.pop() : {}; var type = a.length===1? null : a.shift(); var ι = a[0]; var {new:new_,focus,in_app,sb_view_file_name} = _({new:false, focus:true, in_app:undefined, sb_view_file_name:undefined}).assign(opt)
 
 	var is_url = ι=> ι.re`^(https?://|file:|mailto:)`
 	var searchify = ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
@@ -506,31 +521,22 @@ E.go_to = (...a)=>{ var opt = !Tprim(a[-1])? a.pop() : {}; var type = a.length==
 	in_app && (in_app = in_app.toLowerCase())
 
 	if (!focus) sfx`ack`
-	
-	if (!type){
-		if (is_url(ι)) type = 'url'
-	}
 
 	// windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
 	// apps_with_windows_in_current_space ← ()=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
 	// tsᵥ`[ TS.window_list, (1..TS.number_of_spaces).map{|ι| TS.name_for_space(ι)} ]`
 	// tsᵥ`TS.move_to_space(${7})`
 
-	if (type==='app'){ ( focus && !in_app )||!function(){throw Error("‽")}(); var app = ι
-		//! should gather most of this information periodically async & record it. should use FRP.
-		var hint_screen = {'sublime text':2, 'path finder':3, 'github desktop':4}
-		var isnt_standalone = {ibooks:1, preview:1}
-		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',...'chrome↩'].map(robot_key_tap); return }
-		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
-		isnt_standalone[app]? osaᵥ`${app}: if it is running then; activate; end if` : osaᵥ`${app}: activate`
-		}
-	else if (type==='screen'){ ( focus && !in_app && /^[1-9]$/.test(ι+'') )||!function(){throw Error("‽")}(); robot_key_tap('^'+ι) }
-	else if (type==='search'){ ( focus && !in_app )||!function(){throw Error("‽")}()
-		if (!is_url(ι)) ι = searchify(ι)
-		shₐ`'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' ${ι}`
-		osaₐ`chrome: activate`
-		}
-	else if (type==='url'){
+	// ------------------------- go to specific chrome window -------------------------
+	// 	wnd ← 1
+	// 	is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
+	// 	// System Events got an error: osascript is not allowed assistive access
+	// 	// compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
+	// 	if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
+	//  
+	// 	t ← [2,1]; chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if (!type){ !new_ || !function(){throw Error("‽")}()
 		if (!is_url(ι)) ι = searchify(ι)
 		if (!in_app && ι.re`^file:`){
 			var file = decodeURI(ι).replace(re`^file:(//)?`,'')
@@ -542,10 +548,26 @@ E.go_to = (...a)=>{ var opt = !Tprim(a[-1])? a.pop() : {}; var type = a.length==
 			var [,p,r] = decodeURI(ι).re`^(.*?:)([^]*)`; var ι = p+r.replace(/[^\/]+/g,encodeURIComponent.X)
 			}
 		if (in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
-		else shᵥ`open …${in_app && sh`-a ${in_app}`} ${!focus && '-g'} ${ι}`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if (in_app==='chrome'){
+				var t = osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι); if (t)
+					{ var [window_,tab] = t; osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}`; osaₐ`chrome: activate`; return } }
+			shᵥ`open …${in_app && sh`-b ${persist_tmp(ι=>{ try{return osaᵥ`id of app ${ι}` }catch(e){} })(in_app)}`} ${!focus && '-g'} ${ι}`
+			}
 		if (focus && in_app==='path finder') osaᵥ`${in_app}: activate`
 		}
-	else if (type==='path'){
+	else if (type==='app'){ ( !new_ && focus && !in_app )||!function(){throw Error("‽")}(); var app = ι
+		//! should gather most of this information periodically async & record it. should use FRP.
+		var hint_screen = {'sublime text':2, 'path finder':3, 'github desktop':4}
+		var isnt_standalone = {ibooks:1, preview:1}
+		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',...'chrome↩'].map(robot_key_tap); return }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then; activate; end if` : osaᵥ`${app}: activate`
+		}
+	else if (type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||!function(){throw Error("‽")}(); robot_key_tap('^'+ι) }
+	else if (type==='path'){ ( !new_ && focus )||!function(){throw Error("‽")}()
+		new_ = true
 		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(){throw Error("‽")}() //! duplication with munge_stuff.py:FIND_RESULT
 			// in_app = 'sublime text'
 			var [,ι,line] = ι.re`^(.+):(\d+):$`
@@ -556,7 +578,7 @@ E.go_to = (...a)=>{ var opt = !Tprim(a[-1])? a.pop() : {}; var type = a.length==
 			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
 			var available = here.length && _.intersection(here,unbusy())[0]
 			terminal_do_script( sh`cd ${ι}; …${!available && 'clear'}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); return }
-		!function(){throw Error("‽")}(); // go_to('url','file:'+ι,{in_app,focus,sb_view_file_name})
+		!function(){throw Error("‽")}(); // go_to('file:'+ι,{in_app,focus,sb_view_file_name})
 		}
 	else !function(){throw Error("‽")}() }
 
@@ -616,7 +638,7 @@ E.shᵥ = function(ss,...ιs){ var code = sh(ss,...ιs)
 	var ι = child_process.spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
 	return _(ι.stdout).assign({ toString(...a){var ι = Buffer.prototype.toString.call(this,...a); return a.length===0? ι.replace(/\n$/,'') : ι} }) }
-var str_to_fd_stream = ι=>{ var t = φ`/tmp/${rand_id(20)}`; t.text = ι; var fd = fs.openSync(t+'','r'); return fs.createReadStream(null,{fd}) }
+var str_to_fd_stream = ι=>{ var t = φ`/tmp/${random_id(20)}`; t.text = ι; var fd = fs.openSync(t+'','r'); return fs.createReadStream(null,{fd}) }
 var _shₐ = (ss,ιs,opt={})=>{
 	if (ss.length===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && !function(){throw Error("‽")}(); opt.stdio = [str_to_fd_stream(ιs[0]),,,]; return shₐ2(opt) }
 	else return new Promise((yes,no)=>{
@@ -637,21 +659,21 @@ E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs); return applescript.pars
 E.osaₐ = function(ss,...ιs){ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
 
 E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
-E.chrome_simple_osaᵥ = (ι,tab)=> osaᵥ`chrome: execute window 1's …${tab} javascript ${ζ_compile(ι)}`
-E.chrome_simple_js_ᵥ = (ι,tab)=> osaᵥ`chrome: tell window 1's …${tab} to set URL to ${'javascript:'+ζ_compile(ι)}`
+E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
+E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
 	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
-	// 	// E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+rand_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
-	// // probably add a rand_id(10) call to '#applescript_hack'
+	// 	// E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
+	// // probably add a random_id(10) call to '#applescript_hack'
 	// 	t ← "t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"
 	//	chrome_simple_js_ᵥ(t,tab)
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
 
-E.sublᵥ = function(ss,...ιs){
+E.sbᵥ = function(ss,...ιs){
 	var ENC = JSON.stringify; var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	var t = JSON.parse(fs_ipc.emit(34289,ι)); t===null && (t = undefined); return t }
-E.sb_editᵥ = view=>(ss,...ιs)=>{ sublᵥ`edit(${view},${py(ss,...ιs)})` }
+E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
 
 var sh_hash = _.memoize(ι=> shᵥ`which ${ι}`+'') //! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
@@ -668,7 +690,7 @@ E.tsᵥ = function(ss,...ιs){
 	var R = ()=> JSON.parse(fs_ipc.emit(PORT,ι))[0]
 	var launch_serv = function(){
 		(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || !function(){throw Error("‽")}()
-		var tmp = φ`/tmp/evalserv_${rand_id(9)}.rb`; tmp.text = String.raw`#!/usr/bin/env ruby
+		var tmp = φ`/tmp/evalserv_${random_id(9)}.rb`; tmp.text = String.raw`#!/usr/bin/env ruby
 			require "socket"; require "json"
 			server = TCPServer.new("localhost",${PORT})
 			loop do
@@ -771,7 +793,7 @@ def(E,'φ',function(){
 		get ini(){return npm('ini@1.3.4').parse(this.text) },
 		// set ini(ι){},
 		// get csv(){↩},
-		set csv(ι){ var t = φ`/tmp/csv_${rand_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${this.root('/')+''}` },
+		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${this.root('/')+''}` },
 		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm('xml2js@0.4.17').parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
 		set xml(ι){ this.text = npm('xmlbuilder@8.2.2').create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
 		// get plist(){↩  },
@@ -895,7 +917,6 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
 // ---------------------------------- cruft --------------------------------- //
-
 // // ------------------------------ browser fixes ----------------------------- //
 // BROWSERp ← typeof window!=='undefined'
 // if (BROWSERp) if (!module.parent) module.parent = '<browser>'
@@ -917,7 +938,7 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // 'Function.prototype.XX':{get(){ ι←@; ↩ λ(a,b){↩ ι.call(@,a,b) } }},
 
 // E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
-// E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${rand_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+// E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
 // ⌘⇧⌥3  ; _sc_imgur(     ) // i suspect this is outdated
 // ⌘⇧⌥4  ; _sc_imgur('-io') // also this
 

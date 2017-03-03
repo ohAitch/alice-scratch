@@ -106,18 +106,11 @@ var unsafe_union = (xs,ys)=>{
 
 P.format_error = (stream,error)=>{
   var t = error.expected; var ex = t.length===1? t[0] : 'one of '+t.join(', ')
-
-  var index = error.index
-  var i = index.offset
-
-  if (i===stream.length) return ', got the end of the stream'
-
+  var index = error.index; var i = index.offset
   var prefix = (i > 0 ? "'..." : "'")
   var suffix = (stream.length - i > 12 ? "...'" : "'")
-
-  var got = ' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix
-
-  return 'expected '+ex+got }
+  if (i===stream.length) return ', got the end of the stream'
+  return 'expected '+ex+' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix }
 
 var seq_map = P.seq_map = (...a)=>{ var f = a[-1]; a = a.slice(0,-1); Tfun(f) || !function(){throw Error("‽")}(); return P(a).map(ι=> f(...ι)) }
 

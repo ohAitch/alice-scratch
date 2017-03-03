@@ -14,7 +14,7 @@ you can do that in
 
 players ← 128..map(ι=> pow(2,ι*8/128 |0))
 players ← 128..map(ι=> pow(2,ι%8))
-fight ← (a,b)=> rand()*(a+b) > a? b : a
+fight ← (a,b)=> random()*(a+b) > a? b : a
 do_round ← pl=>{ r←[]; for(i←0;i<pl.length;i+=2) r.push(fight(pl[i],pl[i+1])); ↩ r}
 fight_all ← pl=>{ while (pl.length > 1) pl = do_round(pl); ↩ pl[0] }
 2e6.map(()=> fight_all(players))._.countBy()
@@ -24,16 +24,16 @@ is that really so bad?
 
 in “abstract format” it could be
 
-(l rand by f)=> m ← l*f; t ← rand()×sum(m); l[m find_index (t -← ι ≤ 0)]
-tournament ← ι=> until ι≈[r], ι >>← chunk(2) * rand by ι
+(l random by f)=> m ← l*f; t ← random()×sum(m); l[m find_index (t -← ι ≤ 0)]
+tournament ← ι=> until ι≈[r], ι >>← chunk(2) * random by ι
 2e6 * tournament(128 * 2^(ι×8/128 |0)) count
 2e6 * tournament(128 * 2^(ι mod 8)) count
 2e6 * tournament(128 * 2^(ι mod 8) shuffle) count
 
 which in js would be
 
-rand_by ← (l,f)=>{ ms ← l.map(f); t ← rand() * ms.reduce((a,b)=>a+b); ↩ l[ms.findIndex(ι=> (t-=ι) <= 0)] }
-tournament ← ι=>{ while( ι.length>1 ) ι = ι.chunk(2).map(ι=> rand_by(ι,ι=>ι)); ↩ ι[0] }
+random_by ← (l,f)=>{ ms ← l.map(f); t ← random() * ms.reduce((a,b)=>a+b); ↩ l[ms.findIndex(ι=> (t-=ι) <= 0)] }
+tournament ← ι=>{ while( ι.length>1 ) ι = ι.chunk(2).map(ι=> random_by(ι,ι=>ι)); ↩ ι[0] }
 2e6.map(()=> tournament(128..map(ι=> pow(2,ι*8/128 |0))))._.countBy()
 2e6.map(()=> tournament(128..map(ι=> pow(2,ι%8))))._.countBy()
 2e6.map(()=> tournament(128..map(ι=> pow(2,ι%8))._.shuffle()))._.countBy()

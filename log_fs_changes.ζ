@@ -32,11 +32,14 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.
 
 // this is pretty fucked up
 
-// ------- so let's add another fucked up bit, and watch for doi files ------ //
-chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
-	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
-		has_doi(ι).then(t=>{ if (t) {
-			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
-			fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
-			} })
-		} })
+// // ------- so let's add another fucked up bit, and watch for doi files ------ //
+// chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
+// 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
+// 		has_doi(ι).then(t=>{ if (t) {
+// 			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
+// 			fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
+// 			} })
+// 		} })
+
+// ----- so let's add another fucked up bit, and log ambient brightness ----- //
+;(()=> φ`~/file/ambient.txt`.text += Time().ymdhms+' '+brightness.ambient() ).every(10)

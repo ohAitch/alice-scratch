@@ -14,7 +14,7 @@ cp ~/'Library/Application Support/Skype/alice0meta/main.db' "#mirrors/skype alic
 tar -c ~/Library/Preferences | xz -v > "#mirrors/Preferences $(date_month).tar.xz"
 tar -c ~/Library/Fonts > "#mirrors/Fonts $(date_month).tar"
 tar -c ~/'Library/Application Support/Google/Chrome/Default/Pepper Data/Shockwave Flash/WritableRoot/#SharedObjects' | xz -v > "#mirrors/#SharedObjects $(date_month).tar.xz"
-tar -c ~/'Library/Application Support' > "#mirrors/Application Support $(date_month).tar"
+tar --exclude ~/'Library/Application Support/Steam/' -c ~/'Library/Application Support' > "#mirrors/Application Support $(date_month).tar"
 
 ls -AloR ~/file > "ls/$(date_i) ~%2Ffile"
 ls -AloR ~/Downloads > "ls/$(date_i) ~%2FDownloads"

@@ -1,27 +1,72 @@
 // ---------------------------------- util ---------------------------------- //
 delete Object.prototype._
 
-Pretty_Typed ← λ(type,ι){ @.type = type; _(@).assign(ι) }
-Pretty_Typed.prototype.inspect = λ(d,opt){
-	ty ← opt.stylize(@.type,'special')
-	if (_(@).keys()._.isEqual(['type','ι']) && @.type!=='?scope') ↩ ty+' '+util.inspect(@.ι,opt)
-	else{
-		t ← _(_(@).pairs()._.object()).omit('type')
-		if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
-		if (@.type==='?scope') t.ι = {inspect(){↩ '...'}}
-		t = util.inspect(t,opt); ↩ t[0]+ty+t.slice(1) } }
-τ ← (type,ι)=> new Pretty_Typed(type,ι)
-τι ← (type,ι)=> τ(type,{ι})
+countBy ← ι=>{ r ← new Map(); for (var t of ι) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r }
 
 interesting ← ι=> 0?0 // ast -> bool
 	: ι.type==='seq'? ι.ι.some(interesting)
 	: ι.type==='js_data'? ι.ι !== undefined
 	: true
 
+// ------------------------- instrumented data types ------------------------ //
+// so far just pretty printing
+Pretty_Typed ← λ(type,ι){ @.type = type; _(@).assign(ι) }
+Pretty_Typed.prototype.inspect = λ(d,opt){t←; r←;
+	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…countBy(t).entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
+	if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
+	if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.size)
+
+	ty ← opt.stylize(@.type,'special')
+	if (_(@).keys()._.isEqual(['type','ι'])) r = ty+' '+util.inspect(@.ι,opt)
+	else{
+		t ← _(_(@).pairs()._.object()).omit('type')
+		if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
+		t = util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
+
+	↩ ((t=opt._cache.get(@))!==undefined? opt.stylize('#'+t,'quote')+'=' : '')+r }
+τ ← (type,ι)=> new Pretty_Typed(type,ι)
+τι ← (type,ι)=> τ(type,{ι})
+
+// -------------------------------------------------------------------------- //
+‡ i wish it looked something like this maybe?
+‡ you need to actually think about it, i haven't and so what i've written is sketchy and might be bogus
+lisp ← (λ(){
+	P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
+	ws ← P(/[ \t]*/)
+	unit ← P(()=> ws.then(P.alt(
+		group,
+		P(/[0-9][^\s()]*/).map(parseFloat.X).map(ι=> τι('number',ι)),
+		P(/'([^']*?)'/,1).map(ι=> τι('string',ι)),
+		P(/[^\s()]+/).map(ι=> τι('name',ι))
+		)).skip(ws) )
+	group ← P('(').then(unit.many()).skip(P(')')).map(ι=> τ('call',{ f:ι[0], a:ι.slice(1) }))
+	↩ ι=> unit.parse(ι[0]) })()
+
+make ← type=> a=> τ(type.ι,a)
+builtins ← [
+	last: lisp`(function a (member a (- (member a 'length') 1)))`,
+	function: make`native`((f,a)=> ‽),
+	member: make`native`((o,m)=> ‽),
+	'-': make`native`((x,y)=> ‽),
+	]
+
+call closure function js_data local_private_slot member name number object seq set_result string
+
+‡ ok, yeah; i finished the first part, and now i dont know how to do the next thing, so i gotta think about it
+‡ this is hard. might be a job for Aster?
+
+‡ oh! i wanted to have the data flow graph, and then from that be able to easily calculate the price of things, e.g. cpu time, memory
+‡ if you calculate the price of everything you do, you can notice that adding a ram cache for an immutable value is cheaper than recomputing it *iff* the price of recomputing it is big enough
+‡ prices are easy to calculate in instrumented code, not so easy in native code, but that's okay
+
+‡ is this right? can you flesh out that architecture, like, write out the list of types and native things and prices and everything? make it a new tab.
+
+‡ that sounds right, but it's weird and hard. some more story about how specifically our program is going to optimize parsimmon would be nice. i'm tired.
+
 // -------------- convert babylon ast into intermediate format -------------- //
-parse ← code=>{
-	t ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:true})
-	t = walk_obj_edit(t,ι=>{
+vmζ_parse ← code=>{
+	r ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:true})
+	r = walk_obj_edit(r,ι=>{
 		// --------------- error on asts i dont know how to handle -------------- //
 		ι.directives && ( !ι.directives.length || ‽(ι) )
 		if (ι.type==='VariableDeclaration') ι.kind==='var' || ‽(ι)
@@ -32,7 +77,7 @@ parse ← code=>{
 		if (ι.type==='ObjectProperty') ι.method===false || ‽(ι)
 		// ----------------------- simplify babylon's ast ----------------------- //
 		ι = _(ι).omit('start end loc directives leadingComments trailingComments __clone'.split(' '))
-		ι = 0?0
+		↩ 0?0
 		: ι.type==='File'? ι.program
 		: ι.type==='Program'? τι('seq',ι.body)
 		: ι.type==='VariableDeclaration'? τι('seq',ι.declarations)
@@ -43,7 +88,7 @@ parse ← code=>{
 		: ι.type==='CallExpression'? (λ(){ o ← ι.callee; tname←; ↩ 0?0
 			: o.type==='member'?
 				τ('call',{ o:τ('member',{ o:
-					τ('heap',{ name:tname=τι('name',rand_id(9)), ι:o.o }),
+					τ('local_private_slot',{ name:tname=τι('name',random_id(5)), ι:o.o }),
 					m:o.m }), self:tname, a:ι.arguments })
 			: τ('call',{ o, self:τι('js_data',undefined), a:ι.arguments })
 			})()
@@ -54,18 +99,12 @@ parse ← code=>{
 		: ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression'?
 			τ('function',{
 				name:ι.id,
-				params:[ι.type==='ArrowFunctionExpression'? undefined : 'this',…ι.params.map(ι=>ι.ι)],
-				lexical_scopes:undefined,
+				params:[ ι.type==='ArrowFunctionExpression'? undefined : 'this', …ι.params.map(ι=>ι.ι) ],
 				ι:ι.expression? ι.body : τι('seq',[ι.body,τι('js_data',undefined)]) })
-			//! this should have bound the names in the function at “munge ast” time
-			// ‡ this is the next step, right?
-			// ‡ i want you to examine the entire plan and decide the next step, which could be this
-			// we can find the lexical scopes at this time
 		: ι.type==='BinaryExpression'? τ('builtin',{ f:ι.operator, a:[ι.left,ι.right] })
 		: ι.type==='BlockStatement'? τι('seq',ι.body)
 		: ι.type==='ReturnStatement'? τι('seq',[τι('set_result',ι.argument),τ('break_fn',{})])
-		: ι
-		↩ ι})
+		: ‽(ι) })
 	// -------------------------------------------------------------------------- //
 	opti_semantic ← ι=>{ // or simplify_or_enhance_semantics
 		if (ι.type==='seq'){
@@ -85,83 +124,65 @@ parse ← code=>{
 			if (edit) ι.ι = opti_semantic(ι.ι)
 			}
 		↩ ι}
-	t = walk_obj_edit(t,opti_semantic)
-	// ------------------------- build lexical scopes ------------------------- //
-	scopes ← [τι('?scope','global')]
-	walk_both_obj(t,
-		ι=>{ if (ι.type==='function'){ scopes.push(τι('?scope',ι)); ι.lexical_scopes = _.clone(scopes) } },
-		ι=>{ if (ι.type==='function') scopes.pop() })
-	// ‡ what is the appropriate format for lexical_scopes? especially considering i dont exactly want it printed. maybe change the printer to only print a function once, later referring to it by name? that would be weird, but...
-	↩ t}
-
-// ----------- convert my abstract data to native javascript data ----------- //
-compile ← ι=> 0?0
-	: ι.type==='js_data'? ι.ι
-	: ι.type==='closure'? λ(…a){↩ compile(create_root_stack_and_eval(τ('call',{ o:ι, self:τι('js_data',@), a:a.map(ι=> τι('js_data',ι)) })).ι) }
-	:( ι = τι('<not_compiled>',ι), cn.log(ι), ι )
+	r = walk_obj_edit(r,opti_semantic)
+	↩ r}
 
 // -------------------- eval my ast into my abstract data ------------------- //
-create_root_stack_and_eval ← (ast,opt={})=>{
-	var {global_={}} = opt
-	heap ← {}
-	stack ← [{}]
-	ctx ← '?scope?global'
-	// heap ← {}
-	// global_ ← {}
-	// ‡ no
-	// ‡ we screwed up the :stack: thing
-	// ‡ so when does :resolve: happen? i thought that was at compile time...
-	// ‡ write out the new plan carefully; i think we can implement it in one go, but we need to be careful.
-	// ‡ in es6 in 'use strict', afaict resolve happens -in effect- at compile time
-	// ‡ in nonstrict eval can do weird things, but
-	// ‡ i think we can make a plan that's compatible with not representing js semantics exactly?
-	// // ---------- ‡ --------- //
-	// ‡ there is no compile time; there is just execution
-	// ‡ resolve first in local scope, then in higher scopes, then in global scope
-	// // ‡ do not execute code in global scope, that is silly; if you want to do the js thing, detect global scope and change vars into global assignment
-	// ‡ to do this we must be able to walk up the ast, or at least the scopes, from any position
-	// ‡ 
-
-	resolve ← (ι,ctx)=> heap[ι] || ctx.scope[ι] || global_[ι] || τ('‽',{ found_by:ι })
-	// =>{t←; if (t=heap[ι]) ↩ t;
-	// 	if (t=ctx.scope[ι]) ↩ t
-	// 	// for(i←stack.length-1;i>=0;i--) if (t=stack[i][ι]) ↩ t;
-	// 	if (t=global_[ι]) ↩ t; ↩ τ('‽',{ found_by:ι }) }
+vmζ_runInContext ← (ast,global_)=>{
+	stack ← []
+	resolve ← ι=>{t←;
+		sc ← stack[-1]; for(;;){    if (t= sc.ι[ι]) ↩ t; if (t= sc.f.scope_parent){ sc = t; continue }    break}
+		↩ global_[ι] || τ('‽',{ found_by:ι }) }
+	
+	// convert my abstract data to native javascript data
+	compile ← ι=> 0?0
+		: ι.type==='js_data'? ι.ι
+		: ι.type==='closure'? _(λ ζwrap(…a){↩ compile(vmζ_runInContext(
+			τ('call',{ o:ζwrap.ι, self:τι('js_data',@), a:a.map(ι=> τι('js_data',ι)) })
+			,global_ )) }).assign({ι})
+		:( ι = τι('<not_compiled>',ι), cn.log(ι), ι )
 
 	eval_ ← ι=> 0?0
 		: ι.type==='seq'? ι.ι.map(eval_)[-1]
 			// (λ(){ t←; for(i←0;i<ι.ι.length;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
-		: ι.type==='local_private_slot'? stack[-1][ι.name.ι] = eval_(ι.ι)
-		: ι.type==='heap'?( heap[ι.name.ι] = eval_(ι.ι) )
+		: ι.type==='local_private_slot'? stack[-1].ι[ι.name.ι] = eval_(ι.ι)
 		: ι.type==='name'? resolve(ι.ι)
 		: ι.type==='call'? call(eval_(ι.o),[ι.self,…ι.a].map(eval_))
-		: ι.type==='member'? (λ(){ o ← compile(eval_(ι.o)); m ← compile(eval_(ι.m)); Tstr(m) || ‽(ι); ↩ τι('js_data',o[m]) })()
-		: ι.type==='function'? τ('closure',{ ι })
-			// should it find the closure vars here? yes.
+		: ι.type==='member'?(λ(){ o ← eval_(ι.o); m ← compile(eval_(ι.m)); Tstr(m) || ‽(ι); ↩ member(o,m) })()
+		: ι.type==='function'? τ('closure',{ ι, scope_parent:stack[-1] })
+		: ι.type==='object'? τι('js_data', ι.ι.map(ι=>{ ι = ι.map(eval_).map(compile); Tstr(ι[0]) || ‽; ↩ ι })._.object() )
 		: ι.type==='js_data' || ι.type==='closure'? ι
 		: τι('<not_evald>',ι)
 
-	call ← (o,a,r=undefined)=> 0?0
+	call ← (o,a)=>{r←; ↩ 0?0
 		: o.type==='js_data'? τι('js_data', compile(o).call(…a.map(compile)) )
 		: o.type==='closure'?(
-			stack.push(o.ι.params.map((k,i)=> [k,a[i]]).filter(ι=>ι[0])._.object()),
+			stack.push({ f:o, ι:[
+				…(o.ι.name? [[o.ι.name.ι,o]] : []),
+				…o.ι.params.map((k,i)=> [k,a[i]]).filter(ι=>ι[0]),
+				]._.object() }),
 			(r = eval_(o.ι.ι)),
 			stack.pop(),
 			r )
-		: τι('<not_evald>',ι)
+		: τι('<not_evald>',{o,a}) }
 
-	↩ {ι:eval_(ast), stack, heap} }
+	member ← (o,m)=> τι('js_data', 0?0
+		: o.type==='js_data'? o.ι[m]
+		: o.type==='closure'? m==='name'? o.ι.name.ι : undefined
+		: undefined )
+
+	ast = τ('call',{ o:τ('function',{ name:undefined, params:[undefined], ι:ast }), self:τι('js_data',undefined), a:[] })
+	↩ eval_(ast) }
 
 // ---------------------------------- test ---------------------------------- //
 // code ← φ`~/file/code/scratch/ζ/parsimmon2.ζ`.text
-// code ← `rand_id_ ← L=> L.map(ι=> rand( _.range(0,0x100).map(ι=> String.fromCodePoint(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join(''); _.range(5).map(rand_id_)`
-// code ← `q ← ι=> _.range(0,0x100); _.range(5).map(q)`
-// code ← `q ← ι=> _.range(0,0x100); _.range(1).map(q)`
-code ← `(λ a(){ b ← λ b(){ y ← 2; c ← λ c(){ ↩ {a:a.name,b:b.name,c:c.name,x,y} }; z ← 7; ↩ c }; x ← 5; ↩ b })()()()`
-global_ ← _({ _, rand, String, }).map((ι,k)=> [k,τ('js_data',{ι,found_by:k})])._.object()
-ast = parse(code)
-t ← create_root_stack_and_eval(ast,{global_})
-t = { ast, heap:t.heap, global_, ι:t.ι }
-t
+code ← `random_id_ ← L=> L.map(()=> random( _.range(0,0x100).map(ι=> String.fromCodePoint(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join(''); _.range(8).map(random_id_)`
+ctx ← _({ _,random,String, }).map((ι,k)=> [k,τ('js_data',{ι,found_by:k})])._.object()
+ast = vmζ_parse(code)
+t←; dur ← bench1(()=> t = vmζ_runInContext(ast,ctx) )
+;({ ast, global:ctx, ι:t, dur })
 
 // ‡ figure out how you want to handle native exceptions, applicable on ι.type call and maybe member
+
+// ‡ i'd like to restructure this with the data types defined as more like classes, because this is a complicated thing where that would be appropriate, i think?
+// ‡ figure out if this is right, or what *is* right

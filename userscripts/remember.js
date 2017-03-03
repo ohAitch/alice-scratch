@@ -31,8 +31,9 @@ $('body').append($('<svg xmlns="http://www.w3.org/2000/svg" style="z-index:5000;
 
 var update = input=> {
 	var t = input
-		.replace(/(\bsite:|\B∈) ?SE\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
-		.replace(/(\bsite:|\B∈) ?git\b/i,'site:github.com')
+		.replace(/\B∈ ?SE\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
+		.replace(/\B∈ ?yc\b/i,'site:news.ycombinator.com')
+		.replace(/\B∈ ?git\b/i,'site:github.com')
 		.replace(/\bdl\b/i,'-inurl:htm -inurl:html intitle:”index of”')
 	if (!(t === input)) {$($in).val(t).submit(); return}
 

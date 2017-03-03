@@ -1169,7 +1169,7 @@ contexts:
       scope: variable.language.this.js
     - match: \b(self)\b
       scope: variable.language.self.js
-    - match: \b(cb|[abeirtxLι])\b
+    - match: \b(cb|[abeirtxyLι])\b
       scope: variable.language.x.js
 
   dollar-identifiers:

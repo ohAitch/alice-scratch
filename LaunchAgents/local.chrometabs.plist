@@ -16,7 +16,6 @@
 		<string>https://mail.google.com/mail/u/0/#inbox</string>
 		<string>https://facebook.com/messages</string>
 		<string>https://keep.google.com/</string>
-		<string>https://www.duolingo.com/</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

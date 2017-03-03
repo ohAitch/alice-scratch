@@ -96,7 +96,7 @@ show_private_xml ← λ(mappings){t←;
 			M2( 'notsave.2touch', [
 				// …['iBooks|preview','Chrome','path Finder','Github desktop','Vlc'].map(ι=>`
 				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
-				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.split(/\|/g)}.map(ι=> go_to('app',ι))` ),
+				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.toLowerCase().split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),
 				// ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
@@ -135,8 +135,8 @@ if( !module.parent ) switch( process.argv[2] ){
 // -------------------------------------------------------------------------- //
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
-	fi ← 'notsave.KEY_once_'+rand_id(9)
-	db ← (φ`~/.keyrc.json`.json||{}); id ← rand_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
+	fi ← 'notsave.KEY_once_'+random_id(9)
+	db ← (φ`~/.keyrc.json`.json||{}); id ← random_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
 	regen({minimal:true})
 	shᵥ`${KB} enable ${fi}`
 	}

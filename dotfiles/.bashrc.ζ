@@ -24,7 +24,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 
 E.x = ()=>{ E ← process.env['?']|0
 	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
-	this_term_is_frontmost ← ()=>{ t ← rand_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
+	this_term_is_frontmost ← ()=>{ t ← random_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
 	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
 	E===0 && exit_parent(); process.exitCode = E }
 
@@ -79,29 +79,32 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 
 // ------------------------ build/release/run project ----------------------- //
 
+get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`view_from(${ι.id}).file_name()` : ι+''
+
 // E.build = ...
-E.run_project = E.run = (file,isTTY)=>{ file||(file = φ.cwd.φ`any`)
-	if( !process.stdout.isTTY ){ isTTY && ‽; terminal_do_script(sh`clear; cd ${file}; run_project ${file} ✓; x`) }else{
-	
-	is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
-	
-	project ← φ(file).TMP_parents().filter(is_project)[0] || ‽
+E.run_project = E.run = (ι,isTTY)=>{ try{ if (Tstr(ι)) ι = JSON.parse(ι) }catch(e){}; ι||(ι = φ.cwd.φ`any`)
+	if( !process.stdout.isTTY )
+		{ isTTY && ‽; terminal_do_script(sh`clear; cd ${get_filename(ι) || ‽}; run_project ${JSON.stringify(ι)} ✓; x`) }
+	else{
+		is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
+		
+		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
 
-	build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
-	package ← project.φ`package.json`.BAD_exists()
-	run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
-	;(build || package || run) || ‽
+		build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
+		package ← project.φ`package.json`.BAD_exists()
+		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
+		;(build || package || run) || ‽
 
-	a ← ()=> build && shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
-	b ← ()=>{if (package){
-		p ← project.φ`package.json`.json
-		t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
-		if (p.version === (t&&t.version)) shᵥ`cd ${project}; npm --no-git-tag-version version patch`
-		shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
-		}}
-	c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
-	;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
-	} }
+		a ← ()=> build && shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
+		b ← ()=>{if (package){
+			p ← project.φ`package.json`.json
+			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
+			if (p.version === (t&&t.version)) shᵥ`cd ${project}; npm --no-git-tag-version version patch`
+			shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
+			}}
+		c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
+		;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
+		} }
 
 // ------------------------- single-purpose commands ------------------------ //
 

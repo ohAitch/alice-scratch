@@ -106,18 +106,11 @@ unsafe_union ← (xs,ys)=>{
 
 P.format_error = (stream,error)=>{
   t ← error.expected; ex ← t.length===1? t[0] : 'one of '+t.join(', ')
-
-  index ← error.index
-  i ← index.offset
-
-  if (i===stream.length) ↩ ', got the end of the stream'
-
+  index ← error.index; i ← index.offset
   prefix ← (i > 0 ? "'..." : "'")
   suffix ← (stream.length - i > 12 ? "...'" : "'")
-
-  got ← ' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix
-
-  ↩ 'expected '+ex+got }
+  if (i===stream.length) ↩ ', got the end of the stream'
+  ↩ 'expected '+ex+' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix }
 
 seq_map ← P.seq_map = (…a)=>{ f ← a[-1]; a = a.slice(0,-1); Tfun(f) || ‽; ↩ P(a).map(ι=> f(…ι)) }
 

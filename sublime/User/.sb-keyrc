@@ -1,3 +1,8 @@
+# @sublime_text  ⌫=  ] ⌘⇧⌥^⌫
+# @sublime_text  ;'  ] ⌘⇧⌥^;
+# @sublime_text  /↩  ] ⌘⇧⌥^↩
+# @sublime_text  ⇪   ] ⌘⇧⌥^a
+
 # ------------------------------ should be builtins ------------------------------
 ⌘←     cmd.move_to({ "to":"hardbol" })
 ⌘→     cmd.move_to({ "to":"hardeol" })
