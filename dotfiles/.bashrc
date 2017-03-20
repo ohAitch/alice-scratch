@@ -20,31 +20,36 @@ eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
 # convert me to ζ
 # it'll be easy and it'll be fun, getting all of the design right
 # the key idea is “conf”
+# right?
 
-################# should be system commands (interactive only) #################
+################### as for a prelude ### for interactive mode ##################
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 l(){ ls -AG "$@"; }
-f(){ open -a 'Path Finder' "${1:-.}"; ζ 'osaᵥ`path finder: activate`'; }
+f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; }
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9
 …(){ eval "$(cat)"; }
-man(){ /usr/bin/man "$@" > /tmp/man && { cat /tmp/man | col -bfx | sb; }; }
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; &>/dev/null popd; } # for /
 /(){
 	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.history{,/.sublime}}
 	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.history}
-	else _ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+	else
+		if man -- "$1" &> /tmp/man; then
+			cat /tmp/man | col -bfx
+		else
+			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+		fi
 	fi | sb; }
 alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; } # PWF(dirty) is not used elsewhere; it's an aborted experiment
 rm_empty_dirs(){ find . -type d -empty -delete; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then printf %s 'view = sublime.active_window().active_view(); view.substr(view.full_line(sublime.Region(0,view.size())))' > /tmp/fs_ipc_34289; curl -s -X PUT localhost:34289 | jq -r .; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb()'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
 
-################## single-purpose commands (interactive only) ##################
+################ personal configuration ### for interactive mode ###############
 
-### im_ (interactive only) ###
+############# im_ ############
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
 # im_to_png(){ ζ ' a.map(ι=> ι.re`\.png$` || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }

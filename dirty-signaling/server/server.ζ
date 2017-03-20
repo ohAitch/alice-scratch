@@ -1,0 +1,45 @@
+// ---------------------------------- util ---------------------------------- //
+proto_assign ← require_proto_assign()()
+proto_assign('Socket',Socket=> Socket.prototype.inspect = (d,opt)=> opt.stylize('<socket>','special') )
+
+// ---------------------------------- main ---------------------------------- //
+express ← require('express')
+
+server ← express()
+	.use((req,res,next)=>{ res.header('Access-Control-Allow-Origin','*').header('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept'); next() }) // enable CORS
+	.use(express.static('public'))
+	.get('/',(req,res)=>{ res.sendFile(__dirname+'/views/index.html') })
+	.listen(65330,()=> cn.log('Your app is listening on port '+server.address().port) )
+
+io ← require('socket.io')(server)
+
+io.on('connection',client=>{ proto_assign.declare(client)
+	clients_add({ name:random_id(10), socket:client, addrs:[], connected:true })
+	cl ← clients_by_socket.get(client)
+	cl.socket
+		.on('disconnect',()=>{ cl.connected = false; updated(cl); clients_delete(cl) })
+		.on('addr_bit',ι=>{ _(cl).addrs.push(ι); updated(cl) })
+		.on('talk_to',name=>{
+			cn.log('client talking to',cl,name)
+			t ← clients_by_name.get(name)
+			if (!t) cl.socket.emit('they_are',{ name, connected:false })
+			else{ tell_about_always(cl,t); tell_about_always(t,cl) }
+			})
+	cl.socket.emit('your_name', cl.name )
+	cn.log('got client',cl)
+	})
+
+tell_about_always ← (a,b)=>{ to_tell_about__add(a,b); tell_about(a,b) }
+updated ← cl=>{ […to_tell_about.entries()].forEach(([a,bs])=>{ if (bs.has(cl)) tell_about(a,cl) }); cn.log('got updated()',cl) }
+tell_about ← (a,b)=>{ t ← _(b).pick('name','addrs','connected'); if (!clients.has(b)) t.addrs = null; a.socket.emit('they_are',t) }
+
+clients ← new Set()
+to_tell_about ← new Map()
+
+clients_by_socket ← new Map()
+clients_by_name ← new Map()
+to_tell_about__add ← (a,b)=>{t←; ( to_tell_about.get(a) || (to_tell_about.set(a,t=new Set()),t) ).add(b) }
+clients_add ← ι=>{ clients.add(ι); clients_by_socket.set(ι.socket,ι); clients_by_name.set(ι.name,ι) }
+clients_delete ← ι=>{ clients.delete(ι); clients_by_socket.delete(ι.socket); clients_by_name.delete(ι.name); to_tell_about.delete(ι); […to_tell_about.values()].forEach(bs=> bs.delete(ι) ) }
+
+// make sure it's wss

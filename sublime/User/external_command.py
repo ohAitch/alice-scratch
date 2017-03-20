@@ -7,7 +7,7 @@ PORT = 34289
 #################################### helper ####################################
 tce_r = None
 def eval_(ι,vars):
-	vars = dict(list({ 'view_from':view_from, 'edit':edit, }.items()) + list(vars.items()))
+	vars = dict(list({ 'sublime':sublime, 'json':json, 're':re, 'Region':Region, 'view_from':view_from, 'edit':edit, }.items()) + list(vars.items()))
 	ι = re.sub('(\n|;|$)',r'=r\1',ι[::-1],1)[::-1]; exec(ι,vars); return vars.get('r')
 class tc_eval(sublime_plugin.TextCommand):
 	def run(self,edit,ι): global tce_r; tce_r = None; tce_r = eval_(ι,{'view':self.view,'edit':edit})

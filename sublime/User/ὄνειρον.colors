@@ -55,7 +55,7 @@ $keyword keyword.operator
 $support support.class
 $support support.type
 $support support.function
-$special variable.language.(x|this)
+$special variable.language
 $special variable.parameter
 $special68 punctuation.definition.parameters | punctuation.separator.parameter.function
 $special entity

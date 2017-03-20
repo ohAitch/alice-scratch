@@ -20,7 +20,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
-// ------------------------ should be system commands ----------------------- //
+// ---------------------------- as for a prelude ---------------------------- //
 
 E.x = ()=>{ E ← process.env['?']|0
 	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
@@ -29,7 +29,7 @@ E.x = ()=>{ E ← process.env['?']|0
 	E===0 && exit_parent(); process.exitCode = E }
 
 E.pb = ()=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
-_pastebin_id ← ()=> new Promise(yes=>
+_pastebin_id ← ()=> Π(yes=>
 	process.stdin.read_all((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
 		yes( (t+'').replace(/.*\//,'') ) }) )
@@ -60,7 +60,7 @@ E.diff = (base,edit)=>{
 		t = iG.map(ι=> ι.map(i=> [t[i],i]))
 		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
 		process.exitCode = t.length ?1:0
-		↩ t.map(ι=> ι.map(([ι,i])=> '\x1b[90m'+i+'\x1b[0m '+ι)
+		↩ t.map(ι=> ι.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
 			.join('\n')+'\n')
 			.join('\x1b[90m'+'-'.repeat(30)+'\x1b[0m'+'\n')
 	} }
@@ -82,7 +82,7 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`view_from(${ι.id}).file_name()` : ι+''
 
 // E.build = ...
-E.run_project = E.run = (ι,isTTY)=>{ try{ if (Tstr(ι)) ι = JSON.parse(ι) }catch(e){}; ι||(ι = φ.cwd.φ`any`)
+E.run_project = E.run = (ι,isTTY)=>{t←; try{ if (Tstr(ι)) ι = JSON.parse(ι) }catch(e){}; ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
 		{ isTTY && ‽; terminal_do_script(sh`clear; cd ${get_filename(ι) || ‽}; run_project ${JSON.stringify(ι)} ✓; x`) }
 	else{
@@ -91,7 +91,7 @@ E.run_project = E.run = (ι,isTTY)=>{ try{ if (Tstr(ι)) ι = JSON.parse(ι) }ca
 		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
 
 		build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
-		package ← project.φ`package.json`.BAD_exists()
+		package ← !!( t=project.φ`package.json`.json, t && t.version )
 		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
 		;(build || package || run) || ‽
 
@@ -127,7 +127,7 @@ E.d = (a='.')=>{
 // E.email = λ(){
 // 	sfx`ack`
 // 	sb().split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
-// 		.map(ι=> osaᵥ`chrome: open location ${ι}`)
+// 		.map(go_to.X)
 // 	osaᵥ`chrome: activate`
 // 	}
 
@@ -182,4 +182,13 @@ E.kp = E.keypresses = ()=>{
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
 	o←; diy_stdin(λ(ι){ sfx`nacksoft`; if (!o) o = hrtime(); else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
+	}
+
+E.regex_set = ()=>{
+	process.stdin.read_all().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
+		t←[]; […ι].sort()._.uniq(true).map(ι=>{ ι = ι.codePointAt(); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+		x ← ι=>{ ι = String.fromCodePoint(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
+		process.stdout.write(ι)
+		})
 	}

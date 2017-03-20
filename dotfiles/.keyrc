@@ -27,7 +27,7 @@
 │ _ _ _ ∃ _ _ § _ × _ _ _ _ _  │ │ _ _ _ ∄ _ _ _ _ ⁘ _ _ _ _ _  │
 │  _ _ _ ∈ √ _ ✓ ∪ ∞ ◍ _ _ _ _ │ │  _ ℚ _ ∉ ℝ _ _ ∩ _ _ ℙ _ _ _ │
 │  _ ∀ § ° _ _ _ _ _ _  “ ” ↩  │ │  _ _ _ _ _ _ ℍ _ _ _ _ _  _  │
-│  _  _ ‡ _ _ _ _ ⧫ _ _ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ _ _ _  _   │
+│  _  _ ‡ _ _ _ _ ⧫ ⊂ ⊃ ÷  _   │ │  _  ℤ _ ℂ _ _ ℕ _ ⊄ ⊅ _  _   │
 │ _ _ _ _     _    _ _ _ _ _ _ │ │ _ _ _ _     _    _ _ _ _ _ _ │
 └──────────────────────────────┘ └──────────────────────────────┘
 ┌───────────── 1 ──────────────┐
@@ -42,6 +42,7 @@
 │  _ _ ç _ _ _ _ _ _ _ _ _  _  │
 │  _  _ _ _ _ _ ̃ _ _ _ _  _   │
 └──────────────────────────────┘
+
 ⌥^e  ∋
 ⌥^⇧e ∌
 `=   ≈
@@ -62,7 +63,8 @@ sd   ι
 ⌥r3  ∛
 ⌥r4  ∜
 
-# math    ⊂⊃⊆⊇⊄⊅⊈⊉ ⊨⊢
+
+# math    ⊆⊇⊈⊉ ⊨⊢
 # fun     卍 ⋱ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※ ⁜ ⁞ ⁑ ⁕ ∴ ⁖ ∵ ⁘ ⁙ ⁚ ⁝ ▶ ◆ ◇ ○ ◌ ◍ ◎ ● ◯ ★ ➤
 # lang++  ∋∌ ⌊⌈⌋⌉ ∕−
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉ ｢｣ ′″‴ ≪≫
@@ -103,6 +105,8 @@ FnF3  ] ⌘^f
 # @youtube  ⌘⌥→  ] l
 ⇪  ; sfx`nack`
 @activity_monitor ⌘w  ] ⌘q
+# ! @chrome ⌘e should really be a sublime-esque command “open editor” or “edit” or such
+@chrome ⌘e  ; try{ urijs ← npm`urijs@1.18.9`; t ← urijs(osaᵥ`chrome: URL of active tab of window 1`); t.hostname()==='github.com' || ‽; [,a,b] ← t.path().re`^/[\w_-]+/([\w_-]+)/blob/master/(.+)$` || ‽; to_open ← φ`~/code/${a}/…${b}`; to_open.BAD_exists() || ‽; go_to('path',to_open+'') }catch(e){ sfx`nack` }
 
 # bad habit keys
          ⌘h      ; sfx`nack`
@@ -110,26 +114,27 @@ FnF3  ] ⌘^f
 FnF4             ; sfx`nack`
 FnF5             ; sfx`nack`
 FnF6             ; sfx`nack`
+@sublime_text  ⌘p   ; sfx`nack`
 @sublime_text  ⌘⇧p  ; sfx`nack`
 @path_finder   ⌘1   ; sfx`nack`
 @path_finder   ⌘2   ; sfx`nack`
 @path_finder   ⌘3   ; sfx`nack`
 
 ⌥^b  ; φ`~/Downloads/x.txt`.ι = φ`~/Downloads/x.txt`.text + util_inspect_autodepth(robot.getMousePos())+'\n'
-⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); url ← osaᵥ`chrome: URL of active tab of window 1`; url.re`get-a-little-gold`? (()=>{ robot.mouseToggle('down'); busywait(0.05); robot.mouseToggle('up') }).every(1/3) : url.re`epic-friends`? (()=>{ robot.keyToggle(' ','down'); busywait(0.05); robot.keyToggle(' ','up') }).every(3) : robot.mouseClick.every(1/40)
+⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; process.kill(pid,'SIGTERM') },process.pid); url ← osaᵥ`chrome: URL of active tab of window 1`; url.re`get-a-little-gold`? (()=>{ robot.mouseToggle('down'); sleep(0.05); robot.mouseToggle('up') }).every(1/3) : url.re`epic-friends`? (()=>{ robot.keyToggle(' ','down'); sleep(0.05); robot.keyToggle(' ','up') }).every(3) : robot.mouseClick.every(1/40)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); polar_to_rect ← ([r,θ])=> [r*cos(θ), r*sin(θ)]; offsets ← _.range(0,1,0.02).map(ι=> polar_to_rect([300,ι*τ])); orig ← robot.getMousePos(); move_to_next ← (λ(){ i ← 0; ↩ λ(){ ι ← offsets[i++ % offsets.length]; robot.moveMouse(orig.x+ι[0],orig.y+ι[1]) } })(); robot.mouseToggle('down'); move_to_next.every(0.01)
 # ⌥^c  ; KEY_once('⎋',λ(pid){ sfx`ack`; robot.mouseToggle('up'); process.kill(pid,'SIGTERM') },process.pid); robot.mouseToggle('down')
 
 # ⌘⌥d ; chrome_simple_js_ᵥ('dl ← (url,name)=>{ a ← jQuery("<a>").attr("href",url).attr("download",name+url.match(/\\.\\w+$/)[0]).appendTo("body"); a[0].click(); a.remove() }; dl(jQuery(".view-image").css("background-image").match(/"(.*)"/)[1], jQuery("[ng-bind=\\"::post.post_title\\"]").text())','active tab')
 
-# @chrome f ; t ← '1'; {PNG} ← npm('pngjs@3.0.0'); show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); busywait(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
-# @chrome f ; t ← '1'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
-# @chrome g ; t ← '2'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
-# @chrome b ; t ← '9'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
-# @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
-# @chrome h ; t ← '0'; robot_key_tap(t); busywait(0.05); robot_key_tap(t)
+# @chrome f ; t ← '1'; {PNG} ← npm('pngjs@3.0.0'); show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); sleep(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
+# @chrome f ; t ← '1'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
+# @chrome g ; t ← '2'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
+# @chrome b ; t ← '9'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
+# @chrome h ; t ← '0'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
+# @chrome h ; t ← '0'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
 
-# d ; slow_drag ← (time,path)=>{ steps ← ceil(time*30); start_time ← Time().i; start ← robot.getMousePos(); robot.mouseToggle('down'); while ((Time().i - start_time) / time < 1.01){ progress ← min(1-1e-9, (Time().i - start_time) / time); progress *= path.length; b ← path[floor(progress)]; a ← floor(progress)<=0? {x:0,y:0} : path[floor(progress)-1]; x ← (b.x-a.x)*(progress % 1)+a.x; y ← (b.y-a.y)*(progress % 1)+a.y; robot.moveMouse(start.x+x,start.y+y); busywait(1/30) }; robot.mouseToggle('up'); robot.moveMouse(start.x,start.y) }; slow_drag(0.2,[{x:100,y:-100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:0}]); slow_drag(0.2,[{x:0,y:100}]); slow_drag(0.2,[ {x:-50,y:50}, {x:50,y:50}, {x:0,y:100}, ])
+# d ; slow_drag ← (time,path)=>{ steps ← ceil(time*30); start_time ← Time().i; start ← robot.getMousePos(); robot.mouseToggle('down'); while ((Time().i - start_time) / time < 1.01){ progress ← min(1-1e-9, (Time().i - start_time) / time); progress *= path.length; b ← path[floor(progress)]; a ← floor(progress)<=0? {x:0,y:0} : path[floor(progress)-1]; x ← (b.x-a.x)*(progress % 1)+a.x; y ← (b.y-a.y)*(progress % 1)+a.y; robot.moveMouse(start.x+x,start.y+y); sleep(1/30) }; robot.mouseToggle('up'); robot.moveMouse(start.x,start.y) }; slow_drag(0.2,[{x:100,y:-100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:100},{x:200,y:0}]); slow_drag(0.2,[{x:100,y:0}]); slow_drag(0.2,[{x:0,y:100}]); slow_drag(0.2,[ {x:-50,y:50}, {x:50,y:50}, {x:0,y:100}, ])
 
 # page ← _.zip(…osaᵥ`chrome: {id,URL} of tabs of windows`.map(ι=> ι._.flatten())).map(ι⇒ {id:ι[0],url:ι[1]}).find(ι=>ι.url==='http://www.kchungradio.org/stream.html')
 # osaᵥ`chrome: set t to tabs of windows whose id = ${page.id}; set r to {}; repeat with t2 in t; set r to r & t2; end repeat; set t to first item in r; t`
@@ -139,7 +144,16 @@ FnF6             ; sfx`nack`
 # ^⌥y  ; ['⌘⌥i',…'⇥1920↩','⌘⌥c',…'1080↩'].map(robot_key_tap.X)
 # ^⌥w  ; ['⌘s','↩','⌘w'].map(robot_key_tap.X)
 
-# ^⌥x  ; q ← ()=> ['⌘s','↩','⌘w','^2','⌘/','↓','⌘⇧⌥^↩'].map(ι=>{ robot_key_tap(ι); busywait(0.4) }); L ← 50; for (i←0;i<L;i++){ q(); busywait(10); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
-# ^⌥x  ; q ← ()=> ['⌘r','^⇥'].map(ι=>{ robot_key_tap(ι); busywait(0.2) }); L ← 15; for (i←0;i<L;i++){ q(); busywait(0); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
-# ^⌥x  ; robot.mouseClick('right'); busywait(0.05); {x,y} ← robot.getMousePos(); robot.moveMouse(x+20,y+5); robot.mouseClick(); busywait(0.05); robot.moveMouse(x,y); robot_key_tap('⌘w'); busywait(1); robot_key_tap('^⇥')
-# ^⌥x  ; q ← ()=>{ robot_key_tap('⌘s'); busywait(0.2); robot_key_tap('↩'); busywait(0.2); robot_key_tap('⌘w'); busywait(1) }; L ← 37; for (i←0;i<L;i++){ q(); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+# ^⌥x  ; q ← ()=> ['⌘s','↩','⌘w','^2','⌘/','↓','⌘⇧⌥^↩'].map(ι=>{ robot_key_tap(ι); sleep(0.4) }); L ← 50; for (i←0;i<L;i++){ q(); sleep(10); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+# ^⌥x  ; q ← ()=> ['⌘r','^⇥'].map(ι=>{ robot_key_tap(ι); sleep(0.2) }); L ← 15; for (i←0;i<L;i++){ q(); sleep(0); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+# ^⌥x  ; robot.mouseClick('right'); sleep(0.05); {x,y} ← robot.getMousePos(); robot.moveMouse(x+20,y+5); robot.mouseClick(); sleep(0.05); robot.moveMouse(x,y); robot_key_tap('⌘w'); sleep(1); robot_key_tap('^⇥')
+# ^⌥x  ; q ← ()=>{ robot_key_tap('⌘s'); sleep(0.2); robot_key_tap('↩'); sleep(0.2); robot_key_tap('⌘w'); sleep(1) }; L ← 37; for (i←0;i<L;i++){ q(); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
+
+@7_days_to_die ⌘z  ; robot.mouseToggle('down')
+@7_days_to_die ⌘x  ; robot.mouseToggle('down','right')
+@7_days_to_die ⌘w  ; robot.keyToggle('shift','down'); robot.keyToggle('w','down')
+@7_days_to_die ⌘e  ; robot_key_tap('e'); sleep(0.3); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.65); robot_key_tap('r')
+# availble: zx,./;']\90`⌫↩↓↑←→⇪ and sort of upghjkl
+# @7_days_to_die ⌘`  ; robot_key_tap('↩'); sleep(0.1); robot_key_tap('↓')
+# @7_days_to_die ⌘⇧` ; robot.typeString(); for(i←0;i<46;i++){ robot_key_tap('↩'); sleep(0.05); robot_key_tap('↓'); sleep(0.05) }
+# ⌘` ; type1 ← ι=>{ robot_key_tap(ι); sleep(0.04) }; […(46-1-1).map(()=>'Archery'),…(25-1-1).map(()=>'Armor Smithing'),…(65-1).map(()=>'Athletics'),…(61-1-1).map(()=>'Barter'),…(18-1-1).map(()=>'Blade Weapons'),…(58-1-1).map(()=>'Blunt Weapons'),…(59-1).map(()=>'Construction Tools'),…(50-1-1).map(()=>'Gun Smithing'),…(9-1).map(()=>'Heavy Armor'),…(19-1-1).map(()=>'Leatherworking'),…(31-1-1).map(()=>'Light Armor'),…(11-1).map(()=>'Medicine'),…(47-1).map(()=>'Mining Tools'),…(80-1).map(()=>'Miscellaneous Crafting'),…(14-1).map(()=>'Pistols'),…(2-1).map(()=>'Rifles'),…(47-1).map(()=>'Scavenging'),…(33-1-1).map(()=>'Science'),…(28-1).map(()=>'Shotguns'),…(10-1).map(()=>'Tailoring'),…(35-1-1).map(()=>'Tool Smithing'),…(56-1-1).map(()=>'Weapon Smithing'),].forEach((ι,i,l)=>{ if (i<400) return; φ`~/Downloads/x.txt`.text += 'at '+util_inspect_autodepth({ι,i,l:l.length})+'\n'; p('giveselfskillxp '+ι+' 100000'); type1('⌘v'); type1('↩') })

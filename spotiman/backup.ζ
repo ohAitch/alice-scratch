@@ -9,7 +9,7 @@ update_creds ← ι=>{ t ← spotify.getCredentials(); ι.access_token && (t.acc
 
 say_progress ← (λ(){ i←0; ↩ ()=>{ i++; i%10===0 && cn.log(APP,'working @ page #'+i) } })()
 
-depaginate ← λ(f,cbₐ){
+depaginate ← λ(f,cbₐ){ // see googleapis usage for a more up to date version of this function
 	r ← []; async.doWhilst(
 		cb=> f({offset:r.length}).then(ι=>{ ι = ι.body; r.push(…ι.items); say_progress(); cb.P(null,ι).in(0.1) /*baby the rate limit*/ }).done(),
 		ι=> r.length < ι.total,

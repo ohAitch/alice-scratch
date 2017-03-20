@@ -1,3 +1,5 @@
+// _ ← require('underscore')
+
 // this would be so fun to optimize
 // ok, i grok this now, & i see how i'd need to do various things b4 it's optimizeable. let's do this! later. yay grokking parser combinators :)
 

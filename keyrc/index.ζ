@@ -8,6 +8,8 @@ take_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ 
 drop_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
 split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
 
+_alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` //! design better, then rename to alert
+
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
@@ -94,8 +96,8 @@ show_private_xml ← λ(mappings){t←;
 	↩ {root: {
 		item:[
 			M2( 'notsave.2touch', [
-				// …['iBooks|preview','Chrome','path Finder','Github desktop','Vlc'].map(ι=>`
-				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
+				// …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
+				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
 				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.toLowerCase().split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),

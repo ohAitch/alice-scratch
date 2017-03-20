@@ -3,7 +3,8 @@ delete Object.prototype._
 
 countBy ← ι=>{ r ← new Map(); for (var t of ι) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r }
 
-interesting ← ι=> 0?0 // ast -> bool
+// ast -> bool
+interesting ← ι⇒
 	: ι.type==='seq'? ι.ι.some(interesting)
 	: ι.type==='js_data'? ι.ι !== undefined
 	: true
@@ -135,14 +136,14 @@ vmζ_runInContext ← (ast,global_)=>{
 		↩ global_[ι] || τ('‽',{ found_by:ι }) }
 	
 	// convert my abstract data to native javascript data
-	compile ← ι=> 0?0
+	compile ← ι⇒
 		: ι.type==='js_data'? ι.ι
 		: ι.type==='closure'? _(λ ζwrap(…a){↩ compile(vmζ_runInContext(
 			τ('call',{ o:ζwrap.ι, self:τι('js_data',@), a:a.map(ι=> τι('js_data',ι)) })
 			,global_ )) }).assign({ι})
 		:( ι = τι('<not_compiled>',ι), cn.log(ι), ι )
 
-	eval_ ← ι=> 0?0
+	eval_ ← ι⇒
 		: ι.type==='seq'? ι.ι.map(eval_)[-1]
 			// (λ(){ t←; for(i←0;i<ι.ι.length;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
 		: ι.type==='local_private_slot'? stack[-1].ι[ι.name.ι] = eval_(ι.ι)

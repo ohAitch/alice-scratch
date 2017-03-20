@@ -12,6 +12,10 @@
 	<string>/Users/home/file/code/scratch/daily.sh</string>
 	<key>RunAtLoad</key>
 	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/local.daily.err</string>
+	<key>StandardOutPath</key>
+	<string>/tmp/local.daily.out</string>
 	<key>StartCalendarInterval</key>
 	<dict>
 		<key>Hour</key>

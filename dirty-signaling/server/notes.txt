@@ -1,0 +1,5 @@
+if you wanna use socket sometime
+	https://github.com/rauchg/chat-example
+	https://web.archive.org/web/20161022045158/http://socket.io/docs/rooms-and-namespaces/
+	https://web.archive.org/web/20160819094524/http://socket.io/docs/server-api/
+	https://web.archive.org/web/20161022042404/http://socket.io/docs/client-api/

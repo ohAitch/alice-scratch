@@ -25,7 +25,7 @@ def serialize(ι):
 	else: return 'error_ls1w8idny'
 
 ################################## munge_stuff #################################
-URL = r'\b(?:https?://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
+URL = r'\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:'
 
 def merge_overlapping_regions(ι):

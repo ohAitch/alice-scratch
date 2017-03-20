@@ -33,6 +33,9 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.
 // this is pretty fucked up
 
 // // ------- so let's add another fucked up bit, and watch for doi files ------ //
+// E.has_doi = φι=>{
+// 	is_doi ← re`(doi:|doi\.org/) *…${npm`doi-regex@0.1.4`().source}`.i
+// 	↩ Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(false) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
 // chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
 // 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
 // 		has_doi(ι).then(t=>{ if (t) {
@@ -42,4 +45,4 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.
 // 		} })
 
 // ----- so let's add another fucked up bit, and log ambient brightness ----- //
-;(()=> φ`~/file/ambient.txt`.text += Time().ymdhms+' '+brightness.ambient() ).every(10)
+;(()=>{ t ← brightness.ambient(); if (t!==undefined) brightness.get().then(br=> φ`~/file/ambient.txt`.text += util_inspect_autodepth({time:Time().ymdhms,ambient:t,screen:br})+'\n' ) }).every(10)

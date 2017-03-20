@@ -2,8 +2,8 @@
 // APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
 log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text + [Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' ')+'\n'
 
-// ------------------------ should be in standard lib ----------------------- //
-on_off ← λ(){ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(λ([ee,m,f]){ ee.removeListener(m,f) }); ons = [] } }}
+// ---------------------------- as for a prelude ---------------------------- //
+on_off ← ()=>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=>{ ee.removeListener(m,f) }); ons = [] } }}
 
 // ----------------------------------- lib ---------------------------------- //
 as_module ← ι=>{ t ← φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }

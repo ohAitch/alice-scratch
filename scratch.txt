@@ -129,13 +129,10 @@ to_binary_LE ← ι=> […ι].map(ι=> ('00000000'+ι.toString(2)).slice(-8).spl
 entities_encode ← ι=> ι.replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
 entities_decode ← typeof(window)==='undefined'? npm('html-entities@1.2.0').AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
 
--------------------- only for if you want to know how to use -------------------
-(new Proxy({}, {get:λ(ˣ,ι){↩ ι}})).foo === 'foo'
-
 ------------------------------------ stats? ------------------------------------
 erf ← npm('math-erf@1.0.0')
-normal_PDF ← λ(x){ μ ← 0; σ ← 1; v ← pow(σ,2); ↩ 1/sqrt(v*τ)*exp(-pow(x-μ,2)/(2*v)) }
-normal_CDF ← λ(x){ μ ← 0; σ ← 1; ↩ (1 + erf( (x-μ) / (σ*sqrt(2)) ))/2 }
+normal_PDF ← x=>{ μ ← 0; σ ← 1; v ← pow(σ,2); ↩ 1/sqrt(v*τ)*exp(-pow(x-μ,2)/(2*v)) }
+normal_CDF ← x=>{ μ ← 0; σ ← 1; ↩ (1 + erf( (x-μ) / (σ*sqrt(2)) ))/2 }
 invert_specific ← f=> fx=>{ t ← 0; while (f(t) > fx) t+=0.01; ↩ t }
 
 ------------------------ fun with fraction approximation -----------------------
@@ -231,3 +228,26 @@ http://developer.chrome.com/extensions/downloads
 http://developer.chrome.com/extensions/extension
 http://developer.chrome.com/extensions/tabs
 http://developer.chrome.com/extensions/windows
+
+// -------------------------------- databases ------------------------------- //
+google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.length < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }).assign(opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+yt_auth ← φ`~/.auth/_`.json['google.youtube']
+youtube ← {
+	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
+		Π(google_youtube.videos.list)({ auth:yt_auth, part, id, }).then(ι=> ι.items[0] )
+		},
+	playlist:{ from:({id,part='contentDetails,id,snippet,status'})=>
+		google_depaginate( Π(google_youtube.playlistItems.list),{ auth:yt_auth, part, playlistId:id, } )
+		},
+	}
+
+// rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
+// rwby_dl W9wyWgvyp0s 's3e01 Round One'
+
+rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then(ι=>
+	ι.map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ null; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) )['Π&']
+	)
+
+rHjUHnG7WOQ should be obviously type(youtube url)
+youtube.video.from({ id:'rHjUHnG7WOQ' })

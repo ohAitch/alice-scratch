@@ -95,8 +95,6 @@ FnF3 &
 path_finder & ⌘⇧t -> (requires accessibility controls) osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1`
 path_finder & ⌘; -> go_to('path',osaᵥ`path finder: POSIX path of the target of the front finder window`,{in_app:'terminal'})
 photo_booth & ⌘q -> type ⌘q ; φ`~/Pictures/Photo Booth Library/Pictures/*` map{ it.name≈/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/ → [,ymd,h,m,a,b]; time`${ymd}T${h}:${m}` as UTC + (a & ' '+a) + b → name2; mv(it,φ`~/Downloads/${name2}`) }
-sublime_text & ⌘v & pasteboard has (image & not string) -> image be write to φ`~/.image_cache/${random_id(6)}.png` (memoize this), which as url be to paste
-sublime_text & ⌘⌥b -> go_to('app','terminal'); wait 0.01s; type 'eval(ζ_compile(sb()))↩'
 /↩ -> sfx`ack`; go_to('search', copy())
 chrome & ⌘⇧l -> type ⌘l; sfx`ack`; nice_url(it) be put in pasteboard
 terminal &
@@ -156,3 +154,49 @@ chrome & d ->
 ^⌥x -> L ← 15; for i ∈ range(L){ (type [ ⌘r ^⇥ ]) interleave (wait 0.2s); alert`${i+1}/${L}` }
 ^⌥x -> mouse.r click; wait 0.05s; mouse move by [20,5]; mouse click; wait 0.05s; mouse move back; type ⌘w; wait 1s; type ^⇥
 ^⌥x -> L ← 37; for i ∈ range(L){ type ⌘s; wait 0.2s; type ↩; wait 0.2s; type ⌘w; wait 1s; alert`${i+1}/${L}` }
+
+@sublime_text {
+# ------------------------------ should be builtins ------------------------------
+⌘←   -> cmd.move_to({ "to":"hardbol" })
+⌘→   -> cmd.move_to({ "to":"hardeol" })
+⌘t   -> cmd.new_file()
+⌘n   -> cmd.new_window()
+^⇥   -> cmd.next_view()
+^⇧⇥  -> cmd.prev_view()
+⌘9   -> cmd.goto_last_tab()
+⌘0   -> cmd.unbound()
+⌘l   -> cmd.show_overlay({ "overlay":"goto", "show_files":true })
+⇪    -> cmd.show_overlay({ "overlay":"command_palette" })
+⌘p   -> cmd.noop()
+
+# ---------------------------------- find stuff ----------------------------------
+⌘f   -> cmd.show_panel({ "panel":"replace", "reverse":false })
+⌘↩   -> cmd.find_all(   { "close_panel":true }, { context: [ {"key":"panel", "operand":"find"   }, {"key":"panel_has_focus"} ] } )
+⌘↩   -> cmd.find_all(   { "close_panel":true }, { context: [ {"key":"panel", "operand":"replace"}, {"key":"panel_has_focus"} ] } )
+⌘⇧↩  -> cmd.replace_all({ "close_panel":true }, { context: [ {"key":"panel", "operand":"replace"}, {"key":"panel_has_focus"} ] } )
+⌘↩   -> cmd.find_all_under({}, { context: [ {"key":"panel", "operator":"not_equal", "operand":"replace"} ] } )
+⌘m   -> cmd.find_under_expand()
+
+# ---------------------- custon names for existing commands ----------------------
+⌘⌥↑  -> cmd.swap_line_up()
+⌘⌥↓  -> cmd.swap_line_down()
+⌘d   -> cmd.duplicate_line()
+⌘⇧d  -> cmd.find_under_expand()
+^t   -> cmd.clone_file()
+⌫=   -> cmd.run_macro_file({ "file":"res://Packages/Default/Delete Line.sublime-macro" })
+⌘⇧[  -> cmd.fold()
+⌘⇧]  -> cmd.unfold()
+⌘⌥←  -> cmd.bh_key({ "lines":true, "plugin":{ "type":["__all__"], "command":"bh_modules.bracketselect", "args":{"select":"left"} } })
+⌘⌥→  -> cmd.bh_key({ "lines":true, "plugin":{ "type":["__all__"], "command":"bh_modules.bracketselect", "args":{"select":"right"} } })
+
+# -------------------------------- custom commands -------------------------------
+/↩   -> cmd.open_context({ "type":"link" })
+⌘⇧-  -> cmd.make_divider({ "length":30 })
+⌘⇧=  -> cmd.make_divider({ "length":80 })
+;'   -> cmd.inline_eval_zeta()
+⌘b   -> cmd.run_project()
+⌘;   -> cmd.open_context({ "type":"terminal" })
+⌘v & pasteboard has (image & not string) -> image be write to φ`~/.image_cache/${random_id(6)}.png` (memoize this), which as url be to paste
+⌘⌥b  -> go_to('app','terminal'); wait 0.01s; type 'eval(ζ_compile(sb()))↩'
+
+} # -------------------------------------------------------------------------------- 
