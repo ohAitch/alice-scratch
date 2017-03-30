@@ -2,6 +2,7 @@
 # @sublime_text  ;'  ] ⌘⇧⌥^;
 # @sublime_text  /↩  ] ⌘⇧⌥^↩
 # @sublime_text  ⇪   ] ⌘⇧⌥^a
+# @sublime_text  ⌘/. ] ⌘⇧⌥^m
 
 # ---------------------- custom names for existing commands ----------------------
 ⌘t     cmd.new_file()
@@ -41,3 +42,4 @@
 ⌘0     cmd.NO_OP()
 ⌘←     cmd.move_to({ "to":"hardbol" })
 ⌘→     cmd.move_to({ "to":"hardeol" })
+⌘⇧⌥^m  cmd.toggle_comment_2({ "style":"//X " })

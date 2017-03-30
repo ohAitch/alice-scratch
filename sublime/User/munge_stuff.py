@@ -125,3 +125,9 @@ class run_project(sublime_plugin.TextCommand):
 		view = self.view
 		view.run_command("save")
 		ζfresh_async('require_new(φ`~/.bashrc.ζ`).run_project('+E(serialize(view))+')')
+
+class toggle_comment_2(sublime_plugin.TextCommand):
+	def run(self,edit,style):
+		view = self.view
+		for ι in merge_overlapping_regions([ ι for ι in view.sel() for ι in view.lines(ι) ])[::-1]:
+			view.insert(edit,ι.begin(),style)

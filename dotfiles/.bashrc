@@ -37,7 +37,9 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; 
 		if man -- "$1" &> /tmp/man; then
 			cat /tmp/man | col -bfx
 		else
-			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+			rm -rf /tmp/sublime
+			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows[0].buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents }).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
+			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime ~/.history_* --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 		fi
 	fi | sb; }
 alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
@@ -52,6 +54,7 @@ open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photosh
 ############# im_ ############
 im_size() { for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
+im_to_jpg(){ for v in "$@"; do [[ $v = *.jpg ]] || { convert "$v" jpg:"${v%.*}.jpg" && rm "$v"; }; done; }
 # im_to_png(){ ζ ' a.map(ι=> ι.re`\.png$` || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@"; }
 im_to_grey(){ for v in "$@"; do convert "$v" -colorspace gray "$v"; done; }
 im_concat(){

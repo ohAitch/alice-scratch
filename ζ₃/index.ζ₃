@@ -5,3 +5,15 @@ P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 
 // ws ← /[ \t]/
 
+
+// i like this syntax http://www.ocamlpro.com/files/ocaml-lang.pdf
+
+// i like this syntax:
+// foo ← (@,a,b)=>{ ... }
+// ->
+// foo ← (self,a,b)=>(λ(){ ... }).call(self)
+
+// i like this syntax:
+// operator precedence defaults you can define how you want, but also define
+// known legible operator precedence
+// and auto insert parens into the code when the code is not known to be legible

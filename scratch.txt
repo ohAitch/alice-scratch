@@ -215,6 +215,9 @@ poll ← f=>{
 
 spotify_song ← poll(()=> osaᵥ`spotify: {artist,album,name} of current track` )
 
+----------------------- coding things that should be easy ----------------------
+wait for beep then if it was win send keyboard input
+
 ---------------------------- i would like to make a ----------------------------
 ⇪ command console
 http://www.hammerspoon.org/docs/hs.chooser.html would be useful
@@ -230,7 +233,7 @@ http://developer.chrome.com/extensions/tabs
 http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
-google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
+Zgoogle_youtube ← npm`googleapis@18.0.0`.youtube('v3')
 google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.length < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }).assign(opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
@@ -246,7 +249,7 @@ youtube ← {
 // rwby_dl W9wyWgvyp0s 's3e01 Round One'
 
 rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then(ι=>
-	ι.map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ null; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) )['Π&']
+	ι.map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ null; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ).Π&
 	)
 
 rHjUHnG7WOQ should be obviously type(youtube url)

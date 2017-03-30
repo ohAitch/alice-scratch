@@ -8,4 +8,4 @@ cd ~/file/code/tmp/ &&
 git add -A &&
 git commit -m x &&
 git push &&
-ζ ' go_to(`https://gomix.com/#!/project/dirty-signaling`) ;'
+ζ ' go_to(`https://glitch.com/#!/project/dirty-signaling`) ;'

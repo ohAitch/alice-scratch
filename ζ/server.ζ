@@ -25,8 +25,8 @@ eval_in_worker ← (λ(){
 		); w_id ← 0
 	;(λ(){ t ← free.pop(); free._.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
 	cleanup ← ()=>{
-		busy['filter!'](ι=> ι.connected || (log('lost busy worker',ι.id),0))
-		free['filter!'](ι=> ι.connected || (log('lost free worker',ι.id),0))
+		busy.filter!(ι=> ι.connected || (log('lost busy worker',ι.id),0))
+		free.filter!(ι=> ι.connected || (log('lost free worker',ι.id),0))
 		free.size || free.add(make()) }
 	↩ code=>{ cleanup(); t ← free.pop(); free.delete(t); busy.add(t); t.send(['eval',code]); ↩ t }
 	})()

@@ -22,7 +22,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 
 // ---------------------------- as for a prelude ---------------------------- //
 
-E.x = ()=>{ E ← process.env['?']|0
+E.x = ()=>{ E ← process.env.?|0
 	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
 	this_term_is_frontmost ← ()=>{ t ← random_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(""); ↩ r }
 	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
@@ -50,8 +50,8 @@ E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
 		a ← new Set(fs.readdirSync(base)) //! should walk all subfiles
 		b ← new Set(fs.readdirSync(edit))
-		[same,changed] ← […a['∩'](b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
-		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b['-'](a)], ['\x1b[30;41m-\x1b[0m',a['-'](b)], ['\x1b[30;46mx\x1b[0m',changed] ].mapcat(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
+		[same,changed] ← _([…a.∩(b)]).partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
+		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].mapcat(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
 		t = t.split('\n')
@@ -67,7 +67,7 @@ E.diff = (base,edit)=>{
 
 // ----------------------------------- im_ ---------------------------------- //
 
-E.im_resize = (…a)=>{ for (t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } //! wth are you using scale
+E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } //! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 	mv ← λ(a,b){a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}
 	a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){

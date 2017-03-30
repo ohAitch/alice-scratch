@@ -46,3 +46,14 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.
 
 // ----- so let's add another fucked up bit, and log ambient brightness ----- //
 ;(()=>{ t ← brightness.ambient(); if (t!==undefined) brightness.get().then(br=> φ`~/file/ambient.txt`.text += util_inspect_autodepth({time:Time().ymdhms,ambient:t,screen:br})+'\n' ) }).every(10)
+
+// ---------- so let's add another fucked up bit, and poll spotify ---------- //
+spotify_state ← ()=>{ var [[id,playL,size],volume,state,at] = osaᵥ`spotify: { {id, played count, duration} of current track, sound volume, player state, player position }`; t ← osaᵥ`get volume settings`; ↩ { time:Time().i, track:{ id,size,playL, }, spotify_volume:volume, volume:t['output volume'], muted:t['output muted'], at, action:state.ι/*∈['stopped','playing','paused']*/, } }
+;(()=>{ φ`~/file/spotify.txt`.text += util_inspect_autodepth(spotify_state())+'\n' }).every(10)
+
+// ---------- so let's add another fucked up bit, and kill DS_Store --------- //
+chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
+	if (φ(ι).φ`..`+''===φ`~/Downloads`+'')
+	if (φ(ι).name === '.DS_Store')
+		shᵥ`rm ${ι}`
+	})

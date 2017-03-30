@@ -57,20 +57,19 @@ l.   ⇒
 ,.   ↔
 .;   …
 `1   ¬
--1   ₋₁
+-1   ⁻¹
 -=   ±
 sd   ι
 ⌥r3  ∛
 ⌥r4  ∜
 
-
 # math    ⊆⊇⊈⊉ ⊨⊢
-# fun     卍 ⋱ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※ ⁜ ⁞ ⁑ ⁕ ∴ ⁖ ∵ ⁘ ⁙ ⁚ ⁝ ▶ ◆ ◇ ○ ◌ ◍ ◎ ● ◯ ★ ➤
+# fun     卍 ⋱ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※ ⁜ ⁞ ⁑ ⁕ ∴ ⁖ ∵ ⁘ ⁙ ⁚ ⁝ ▶ ◆ ◇ ○ ◌ ◍ ◎ ● ◯ ★ ➤ ½
 # lang++  ∋∌ ⌊⌈⌋⌉ ∕−
 # lang    ☝ ≁≡≢∘⊕⨀⨁⨂⨸ ←↑→↓↔↕↖↗↘↙ ⇐⇑⇓⇔⇕⇖⇗⇘⇙ ∷ ‖ †‡ ‼⁇⁈⁉ ｢｣ ′″‴ ≪≫
 # ≈ _.isEqual  ?
 # ∅ ↺ ↻ ↯ ¢ £ ¥ ¿ ¡ ¶ ▲ ▼ ⌂
-# 🏃⌚⌛⌨⏰⏱⏲⛏⛓⛔⛽✨🌀🌐🌡🌲🌶🍀🍎🎁🎙🎥🎧🎨🎫🎲🎵🏢🏭👀👁👂👄👍👎👤💀💠💤💧💩💬💭💰🖥🖨🗑💻📁📄📅📊📋📚📓📝📦📧📱📷🔅🔆🔇🔈🔉🔊🔋🔌🔑🔒🔔🔥🔨🔮🗜🚦🚪🚫❓❗⭕️📏📐
+# 🏃⌚⌛⌨⏰⏱⏲⛏⛓⛔⛽✨🌀🌐🌡🌲🌶🍀🍎🎁🎙🎥🎧🎨🎫🎲🎵🏢🏭👀👁👂👄👍👎👤💀💠💤💧💩💬💭💰🖥🖨🗑💻📁📄📅📊📋📚📓📝📦📧📱📷🔅🔆🔇🔈🔉🔊🔋🔌🔑🔒🔔🔥🔨🔮🗜🚦🚪🚫❓❗⭕️📏📐💪💫💯💳
 
 FnF1  ; 🔅()
 FnF2  ; 🔆()
@@ -84,6 +83,7 @@ FnF3  ] ⌘^f
 ⌘⇧^4  ; shᵥ`screencapture -io -cr`
 ⌥^s  ; sfx`ack`; t ← (shᵥ`NoSleepCtrl -g ;:`+'').re`0`? 1 : 0; do{ shᵥ`NoSleepCtrl -abs ${t},${t} ;:` }while( !(shᵥ`NoSleepCtrl -g ;:`+'').re`${t}` ); !t && robot_key_tap('FnF6') // ! should timeout in 1s and alert user of failure
 ⌥^l  ; sfx`ack`; go_to('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(' - '))
+^9  ; [windows,spaces] ← tsᵥ`[ TS.window_list, (1..TS.number_of_spaces).map{|ι| TS.name_for_space(ι)} ]`; tsᵥ`TS.move_to_space(${spaces.length-1 +1})`
 @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; go_to('path',osaᵥ`path finder: POSIX path of the target of the front finder window`,{in_app:'terminal'})
 @photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
@@ -91,8 +91,9 @@ FnF3  ] ⌘^f
 @sublime_text  ;'  ] ⌘⇧⌥^;
 @sublime_text  /↩  ] ⌘⇧⌥^↩
 @sublime_text  ⇪   ] ⌘⇧⌥^a
+@sublime_text  ⌘/. ] ⌘⇧⌥^m
 @sublime_text  ⌘⇧v  ; t ← hsᵥ`hs.pasteboard.typesAvailable()`; if (t.image && !t.string){ out ← φ`~/.image_cache/${random_id(6)}.png`.ensure_dir(); p('file:/'+(out+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')); hsᵥ`hs.pasteboard.readImage():saveToFile(${out+''})` }; robot_key_tap('⌘⇧v') // ! really should be ⌘v
-@sublime_text ⌘⌥b ; go_to('app','terminal'); (λ(){ robot_key_tap('⌘'); robot.typeString('eval('); ['⌥0', '⌥3', '⌥b', '⌥6'].map(robot_key_tap); robot.typeString('_compile(sb()))'); robot_key_tap('↩') }).in(0.01)
+@sublime_text ⌘⌥b ; go_to('app','terminal'); φ`/tmp/__·`.text = sb(); sleep(0.01); […"⌘eval['",'⌥0','⌥0','⌥b','⌥7',…"']↩"].map(robot_key_tap.X)
 /↩  ; sfx`ack`; S ← random_id(25); p(S).then(()=>{ robot_key_tap('⌘c'); start ← Time().i; (λ Λ(){t←; (t=p())===S? Time().i < start+1 && Λ.defer() : go_to(t) })() })
 @chrome  ⌘⇧l       ; robot_key_tap('⌘l'); sfx`ack`; [title,url] ← osaᵥ`chrome: {title,URL} of active tab of window 1`; t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; p(nice_url(t))
 @terminal  ⌘r      ; ['⌘t','⌘⇧[','⌘w'].map(robot_key_tap)

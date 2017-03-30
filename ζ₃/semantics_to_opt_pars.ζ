@@ -1,3 +1,25 @@
+call ← axiom(S⇒{
+	syntax(){↩ S`(${@.o} ${@.args})` },
+	eval(){
+		stack.push({ call:@, vars:new Map(_.zip(@.o.params,@.args).slice(0,@.o.params.length)), })
+		r ← @.o.code.eval()
+		stack.pop()
+		↩ r },
+	})
+
+call
+closure
+function
+js_data
+local_slot
+member
+name
+number
+object
+seq
+set_result
+string
+
 // ---------------------------------- util ---------------------------------- //
 delete Object.prototype._
 
@@ -13,7 +35,7 @@ interesting ← ι⇒
 // so far just pretty printing
 Pretty_Typed ← λ(type,ι){ @.type = type; _(@).assign(ι) }
 Pretty_Typed.prototype.inspect = λ(d,opt){t←; r←;
-	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…countBy(t).entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
+	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
 	if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
 	if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.size)
 
@@ -37,7 +59,7 @@ lisp ← (λ(){
 	unit ← P(()=> ws.then(P.alt(
 		group,
 		P(/[0-9][^\s()]*/).map(parseFloat.X).map(ι=> τι('number',ι)),
-		P(/'([^']*?)'/,1).map(ι=> τι('string',ι)),
+		P(/'([^]*?)'/,1).map(ι=> τι('string',ι)),
 		P(/[^\s()]+/).map(ι=> τι('name',ι))
 		)).skip(ws) )
 	group ← P('(').then(unit.many()).skip(P(')')).map(ι=> τ('call',{ f:ι[0], a:ι.slice(1) }))
@@ -64,8 +86,11 @@ call closure function js_data local_private_slot member name number object seq s
 
 ‡ that sounds right, but it's weird and hard. some more story about how specifically our program is going to optimize parsimmon would be nice. i'm tired.
 
+@2017-03-29 ‡ the correct word for prices and size and such is: quality
+
 // -------------- convert babylon ast into intermediate format -------------- //
 vmζ_parse ← code=>{
+	// https://github.com/babel/babylon/blob/master/ast/spec.md
 	r ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:true})
 	r = walk_obj_edit(r,ι=>{
 		// --------------- error on asts i dont know how to handle -------------- //

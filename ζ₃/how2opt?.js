@@ -34,3 +34,8 @@ price random(<str_cp * (0 .. 256)>)
 for parsimmon all i actually want is to inline the closures, like, to take the final Parser and inline all or most of its closures, because this is extremely suitable for parser combinators
 actually also: to redo the pure function in case of error, so that i only need to keep track of (expensive) metadata in case of error
 anything else?
+
+‡ hey explore compilings of this object
+◍ nothing much found. any chance i could instrument it?
+‡ sure, here''s a code you can run to make it again
+◍ cool. so that object is *this* big and *stuff*; we could make another object like *so* that for additional *such* size, and it''s *this* stuff, which could be better
