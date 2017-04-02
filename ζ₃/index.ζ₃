@@ -17,3 +17,5 @@ P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 // operator precedence defaults you can define how you want, but also define
 // known legible operator precedence
 // and auto insert parens into the code when the code is not known to be legible
+
+// i would like this syntax: […λ*(){ a ← ()=> yield* [5]; a(); }()] = […λ*(){ yield* [5] }()]

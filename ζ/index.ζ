@@ -4,10 +4,10 @@ _ ← require('underscore')
 // odd synonym: k, name(, id)
 
 // ---------------------------- as for a prelude ---------------------------- //
-meta ← o=> new Map( […Object.getOwnPropertyNames(o),…Object.getOwnPropertySymbols(o)].map(ι=> [ι,Object.getOwnPropertyDescriptor(o,ι)] ) )
+meta_0 ← o=> new Map( […Object.getOwnPropertyNames(o),…Object.getOwnPropertySymbols(o)].map(ι=> [ι,Object.getOwnPropertyDescriptor(o,ι)] ) )
 define_properties_in ← (o,names,ι)=>{ t ← o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; ↩ o }
 λ Descriptor(ι){ _(@).assign(ι) }
-assign_properties_in ← (o,ι)=>{ […meta(ι)].forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
+assign_properties_in ← (o,ι)=>{ […meta_0(ι)].forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
 
 // ----------------------- local metaprogramming utils ---------------------- //
 properties_tree_formalify ← ι=>
@@ -31,6 +31,8 @@ assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); [�
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 // ---------------------------- as for a prelude ---------------------------- //
+E.meta_0 = meta_0
+
 E.def = (o,name,ι)=>{
 	Tfun(ι) &&( ι = lazy(name,ι) )
 	'configurable' in ι ||( ι.configurable = true )
@@ -91,7 +93,7 @@ def(E,'robot',lazy('robot',()=> npm('robotjs@0.4.5') ))
 def(E,'require_new',lazy('require_new',()=>{ t ← npm`require-uncached@1.0.3`; ↩ ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 
 // --------------------------------- ζ infra -------------------------------- //
-def(eval,'·',{get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }})
+def(eval,'·',{enumerable:true,get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }})
 lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } }
 E.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\x1b[34m[npm]\x1b[0m'
 	[,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -111,7 +113,7 @@ E.js_tokenize = code=>{
 	tok ← npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
 	↩ _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
-E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oenor←;
+E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oenor←; anon_7cy2u←;
 	word_extra ← re`♈-♓🔅🔆`
 	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ${word_extra}`
 	ζ_parse ← (λ(){
@@ -143,16 +145,17 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 		})
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(anon_x818h||(anon_x818h= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
-		.replace(/↩ ?/g,'return ')
-		.replace(/…(?!\$\{|\(\?)/g,'...')
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(anon_oenor||(anon_oenor=re`\.@@([${word}]+)`.g),'[Symbol.$1]')
+		.replace(/↩ ?/g,'return ')
+		.replace(/…/g,'...')
 		.replace(/@/g,'this')
-		.replace(/‽(\(?)/g,(ˣ,callp)=> callp? '!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(" "))}(' : '!function(){throw Error("‽")}()' )
+		.replace(/∞/g,'Infinity')
+		.replace(/‽(?=(\()?)/g,(ˣ,callp)=> callp? `!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}` : `!function(){throw Error('‽')}()` )
 		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]`.g ),ι=> unicode_names.ι[ι.codePointAt(0)] )
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||‽)+x )
-		.replace(/∞/g,'Infinity')
 		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! complement! -= += Π& Π| ⁻¹ -0 ∪! ∩! -! ?? *? +? ? * + ∪ ∩ - & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
+		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ t ← 't_'+random_id(9); ↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 	↩ code=> ζ_parse(code).map((ι,i,l)=> ι.T? ι.ι : ζ_compile_nonliteral(ι) ).join('') })
 ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
 
@@ -466,7 +469,7 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+
 	 - Google Maps( http://google\.com/maps/)          $1
 	*/})
 
-	ι = parse_alicetext(ι).map(λ(ι){t←;
+	ι = parse_alicetext(ι).map(ι=>{t←;
 		if (ι.type === 'url') {
 			uri ← urijs(ι.ι)
 			switch (uri.domain()) { default: ↩ ι
@@ -482,6 +485,13 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+
 	apply_regexes(λ(){/*
 	: \d{5,}: Amazon(?:Smile)?: Books( http://amzn.com/)        $1
 	*/})
+
+	ι = parse_alicetext(ι).map(ι=>{t←;
+		if (ι.type === 'url') {
+			uri ← urijs(ι.ι)
+			if( ι.ι.re`\)$` && uri.hash()==='' ) ι.ι += '#'
+			}
+		↩ ι}).map(ι=>ι.ι).join('')
 
 	// --------- todo --------- //
 	// http://smile.amazon.com/gp/product/0300078153
@@ -853,6 +863,9 @@ Number_toFixed ← λ(θ,ι){ θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? 
 E.pretty_time_num = ι=> _(new Number(ι)).assign({inspect:λ(ˣ,opt){ P ← 20; ι←@; [ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 _(util.inspect.styles).assign({null:'grey',quote:'bold'})
 global.inspect = λ(d,opt){↩ opt.stylize('global','quote') }
+assign_properties_in_E_informal({
+'Number.prototype.inspect':λ(d,opt){'use strict'; ↩ opt.stylize(( Object.is(@,-0)? '-0' : @===∞? '∞' : @===-∞? '-∞' : @+'' ), 'number') },
+})
 E.cn = { log:(…a)=> console.log(
 	is_template(a)?
 		easy_template(ι=>ι)(…a).map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι[0],{colors:true})).join('') :

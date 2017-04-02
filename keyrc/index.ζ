@@ -97,7 +97,7 @@ show_private_xml ← λ(mappings){t←;
 		item:[
 			M2( 'notsave.2touch', [
 				// …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
-				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
+				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc','Discord'].map(ι=>`
 				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.toLowerCase().split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),

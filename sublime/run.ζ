@@ -14,7 +14,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 
 // -------------------------------------------------------------------------- //
 // main ← λ(){
-// 	// shᵥ`ln -sfh ~/code/scratch/sublime/{JavaScript,Text,User,§} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
+// 	// shᵥ`ln -sfh ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
 // 	‽('φ todo')
 // 	from ← φ(__dirname).φ`Packages`
 // 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`

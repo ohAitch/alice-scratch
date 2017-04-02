@@ -138,7 +138,7 @@ vmζ_parse ← code=>{
 			ι.ι = ι.ι.mapcat(ι=> ι.type==='seq'? ι.ι : [ι])
 			// break; foo() -> warning
 			i ← ι.ι.findIndex(ι=> ι.type==='break_fn')
-			dead ← i===-1? [] : ι.ι.splice(i+1,Infinity)
+			dead ← i===-1? [] : ι.ι.splice(i+1,∞)
 			if (dead.some(interesting)) cn.log('[warning]','you have interesting dead code',dead)
 			// seq[ι] -> ι
 			if (ι.ι.length===1) ι = ι.ι[0]
