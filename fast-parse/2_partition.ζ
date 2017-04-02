@@ -1,0 +1,54 @@
+// this is fantastically bad but it works . if youre ok with O(n) for ∪ - ∩ complement
+
+Rₐ ← require('./record')
+binary_search ← npm`binary-search@1.3.2`
+
+// binary_search_num_by ← (l,ι,f)=>{ t ← binary_search(l,ι,(a,b)=> f(a)-f(b)); found ← t>=0; i ← t<0? -t-1 : t; ↩ {found,i} }
+binary_search_num_by_low ← (l,ι,f)=>{ t ← binary_search(l,ι,(a,b)=> f(a)-f(b)); ↩ t<0? -t-1-1 : t }
+
+range ← (a,b)=>{ Tnum(a) && Tnum(b) || ‽; ↩ Rₐ({a,b}).+=`#range` }
+intersects ← (a,b)=>{ if (!(a.a <= b.a)) #swap a b; ↩ b.b > a.a && a.b > b.a }
+touches    ← (a,b)=>{ if (!(a.a <= b.a)) #swap a b; ↩ b.b >= a.a && a.b >= b.a }
+
+_2_partition ← λ(U){ (@.U = U).≈`#range` || ‽; @.ιs = [] }
+_2_partition.prototype.clone = λ(){ r ← new _2_partition(@.U); r.ιs = @.ιs.map(({a,b})=>range(a,b)); ↩ r }
+_2_partition.prototype.complement = λ(){
+	p_if ← ι=> ι.b-ι.a > 0 && r.ιs.push(ι)
+	a ← @.U.a
+	r ← new _2_partition(@.U); for(var ι of @.ιs){ p_if(range(a,ι.a)); a = ι.b }; p_if(range(a,@.U.b)); ↩ r }
+_2_partition.prototype.∪! = λ(ι){
+	if( Tnum(ι) ) ↩ @.∪!(range(ι,ι+1))
+	if (ι instanceof _2_partition){ for (var t of ι.ιs) @.∪!(t); ↩ @ }
+
+	start←; end←;
+	for (i←0;i<@.ιs.length;i++){
+		if (start===undefined) touches(ι,@.ιs[i]) &&( start = i )
+		else if (end===undefined) !touches(ι,@.ιs[i]) &&( end = i-1 )
+		else break
+		}
+	if (end===undefined) end = @.ιs.length-1
+	if (start!==undefined){ @.ιs.splice( start, end+1-start, range( min(@.ιs[start].a,ι.a), max(@.ιs[end].b,ι.b) ) ); ↩ @ }
+
+	at←;
+	for (i←0;i<@.ιs.length+1;i++){
+		left ← i===0? {b:@.U.a-1} : @.ιs[i-1]
+		right ← i===@.ιs.length? {a:@.U.b+1} : @.ιs[i-1]
+		if( left.b < ι.a && ι.b < right.a ){ @.ιs.splice(i,0,ι); ↩ @ }
+		}
+
+	‽ }
+_2_partition.prototype.-! = λ(ι){ r ← @.complement().∪!(ι).complement(); @.ιs = r.ιs; ↩ @ }
+_2_partition.prototype.∩! = λ(ι){↩ @.-!((ι instanceof _2_partition? ι : new _2_partition(@.U).∪!(ι)).complement()) }
+_2_partition.prototype.has = λ(ι){ i ← binary_search_num_by_low(@.ιs,{a:ι},ι=>ι.a); ↩ i>=0 && i<@.ιs.length && @.ιs[i].a <= ι && ι < @.ιs[i].b }
+_2_partition.prototype.keys = _2_partition.prototype.values = _2_partition.prototype.@@iterator = λ*(){ for(var ι of @.ιs) for(i←ι.a;i<ι.b;i++) yield i }
+// t ← new _2_partition(range(0,0x10ffff)).∪!(range(0,0xff))
+// cn.log(t)
+// cn.log(t.clone().-!(range(0x20,0x23)))
+// cn.log(t.clone().-!(range(0x20,0x23)).∩!(range(0x10,0x1000)))
+// cn.log(t.clone().-!(range(0x20,0x23)).∩!(range(0x10,0x1000)).∪!(range(0x200,0x400)))
+// cn.log(t.clone().-!(range(0x20,0x23)).∩!(range(0x10,0x1000)).∪!(range(0x200,0x400)).∪!(0x1000))
+// for(var i of [-10,0,0xf,0x10,0x11,0x1f,0x20,34,35,100,300,800,∞,1e9,5000,4096,4097])
+// 	cn.log(i,t.clone().-!(range(0x20,0x23)).∩!(range(0x10,0x1000)).∪!(range(0x200,0x400)).∪!(0x1000).has(i))
+// cn.log([ [[1,2],[3,4]],[[1,3],[2,4]],[[1,2],[1,4]],[[1,4],[2,4]],[[1,1],[3,4]],[[1,1],[1,4]],[[1,4],[4,4]],[[1,2],[4,4]], [[1,4],[2,2]], ].map(ι=>{ t ← ι.map(ι=> range(…ι)); ↩ [t,intersects(…t),intersects(t[1],t[0])] }))
+
+module.exports = {_2_partition,range,intersects,touches}

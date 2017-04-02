@@ -1,0 +1,27 @@
+// eve-style records with tags, sort of
+
+Tagged ← λ(){ @.tag = new Set() }
+Tagged.prototype.inspect = λ(d,opt){
+	ks ← (…a)=> _(@).keys().sort()._.isEqual(a.sort())
+	↩ @.tag.map(ι=> opt.stylize('#'+ι,'regexp')).join('')+( ks('tag')? '' : ' '+util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag') ,opt) ) }
+Tagged.prototype.≈  = λ(ss,…ιs){ ss.length===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; ↩ @.tag.has(ι.replace(/^#/,'')) }
+Tagged.prototype.+= = λ(ss,…ιs){ ss.length===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.add(ι.replace(/^#/,'')); ↩ @ }
+Tagged.prototype.-= = λ(ss,…ιs){ ss.length===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.delete(ι.replace(/^#/,'')); ↩ @ }
+// Tagged.prototype.<- = 
+Rₐ ← (…a)=>{t←;
+	if (is_template(a)){ r ← new Tagged(); easy_template(ι=>ι)(…a).mapcat(ι=> Tstr(ι)? ι.trim().split(' ') : [{ι:ι[0]}]).forEach(ι=> Tstr(ι)? r.+=([ι]) : _(r).assign(ι) ); ↩ r }
+	a.length===1 || ‽; ι ← a[0]
+	if (ι instanceof Tagged) ↩ ι
+	if (Tprim(ι)) ↩ R`${ι}`
+	if ((t=Object.getPrototypeOf(ι))===null || t===Object.prototype) ↩ _(new Tagged()).assign(ι)
+	‽ }
+// ι = {ι:6}
+// R`#foo #bar ${ι}`
+// R`#foo #bar …${ι}`
+// R`#foo #bar f:${ι}`
+// R`#foo #bar …${{f:ι}}`
+// R(ι).+=`#repeat` vs R`#repeat …${ι}`
+
+// map_tag_tree ← (ι,f)=>{ if(ι&&( Tarr(ι) || ι.tag )) _(ι).forEach((v,k)=> ι[k] = map_tag_tree(v,f) ); ↩ f(ι) }
+
+module.exports = Rₐ
