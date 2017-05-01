@@ -62,6 +62,7 @@ l.   ⇒
 sd   ι
 ⌥r3  ∛
 ⌥r4  ∜
+⌥␣  ​
 
 # math    ⊆⊇⊈⊉ ⊨⊢
 # fun     卍 ⋱ ⌕ ◊⟠ ‹›⟪⟫⸨⸩ ☥ ※ ⁜ ⁞ ⁑ ⁕ ∴ ⁖ ∵ ⁘ ⁙ ⁚ ⁝ ▶ ◆ ◇ ○ ◌ ◍ ◎ ● ◯ ★ ➤ ½
@@ -150,10 +151,11 @@ FnF6             ; sfx`nack`
 # ^⌥x  ; robot.mouseClick('right'); sleep(0.05); {x,y} ← robot.getMousePos(); robot.moveMouse(x+20,y+5); robot.mouseClick(); sleep(0.05); robot.moveMouse(x,y); robot_key_tap('⌘w'); sleep(1); robot_key_tap('^⇥')
 # ^⌥x  ; q ← ()=>{ robot_key_tap('⌘s'); sleep(0.2); robot_key_tap('↩'); sleep(0.2); robot_key_tap('⌘w'); sleep(1) }; L ← 37; for (i←0;i<L;i++){ q(); hsᵥ`hs.alert(${(i+1)+'/'+L})` }
 
-@7_days_to_die ⌘z  ; robot.mouseToggle('down')
-@7_days_to_die ⌘x  ; robot.mouseToggle('down','right')
-@7_days_to_die ⌘w  ; robot.keyToggle('shift','down'); robot.keyToggle('w','down')
-@7_days_to_die ⌘e  ; robot_key_tap('e'); sleep(0.3); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.65); robot_key_tap('r')
+# @7_days_to_die ⌘z  ; robot.mouseToggle('down')
+# @7_days_to_die ⌘x  ; robot.mouseToggle('down','right')
+# @7_days_to_die ⌘w  ; robot.keyToggle('shift','down'); robot.keyToggle('w','down')
+# @7_days_to_die ⌘e  ; robot_key_tap('e'); sleep(0.3); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.03); robot_key_tap('r'); sleep(0.65); robot_key_tap('r')
+
 # availble: zx,./;']\90`⌫↩↓↑←→⇪ and sort of upghjkl
 # @7_days_to_die ⌘`  ; robot_key_tap('↩'); sleep(0.1); robot_key_tap('↓')
 # @7_days_to_die ⌘⇧` ; robot.typeString(); for(i←0;i<46;i++){ robot_key_tap('↩'); sleep(0.05); robot_key_tap('↓'); sleep(0.05) }

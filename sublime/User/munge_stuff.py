@@ -7,6 +7,11 @@
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
 # `~/code/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
 
+# oberon got this already
+# ◍ To launch applications or execute commands, you first type them somewhere (anywhere, it doesn’t matter), and then middle-click them:
+# this syntax-colors them and red-underlines them
+# ◍ You need a program launcher? Create a new text file with the programs you need.
+
 # the clickable search results are currently implemented in a horrifying way, because we are not properly associating data across multiple contexts that make it hard to share data. with the right builtins, this is easily resolveable.
 
 import sublime, sublime_plugin

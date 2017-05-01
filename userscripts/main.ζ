@@ -114,8 +114,6 @@ if( at_url('*google.com') ){
 
 // var my_encode = ι=> ι.replace(/[^A-Za-z0-9 ]/g,'_')
 // var pad0 = ι=> ('0000'+ι).slice(-4)
-// var catch_ = function(f){return function(...a){try {return f.apply(this,a)} catch (ι) {if ('__catchable' in ι) return ι.__catchable; else throw ι}}}
-// var _return = function(ι){throw {__catchable:ι}}
 // var dict_or = (ι,k)=> (k in ι? ι[k] : k)
 
 // var persist_o = name=> {
@@ -143,9 +141,9 @@ if( at_url('*google.com') ){
 // var title = $('.gb-volume-title').text().trim() || location.href
 // setInterval(catch_(()=>{
 // 	$('.pageImageDisplay img').toArray().map(ι=> {
-// 		ι.complete || _return()
-// 		var h = $(ι).attr('src') || _return()
-// 		h === '/googlebooks/restricted_logo.gif' && _return()
+// 		ι.complete || return_()
+// 		var h = $(ι).attr('src') || return_()
+// 		h === '/googlebooks/restricted_logo.gif' && return_()
 // 		var t = h.match(/pg=([A-Z]{2})(\d+)/);
 // 		var pg = t? dict_or({'PA':'','PP':'.f','PR':'.p'},t[1])+pad0(t[2]) : my_encode(h)
 // 		var t = my_encode(title)+' - '+pg+'.png.64'; dl_cache(t) || (dl_cache(t,1), dl_data(img_to_data(ι), t))

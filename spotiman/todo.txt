@@ -23,3 +23,5 @@ think about that and figure out what we want to do with this
 	>			for playlists, tracks order:date group / size > 1 * { [1:] remove }
 	>			for playlists, tracks order:date uniq!
 	>			for playlists, tracks order:date uniq!:id
+
+rename to metaspotify?

@@ -30,15 +30,16 @@ get_my_tracks ← ()=>Π(yes=>{
 			) }) }).done() })
 
 // ---------------------------------- main ---------------------------------- //
-switch(process.argv[2]||''){default:‽
-	break; case 'auth': 
-		go_to( spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify']) )
-	break; case 'auth2':
-		spotify.authorizationCodeGrant(process.argv[3]).then(ι=>{ ι = ι.body; update_creds(ι); cn.log(APP,'auth done') }).done()
-	break; case '':
-		spotify.refreshAccessToken().then(ι=>{ ι = ι.body; update_creds(ι)
-			get_my_tracks().then(ι=>{ φ`~/file/history/auto/spotify/${Time().ymdhms}.json`.ι = ι; cn.log(APP,'backup done') })
-			}).done()
-}
+if_main_do((…a)=>{
+	switch(a[0]||''){default:‽
+		break; case 'auth': 
+			go_to( spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify']) )
+		break; case 'auth2':
+			spotify.authorizationCodeGrant(a[1]).then(ι=>{ ι = ι.body; update_creds(ι); cn.log(APP,'auth done') }).done()
+		break; case '':
+			spotify.refreshAccessToken().then(ι=>{ ι = ι.body; update_creds(ι)
+				get_my_tracks().then(ι=>{ φ`~/file/history/auto/spotify/${Time().ymdhms}.json`.ι = ι; cn.log(APP,'backup done') })
+				}).done()
+		} })
 
 // process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack); throw e })

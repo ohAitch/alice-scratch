@@ -62,7 +62,7 @@ E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.do
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
-	↩ {code: t[0] || Tnum(key)? key : key.codePointAt(), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
+	↩ {code: t[0] || ord(key), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] = arguments }
 	// [key,…ns] ← key.split(/(?=\.\w)/); ns = ns.join('')
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
@@ -99,7 +99,7 @@ T ← 10; i←0; (λ(){sb_editᵥ(view)`view.insert(edit,view.sel()[0].begin(),"
 view ← sbᵥ`sublime.active_window().active_view().id()`
 sublime_set_buffer ← ι=> sb_editᵥ(view)`view.replace(edit,Region(0,view.size()),${ι})`
 
-braille_table ← 0x100.map(ι=> String.fromCodePoint('⠀'.codePointAt()+ι))
+braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ random()<0.5 ?1:0})); ↩ ι} // 115,46
@@ -254,3 +254,32 @@ rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK
 
 rHjUHnG7WOQ should be obviously type(youtube url)
 youtube.video.from({ id:'rHjUHnG7WOQ' })
+
+--------------------------------------------------------------------------------
+global key command: chrome bookmarks?
+really why dont you have sublime's command autocomplete yet
+[ …fi`/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands`.ι, …φ`~/Library/Application Support/Sublime Text 3/Packages/User/Default.sublime-commands`.json ]
+
+def(E,'fi',()=>{
+	// do the right thing by hardcoding it for each input you want to give it :/ hm
+	λ fi(ss,…ιs){
+		is_template([ss,…ιs]) || ‽
+		ι ← '/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands'
+		_.isEqual( ss.raw, [ι] ) || ‽
+		zip ← '/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package'
+		sub ← 'Default.sublime-commands'
+		get ← ()=>{
+			shᵥ`rm -rf /tmp/mbq3p; mkdir /tmp/mbq3p; unzip ${zip} -d /tmp/mbq3p/Default`
+			t ← φ`/tmp/mbq3p/Default/${sub}`.text
+			// this json needs lenient parsing (sigh)
+			t = t.replace(/,(?=\s*\])/g,'')
+			↩ JSON.parse(t) }
+		↩ def({},'ι',{ get, set(ι){ ‽ } })
+		}
+	↩ fi })
+
+--------------------------------------------------------------------------------
+# duti -s com.google.Chrome chrome-extension
+
+------------------------------------- tests ------------------------------------
+/ 'charCodeAt|fromCharCode|codePointAt|fromCodePoint' # should be ord,chr

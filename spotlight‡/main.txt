@@ -1,0 +1,30 @@
+⌘␣ + #gnosis
+☝☝d ≈ ⌘␣ d   ??
+plus all of the nouns
+please? can you? i would it would warm the curve of my body
+
+[keyrc ☝☝letter] is nearly the same as [spotlight letter]; it could be enveloped into that system
+
+in general, universal command prediction based on contexts can handle
+	* autocompletion
+	* goto
+	* sublime command palette
+
+
+
+
+subsecond feedback cycles
+	[an obvious thing to do in an editor]
+	if you type *this* in the editor, it should display as *this*
+	*not* as *this* or as this
+	and then it displays as this for readers
+	but
+	in general, existing UIs lack proper subsecond feedback cycles
+	except for the best ones, like chrome's omnibar
+	this is why terminals failed
+	you have to type a command and press enter before seeing anything
+	even if it's just a one-letter command, that's still too much time
+	(i think. i'm guessing.)
+	so the user ends up needing to develop a lot of prediction software inside their head to get anything done
+	so you can't do anything smart that would be surprising to the user
+	you have to do really predictable autocompletion, for example

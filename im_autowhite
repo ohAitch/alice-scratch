@@ -5,7 +5,7 @@
 
 // ------------------------------- general lib ------------------------------ //
 // shᵥexit ← easy_template((ι,R)=> shᵥ(…R(['{ ',…ι,'; } &>/dev/null; echo $?']))+''==='0' )
-shᵥexit ← λ(ss,…ιs){ try{ shᵥ(ss,…ιs); ↩ true }catch(e){ ↩ e.status===0 } }
+shᵥexit ← (ss,…ιs)=>{ r ← catch_union(()=>shᵥ(ss,…ιs)); ↩ T.Error(r)? e.status===0 : true }
 
 // -------------------------------- requires -------------------------------- //
 t ← (shᵥ`convert -list configure ;:`+'').re`LIB_VERSION_NUMBER (.+)`[1].split(',').map(ι=> ('00'+ι).slice(-2)).join('')
@@ -37,8 +37,9 @@ main ← ι=>{
 	}
 
 APP ← '\x1b[34m[im_autowhite]\x1b[0m'
-argv ← process.argv.slice(2)
-if (argv.length===1) main(argv[0])
-else argv.forEach((ι,i,l)=>{
-	shᵥexit`[ -f ${ι} ]` &&( cn.log(APP,'['+(i+1)+'/'+l.length+']',ι), main(ι) )
+if_main_do((…a)=>{
+	if (a.length===1) main(a[0])
+	else a.forEach((ι,i,l)=>{
+		shᵥexit`[ -f ${ι} ]` &&( cn.log(APP,'['+(i+1)+'/'+l.length+']',ι), main(ι) )
+		})
 	})

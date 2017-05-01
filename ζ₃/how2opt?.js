@@ -2,18 +2,18 @@ how could it optimize parsimmon?
 
 well, how could it optimize
 
-random_id_ ← L=> _.range(L).map(()=> random( _.range(0x100).map(ι=> String.fromCodePoint(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join('')
+random_id_ ← L=> _.range(L).map(()=> random( _.range(0x100).map(ι=> chr(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join('')
 _.range(8).map(random_id_)
 
 price _.range(0x100)
 	heap: 0x100 + 1 words = 257
 	cpu: inspect _.range -> 9 + 0x100 * 4 + 1 simple instructions = 1034
 	<i * 256>
-price String.fromCodePoint(i)
+price chr(i)
 	heap: 0
 	cpu: 1 simple instructions
 	<str_cp>
-price <i * 256>.map(ι=> String.fromCodePoint(ι))
+price <i * 256>.map(ι=> chr(ι))
 	heap: 0x100 + 1 words = 257
 	cpu: 256 * (1 + 1) simple instructions = 512
 	<str_cp * 256>

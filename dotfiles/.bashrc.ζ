@@ -20,6 +20,8 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
+E['‡'] = ‡_repl_start
+
 // ---------------------------- as for a prelude ---------------------------- //
 
 E.x = ()=>{ E ← process.env.?|0
@@ -82,13 +84,14 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`view_from(${ι.id}).file_name()` : ι+''
 
 // E.build = ...
-E.run_project = E.run = (ι,isTTY)=>{t←; try{ if (Tstr(ι)) ι = JSON.parse(ι) }catch(e){}; ι||(ι = φ.cwd.φ`any`)
+E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
 		{ isTTY && ‽; terminal_do_script(sh`clear; cd ${get_filename(ι) || ‽}; run_project ${JSON.stringify(ι)} ✓; x`) }
 	else{
 		is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
 		
 		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
+		sfx`ack`
 
 		build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
 		package ← !!( t=project.φ`package.json`.json, t && t.version )
@@ -120,7 +123,7 @@ E.d = (a='.')=>{
 	q(sum,a)
 
 	progress_bar ← (L,at)=>( L-=2, '['+('='.repeat(L)+'>').slice(-floor(at*L))+' '.repeat(L-floor(at*L))+']' )
-	[,,used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g); [used,free] = [used,free].map(ι=> (ι|0)*512 )
+	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
@@ -186,8 +189,8 @@ E.kp = E.keypresses = ()=>{
 
 E.regex_set = ()=>{
 	process.stdin.read_all().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
-		t←[]; […ι].sort()._.uniq(true).map(ι=>{ ι = ι.codePointAt(); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
-		x ← ι=>{ ι = String.fromCodePoint(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+		t←[]; […ι].sort()._.uniq(true).map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+		x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
 		process.stdout.write(ι)
 		})

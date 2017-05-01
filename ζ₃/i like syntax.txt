@@ -1,0 +1,15 @@
+i like this syntax http://www.ocamlpro.com/files/ocaml-lang.pdf
+
+i like this syntax:
+foo ← (@,a,b)=>{ ... }
+->
+foo ← (self,a,b)=>(λ(){ ... }).call(self)
+
+i like this syntax:
+operator precedence defaults you can define how you want, but also define
+known legible operator precedence
+and auto insert parens into the code when the code is not known to be legible
+
+i would like this syntax: […λ*(){ a ← ()=> yield* [5]; a(); }()] = […λ*(){ yield* [5] }()]
+
+i would like a bit more than just syntax here: Stephen Wolfram's Introduction to the Wolfram Language http://youtu.be/_P9HqHVPeik#t=1m02.5s

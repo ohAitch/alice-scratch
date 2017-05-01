@@ -3,7 +3,7 @@
 log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text + [Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' ')+'\n'
 
 // ---------------------------- as for a prelude ---------------------------- //
-on_off ← ()=>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=>{ ee.removeListener(m,f) }); ons = [] } }}
+on_off ← ()=>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=> ee.removeListener(m,f)); ons = [] } }}
 
 // ----------------------------------- lib ---------------------------------- //
 as_module ← ι=>{ t ← φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }
@@ -32,7 +32,7 @@ eval_in_worker ← (λ(){
 	})()
 procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
 	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode || (♓.exitCode = 1) )
-	{on,off} ← on_off(); on(♓,'uncaughtException',λ(e){ err(e); ♓.exit() }); on(♓,'beforeExit',()=> off())
+	{on,off} ← on_off(); on(♓,'uncaughtException',e=>{ err(e); ♓.exit() }); on(♓,'beforeExit',off)
 	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; [♓.stdin,♓.stdout,♓.stderr]._.zip(a.isTTY).map(([fd,t])=> fd.isTTY = t)
 	try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code) )
@@ -49,8 +49,8 @@ if (!module.parent){
 			socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGINT'); ended = true })).on('error',t)
 			socket.on('data',catch_(λ(ι){
 				if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
-				i←0; get ← n=> i+n <= ι.length || (buf = ι.slice(i), _↩())
-				while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← String.fromCodePoint(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
+				i←0; get ← n=> i+n <= ι.length ||( buf = ι.slice(i), return_() )
+				while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 				})); buf←;
 			a ← {argv:[], cwd:'', env:{}, isTTY:[,,,]}
 			on_msg ← ι=>{switch(ι.type){default: ‽
@@ -59,7 +59,7 @@ if (!module.parent){
 				break; case 'D': a.cwd = ι.ι+''
 				break; case 'R':
 					if (a.argv[1]==='TEST'){ c_send('X',5+''); ended = true; ↩ }
-					worker = eval_in_worker(procify(a,'ζ_main()'))
+					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
 					{on,off} ← on_off()
 					;[1,2].map(i=> on(worker.stdio[i],'data',ι=> c_send(i+'',ι)) )
 					on(worker,'pseudo_exit',λ(i){ c_send('X',i+''); ended = true; off() })

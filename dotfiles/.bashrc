@@ -9,7 +9,7 @@ alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # terminal_do_script
 clear(){ /usr/bin/clear && printf %s $'\e[3J'; }
 
 eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
-	ζ ${"pb kp keypresses run run_project".split(" ").includes(ι)? "--fresh" : null} ${js`
+	ζ ${"pb kp keypresses run run_project ‡".split(" ").includes(ι)? "--fresh" : null} ${js`
 		exit_parent ← ()=> φ("/tmp/exit_parent").text = ""
 		process.env["?"] = a[0]
 		require_new(φ("~/.bashrc.ζ"))[${ι}](…a.slice(1))
@@ -64,6 +64,7 @@ im_concat(){
 im_rotate_jpg(){ jpegtran -rotate 90 -outfile "$1" "$1"; }
 ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3; }
 # ff_ogg_to_mp3(){ ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3"; }
+im_autowhite(){ ~/code/scratch/im_autowhite "$@"; }
 
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done

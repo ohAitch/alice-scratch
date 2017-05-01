@@ -3,7 +3,7 @@ APP ← '\x1b[34m[keyrc]\x1b[0m'
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
-char16hex ← ι=> ('000'+ι.codePointAt().toString(16)).slice(-4)
+char16hex ← ι=> ('000'+ord(ι).toString(16)).slice(-4)
 take_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
 drop_while ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
 split_with ← λ(l,f){ i←0; for(var ι of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
@@ -73,8 +73,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
-	// appdef ← persist_tmp(ι=>{ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })
-	appdef ← ι=> appdefs[ι] = persist_tmp(ι=>{ try{↩ osaᵥ`id of app ${ι}` }catch(e){} })(ι); appdefs ← {}
+	appdef ← ι=> appdefs[ι] = persist_tmp(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(ι); appdefs ← {}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
@@ -96,8 +95,8 @@ show_private_xml ← λ(mappings){t←;
 	↩ {root: {
 		item:[
 			M2( 'notsave.2touch', [
-				// …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','floWstate','Spotify','Terminal','Vlc', 'Mendeley desktop'].map(ι=>`
-				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc','Discord'].map(ι=>`
+				// …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc'].map(ι=>`
+				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc','Discord','Spotify'].map(ι=>`
 				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.toLowerCase().split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),
@@ -118,11 +117,12 @@ regen ← (opt={})=>{
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		if (φ`/Applications/PowerKey.app`.BAD_exists()){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		if( φ`/Applications/PowerKey.app`.BAD_exists() ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
 // ---------------------------------- main ---------------------------------- //
-if( !module.parent ) switch( process.argv[2] ){
+if_main_do((…a)=>{
+switch( a[0] ){
 	default:
 		require('chokidar').watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
 			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
@@ -131,8 +131,8 @@ if( !module.parent ) switch( process.argv[2] ){
 		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
 		restart_and_keep_alive(__filename)
 	break; case 'test':
-		cn.log(parse_keyrc(φ(process.argv[3]).text))
-}
+		cn.log(parse_keyrc(φ(a[1]).text))
+	} })
 
 // -------------------------------------------------------------------------- //
 module.exports.KEY_once = λ(trigger,f,…a){
@@ -171,3 +171,5 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 // faster applescript http://stackoverflow.com/a/3757178/322866 ? or with background python program, i dont care really
 
 //! wtf is it needing to be build *twice* before changes happen?
+
+// could be useful: Split the window however you like! Create new panes, delete panes, move and clone views from pane to pane. http://github.com/SublimeText/Origami

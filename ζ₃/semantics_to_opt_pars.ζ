@@ -202,7 +202,7 @@ vmζ_runInContext ← (ast,global_)=>{
 
 // ---------------------------------- test ---------------------------------- //
 // code ← φ`~/file/code/scratch/ζ/parsimmon2.ζ`.text
-code ← `random_id_ ← L=> L.map(()=> random( _.range(0,0x100).map(ι=> String.fromCodePoint(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join(''); _.range(8).map(random_id_)`
+code ← `random_id_ ← L=> L.map(()=> random( _.range(0,0x100).map(ι=> chr(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join(''); _.range(8).map(random_id_)`
 ctx ← _({ _,random,String, }).map((ι,k)=> [k,τ('js_data',{ι,found_by:k})])._.object()
 ast = vmζ_parse(code)
 t←; dur ← bench1(()=> t = vmζ_runInContext(ast,ctx) )

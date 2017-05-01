@@ -7,14 +7,13 @@
 plist ← npm('plist@1.2.0')
 
 // ------------------------------- generic lib ------------------------------ //
-match_json_head ← ι=> _.range(ι.length).search(λ(i){ i>1e3 && ‽('inefficient'); try{↩ [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] }catch(e){ } })
+match_json_head ← ι=> _.range(ι.length).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
 
 // ----------------------------------- lib ---------------------------------- //
 compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
 
 // -------------------------------------------------------------------------- //
 // main ← λ(){
-// 	// shᵥ`ln -sfh ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages` // and ignore exceptions
 // 	‽('φ todo')
 // 	from ← φ(__dirname).φ`Packages`
 // 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
@@ -59,12 +58,13 @@ sb_keyrc_to_sublime_keymap ← λ(from,to){
 		})
 	φ(to).json = r }
 
-argv ← process.argv
-switch (argv[2]||'') {default: ‽
-	// break; case '': main()
-	break; case '':
-		P ← __dirname+'/User/'
-		colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
-		sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
-	// break; case 'to': to(argv[3], argv[4]||argv[3])
-	}
+if_main_do((…a)=>{
+	switch( a[0]||'' ){default: ‽
+		// break; case '': main()
+		break; case '':
+			shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages; :`
+			P ← __dirname+'/User/'
+			colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
+			sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
+		// break; case 'to': to(a[1], a[2]||a[1])
+		} })
