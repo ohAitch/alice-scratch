@@ -283,3 +283,49 @@ def(E,'fi',()=>{
 
 ------------------------------------- tests ------------------------------------
 / 'charCodeAt|fromCharCode|codePointAt|fromCodePoint' # should be ord,chr
+
+-------------------- IccXML install instructions : osx 10.12 -------------------
+brew install libtiff
+brew install pkg-config
+brew install libxml2
+‡ delete most of extract_probe_data.cpp
+./configure --with-tifflib=/usr/local/Cellar/libtiff/4.0.7_3
+make
+make install
+cd IccXML-0.9.8
+PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig
+./configure
+make
+make install
+# multiply vcgt by x^(γ/1.6) , use iccFromXml iccToXml
+
+--------------- 2017-05-11 misc code things i'd like to have done --------------
+touch bar api
+BTT might help with customizing touch bar
+powerkey might help with customizing touch bar https://github.com/pkamb/PowerKey/issues/39 , https://github.com/pkamb/PowerKey/pull/54 
+
+pressed ;' on 5/(30*365) in discord
+
+do the battery brightness changing thing in software, for more goodness
+do the battery prediction thing in software, for more goodness
+
+nosleep because music
+nosleep because ssh
+nosleep because wifi
+
+quit [ preview, activity monitor ] if no windows
+
+make discord bot to manage voice but not text channels
+
+spotify, if mouse is near&below position bar, move it up to position bar
+
+encode
+	give me a fast algorithm for Math.log, which is fast and pure
+		(except the fast algorithm *is* Math.log, in this case)
+
+improve book interface over dropbox
+#easy if you feel like it
+
+at 3:55 tell Ramana where I am. I expect to be at purple kow at 2:45
+
+i shouldn't have to go through the filesystem to send files from web

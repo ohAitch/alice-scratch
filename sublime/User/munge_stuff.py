@@ -136,3 +136,7 @@ class toggle_comment_2(sublime_plugin.TextCommand):
 		view = self.view
 		for ι in merge_overlapping_regions([ ι for ι in view.sel() for ι in view.lines(ι) ])[::-1]:
 			view.insert(edit,ι.begin(),style)
+
+class zeta(sublime_plugin.WindowCommand):
+	def run(self,x):
+		ζfresh_async(x)

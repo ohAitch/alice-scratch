@@ -1,0 +1,115 @@
+#!/usr/bin/env ζ
+exports←; exports || ( exports = global )
+P ← require('./mainβ')
+
+;(λ(){
+	{Rₐ:R} ← require('./record')
+	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']).assign({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
+	walk_regex ← (ι,f)=> (λ Λ(ι){ if (ι && ι.tag){
+		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
+		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
+		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
+		ι = f(ι,{change})
+		}; ↩ ι })(ι)
+
+	version ← '0.0.0'
+	$ ← ι=>{ r ← parse_normalize_regex_memoized(ι); r.version === version || ‽; delete r.version; ↩ r }
+	skip_e2rbm←; anon_w9lb3←;
+
+	Regex ← (λ(){
+		Regex ← ()=>Regex
+		hex ← /[0-9a-fA-F]/u
+		Escape ← P([ '\\', P.alt([
+			P.alt([ re`x(${hex}{2})`, re`u\{(${hex}+)\}`, re`u(${hex}{4})` ]).map(ι=> chr(parseInt(ι[1],16))),
+			P(/c([A-Z])/).map(ι=> chr( ord(ι[1]) - ord('A') + 1 )),
+			P(/[trnvf0]/).map(ι⇒ {t:'\t',r:'\r',n:'\n',v:'\v',f:'\f',0:'\0'}[ι]),
+			P(/[dDwWsSbB]/).map(ι=> $({
+				d:/[0-9]/u,
+				w:/[A-Za-z0-9_]/u,
+				s:/[ \f\n\r\t\v\xa0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/u,
+				b:String.raw`(?<=\w)(?!\w)|(?<!\w)(?=\w)`,
+				D:/[^\d]/u, W:/[^\w]/u, S:/[^\s]/u, B:/(?!\b)/u,
+				}[ι])),
+			P(/[1-9][0-9]*/).map(ι=> R`#backref ${ι|0}`),
+			/[^]/,
+			]), ]).map(ι=>ι[1])
+		Set_Escape ← P.alt([ P('\\b').map(()=>'\b'), Escape ])
+		Unit ← P.alt([
+			Escape,
+			P('.').map(()=> $(/[^\n\r\u2028\u2029]/u)),
+			P(['(?:',Regex,')']).map(ι=>ι[1]),
+			P(['(?!',Regex,')']).map(ι=>ι[1]).R`#not`,
+			P(['(?=',Regex,')']).map(ι=>ι[1]).R`#not`.R`#not`,
+			P(['(?<=',Regex,')']).map(ι=>ι[1]).R`#behind`,
+			P(['(?<!',Regex,')']).map(ι=>ι[1]).R`#behind`.R`#not`,
+			P(['(',Regex,')']).map(ι=>ι[1]).R`#capture`,
+			P(['[', /\^?/, (λ(){ t ← P.alt([ Set_Escape,/[^\]]/ ]); ↩ P.alt([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]), t ]).* })(), ']'])
+				.map(([ˣ,not,ι,ʸ])=>{ r ← R`#alt ${ι.map(ι=> Tarr(ι)? R`#alt_range ${ι}` : ι )}`; if (not) r = R`#seq ${[ R`#complement ${r}`, R`#any` ]}`; ↩ r }),
+			P(/[$^]/).R`#^$`,
+			/[^)]/,
+			])
+		Postfix ← P([ Unit, P([ P.alt([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]), P('?').?, ]).? ]).map(([ι,rep])=>{
+			if (!rep) ↩ ι
+			for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (λ(){ [ˣ,a,two,b] ← ι; ↩ [a|0,b? b|0 : two? ∞ : a|0] })()
+			↩ R({ ι, for:for_(rep[0]), greedy:!rep[1], }).+=`#repeat` })
+		Infix ← Postfix.*?.R`#seq`.sep_by('|').?.map(ι=> ι.length===1? ι[0] : R`#alt ${ι}` )
+		Regex ← Infix
+		↩ Regex })()
+	parse_regex ← ι=>{ flags ← ι.flags||'u'; ι = ι.source||ι
+		if (!flags.re`u`) ‽('can only parse unicode regex')
+		if (flags.re`y`) ‽('no /y support yet') // should it be handled separately? // r = R`#seq ${[R`#sticky`,r]}`
+		if (flags.re`i`) ‽('no /i support yet') // r = R`#ignore_case ${r}`
+		if (flags.re`g`) ‽('/g should be handled separately')
+		// g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
+
+		ι = Regex.exec(ι)
+		walk_regex(ι,ι=>{
+			if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
+			})
+		_(ι) <- ({version})
+		// ;(λ Λ(ι){ if (ι && ι.tag){
+		// 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
+		// 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
+		// 	}; ↩ ι })(ι)
+		↩ ι }
+	normalize_to_axioms_regex ← ι=>{
+		ι.version === version || ‽
+		ι = walk_regex(ι,(ι,{change})=>{
+			is_null ← ι=> Tstr(ι)? false : ( (ι.≈`#alt` || ι.≈`#seq`) && ι.ι.every(is_null) ) || ( ι.≈`#not` && is_bottom(ι.ι) )
+			is_bottom ← ι=> Tstr(ι)? false : ( ι.≈`#alt` && ι.ι.every(is_bottom) ) || ( ι.≈`#seq` && ι.ι.some(is_bottom) ) || ( ι.≈`#not` && is_null(ι.ι) )
+			if( ι.≈`#seq` ){
+				ι = change({ ι: ι.ι.mapcat(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] ) }, _.isEqual)
+				if (ι.ι.length===1) ↩ ι.ι[0]
+				}
+			if( !skip_e2rbm ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_e2rbm = true; r = $(r); skip_e2rbm = false; ↩ r } })
+			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.length ) ↩ $(/(?:)/u)
+			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
+			↩ ι })
+		_(ι) <- ({version})
+		↩ ι }
+	parse_normalize_regex_memoized ← ι=>{ t ← (anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) ))(ι); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+
+	t ← { Regex,parse_regex,normalize_to_axioms_regex }
+	_(t).map(ι=> _(ι) <- ({version}) )
+	_(exports) <- (t)
+
+	if( !module.parent ) [
+		/(?:(|))/u,
+		/(|)/u,
+
+		/(#!.*\n)?$/u,
+		/foo[a-x]/u,
+		/^(foo)?(?:b(b.)){2,7}\baz[^]??[^\n](?:\\b.ar|\b[\ba-c-e()}][^\s]|b*?|baz(gremlin\u2424$)?(?!groblem)|)*\3/u,
+		/\{([0-9]+)(?:(,)([0-9]*))?\}/u,
+		/[^imu]/u,
+		/(['"])((\\.|(?!\1|\\)[^])*?\1)/u,
+		/(?:\\[^]|(?!`|\$\{)[^])+/u,
+
+		// fix:
+		/[\d]/u,
+		/[^\d]/u,
+		/[\D]/u,
+		/[^\D]/u,
+		].forEach(ι=> cn.log('test:parse_regex',ι,'=',normalize_to_axioms_regex(parse_regex(ι))))
+
+	})()

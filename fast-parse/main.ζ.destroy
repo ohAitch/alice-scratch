@@ -1,0 +1,30 @@
+// ------------------------------- fast_parse ------------------------------- //
+make_line_col_index ← (in_,i)=>{ lines ← in_.slice(0,i).split('\n'); ↩ { offset:i, line:lines.length, column:lines[-1].length+1, } }
+
+word_extra ← re`♈-♓🔅🔆`; word_extra_gu ← re`[${word_extra}]`.g
+word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ${word_extra}`
+ident ← re`(?![0-9])[${word}]+|@`
+comment ← re`(?://.*|/\*[^]*?(?:\*/|$))+`
+simple_js ← P(()=> P.alt([
+	P(comment).R`#comment`,
+	[ P('{'), simple_js, P('}') ],
+	[ P.alt([
+		P(/(['"])((\\.|(?!\1|\\)[^])*?\1)/).map(ι=> ι[0]).R`#string`,
+		ident,
+		P([ P('`').R`#template`, tmpl_ι.*, P('`').R`#template` ]),
+		/[)\]0-9]/,
+		]), P(re`[ \t]*(?!${comment})/`).?.map(ι=> ι||'') ],
+	P(re`/(?:(?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/(?:[a-z]*)`).R`#regex`,
+	re`[^{}/'"…${'`'})@\]${word}]+|[^}]`,
+	]).* )
+tmpl_ι ← P.alt([ [ P('${').R`#template`, simple_js, P('}').R`#template` ], P(/(?:\\[^]|(?!`|\$\{)[^])+/).R`#template` ])
+js_file ← P([ P(/(?:#!.*\n)?/).R`#shebang`, simple_js ])
+
+ζ_parse ← code=>{ r ← []; for(var t of parse(js_file.skip(/$/),code)._.flatten()) Tstr(t) && Tstr(r[-1])?( r[-1]+=t ): r.push(t); ↩ r }
+test ← ()=> ζ_parse(in_); in_ ← φ`/tmp/foo`.text // φ`~/code/scratch/ζ/index.ζ`.text
+// pass ← JSON.stringify(test())===φ`/tmp/aaaa`.text
+// cn.log(pass?'pass ✓':'fail X')
+cn.log(js_file)
+// cn.log('perf',bench(test,{TH:3}))
+cn.log('perf',pretty_time_num(bench1(test) * (φ`~/code/scratch/ζ/index.ζ`.text.length / φ`/tmp/foo`.text.length)))
+// cn.log('output',test())

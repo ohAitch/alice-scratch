@@ -46,18 +46,18 @@ function hs.ipc.handler(x) local fn, err = load('return '..x); if not fn then fn
 -- http://hammerspoon.org/docs/hs.application.html & http://hammerspoon.org/docs/hs.hints.html & http://hammerspoon.org/docs/hs.grid.html & http://hammerspoon.org/docs/hs.layout.html & http://hammerspoon.org/docs/hs.mjomatic.html & http://hammerspoon.org/docs/hs.window.html & http://hammerspoon.org/docs/hs.window.filter.html & http://hammerspoon.org/docs/hs.window.switcher.html
 
 ------------ clock -----------
-bonus = ''
+-- bonus = ''
 
-time_bar = hs.menubar.new():priority(hs.menubar.priorities['system']):setClickCallback(function() Z(nil,'shᵥ`open /System/Library/PreferencePanes/DateAndTime.prefPane`') end)
-function update_time() local now = os.time(); time_bar:setTitle(bonus..'⁝'..os.date('%a -%m-%d %H:%M',now)..'⁝'..os.date('!%H:%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(.....)','%1 %2')) end
+time_bar = hs.menubar.new():priority(hs.menubar.priorities['system']) -- :setClickCallback(function() Z(nil,'shᵥ`open /System/Library/PreferencePanes/DateAndTime.prefPane`') end)
+function update_time() local now = os.time(); time_bar:setTitle(os.date('%a -%m-%d %H:%M',now)..'⁝'..os.date('!%H:%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(.....)','%1 %2')) end
 tb_timer = nil
 loop = function() update_time(); tb_timer = hs.timer.doAfter(60 - os.time()%60,loop) end; loop()
 start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_time() end end))
 
-function update_bonus() Z(function(e,x) bonus = x..' days to al-lex'; update_time() end,"((Time('2017-04-29T19:00Z').i - Time().i)/86400).toFixed(2)") end
-tb_timer2 = nil
-loop2 = function() update_bonus(); tb_timer2 = hs.timer.doAfter(864 - os.time()%864,loop2) end; loop2()
-start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_bonus() end end))
+-- function update_bonus() Z(function(e,x) bonus = x..' days to al-lex'; update_time() end,"((Time('2017-04-29T19:00Z').i - Time().i)/86400).toFixed(2)") end
+-- tb_timer2 = nil
+-- loop2 = function() update_bonus(); tb_timer2 = hs.timer.doAfter(864 - os.time()%864,loop2) end; loop2()
+-- start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_bonus() end end))
 -- as a fun thing, you could get this all to ζ already so that you could have made this *easily*
 
 -- local module = {}

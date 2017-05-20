@@ -117,7 +117,7 @@ regen ← (opt={})=>{
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		if( φ`/Applications/PowerKey.app`.BAD_exists() ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		// if( φ`/Applications/PowerKey.app`.BAD_exists() ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
 // ---------------------------------- main ---------------------------------- //

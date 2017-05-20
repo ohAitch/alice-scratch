@@ -10,7 +10,7 @@ plist ← npm('plist@1.2.0')
 match_json_head ← ι=> _.range(ι.length).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
 
 // ----------------------------------- lib ---------------------------------- //
-compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
+compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','␣':'space','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
 
 // -------------------------------------------------------------------------- //
 // main ← λ(){

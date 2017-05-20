@@ -1,54 +1,46 @@
 #!/usr/bin/env ζ
-
-// ----------------------------- todo eventually ---------------------------- //
-// pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
-
-// -------------------------------------------------------------------------- //
 delete Object.prototype._
-Rₐ ← require_new('./record')
-{_2_partition,range,intersects,touches} ← require_new('./2_partition')
+{Rᵢ} ← require_new('./record')
+ℝ_set ← require_new('./ℝ_set')
 
-Rᵢ ← (tag,ι)=>{ if (!ι){ ι = tag; tag = undefined }
-	if (tag) ι.tag = tag
-	!ι.inspect && _(ι).assign({ inspect(d,opt){
-		ks ← (…a)=> _(@).keys().sort()._.isEqual(a.sort())
-		↩ (Tarr(@.tag)? @.tag : [@.tag]).map(ι=> opt.stylize('#'+ι,'regexp')).join('')+( ks('tag')? '' : ' '+util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag') ,opt) )
-		}, })
-	↩ ι }
-
-Parser ← λ(tag,ι){ if (!(@ instanceof Parser)) ↩ new Parser(tag,ι); _(@).assign({tag},ι) }
-Rᵢ(Parser.prototype)
-Parser.prototype.exec = λ(in_){ for(var t of @._(in_,0)) ↩ t }
-
-EOF ← /(?![^])/
-
-// --------------------------- Parser constructor --------------------------- //
+// ------------------------------- Parser type ------------------------------ //
+Parser ← λ(tag,ι){ if (!(@ instanceof Parser)) ↩ new Parser(tag,ι); _(@) <- ({tag},ι) }
 P ← ι⇒
 	: ι instanceof Parser? ι
-	// : Tfun(ι)? R`#graph_thunk ${()=> P(ι())}`
-	: Tstr(ι)? ι.length===1? P.unit(ι) : P([…ι]).map(ι=> ι.join(''))
+	: Tstr(ι)? ι.length===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
+	: Tfun(ι)? P._graph_thunk(ι)
 	: Tarr(ι)? P._seq(ι)
 	: T.RegExp(ι)? P._regex(ι)
 	: ‽('cant make parser from',ι)
+P.prototype = Parser.prototype
+Rᵢ(P.prototype)
+P.prototype.exec0 = λ(in_){ for(var t of @._(in_,0)) ↩ t.ι }
+P.prototype.exec = λ(in_){ for(var t of @.skip(EOF)._(in_,0)) ↩ t.ι }
+
+EOF ← /(?![^])/
+
+module.exports = P
 
 // ------------------------------- root types ------------------------------- //
-P.unit = ι=> Parser('unit',{
+P._unit = ι=> Parser('unit',{
 	ι,
-	_:λ*(in_,i){ in_[i]===@.ι &&( yield {i:i+1,ι:in_[i]} ) },
+	_:λ*(in_,i){ if( in_[i]===@.ι ) yield { i:i+1, ι:in_[i] } },
 	})
 P.not = ι=> Parser('not',{
 	ι:P(ι),
 	// not:not: -> t.status? make_win(i,undefined) : t
 	// not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,undefined)
-	_:λ*(in_,i){ for(var t of @.ι._(in_,i) ) ↩; yield {i,ι:undefined} },
+	_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩; yield { i, ι:undefined } },
 	})
-__seq ← λ* Λ(ps,ps_i,in_,i){
-	if( ps.length - ps_i === 0 ) yield {i,ι:[]}
-	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }
-	}
+__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if (done) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
+// __seq ← λ* Λ(ps,ps_i,in_,i){
+// 	if( ps.length - ps_i === 0 ) yield {i,ι:[]}
+// 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }
+// 	}
 P._seq = ι=> Parser('seq',{
 	ι:ι.map(P.X),
-	_:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) },
+	_:λ*(in_,i){ yield* __seq2(@.ι.seq,in_,i) },
+	// _:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) },
 	})
 P.alt = ι=> Parser('alt',{
 	ι:ι.map(P.X),
@@ -58,9 +50,9 @@ P.return = ι=> Parser('return',{
 	ι,
 	_:λ*(in_,i){ yield {i,ι:@.ι} },
 	})
-Parser.prototype.chain = λ(f){↩ Parser('chain',{
+P.prototype.chain = λ(f){↩ Parser('chain',{
 	ι:@, f,
-	_:λ*(in_,i){ start ← i; for(var t of @.ι._(in_,i)){ {i,ι} ← t; yield* @.f(ι,{ start,i,in_ })._(in_,i) } },
+	_:λ*(in_,i){ start ← i; for(var {i,ι} of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) },
 	}) }
 
 // -------------------------- pseudocomposite types ------------------------- //
@@ -69,7 +61,7 @@ P.alt_range = (a,b)=> Parser('alt',{
 	a, b,
 	_:λ*(in_,i){ ι ← in_[i]; if( a<=ι&&ι<b ) yield {i:i+1,ι} },
 	})
-Parser.prototype.repeat = function(for_,greedy=true){↩ Parser('repeat',{
+P.prototype.repeat = function(for_,greedy=true){↩ Parser('repeat',{
 	ι:@, for_, greedy,
 	_:λ*(in_,i){
 		if (!@.for_[1]){ yield {i,ι:[]}; ↩ }
@@ -81,116 +73,73 @@ P._regex = ι=> Parser('regex',{
 	ι,
 	_:λ*(in_,i){t←; !@.ι.flags.replace(/[muy]/g,'')||‽; if( t=@.ι.u.y.exec_at(in_,i) ) yield { i: i+t[0].length, ι: t.length===1? t[0] : t.slice() } },
 	})
+P._graph_thunk = f=> Parser('graph_thunk',{
+	ι:f,
+	_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ); ↩ (0,@.ι)._(in_,i) },
+	})
 
 // ----------------------------- composite types ---------------------------- //
-Parser.prototype.map = λ(f){↩ @.chain(_(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }).assign({f})) }
-def(Parser.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
-def(Parser.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
-def(Parser.prototype,'+',{get(){↩ @.repeat([1,∞]) }})
-def(Parser.prototype,'??',{get(){↩ @.repeat([0,1],false).map(ι=>ι[0]) }})
-def(Parser.prototype,'*?',{get(){↩ @.repeat([0,∞],false) }})
-def(Parser.prototype,'+?',{get(){↩ @.repeat([1,∞],false) }})
-Parser.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
-Parser.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
+P.prototype.map = λ(f){↩ @.chain(_(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }).assign({f})) }
+def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
+def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
+def(P.prototype,'+',{get(){↩ @.repeat([1,∞]) }})
+def(P.prototype,'??',{get(){↩ @.repeat([0,1],false).map(ι=>ι[0]) }})
+def(P.prototype,'*?',{get(){↩ @.repeat([0,∞],false) }})
+def(P.prototype,'+?',{get(){↩ @.repeat([1,∞],false) }})
+P.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
+P.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
+P.prototype.sep_by = λ(sep){↩ P([ @, P([sep,@]).map(ι=>ι[1]).* ]).map(([ι,ιs])=> [ι,…ιs]) }
 
-// ------------------------------- regex_parse ------------------------------ //
+// --------------------------- regex ast -> Parser -------------------------- //
+require_new('./parse')
 
-// this is the old one, basically:
-anon_eefm3←null;
-regex_parse ← ι=> (anon_eefm3 || ( anon_eefm3 = _.memoize(flags=>{
-	ENC ← ι=> parse(OR_or_SEQ.skip(/$/),ι.source || ι)
-	dehex ← ι=> String.fromCodePoint(parseInt(ι,16))
-	simplify ← ι=>{ if (ι && ι.tag){
-		if (ι.ι){ if (Tarr(ι.ι)) ι.ι = ι.ι.map(simplify); else ι.ι = simplify(ι.ι) }
-		if (ι.≈`#seq`){
-			ι.ι = ι.ι.mapcat(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] )
-			if (ι.ι.length===1) ↩ simplify(ι.ι[0])
-			}
-		if (ι.≈`#not` && ι.ι.≈`#set` && !ι.ι.ι.length) ↩ ENC(/(?:)/)
-		}; ↩ ι }
+// old thing:
+interpret_regex_exec_at ← (ι,str,i)=>{
+// 	regex_parse produces these tags:
+// 	any
+// 	not
+// 	or
+// 	repeat
+// 	seq
 
-	ESCAPE ← P(['\\',P.alt([
-		P(/x([0-9a-fA-F]{2})/).map(ι=> dehex(ι[1])),
-		P(/u\{([0-9a-fA-F]+)\}/).map(ι=> dehex(ι[1])),
-		P(/u([0-9a-fA-F]{4})/).map(ι=> dehex(ι[1])),
-		P(/c[A-Z]|[trnvf0]|[dDwWsSbB]|[1-9][0-9]*/).map(ι⇒
-			{t:'\t',r:'\r',n:'\n',v:'\v',f:'\f',0:'\0'}[ι] ||( 0?0
-			: ι[0]==='c'? String.fromCodePoint(ι[1].codePointAt() - 'A'.codePointAt() + 1)
-			: ι==='d'? ENC(/[0-9]/u)
-			: ι==='D'? ENC(/[^0-9]/u)
-			: ι==='w'? ENC(/[A-Za-z0-9_]/u)
-			: ι==='W'? ENC(/[^A-Za-z0-9_]/u)
-			: ι==='s'? ENC(/[ \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/u)
-			: ι==='S'? ENC(/[^ \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/u)
-			: ι==='b'? ENC(String.raw`(?<=\w)(?!\w)|(?<!\w)(?=\w)`)
-			: ι==='B'? ENC(String.raw`(?<=\w)(?=\w)|(?<!\w)(?!\w)`)
-			: ( ι===(ι = ι|0)+'' || ‽, Rₐ`#backref ${ι}` ) ) ),
-		/[^]/,
-		])]).map(ι=>ι[1])
-	SET_ESCAPE ← P.alt([ P('\\b').map(()=>'\b'), ESCAPE ])
-	s1 ← P.alt([
-		/[^.()[\]^$|\\]/,
-		ESCAPE,
-		P('.').map(()=> ENC(/[^\n\r\u2028\u2029]/)),
-		P(['(?:',OR_or_SEQ,')']).map(ι=>ι[1]),
-		P(['(?!',OR_or_SEQ,')']).map(ι=>ι[1]).R`#not`,
-		P(['(?=',OR_or_SEQ,')']).map(ι=>ι[1]).R`#not`.R`#not`,
-		P(['(?<=',OR_or_SEQ,')']).map(ι=>ι[1]).R`#behind`,
-		P(['(?<!',OR_or_SEQ,')']).map(ι=>ι[1]).R`#behind`.R`#not`,
-		P(['(',OR_or_SEQ,')']).map(ι=>ι[1]).R`#capture`,
-		P(['[', /\^?/, (λ(){ t ← P.alt([ SET_ESCAPE,/[^\]]/ ]); ↩ P.alt([ P([ P([t,'-']).map(ι=>ι[0]), t ]), t, ]).* })(), ']'])
-			.map((ˣ,not,ι,ʸ)=>{ r ← Rₐ`#set ${ι}`; if (not) r = Rₐ`#seq ${[ Rₐ`#not ${r}`, Rₐ`#any` ]}`; ↩ r }),
-		])
-	TIMES ← P([ s1, P([ P.alt([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]), P('?').?, ]).? ]).map(([ι,rep])=>{
-		if (!rep) ↩ ι
-		for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (λ(){ [ˣ,a,two,b] ← ι; ↩ [a|0,b? b|0 : two? ∞ : a|0] })()
-		↩ Rₐ({ ι, for:for_(rep[0]), greedy:!rep[1], }).+=`#repeat` })
-	q ← dir=> ENC((!flags.re`m`? { '^':'(?<![^])', '$':'(?![^])' } : { '^':'(?<![^\n\r])', '$':'(?![^\n\r])' })[dir])
-	s2 ← P.alt([ P('^').map(q), P('$').map(q), TIMES ])
-	OR_or_SEQ ← P.sep_by(s2.*.R`#seq`, '|').map(ι=> ι.length > 1? Rₐ`#or ${ι}` : ι[0] )
-	↩ ι=>{
-		r ← parse(OR_or_SEQ.skip(/$/),ι)
-		if (flags.re`y`) r = Rₐ`#seq ${[Rₐ`#sticky`,r]}`
-		if (flags.re`u`) r = Rₐ`#unicode ${r}`; else ‽('can only parse unicode regex')
-		if (flags.re`i`) r = Rₐ`#ignore_case ${r}`
-		if (flags.re`g`) ‽
-		// g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
-		↩ Rₐ(simplify(r)).+=`#RegExp`
-		} }) ))(ι.flags || '')(ι.source || ι)
+// 	behind
+// 	set
 
-// -------------------------------------------------------------------------- //
-// Parser.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']).assign({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
-// P.sep_by = (p,sep)=> P.alt([ P.sep_by1(p,sep), P.return([]) ])
-// P.sep_by1 = (p,sep)=> P(p).chain(ι=> P([sep,p]).map(ι=>ι[1]).*.map(ιs=> [ι].concat(ιs)))
-// else if( @.≈`#graph_thunk` ) ↩ parse(( Tfun(@.ι) &&( @.ι = @.ι() ), @.ι ),in_,i)
+// 	backref
+// 	capture
+// 	ignore_case
+// 	RegExp
+// 	sticky
+// 	unicode
+	ι = regex_parse(ι)
+	ι.≈`#unicode` || ‽
+	ι = ι.ι
+	ι.≈`#seq` && ι.ι[0].≈`#sticky` || ‽
+	ι.ι.shift()
+	ι = map_tag_tree(ι,ι⇒
+		: Tstr(ι)? P(ι)
+		: ι.tag &&( ι.≈`#seq` || ι.≈`#repeat`)? ι.map(ι=> ι.join(''))
+		: ι )
+	cn.log('running',ι)
+	log.set('info')
+	t ← parse(ι,str,i)
+	log.set('warn')
+	↩ !t.status? null : t.ι }
 
 // -------------------------------------------------------------------------- //
 // Don't use backtracking, instead explore all variants concurrently. Backtracking requires to keep the entire input in memory (also known as a memory leak).
 // ‡ this sounds like “do breadth first search instead of depth first” which has its own issues
 // Support left recursion.
 
-// fix regex_parse(/[^\s]/u)
-// fix regex_parse(/[\D]/u)
+// cn.log(/(?:b|a|r| |f|o|m)*foo+/uy.exec_at('bar fooooooo m fooo fo',0))
+// cn.log([interpret_regex_exec_at(/(?:b|a|r| |f|o|m)*foo+/uy,'bar fooooooo m fooo fo',0)])
 
-// cn.log(new _2_partition(range(0,0x10ffff)).∪!(range(0,0xff)))
-// p ← P([ P.alt([…/[a-z]/]).+.map(ι=> ι.join('')), ':', P.alt([…/[ -~]/]).+.map(ι=> ι.join('')) ]).skip(EOF)
-// cn.log('a',p.exec('name: also name'))
-// p ← P([ '"', P.alt([…/[ -~]/]).*.map(ι=> ι.join('')), '"' ]).skip(EOF)
-// cn.log('b',p.exec('"foo","bar"'))
-// p ← P([ '"', P.alt([…/[A-~]/]).*.map(ι=> ι.join('')), '"' ]).skip(EOF)
-// cn.log('c',p.exec('"foo","bar"'))
-// p ← P([ '"', P.alt([…/[ -~]/]).*?.map(ι=> ι.join('')), '"' ])
-// cn.log('d',p.exec('"foo","bar"'))
-// cn.log('e',p.exec('""'))
-// cn.log('f',p.exec('"foo"'))
-// p ← P([ '"', P.alt([…/[ -~]/]).repeat([0,4]).map(ι=> ι.join('')), '"' ]).skip(EOF)
-// cn.log('g',p.exec('"foo","bar"'))
-cn.log(regex_parse(/foo[a-x]/u))
+// parse_regex
+// 	-> thing w/ .version
+// normalize_to_axioms_regex
+// 	requires version match
+// P(ι)
+// 	requires version match, calls normalize_to_axioms_regex and parse_regex
 
-
-
-
-// wtf this is impossible
-
-// 	'1 left':λ(ops_p,next_p){ r ← P(()=> P.seq_map(ops_p, r, (op,ι)=> AST('op',{A:'1 left', op, ι})).or(next_p) ); ↩ r },
-// 	'1 left':(ops_p,next_p)=> P([ ops_p.many(), r ]).map(([r,x])=> r.reduce((ι,op)=> AST('op',{A:'1 left', op, ι}), x) ),
+// ----------------------------- todo eventually ---------------------------- //
+// pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
