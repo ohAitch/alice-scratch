@@ -7,7 +7,7 @@
     "url": "https://github.com/alice0meta/scratch.git"
   },
   "dependencies": {
-    "chokidar": "^1.6.1",
+    "chokidar": "^1.7.0",
     "set-input-source": "^1.0.2",
     "unicode-hex-input-fix": "^1.0.0"
   },

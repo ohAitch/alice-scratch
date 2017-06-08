@@ -31,15 +31,15 @@ ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is 
 …(){ eval "$(cat)"; }
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; &>/dev/null popd; } # for /
 /(){
-	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.history{,/.sublime}}
-	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.history}
+	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.archive{,/.sublime}}
+	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.archive}
 	else
 		if man -- "$1" &> /tmp/man; then
 			cat /tmp/man | col -bfx
 		else
 			rm -rf /tmp/sublime
 			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows[0].buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents }).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
-			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime ~/.history_* --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime ~/.archive_* --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 		fi
 	fi | sb; }
 alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
@@ -69,7 +69,7 @@ im_autowhite(){ ~/code/scratch/im_autowhite "$@"; }
 comic_rotate(){
 	mkdir '#rotated'; for v in *; do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated'; done
 	cd '#rotated'; find . -type f -print0 | while IFS= read -r -d $'\0' t; do convert -rotate 270 "$t" "$t"; done; }
-cache_imgurs(){ for v in "$@"; do local o=~/file/history/.cache/imgur/"$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
+cache_imgurs(){ for v in "$@"; do local o=~/file/.cache/imgur/"$v"; [ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v"; done; }
 youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1"; }
 youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 ζlog(){ cat /usr/local/lib/node_modules/zeta-lang/log.txt; }

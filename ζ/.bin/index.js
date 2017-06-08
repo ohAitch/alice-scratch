@@ -98,7 +98,7 @@ var path = require('path')
 var fs = require('fs')
 var moment = require('moment')
 if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } // browserify
-def(E,'robot',lazy('robot',()=> npm('robotjs@0.4.5') ))
+def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`; return ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 
 // --------------------------------- ζ infra -------------------------------- //
@@ -181,7 +181,7 @@ if (require.extensions && !require.extensions['.ζ']) (()=>{
 
 // ---------------------------- as for a prelude ---------------------------- //
 var simple_hash_str = ι=> JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); return r } })
-var b36 = ι=> npm('base-x@1.0.4')([.../[0-9a-z]/].join('')).encode(ι)
+var b36 = ι=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode(ι)
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
 var memo_frp = function(names,within,f){
 	var dir = φ`~/.memo_frp/${names}`
@@ -426,8 +426,7 @@ def(E,'brightness',function(){
 	var br = hsᵥ? {
 		get(){return Π( hsᵥ`hs.brightness.get()`/100 )},
 		set(ι){return Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
-		ambient(){ var r = hsᵥ`hs.brightness.ambient()`; if (r!==-1000310328999) return r },
-		} : npm('brightness@3.0.0')
+		} : npm`brightness@3.0.0`
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
 	return br })
 E.restart_and_keep_alive = prog=>{
@@ -542,7 +541,7 @@ E.sfx = function(ss,...ιs){ var ι = ss[0]
 var _low_brightness_symbol__high_brightness_symbol_ = go=>{ var ιs = [0,1,2.5,5.5,10,16].map(ι=>ι/16); return brightness.get().then(br=> brightness.set_overlay( ιs[min(max( 0, find_closest_ISU(ιs,br) + go ), ιs.length-1 )] )) }
 E._low_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(-1)
 E._high_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(1)
-E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗🌘']; return moons[floor((npm('suncalc@1.7.0').getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
+E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗🌘']; return moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
 E.github_url = ι=>{ ι.type==='sublime.View' || !function(){throw Error('‽')}()
 	var github_remote_origin = file=>{
 		var ι = φ(file).root('/')
@@ -834,14 +833,14 @@ def(E,'φ',()=>{
 			this.text = JSON_pretty(ι,function(ι){var t;
 			if (Buffer.isBuffer(ι)) return ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
 			return ι})},
-		get ini(){return npm('ini@1.3.4').parse(this.text) },
+		get ini(){return npm`ini@1.3.4`.parse(this.text) },
 		// set ini(ι){},
 		// get csv(){↩},
 		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${this.root('/')+''}` },
-		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm('xml2js@0.4.17').parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
-		set xml(ι){ this.text = npm('xmlbuilder@8.2.2').create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
-		// get plist(){↩  },
-		set plist(ι){ this.text = npm('plist@2.0.1').build(ι) },
+		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
+		set xml(ι){ this.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
+		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, // doesn't handle binary plists i guess?
+		set plist(ι){ this.text = npm`plist@2.1.0`.build(ι) },
 		get json_array__synchronized(){return function(...ιs){var _ι=this._ι
 			if (ιs.length) !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}('TODO')
 			var d = JSON.parse((read_file(_ι)||'[]')+'')
@@ -1046,6 +1045,7 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 
 // del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
 // im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
+// convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
 // ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 
 // E.ζ_compile_S = ι=> ι

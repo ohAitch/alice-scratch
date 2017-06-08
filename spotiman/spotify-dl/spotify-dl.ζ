@@ -6,7 +6,7 @@ async ← require('async','1.5.0')
 cn ← {log:print}
 
 arg ← {
-	cache_dir: '~/file/consume/music_cache',
+	cache_dir: '~/file/.cache/music',
 	}
 quiet_skipping ← false
 

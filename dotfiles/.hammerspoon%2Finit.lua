@@ -1,4 +1,4 @@
-__filename = '/Users/home/file/code/scratch/dotfiles/.hammerspoon.lua'
+__filename = '/Users/home/file/code/scratch/dotfiles/.hammerspoon%2Finit.lua'
 
 ------------------------------------- util -------------------------------------
 -- function read_file(x) local t = io.open(x); local r = t:read('*a'); t:close(); return r; end

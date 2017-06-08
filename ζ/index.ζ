@@ -98,7 +98,7 @@ path ← require('path')
 fs ← require('fs')
 moment ← require('moment')
 if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } // browserify
-def(E,'robot',lazy('robot',()=> npm('robotjs@0.4.5') ))
+def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ t ← npm`require-uncached@1.0.3`; ↩ ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 
 // --------------------------------- ζ infra -------------------------------- //
@@ -181,7 +181,7 @@ if (require.extensions && !require.extensions['.ζ']) (()=>{
 
 // ---------------------------- as for a prelude ---------------------------- //
 simple_hash_str ← ι=> JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι; else{ r←{}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); ↩ r } })
-b36 ← ι=> npm('base-x@1.0.4')([…/[0-9a-z]/].join('')).encode(ι)
+b36 ← ι=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode(ι)
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
 memo_frp ← λ(names,within,f){
 	dir ← φ`~/.memo_frp/${names}`
@@ -426,8 +426,7 @@ def(E,'brightness',λ(){
 	br ← hsᵥ? {
 		get(){↩Π( hsᵥ`hs.brightness.get()`/100 )},
 		set(ι){↩Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
-		ambient(){ r ← hsᵥ`hs.brightness.ambient()`; if (r!==-1000310328999) ↩ r },
-		} : npm('brightness@3.0.0')
+		} : npm`brightness@3.0.0`
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
 	↩ br })
 E.restart_and_keep_alive = prog=>{
@@ -542,7 +541,7 @@ E.sfx = λ(ss,…ιs){ ι ← ss[0]
 🔅🔆 ← go=>{ ιs ← [0,1,2.5,5.5,10,16].map(ι=>ι/16); ↩ brightness.get().then(br=> brightness.set_overlay( ιs[min(max( 0, find_closest_ISU(ιs,br) + go ), ιs.length-1 )] )) }
 E.🔅 = ()=> 🔅🔆(-1)
 E.🔆 = ()=> 🔅🔆(1)
-E.moon = ι=>{ ι||(ι=Time()); moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘']; ↩ moons[floor((npm('suncalc@1.7.0').getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
+E.moon = ι=>{ ι||(ι=Time()); moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘']; ↩ moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
 E.github_url = ι=>{ ι.type==='sublime.View' || ‽
 	github_remote_origin ← file=>{
 		ι ← φ(file).root('/')
@@ -834,14 +833,14 @@ def(E,'φ',()=>{
 			@.text = JSON_pretty(ι,λ(ι){t←;
 			if (Buffer.isBuffer(ι)) ↩ ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
 			↩ ι})},
-		get ini(){↩ npm('ini@1.3.4').parse(@.text) },
+		get ini(){↩ npm`ini@1.3.4`.parse(@.text) },
 		// set ini(ι){},
 		// get csv(){↩},
 		set csv(ι){ t ← φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${@.root('/')+''}` },
-		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm('xml2js@0.4.17').parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
-		set xml(ι){ @.text = npm('xmlbuilder@8.2.2').create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
-		// get plist(){↩  },
-		set plist(ι){ @.text = npm('plist@2.0.1').build(ι) },
+		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
+		set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
+		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, // doesn't handle binary plists i guess?
+		set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) },
 		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
 			if (ιs.length) ‽('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')

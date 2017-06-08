@@ -1,0 +1,5 @@
+Developing Java Applets, JavaScripts, and ActiveX scripts. Like text and pictures, it is normally a violation of copyright law to appropriate scripting or programming from someone else without permission. Many parties have made their scripts and applets available for use by the public. In these cases, use is allowed as long as any requirements set forth by the programmer are followed.
+
+i have fantasies about designing virtual machine architectures that allow you to get around this problem
+
+like, web inspector is legal; i want to make a thing like that for more abstract logic

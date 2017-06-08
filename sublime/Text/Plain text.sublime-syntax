@@ -16,7 +16,7 @@ contexts:
         2: markup.hashtag
     - match: '((?<!\S)#)([^\d\s]\S*|(?=\d))'
       captures: { 1: markup.hashtag.hash, 2: markup.hashtag }
-    - match: '(//|(?<!\S)#(?!\d))(.*)'
+    - match: '(// |(?<!\S)#(?!\d))(.*)'
       captures: { 1: punctuation.definition.comment, 2: comment }
     - { scope: comment, match: '(?<=[\s"]|^)-{3,}(?=[\s"]|$)' }
     - { scope: markup.italic, match: '\b_\B[^_\n]+?\B_\b' }

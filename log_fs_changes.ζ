@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ
-chokidar ← npm('chokidar@1.6.0')
+chokidar ← npm`chokidar@1.7.0`
 
 APP ← '[φΔs]'
 
@@ -20,10 +20,10 @@ fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 	})
 
 φ.cwd = φ`~/file/notes`
-fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.(?:gif|jpg|mov|mp3|pages|pdf|png)$/.λ(fl)) ↩
+fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.archive(/|$)` || /\.(?:gif|jpg|mov|mp3|pages|pdf|png)$/.λ(fl)) ↩
 	log2(time.ymdhmss, pad(type,' '.repeat(6)), fl)
-	//! ? φl ← φ(fl,{exists:type!=='unlink'}); φ`.history/${time.ymdhmss} ${φl.exists?'=':'X'} ${fl}`.buf = φl.buf
-	φ`.history/…${fl==='#auto/Local/Auto Save Session.sublime_session' && '.sublime/'}${time.ymdhmss} ${type==='unlink'?'X':'='} ${fl}`.buf = type==='unlink'? '' : φ(fl).buf
+	//! ? φl ← φ(fl,{exists:type!=='unlink'}); φ`.archive/${time.ymdhmss} ${φl.exists?'=':'X'} ${fl}`.buf = φl.buf
+	φ`.archive/…${fl==='#auto/Local/Auto Save Session.sublime_session' && '.sublime/'}${time.ymdhmss} ${type==='unlink'?'X':'='} ${fl}`.buf = type==='unlink'? '' : φ(fl).buf
 	})
 
 // bug: this only gets subfiles if they were new since the last version *and* their folders were not
@@ -43,9 +43,6 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.history(/|$)` || /\.
 // 			fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
 // 			} })
 // 		} })
-
-// ----- so let's add another fucked up bit, and log ambient brightness ----- //
-;(()=>{ t ← brightness.ambient(); if (t!==undefined) brightness.get().then(br=> φ`~/file/ambient.txt`.text += util_inspect_autodepth({time:Time().ymdhms,ambient:t,screen:br})+'\n' ) }).every(10)
 
 // ---------- so let's add another fucked up bit, and poll spotify ---------- //
 spotify_state ← ()=>{ var [[id,playL,size],volume,state,at] = osaᵥ`spotify: { {id, played count, duration} of current track, sound volume, player state, player position }`; t ← osaᵥ`get volume settings`; ↩ { time:Time().i, track:{ id,size,playL, }, spotify_volume:volume, volume:t['output volume'], muted:t['output muted'], at, action:state.ι/*∈['stopped','playing','paused']*/, } }

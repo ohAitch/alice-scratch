@@ -121,18 +121,19 @@ regen ← (opt={})=>{
 		} }
 
 // ---------------------------------- main ---------------------------------- //
-if_main_do((…a)=>{
-switch( a[0] ){
-	default:
-		require('chokidar').watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
-			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
-			})
-	break; case 'start':
-		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
-		restart_and_keep_alive(__filename)
-	break; case 'test':
-		cn.log(parse_keyrc(φ(a[1]).text))
-	} })
+// something is running this and should not be. shit.
+// if_main_do((…a)=>{
+// switch( a[0] ){
+// 	default:
+// 		npm`chokidar@1.7.0`.watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
+// 			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
+// 			})
+// 	break; case 'start':
+// 		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
+// 		restart_and_keep_alive(__filename)
+// 	break; case 'test':
+// 		cn.log(parse_keyrc(φ(a[1]).text))
+// 	} })
 
 // -------------------------------------------------------------------------- //
 module.exports.KEY_once = λ(trigger,f,…a){
