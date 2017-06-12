@@ -1,8 +1,8 @@
 E ← module.exports
 
-// ---------------------------- .bashrc internal ---------------------------- //
+############################### .bashrc internal ###############################
 
-// should instead be a function that compresses all of the standard symlinks
+# should instead be a function that compresses all of the standard symlinks
 _home_link ← E._home_link = ι=> (ι+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')
 
 E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
@@ -11,18 +11,18 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
 
-	//! oh hell, bug
+	# ! oh hell, bug
 	last_cwd ← persist('last_cwd'); last_cwd.ι ||( last_cwd.ι = φ.cwd+'' )
-	//! combine with persist_tmp
+	# ! combine with persist_tmp
 
-	fs.appendFileSync(φ`~/.history_bash_full`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
+	fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
 E['‡'] = ‡_repl_start
 
-// ---------------------------- as for a prelude ---------------------------- //
+############################### as for a prelude ###############################
 
 E.x = ()=>{ E ← process.env.?|0
 	set_term_title ← ι=> process.stdout.write("\x1b]0;"+ι+"\x07")
@@ -67,7 +67,7 @@ E.diff = (base,edit)=>{
 			.join('\x1b[90m'+'-'.repeat(30)+'\x1b[0m'+'\n')
 	} }
 
-// ----------------------------------- im_ ---------------------------------- //
+###################################### im_ #####################################
 
 E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } //! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
@@ -79,11 +79,11 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = null), 'PANO/') : '')+t+'.jpg')
 		}) }
 
-// ------------------------ build/release/run project ----------------------- //
+########################### build/release/run project ##########################
 
 get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`view_from(${ι.id}).file_name()` : ι+''
 
-// E.build = ...
+# E.build = ...
 E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
 		{ isTTY && ‽; terminal_do_script(sh`clear; cd ${get_filename(ι) || ‽}; run_project ${JSON.stringify(ι)} ✓; x`) }
@@ -103,13 +103,13 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
 			if (p.version === (t&&t.version)) shᵥ`cd ${project}; npm --no-git-tag-version version patch`
-			shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
+			shₐ2({stdio:'inherit'})`cd ${project}; npm --prefer-offline -g i .`
 			}}
 		c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
 		;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
 		} }
 
-// ------------------------- single-purpose commands ------------------------ //
+############################ single-purpose commands ###########################
 
 E.d = (a='.')=>{
 	sum ← 0
@@ -127,12 +127,12 @@ E.d = (a='.')=>{
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
-// E.email = λ(){
-// 	sfx`ack`
-// 	sb().split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
-// 		.map(go_to.X)
-// 	osaᵥ`chrome: activate`
-// 	}
+# E.email = λ(){
+# 	sfx`ack`
+# 	sb().split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
+# 		.map(go_to.X)
+# 	osaᵥ`chrome: activate`
+# 	}
 
 E.ct = E.chrome_tabs = λ(i){
 	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; ↩ nice_url(t)}
@@ -145,7 +145,7 @@ E.bookmarks = ι=>{
 	//! should use nice_url
 	use_chrome ← true
 	safari_bookmarks ← ι=>{
-		ι = npm('plist@1.2.0').parse(shᵥ`plutil -convert xml1 -o - ${ι||φ`~/Library/Safari/Bookmarks.plist`+''}`+'')
+		ι = npm`plist@1.2.0`.parse(shᵥ`plutil -convert xml1 -o - ${ι||φ`~/Library/Safari/Bookmarks.plist`+''}`+'')
 		my_walk ← ι=>
 			ι.WebBookmarkType==='WebBookmarkTypeProxy'? [] :
 			ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{name:ι.URIDictionary.title, ι:ι.URLString}] :
@@ -162,24 +162,24 @@ E.bookmarks = ι=>{
 	ι = walk_reduce(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
 	sb(ι) }
 
-// E.push = ι=>{
-// 	moment ← npm('moment@2.14.1')
+# E.push = ι=>{
+# 	moment ← npm`moment@2.14.1`
 
-// 	day_of_year ← ι=> ι.dayOfYear()-1
-// 	label_fmt ← ι=> ('...'+ι).slice(-3)
+# 	day_of_year ← ι=> ι.dayOfYear()-1
+# 	label_fmt ← ι=> ('...'+ι).slice(-3)
 
-// 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
+# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
 
-// 	label_now ← ()=> label_fmt(day_of_year(moment()))
-// 	starts ← data.starts.map(ι=> moment.utc(ι))
-// 	labels ← 180..map(ι=> label_fmt(day_of_year(moment(starts[0]).add(ι,'days'))) )
+# 	label_now ← ()=> label_fmt(day_of_year(moment()))
+# 	starts ← data.starts.map(ι=> moment.utc(ι))
+# 	labels ← 180..map(ι=> label_fmt(day_of_year(moment(starts[0]).add(ι,'days'))) )
 
-// 	ι && set_data(ι,!data[ι])
+# 	ι && set_data(ι,!data[ι])
 
-// 	color_now ← ι=> '\x1b[43m'+ι+'\x1b[0m'
-// 	starts_f ← starts.map(ι=> ι.format('YYYY')+'-'+label_fmt(day_of_year(ι)))
-// 	↩ '5×5 pushups: '+starts_f[0]+'::->'+' ; '+'many knee pushups: '+starts_f[1]+'::->'+'\n'+
-// 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
+# 	color_now ← ι=> '\x1b[43m'+ι+'\x1b[0m'
+# 	starts_f ← starts.map(ι=> ι.format('YYYY')+'-'+label_fmt(day_of_year(ι)))
+# 	↩ '5×5 pushups: '+starts_f[0]+'::->'+' ; '+'many knee pushups: '+starts_f[1]+'::->'+'\n'+
+# 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
 
 E.kp = E.keypresses = ()=>{
 	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }

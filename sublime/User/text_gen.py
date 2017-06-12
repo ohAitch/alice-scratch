@@ -10,8 +10,7 @@ import re, time, datetime
 # maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
 
 e_table_ = {
-	'Packages/JavaScript/JavaScript.sublime-syntax': '/',
-	'Packages/JavaScript/JavaScript.tmLanguage': '/', #! remove
+	'Packages/JavaScript/JavaScript.sublime-syntax': '#',
 	'Packages/Python/Python.sublime-syntax': '#',
 	'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
 	'Packages/Ruby/Ruby.sublime-syntax': '#',
@@ -20,7 +19,7 @@ e_table_ = {
 s_table = {
 	'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],
 	'-': [r'^-+.*-+$',r'^-+\s*(.+?)\s*-+$','-',''],
-	'/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
+	# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
 	';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
 	}
 def data(view): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']

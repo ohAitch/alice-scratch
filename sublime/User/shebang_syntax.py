@@ -2,11 +2,11 @@ import sublime, sublime_plugin
 import os, re
 
 data = {
-	'ζ': 'Packages/JavaScript/JavaScript.tmLanguage',
+	'ζ': 'Packages/JavaScript/JavaScript.sublime-syntax',
 	'python': 'Packages/Python/Python.sublime-syntax',
 	'bash': 'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax',
-	'.txt': 'Packages/Text/Plain text.tmLanguage',
-	'.blog': 'Packages/Text/Plain text.tmLanguage',
+	'.txt': 'Packages/Text/Plain text.sublime-syntax',
+	'.blog': 'Packages/Text/Plain text.sublime-syntax',
 	}
 
 def detect_syntax(view):

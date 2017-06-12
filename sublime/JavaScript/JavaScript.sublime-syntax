@@ -118,7 +118,7 @@ contexts:
   comments-top-level:
     - match: (<!--|-->)
       scope: comment.block.html.js punctuation.definition.comment.js
-    - match: ^(#!).*$\n?
+    - match: ^(#!/).*$\n?
       scope: comment.line.shebang.js
       captures:
         1: punctuation.definition.comment.js
@@ -324,7 +324,7 @@ contexts:
         - match: \*/
           scope: punctuation.definition.comment.js
           pop: true
-    - match: //
+    - match: '//|#[\s#]'
       scope: punctuation.definition.comment.js
       push:
         - meta_scope: comment.line.double-slash.js
@@ -803,7 +803,7 @@ contexts:
     # arrow-function-concise-continuation context to try and continue the
     # body. Previously we didn't match the \n in the comments context, but that
     # caused completions to appear at the end of a single-line comment.
-    - match: //
+    - match: '//|#[\s#]'
       scope: punctuation.definition.comment.js
       set:
         - meta_scope: comment.line.double-slash.js

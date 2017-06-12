@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ
-spotify ← new (npm('spotify-web-api-node@2.3.2'))()
-async ← npm('async@2.1.4')
+spotify ← new (npm`spotify-web-api-node@2.3.2`)()
+async ← npm`async@2.1.4`
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
 // -------------------------------------------------------------------------- //

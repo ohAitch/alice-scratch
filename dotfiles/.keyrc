@@ -71,7 +71,7 @@ sd   ι
 FnF1  ; 🔅()
 FnF2  ; 🔆()
 FnF3  ] ⌘^f
-@chrome  FnF3  ; [i,t] ← osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; i -= 1; urijs ← npm('urijs@1.18.1'); urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()',{tab:i}) : urijs(t).domain() === 'vimeo.com'? chrome_simple_js_ᵥ('t ← $(".fullscreen"); t && t.click()',{tab:i}) : robot_key_tap('⌘^f')
+@chrome  FnF3  ; [i,t] ← osaᵥ`chrome: {active tab index of window 1, url of active tab of window 1}`; i -= 1; urijs ← npm`urijs@1.18.1`; urijs(t).domain() === 'youtube.com'? chrome_simple_js_ᵥ('$ ← ι=> document.querySelectorAll(ι); t ← $(".ytp-fullscreen-button")[0]; t && t.click()',{tab:i}) : urijs(t).domain() === 'vimeo.com'? chrome_simple_js_ᵥ('t ← $(".fullscreen"); t && t.click()',{tab:i}) : robot_key_tap('⌘^f')
 @flowstate FnF3  ; osaᵥ`system events: tell front window of (first process whose frontmost is true); set value of attribute "AXFullScreen" to not (value of attribute "AXFullScreen"); end tell`
 ^⇪    ] ^⇧⇥
 ⌘⇧3   ; shᵥ`screencapture     ${φ`~/Downloads/${Time()}.png`}`
@@ -84,7 +84,7 @@ FnF3  ] ⌘^f
 ^9  ; [windows,spaces] ← tsᵥ`[ TS.window_list, (1..TS.number_of_spaces).map{|ι| TS.name_for_space(ι)} ]`; tsᵥ`TS.move_to_space(${spaces.length-1 +1})`
 @path_finder  ⌘⇧t  ; terminal_do_script(sh`ζ --fresh ${'osaᵥ`system events: tell process "Path Finder" to click menu item 1 of menu 1 of menu item "recently closed tabs" of menu 1 of menu item "tabs" of menu 1 of menu bar item "file" of menu bar 1` ;'}; exit`)
 @path_finder  ⌘;   ; go_to('path',osaᵥ`path finder: POSIX path of the target of the front finder window`,{in_app:'terminal'})
-@photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm('moment@2.13.0')(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
+@photo_booth  ⌘q   ; robot_key_tap('⌘q'); φ`~/Pictures/Photo Booth Library/Pictures/*`.φs.map(λ(ι){ι+=''; t ← φ(ι).name.match(/on ([\d\-]+) at (\d\d)\.(\d\d)(?: #)?(\d+)?(.+)$/); fs.renameSync(ι,φ`~/Downloads/${npm`moment@2.13.0`(t[1]+'T'+t[2]+':'+t[3]).toDate().ymdhm+(t[4]?' '+t[4]:'')+t[5]}`+'')})
 @sublime_text  ⌫=  ] ⌘⇧⌥^⌫
 @sublime_text  ;'  ] ⌘⇧⌥^;
 @sublime_text  /↩  ] ⌘⇧⌥^↩
@@ -126,7 +126,7 @@ FnF6             ; sfx`nack`
 
 # ⌘⌥d ; chrome_simple_js_ᵥ('dl ← (url,name)=>{ a ← jQuery("<a>").attr("href",url).attr("download",name+url.match(/\\.\\w+$/)[0]).appendTo("body"); a[0].click(); a.remove() }; dl(jQuery(".view-image").css("background-image").match(/"(.*)"/)[1], jQuery("[ng-bind=\\"::post.post_title\\"]").text())','active tab')
 
-# @chrome f ; t ← '1'; {PNG} ← npm('pngjs@3.0.0'); show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); sleep(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
+# @chrome f ; t ← '1'; {PNG} ← npm`pngjs@3.0.0`; show ← (ι,name)=>{ t ← new PNG(ι._.pick('width','height')); t.data = ι.image; t.pack().pipe(fs.createWriteStream(φ`~/Downloads/${name}.png`+'')) }; screen ← ()=> robot.captureScreen(0,0,1440*2,900*2); diff ← λ(a,b){ a = a.image; b = b.image; r←0; for(i←0;i<a.length;i++) r+= abs(a[i]-b[i]); ↩ r / (1440*2*900*2*4*255) }; a ← screen(); robot_key_tap(t); sleep(0.07); b ← screen(); robot_key_tap(diff(a,b) > 0.009? t : '⎋')
 # @chrome f ; t ← '1'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
 # @chrome g ; t ← '2'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)
 # @chrome b ; t ← '9'; robot_key_tap(t); sleep(0.05); robot_key_tap(t)

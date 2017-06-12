@@ -104,6 +104,11 @@ def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`
 // --------------------------------- ζ infra -------------------------------- //
 def(eval,'·',{enumerable:true,get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }})
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } //! slotify and then detect and merge slots
+
+(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
+	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
+	if (o===undefined) r = t; else o[k] = t
+	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\"type\": \"Buffer\", \"utf8\": \"f\\n\"}")
 E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 	var [,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	var abs_name = ()=> name+'@'+version
@@ -111,7 +116,7 @@ E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 		var cache = φ`~/.npm/${name}/${version}`; var final = cache.φ`/node_modules/${name}`+(sub||'')
 		try{ return require(final) }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
 		cache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`
-		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = null
+		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --prefer-offline i ${abs_name()}`; a.ι = b.ι = null
 		return require(final) }
 	else {
 		sfx`ack`
@@ -128,7 +133,7 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 	var ζ_parse = (function(){
 		var P = require('./parsimmon2.js')
 		var ident = P(re`(?![0-9])[${word}]+|@`)
-		var comment = re`(//.*|/\*[^]*?(\*/|$))+`
+		var comment = re`(//.*|/\*[^]*?(\*/|$)|#[\s#].*)+`
 		var simple_js = P(()=> P.alt(
 			P(comment).T`comment`,
 			P.seq( P('{'), simple_js, P('}') ),
@@ -138,8 +143,9 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 				P.seq( P('`').T`template`, tmpl_ι.many(), P('`').T`template` ),
 				P(/[)\]0-9]/)
 				), P.alt( P(re`[ \t]*(?!${comment})/`), P.of('') ) ),
+			P(/\[#persist_here .*?\]/),
 			P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).T`regex`,
-			P(re`[^{}/'"…${'`'})@\]${word}]+|[^}]`)
+			P(re`[^{}/#'"…${'`'})@\[\]${word}]+|[^}]`)
 			).many() )
 		var tmpl_ι = P.alt( P.seq( P('${').T`template`, simple_js, P('}').T`template` ), P(/(?:\\[^]|(?!`|\$\{)[^])+/).T`template` )
 		var js_file = P.seq( P(/(#!.*\n)?/).T`shebang`, simple_js )
@@ -167,11 +173,16 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! -= += Π& Π| ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ var t = 't_'+random_id(9); return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
+		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.mapcat(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).mapcat(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.length) )
 	// 	// other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
 	// 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
-	return code=> ζ_parse(code).map(ι=> ι.T? ι.ι : ζ_compile_nonliteral(ι) ).join('') })
+	return code=> ζ_parse(code).map(ι=>0?0
+		: ι.T==='comment'? ι.ι.replace(/^#/,'//')
+		: ι.T? ι.ι
+		: ζ_compile_nonliteral(ι)
+		).join('') })
 ζ_compile['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
 
 if (require.extensions && !require.extensions['.ζ']) (()=>{
@@ -745,6 +756,15 @@ E.tsᵥ = function(ss,...ιs){
 		shᵥ`chmod +x ${tmp}`; child_process.spawn(tmp,{shell:true,detached:true,stdio:'ignore'}).unref() }
 	try{ return R() }catch(e){ if (e.status===7) launch_serv(); sleep(0.1); return R() } }
 
+// such hack
+var json2_read = ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
+	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
+	if (o===undefined) r = t; else o[k] = t
+	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r }
+var json2_show = ι=> JSON_pretty(ι,function(ι){var t;
+	if (Buffer.isBuffer(ι)) return ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
+	return ι})
+
 def(E,'φ',()=>{
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ['⁻¹'] = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
@@ -826,17 +846,12 @@ def(E,'φ',()=>{
 		set lines(ι){ write_file(this._ι, ι.join('\n')+'\n') },
 		get json(){return JSON.parse(read_file(this._ι) || 'null') },
 		set json(ι){ write_file(this._ι, JSON_pretty(ι)) },
-		get json2(){var ι = this.json; (function Λ(ι,k,o){if (ι.type==='Buffer') {
-			o[k] = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
-			} else if (!Tprim(ι)) _(ι).forEach(Λ)})(ι); return ι},
-		set json2(ι){
-			this.text = JSON_pretty(ι,function(ι){var t;
-			if (Buffer.isBuffer(ι)) return ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
-			return ι})},
+		get json2(){return json2_read(this.text) },
+		set json2(ι){ this.text = json2_show(ι) },
 		get ini(){return npm`ini@1.3.4`.parse(this.text) },
 		// set ini(ι){},
 		// get csv(){↩},
-		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${`npm('csv@0.4.6').stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})`} ${t+''} ${this.root('/')+''}` },
+		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${"npm`csv@0.4.6`.stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})"} ${t+''} ${this.root('/')+''}` },
 		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
 		set xml(ι){ this.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
 		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, // doesn't handle binary plists i guess?
@@ -933,7 +948,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 		if (sc)
 		try{ var ret = sc.runInThisContext() }
 		catch(e){ e && Tstr(e.stack) && (e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>')); var err = e }
-		φ`~/.history_ζ`.text = φ`~/.history_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
+		φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
 		this.In.push(code); this.Out.push(err || ret)
 		if (err) this._domain.emit('error', err.err || err)
 		this.bufferedCommand = ''

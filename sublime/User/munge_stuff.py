@@ -3,7 +3,7 @@
 # restructure link copying and manipulation (in sublime plugins, bashrc, ζ, possibly more (path finder? chrome url bar?)) to have a centralized normalization format and management for labelling text and usage of url formatters
 # also to have a consistent way to interact with sublime and the pastebin
 
-# maybe require('wav') and npm('wav@ should be links to http://npmjs.com/package/wav
+# maybe require('wav') and npm`wav@ should be links to http://npmjs.com/package/wav
 # `agentyduck.blogspot.com` really ought to be a valid link (both in parsing and in producing)
 # `~/code/scratch/sublime/build.ζ` really ought to be a valid link (both in parsing and in producing)
 

@@ -4,7 +4,7 @@
 
 // action type: BUILD then RELEASE. should be: START service which watches for changes & {BUILD then RELEASE}s
 
-plist ← npm('plist@1.2.0')
+plist ← npm`plist@1.2.0`
 
 // ------------------------------- generic lib ------------------------------ //
 match_json_head ← ι=> _.range(ι.length).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
@@ -33,7 +33,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 // 	}
 
 colors_to_tmTheme ← λ(from,to){
-	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
+	t ← φ(from).text.replace(/#[\s#].*/g,'').replace(/\n\n+/g,'\n')
 	t = t.re`^([^{]*)([^]*)`
 	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(ι=> ι.match(/([\w# [\]]+) → ([\w,]+)/)).mapcat(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
 	t = t[2]
@@ -47,7 +47,7 @@ colors_to_tmTheme ← λ(from,to){
 	}
 
 sb_keyrc_to_sublime_keymap ← λ(from,to){
-	t ← φ(from).text.replace(/# .*/g,'').replace(/\n\n+/g,'\n')
+	t ← φ(from).text.replace(/#[\s#].*/g,'').replace(/\n\n+/g,'\n')
 	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
 		k ← compile_keys(ι[1])
 		cm ← ι[2]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 trap end EXIT; end(){ rm -rf .bin/index{2,3}.js; }
 
-npm --cache-min=Infinity install --ignore-scripts
+npm --prefer-offline install --ignore-scripts
 # [ -e .bin/index.js ] || {
 # 	echo 'no local build found; looking for global instance' >&2
 # 	ζ '

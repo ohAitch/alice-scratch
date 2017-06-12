@@ -67,7 +67,8 @@ $const constant.language.null
 $const constant.language.undefined
 $const support.constant
 $comment comment
-$comment60 punctuation.definition.comment
+# $comment60 punctuation.definition.comment
+$comment punctuation.definition.comment
 $num constant.numeric | constant.language.(infinity|nan) | constant.date.numeral
 $invalid invalid
 

@@ -60,6 +60,7 @@
 		".git",
 		".hg",
 		"CVS",
+		"node_modules",
 		".bin"
 	],
 	"font_size": 14,

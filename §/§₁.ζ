@@ -38,7 +38,7 @@ S_ast_to_js←; C←; S_ast_to_js = C = (ι,top,t,par)=> // t,par: hack to get l
 		‽(ι)
 
 // ---------------------------------- parse --------------------------------- //
-P ← npm('parsimmon@0.9.2')
+P ← npm`parsimmon@0.9.2`
 P.Parser.prototype.type = λ(x){↩ @.map(ι⇒ {T:x,ι}) }
 P_ ← (ι,…a)=> Tfun(ι)? P.lazy(ι,…a) : Tstr(ι)? P.string(ι) : P.regex(ι,…a)
 P_spaced ← p=> wso.then(p).skip(wso); wso ← P_(/\s*/)
