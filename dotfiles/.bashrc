@@ -6,7 +6,6 @@ export PROMPT_COMMAND='_PC_t $? "$(history 1)"; hash -r'; export PS1=$'\[\e[90m\
 ###### for external use ######
 alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # terminal_do_script
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
-clear(){ /usr/bin/clear && printf %s $'\e[3J'; }
 
 eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
 	ζ ${"pb kp keypresses run run_project ‡".split(" ").includes(ι)? "--fresh" : null} ${js`

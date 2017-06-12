@@ -1,7 +1,7 @@
 -------------------------------- not deprecated --------------------------------
 bandcamp-dl
 dirty-signaling
-dotfiles
+dotfiles/<most>
 fast-parse
 im_autowhite
 keyrc
@@ -19,3 +19,5 @@ yet another dream, lol
 
 ---------------------------------- deprecated ----------------------------------
 daily.sh
+dotfiles/.bashrc
+dotfiles/.bashrc.ζ

@@ -108,7 +108,7 @@ var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,argume
 (ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
 	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
 	if (o===undefined) r = t; else o[k] = t
-	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\"type\": \"Buffer\", \"utf8\": \"f\\n\"}")
+	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← ()=> name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --prefer-offline i ${abs_name()}`; a.ι = b.ι = null\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\"\n}")
 E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 	var [,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	var abs_name = ()=> name+'@'+version
@@ -613,7 +613,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
 	else if (type==='app'){ ( !new_ && focus && !in_app )||!function(){throw Error('‽')}(); var app = ι
-		//! should gather most of this information periodically async & record it. should use FRP.
+		// ! should gather most of this information periodically async & record it. should use FRP.
 		var hint_screen = {'sublime text':2, 'path finder':3, 'github desktop':4}
 		var isnt_standalone = {ibooks:1, preview:1}
 		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',...'chrome↩'].map(robot_key_tap); return }
@@ -622,7 +622,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 		}
 	else if (type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||!function(){throw Error('‽')}(); robot_key_tap('^'+ι) }
 	else if (type==='path'){ ( !new_ && focus )||!function(){throw Error('‽')}()
-		//! i think this might be a pretty badly designed type
+		// ! i think this might be a pretty badly designed type
 		new_ = true
 		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(){throw Error('‽')}() //! duplication with munge_stuff.py:FIND_RESULT
 			// in_app = 'sublime text'
@@ -633,12 +633,12 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 			var here = hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
 			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
 			var available = here.length && _.intersection(here,unbusy())[0]
-			terminal_do_script( sh`cd ${ι}; …${!available && 'clear'}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); return }
+			terminal_do_script( sh`cd ${ι}; …${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); return }
 		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
 		}
 	else !function(){throw Error('‽')}() }
 
-// --- metaprogramming → runtime macros built on top of template literals --- //
+//##### metaprogramming → runtime macros built on top of template literals ######
 // to design this correctly, (ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
 // existing semistandard usage is in
 // 	im_autowhite
@@ -684,6 +684,7 @@ assign_properties_in_E_informal({
 E.js = E.py = function(ss,...ιs){ var ENC = JSON.stringify; return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = function(ss,...ιs){var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
+sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
 var ellipsify = ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.length>100?'…':'')
 var if_sh_err = (name,code,ι)=>{ if (ι.status!==0) throw _(Error(name+'`'+code+'` → status:'+ι.status+', stderr:'+ellipsify(ι.stderr+''))) ['<-'] (_(ι).pick('status','stdout','stderr')) }
 E.shᵥ = function(ss,...ιs){ var code = sh(ss,...ιs)

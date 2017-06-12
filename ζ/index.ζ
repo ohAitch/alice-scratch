@@ -610,7 +610,7 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
 	else if (type==='app'){ ( !new_ && focus && !in_app )||‽; app ← ι
-		//! should gather most of this information periodically async & record it. should use FRP.
+		# ! should gather most of this information periodically async & record it. should use FRP.
 		hint_screen ← {'sublime text':2, 'path finder':3, 'github desktop':4}
 		isnt_standalone ← {ibooks:1, preview:1}
 		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap); ↩ }
@@ -619,10 +619,10 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 		}
 	else if (type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽; robot_key_tap('^'+ι) }
 	else if (type==='path'){ ( !new_ && focus )||‽
-		//! i think this might be a pretty badly designed type
+		# ! i think this might be a pretty badly designed type
 		new_ = true
 		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ //! duplication with munge_stuff.py:FIND_RESULT
-			// in_app = 'sublime text'
+			# in_app = 'sublime text'
 			[,ι,line] ← ι.re`^(.+):(\d+):$`
 			ι = φ('~/file/'+ι)
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}`; ↩ }
@@ -630,18 +630,18 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 			here ← hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
 			unbusy ← ()=> osaᵥ`terminal: id of windows where busy = false`
 			available ← here.length && _.intersection(here,unbusy())[0]
-			terminal_do_script( sh`cd ${ι}; …${!available && 'clear'}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); ↩ }
+			terminal_do_script( sh`cd ${ι}; …${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); ↩ }
 		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
 		}
 	else ‽ }
 
-// --- metaprogramming → runtime macros built on top of template literals --- //
-// to design this correctly, (ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
-// existing semistandard usage is in
-// 	im_autowhite
-// 	scratch.txt
-// 	ζ/index.ζ
-// s is interned, so use it as a memoization key for things
+###### metaprogramming → runtime macros built on top of template literals ######
+# to design this correctly, (ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
+# existing semistandard usage is in
+# 	im_autowhite
+# 	scratch.txt
+# 	ζ/index.ζ
+# s is interned, so use it as a memoization key for things
 E.is_template = ([ss,…ιs])=> ss && Tarr(ss.raw) && ss.raw.length-1 === ιs.length
 tmpl_flatten ← (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
 simple_template ← λ(ss,ιs,filter){ is_template([ss,…ιs]) || ‽
@@ -681,6 +681,7 @@ assign_properties_in_E_informal({
 E.js = E.py = λ(ss,…ιs){ ENC ← JSON.stringify; ↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = λ(ss,…ιs){ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')}
+sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
 ellipsify ← ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.length>100?'…':'')
 if_sh_err ← (name,code,ι)=>{ if (ι.status!==0) throw _(Error(name+'`'+code+'` → status:'+ι.status+', stderr:'+ellipsify(ι.stderr+''))) <- (_(ι).pick('status','stdout','stderr')) }
 E.shᵥ = λ(ss,…ιs){ code ← sh(ss,…ιs)
@@ -708,6 +709,8 @@ E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ applescript.parse(shᵥ`osa
 E.osaₐ = λ(ss,…ιs){ ι ← osa(ss,…ιs); shₐ`osascript -ss -e ${ι}` }
 
 E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
+# inject as .bashrc
+# 	sh` alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' `
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
@@ -993,6 +996,8 @@ E.ζ_main = opt=>{ι←; {compile,a} ← opt=_({ compile:ζ_compile }) <- (opt)
 		}
 	}
 if_main_do((…a)=> ζ_main({a}) )
+# inject as .bashrc
+# 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `
 
 // -------------------------- remaining work for φ -------------------------- //
 // https://www.npmjs.com/package/glob-to-regexp
