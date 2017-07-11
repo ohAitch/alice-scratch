@@ -20,7 +20,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
-E['‡'] = ‡_repl_start
+E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
 
 ############################### as for a prelude ###############################
 
@@ -102,8 +102,8 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 		b ← ()=>{if (package){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
-			if (p.version === (t&&t.version)) shᵥ`cd ${project}; npm --no-git-tag-version version patch`
-			shₐ2({stdio:'inherit'})`cd ${project}; npm --prefer-offline -g i .`
+			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )
+			shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
 			}}
 		c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
 		;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )

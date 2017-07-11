@@ -4,11 +4,11 @@
 export PROMPT_COMMAND='_PC_t $? "$(history 1)"; hash -r'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
 
 ###### for external use ######
-alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·;' # terminal_do_script
+alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·; ' # terminal_do_script
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 
 eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
-	ζ ${"pb kp keypresses run run_project ‡".split(" ").includes(ι)? "--fresh" : null} ${js`
+	ζ ${"pb kp keypresses run run_project ‡ diesis".split(" ").includes(ι)? "--fresh" : null} ${js`
 		exit_parent ← ()=> φ("/tmp/exit_parent").text = ""
 		process.env["?"] = a[0]
 		require_new(φ("~/.bashrc.ζ"))[${ι}](…a.slice(1))
@@ -25,7 +25,7 @@ eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 l(){ ls -AG "$@"; }
-f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; }
+f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; } # ported to ‡; remove
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9
 …(){ eval "$(cat)"; }
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; &>/dev/null popd; } # for /
@@ -77,4 +77,4 @@ ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
 alias http-server='http-server -c-1'
 
 ################################ very temporary ################################
-Z(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
+alias Z=ζ
