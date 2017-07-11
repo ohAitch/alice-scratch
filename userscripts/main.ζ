@@ -164,7 +164,7 @@ if( at_url('*google.com') ){
 
 
 // @match       *://*.facebook.com/*
-// @require     https://code.jquery.com/jquery-3.1.1.min.js
+# @require jquery
 
 // window.$ = $
 
@@ -198,7 +198,7 @@ if( at_url('*google.com') ){
 
 
 // @match       *://*.facebook.com/*
-// @require     https://code.jquery.com/jquery-3.1.1.min.js
+# @require jquery
 
 // if (!location.pathname.match(/^\/messages\//)){
 
@@ -218,7 +218,7 @@ if( at_url('*google.com') ){
 
 
 // @match       http*://*.soundcloud.com/*
-// @require     https://code.jquery.com/jquery-3.1.1.min.js
+# @require jquery
 
 // var t = setInterval(function(){
 // 	if (!$('.heroPlayButton-pause').length && $('.playControl.playing').length) {$('.playControl').click(); clearInterval(t)}

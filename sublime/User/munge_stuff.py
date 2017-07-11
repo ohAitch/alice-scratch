@@ -104,7 +104,7 @@ class inline_compile_zeta_js(sublime_plugin.TextCommand):
 		for reg in list(sel)[::-1]:
 			ι = view.substr(reg)
 			r = ζfresh('ζ_compile(ι)',ι)
-			if r == ι: r = ζfresh('ζ_compile["⁻¹"](ι)',ι)
+			if r == ι: r = ζfresh('ζ_compile.⁻¹(ι)',ι)
 			view.replace(edit, reg, r)
 
 class nice_url(sublime_plugin.TextCommand):

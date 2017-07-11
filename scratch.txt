@@ -329,3 +329,6 @@ improve book interface over dropbox
 at 3:55 tell Ramana where I am. I expect to be at purple kow at 2:45
 
 i shouldn't have to go through the filesystem to send files from web
+
+--------------- 2017-06-15 misc code things i'd like to have done --------------
+i'd really like earbud metadata
