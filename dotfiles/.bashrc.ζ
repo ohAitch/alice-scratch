@@ -20,7 +20,7 @@ E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
 	}
 
-E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
+E.D = E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
 
 ############################### as for a prelude ###############################
 
@@ -42,11 +42,12 @@ E.ps2 = ()=>{
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
 	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.length + 1, h.search('ELAPSED')+'ELAPSED'.length)
-	↩ h+'\n'+r
+	r ← h+'\n'+r
 		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool|iBooks|Preview|Path Finder|CIJScannerRegister|Image Capture Extension|Audacity|Karabiner|LaunchControl).app/`)
 		._.sortBy(ETIME).reverse()
-		.join('\n')+'\n' }
+		.join('\n')+'\n'
+	cn.log(r) }
 
 E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
@@ -81,7 +82,7 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 
 ########################### build/release/run project ##########################
 
-get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`view_from(${ι.id}).file_name()` : ι+''
+get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
 
 # E.build = ...
 E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
@@ -129,7 +130,7 @@ E.d = (a='.')=>{
 
 # E.email = λ(){
 # 	sfx`ack`
-# 	sb().split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
+# 	sb.tab.active.ι.split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
 # 		.map(go_to.X)
 # 	osaᵥ`chrome: activate`
 # 	}
@@ -138,7 +139,7 @@ E.ct = E.chrome_tabs = λ(i){
 	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; ↩ nice_url(t)}
 	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
 	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
-	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb(t) }
+	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb.tab.push(t) }
 	}
 
 E.bookmarks = ι=>{
@@ -160,7 +161,7 @@ E.bookmarks = ι=>{
 	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
 	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' && (ι.ι = null))
 	ι = walk_reduce(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
-	sb(ι) }
+	sb.tab.push(ι) }
 
 # E.push = ι=>{
 # 	moment ← npm`moment@2.14.1`

@@ -7,11 +7,11 @@ rm_bad_cache
 cd ~/file/.archive/
 
 cp ~/'Library/Application Support/Google/Chrome/Default/History' ".mirror/chrome History $(ζ 'Time().ym').db"
-cp ~/'Library/Application Support/Skype/alice0meta/main.db' ".mirror/skype alice0meta macbook $(ζ 'Time().ym').db"
+# cp ~/'Library/Application Support/Skype/alice0meta/main.db' ".mirror/skype alice0meta macbook $(ζ 'Time().ym').db"
 tar -c ~/Library/Preferences | xz -v > ".mirror/Preferences $(ζ 'Time().ym').tar.xz"
 tar -c ~/Library/Fonts > ".mirror/Fonts $(ζ 'Time().ym').tar"
 tar -c ~/'Library/Application Support/Google/Chrome/Default/Pepper Data/Shockwave Flash/WritableRoot/#SharedObjects' | xz -v > ".mirror/#SharedObjects $(ζ 'Time().ym').tar.xz"
-tar --exclude ~/'Library/Application Support/Steam/' -c ~/'Library/Application Support' > ".mirror/Application Support $(ζ 'Time().ym').tar"
+# tar --exclude ~/'Library/Application Support/Steam/' -c ~/'Library/Application Support' > ".mirror/Application Support $(ζ 'Time().ym').tar"
 
 ls -AloR ~/file > "ls/$(ζ 'Time().ymdhms') ~%2Ffile"
 ls -AloR ~/Downloads > "ls/$(ζ 'Time().ymdhms') ~%2FDownloads"

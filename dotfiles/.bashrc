@@ -8,7 +8,7 @@ alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·; ' # terminal_do_script
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 
 eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.keys().map(ι=> ι+sh`(){
-	ζ ${"pb kp keypresses run run_project ‡ diesis".split(" ").includes(ι)? "--fresh" : null} ${js`
+	ζ ${"pb kp keypresses run run_project ‡ diesis D".split(" ").includes(ι)? "--fresh" : null} ${js`
 		exit_parent ← ()=> φ("/tmp/exit_parent").text = ""
 		process.env["?"] = a[0]
 		require_new(φ("~/.bashrc.ζ"))[${ι}](…a.slice(1))
@@ -45,7 +45,8 @@ alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; } # PWF(dirty) is not used elsewhere; it's an aborted experiment
 rm_empty_dirs(){ find . -type d -empty -delete; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
-sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb()'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb.tab.active.ι'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
+sb[-1](){ ζ 'sb.tab[-1].ι'; }
 open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
 
 ################ personal configuration ### for interactive mode ###############

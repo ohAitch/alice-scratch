@@ -116,7 +116,7 @@ E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 		var cache = φ`~/.npm/${name}/${version}`; var final = cache.φ`/node_modules/${name}`+(sub||'')
 		try{ return require(final) }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
 		cache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`
-		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --prefer-offline i ${abs_name()}`; a.ι = b.ι = null
+		var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = null
 		return require(final) }
 	else {
 		sfx`ack`
@@ -185,13 +185,15 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 		).join('') })
 ζ_compile['⁻¹'] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, function(ι,name,s,eq){return {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
 
-if (require.extensions && !require.extensions['.ζ']) (()=>{
+if( require.extensions && !require.extensions['.ζ'] )(()=>{
 	require.extensions['.ζ'] = (module,ι)=>{ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
 	var super_ = require.extensions['.js']; require.extensions['.js'] = (module,ι)=>{ (path.extname(ι)==='' && fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
 	})()
 
 // ---------------------------- as for a prelude ---------------------------- //
-var simple_hash_str = ι=> JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); return r } })
+var simple_hash_str = ι=>0?0
+	: Tfun(ι)? T(ι)+ι
+	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); return r } })
 var b36 = ι=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode(ι)
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
 var memo_frp = function(names,within,f){
@@ -203,7 +205,7 @@ var memo_frp = function(names,within,f){
 	var a = Time().iso; var ι = f(); var b = Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = {names, date:[a,b], ι}; return ι}
 E.persist_tmp = f=>{
-	var store = φ`/tmp/ζpersist_${simple_hash(f+'')}`; var store_ι = store.json||{}
+	var store = φ`/tmp/ζpersist_${simple_hash(f)}`; var store_ι = store.json||{}
 	return function(...a){ var a_h = simple_hash(a); return store_ι[a_h] || ( store_ι[a_h] = f(...a), store.json = store_ι, store_ι = store.json, store_ι[a_h] ) } }
 var regex_parse = lazy_fn(function(){ // status: output format unrefined
 	var P = require('./parsimmon2.js')
@@ -553,16 +555,16 @@ var _low_brightness_symbol__high_brightness_symbol_ = go=>{ var ιs = [0,1,2.5,5
 E._low_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(-1)
 E._high_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(1)
 E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗🌘']; return moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.length + 0.5) % moons.length)] }
-E.github_url = ι=>{ ι.type==='sublime.View' || !function(){throw Error('‽')}()
+E.github_url = ι=>{
 	var github_remote_origin = file=>{
 		var ι = φ(file).root('/')
-		var root = ι; while (root+'' !== '/' && !root.φ`.git`.BAD_exists()) root = root.φ`..`
-		if (root+'' === '/'){ var e = Error(); e.human = 'did not find github remote origin for '+(file||'<anon>'); throw e }
+		var root = ι; while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+		if( root+''==='/' ) throw _(Error()).assign({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/').length)
 		var t = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
 		// when HEAD is master, maybe use the commit id instead?
 		return encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) }
-	var [file,h] = sbᵥ`view = view_from(${ι.id}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
+	var [file,h] = sbᵥ`view = deserialize(${ι}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
 	var fm = ι=> 'L'+(ι+1)
 	return github_remote_origin(file||'')+( _.isEqual(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
 E.go_to = (...a)=>{ // synonyms: go_to, open, search?
@@ -649,7 +651,7 @@ E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw.length-1 === ιs.le
 var tmpl_flatten = (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
 var simple_template = function(ss,ιs,filter){ is_template([ss,...ιs]) || !function(){throw Error('‽')}()
 	var falsy = ι=> ι===undefined||ι===null||ι===false
-	if (Tarr(filter)){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
+	if( filter && !Tfun(filter) ){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	var filter_special = ι=> falsy(ι)? '' : ι+''
 	var ι = tmpl_flatten( ss.raw.map(ι=> ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>0?0:{raw:ι}) )
 	for(var i=0;i<ι.length-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,function(){ ι[i+1] = filter_special(ι[i+1].raw); i++; return '' })
@@ -661,10 +663,23 @@ E.easy_template = (function(){
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-var q0 = ι=> Tstr(ι)? ι : util.inspect(ι,{depth:null, maxArrayLength:null})
+var q0 = ι=> Tstr(ι)? ι : util.inspect(ι,{ depth:null, maxArrayLength:null, })
 var q = ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
 E.p = function(ι){return arguments.length === 0? shᵥ`pbpaste`+'' : shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }
-E.sb = function(ι){return arguments.length === 0? sbᵥ`view = sublime.active_window().active_view(); view.substr(Region(0,view.size()))` : shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f` }
+E.sb = ()=> sb.tab.active.ι // deprecated, ish
+def(sb,'tab',{
+	get(){
+		var r = sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
+		r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
+		;[...r,r.active].map(ι=> ι && def(ι,'ι',{ enumerable:false,
+			get(){return sbᵥ` view = deserialize(${this}); view.substr(Region(0,view.size())) ` },
+			set(ι){ sb_editᵥ(this)` view.replace(edit,Region(0,view.size()),${ι}) ` },
+			}) )
+		def(r,'push',{ enumerable:false, value:
+			function(ι){ shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f`; this.length = 0; (()=> this._.assign(sb.tab) ).in(0.02) } // ! wtf async/sync mix
+			})
+		return r },
+	})
 
 E.re = function(ss,...ιs){
 	// would like to embed regex in [] and have that be ok
@@ -712,6 +727,8 @@ E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs); return applescript.pars
 E.osaₐ = function(ss,...ιs){ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
 
 E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
+// inject as .bashrc
+// 	sh` alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·; ' `
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
@@ -923,15 +940,16 @@ E.cn = { log:(...a)=> console.log(
 		) }
 E.util_inspect_autodepth = function(ι,opt={}){ opt.L || (opt.L = 1e6); var last; for(var i=1;;i++){ var r = util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) ['<-'] (opt)); if (r===last || r.length > opt.L) return last===undefined? '<too large>' : last; last = r } }
 
-E._double_dagger__repl_start = ()=>{
-	// i know how to make the good repl for ct
-	// please
-	// yes, i want to, but im tired... mb i shd try to sleep
-	ζ_repl_start({ prompt:'\x1b[30m\x1b[100m‡\x1b[0m ',
-		compile:ι=>{
-			if( ι==='ct' ){ ι = 'require_new(φ`~/.bashrc.ζ`).chrome_tabs()'; process.stdout.write('\x1b[F'+rl._prompt+ι+'\n') }
-			return ζ_compile(ι)
-			}, }) }
+// i know how to make the good repl for ct. i want to, but im tired
+E._double_dagger__repl_start = ()=> ζ_repl_start({
+	prompt:'\x1b[30m\x1b[100m‡\x1b[0m ',
+	compile:ι=>{var t;
+		var lock = 0?0
+			: ['ct','chrome_tabs','ps2','d','bookmarks']._.contains(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
+			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
+			: ι
+		lock===ι || cn.log('⛓  '+lock)
+		return ζ_compile(lock) }, })
 E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '}) ['<-'] (opt)
 	return (f=> f.call( repl.start(_({useGlobal:true}) ['<-'] (_(opt).pick('prompt'))) ))(function(){
 	this.In = []; this.Out = []
@@ -942,7 +960,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 		if (line==='') return ;
 		if (this.bufferedCommand){ this.history[1] += '\n'+this.history[0]; this.history.shift() }
 		var t = this.bufferedCommand + (line||''); var code = t
-		if (/(^\{[^]*\}$)|(^λ\()/.test(t)) t = '('+t+')' //! it is a clumsy hack to put this on all of these code paths
+		if (/(^\{[^]*\}$)|(^λ\()/.test(t)) t = '('+t+')' // ! it is a clumsy hack to put this on all of these code paths
 		t = opt.compile(t)
 		try{ var sc = new vm.Script(t,{ filename:'repl', displayErrors:false }) }
 		catch(e){ if( e.name==='SyntaxError' ){ this.bufferedCommand += line+'\n'; this.outputStream.write('    '); return }; e.stack = e.name+': '+e.message+'\n    at <repl>'; var err = e }
@@ -982,7 +1000,7 @@ var sh_ify = ι=>{var t; return Π( 0?0
 	: {out:ι+''} )}
 var eval_ = function __53gt7j(ι){
 	try{
-		try{ new vm.Script(ι); return (0,eval)(ι) }catch(e){ if (!(e.name==='SyntaxError' && e.message==='Illegal return statement')) throw e; return (0,eval)('(()=>{'+ι+'})()') }
+		try{ new vm.Script(ι); return (0,eval)(ι) }catch(e){ if(!( e.name==='SyntaxError' && e.message==='Illegal return statement' )) throw e; return (0,eval)('(()=>{'+ι+'})()') }
 	}catch(e){ e!==undefined && e!==null && Tstr(e.stack) && (e.stack = e.stack.replace(/    at __53gt7j[^]*/,'    at <eval>')); throw e }
 	}
 E.ζ_main = opt=>{var ι; var {compile,a} = opt=_({ compile:ζ_compile }) ['<-'] (opt)
@@ -992,11 +1010,14 @@ E.ζ_main = opt=>{var ι; var {compile,a} = opt=_({ compile:ζ_compile }) ['<-']
 	else {
 		global.require = require; global.code = a.shift(); global.a = a; [global.a0,global.a1] = a; global.ι = a[0]
 		code = code.replace(/;\s*$/,'; undefined')
+		code = opt.compile(code)
 		sh_ify(eval_(opt.compile(code)))
 			.then(ι=>{ ι.out && process.stdout.write(ι.out); ι.code &&( process.exitCode = ι.code ) })
 		}
 	}
 if_main_do((...a)=> ζ_main({a}) )
+// inject as .bashrc
+// 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `
 
 // -------------------------- remaining work for φ -------------------------- //
 // https://www.npmjs.com/package/glob-to-regexp

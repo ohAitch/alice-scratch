@@ -42,7 +42,7 @@ for i in xrange(sys.maxint):
 
 # r ← []
 # for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); if (ι['X-Gmail-Labels'] && ι['X-Gmail-Labels'].split(',').includes('Chat') && ι.From === 'Alice Monday <alice0meta@gmail.com>') r.push(ι.parts._.map('content').join('\n'))}
-# sb(r.join('\n'))
+# sb.tab.push(r.join('\n'))
 
 # r ← []
 # for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts._.map('content').filter(ι=> ι.re`</a>`).join(' '); t !== '' && r.push(t)}
