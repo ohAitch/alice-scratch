@@ -39,7 +39,7 @@ parse_boards ← λ(ι){
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
 	ι = ι.mapcat(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 	↩ ι.map(ι=> M(…ι)) }
-keycodes ← parse_boards([multiline`
+keycodes ← _(parse_boards([multiline`
 	┌──────────────────────────────┐
 	│ 357A78637660616264656D676F00 │
 	│ 321213141517161A1C191D1B1833 │
@@ -48,8 +48,8 @@ keycodes ← parse_boards([multiline`
 	│  38 060708090B2D2E2B2F2C 3C  │
 	│ 3F3B3A37   31   363D7B7E7D7C │
 	└──────────────────────────────┘
-	`]).map(ι=> [ι.trigger,ι.output])._.object()
-	._.assign({FnF1:'03°',FnF2:'02°',FnF3:'a0',FnF4:'83',FnF5:'16°',FnF6:'15°',FnF7:'14°',FnF8:'10°',FnF9:'13°',FnFa:'07°',FnFb:'01°',FnFc:'00°'})
+	`]).map(ι=> [ι.trigger,ι.output])._.object())
+	<- ({FnF1:'03°',FnF2:'02°',FnF3:'a0',FnF4:'83',FnF5:'16°',FnF6:'15°',FnF7:'14°',FnF8:'10°',FnF9:'13°',FnFa:'07°',FnFb:'01°',FnFc:'00°'})
 system ← parse_boards([multiline`
 	┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐
 	│ \` 1 2 3 4 5 6 7 8 9 0 - = _  │ │ ~ ! @ # $ % ^ & * ( ) __+ _  │
@@ -73,7 +73,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+shells._.size())
-	appdef ← ι=> appdefs[ι] = persist_tmp(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(ι); appdefs ← {}
+	appdef ← ι=> appdefs[ι] = memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(ι); appdefs ← {}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{

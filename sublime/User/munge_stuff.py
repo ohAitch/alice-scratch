@@ -66,7 +66,7 @@ class open_context(sublime_plugin.TextCommand):
 		if type == "github":
 			ζfresh_async('try{ go_to(github_url('+E(serialize(view))+'),{focus:'+E(focus)+'}) }catch(e){ if (e.human) hsᵥ`hs.alert(${e.human},4)`; else throw e }')
 		elif type == "terminal":
-			ζ(""" go_to('path', """+E(view.file_name())+""" || process.env.HOME, {focus:"""+E(focus)+""",in_app:'terminal'}) """)
+			ζ(""" here ← """+E(view.file_name())+"""; go_to('path', here? φ(here).φ`..`+'' : process.env.HOME, {focus:"""+E(focus)+""",in_app:'terminal'}) """)
 		elif type == "link":
 			if mouse: t = view.sel()[0]; ι = [] if not t.empty() else [ι for ι in [expand_empty_region_to_url(view, view.sel()[0], True)] if not ι.empty()]
 			else: ι = expand_empty_regions_to_urls_or_lines(view, view.sel())
@@ -82,17 +82,19 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		ι = [view.substr(ι) for ι in sel]
 		r = json.loads(ζ("""
 			hook_stdouterr ← ()=>{
-				r ← ['stdout','stderr'].map(stdio=>{
-					o ← process[stdio].write; r ← []; process[stdio].write = λ(ι){r.push(ι)}; ↩ ()=>{ process[stdio].write = o; ↩ r.join('') }
-					}); ↩ ()=> r.map(ι=> ι()) }
+				r ← [,'stdout','stderr'].map(io_id=>{
+					io ← [#Q process[io_id].write #Q]; r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
+					}); ↩ _.memoize( ()=> r.map(ι=> ι()) ) }
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
-				r ← hook_stdouterr()
+				std ← hook_stdouterr()
 				t←; e←; (λ __special_es__u7h7zxgvi__(){ try{ global.code = ι; global.require = require; t = (0,eval)(ζ_compile(ι+'')) }catch(e_){ e = e_ } })()
-				r = r(); r = [(r[0]? r[0]+'\\n' : '')+r[1]]
-				t !== undefined && r.push(t+'')
-				e !== undefined && r.push(typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e)
-				↩ r.join('') }) """,E(ι)))
+				↩ [
+					,… std().slice(1)
+					, t===undefined? '' : t
+					, e===undefined? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
+					].join('')
+					}) """,E(ι)))
 		for i in range(len(sel))[::-1]:
 			view.replace(edit, sel[i], r[i])
 

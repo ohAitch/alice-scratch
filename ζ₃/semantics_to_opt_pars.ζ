@@ -33,7 +33,7 @@ interesting ← ι⇒
 
 // ------------------------- instrumented data types ------------------------ //
 // so far just pretty printing
-Pretty_Typed ← λ(type,ι){ @.type = type; _(@).assign(ι) }
+Pretty_Typed ← λ(type,ι){ @.type = type; _(@) <- (ι) }
 Pretty_Typed.prototype.inspect = λ(d,opt){t←; r←;
 	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
 	if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
@@ -165,7 +165,7 @@ vmζ_runInContext ← (ast,global_)=>{
 		: ι.type==='js_data'? ι.ι
 		: ι.type==='closure'? _(λ ζwrap(…a){↩ compile(vmζ_runInContext(
 			τ('call',{ o:ζwrap.ι, self:τι('js_data',@), a:a.map(ι=> τι('js_data',ι)) })
-			,global_ )) }).assign({ι})
+			,global_ )) }) <- ({ι})
 		:( ι = τι('<not_compiled>',ι), cn.log(ι), ι )
 
 	eval_ ← ι⇒

@@ -6,7 +6,7 @@
 var __lazy = ι=> P2({
 	type:'lazy',
 	ι,
-	_(stream,i){ var t = this.ι(); delete this.type; delete this.ι; delete this._; _(this).assign(t); return this._(stream,i) },
+	_(stream,i){ var t = this.ι(); delete this.type; delete this.ι; delete this._; _(this) ['<-'] (t); return this._(stream,i) },
 	})
 var __match_string = ι=> P2({
 	type:'match_string',
@@ -83,7 +83,7 @@ var P = (ι,...ιs)=>0?0
 	: T.RegExp(ι)? __match(ι,ιs[0]||0)
 	: !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}('cant make parser from',ι)
 var P2 = ι=> new Parser(ι)
-var Parser = function(a){ _(this).assign(a) }
+var Parser = function(a){ _(this) ['<-'] (a) }
 
 // resolve ← p=>{
 // 	t ← search_graph(p,ι=> ι instanceof Parser)

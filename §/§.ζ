@@ -10,7 +10,7 @@
 
 // AST ← (type,tokens,content)⇒ {T:type, tok:tokens}._.assign(content)
 // O ← ι⇒ {at:ι[0]}
-AST ← (type,rest)⇒ {T:type}._.assign(rest)
+AST ← (type,rest)⇒ _({T:type}) <- (rest)
 
 // ------------------ ? macro evaluation & encoding to js ? ----------------- //
 

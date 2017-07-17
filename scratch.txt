@@ -231,7 +231,7 @@ http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
 Zgoogle_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.length < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }).assign(opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.length < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>

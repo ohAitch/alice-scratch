@@ -79,7 +79,7 @@ P._graph_thunk = f=> Parser('graph_thunk',{
 	})
 
 // ----------------------------- composite types ---------------------------- //
-P.prototype.map = λ(f){↩ @.chain(_(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }).assign({f})) }
+P.prototype.map = λ(f){↩ @.chain( _(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }) <- ({f}) ) }
 def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
 def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
 def(P.prototype,'+',{get(){↩ @.repeat([1,∞]) }})

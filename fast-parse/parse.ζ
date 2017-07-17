@@ -4,7 +4,7 @@ P ← require('./mainβ')
 
 ;(λ(){
 	{Rₐ:R} ← require('./record')
-	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']).assign({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
+	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
 	walk_regex ← (ι,f)=> (λ Λ(ι){ if (ι && ι.tag){
 		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }

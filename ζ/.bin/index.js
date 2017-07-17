@@ -2,7 +2,7 @@
 
 // odd synonym: k, name(, id)
 
-// ---------------------------- as for a prelude ---------------------------- //
+//############################## as for a prelude ###############################
 var _ = require('underscore')
 _.mixin({
 '<-':function(...a){return this .assign (...a) },
@@ -12,7 +12,7 @@ var define_properties_in = (o,names,ι)=>{ var t = o; for(var k of names.slice(0
 function Descriptor(ι){ _(this) ['<-'] (ι) }
 var assign_properties_in = (o,ι)=>{ [...meta_0(ι)].forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); return o }
 
-// ----------------------- local metaprogramming utils ---------------------- //
+//######################### local metaprogramming utils #########################
 var properties_tree_formalify = ι=>
 	_(_(ι).map((ι,names)=> genex_simple(names).map(k=> [k,ι]))).flatten(true)
 		.reduce((r,[name,ι])=> define_properties_in(r,
@@ -33,7 +33,7 @@ var E = new Proxy({},{ // exports
 var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι); [...patched].forEach(o=> assign_properties_in(o,ι)) }
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
-// ---------------------------- as for a prelude ---------------------------- //
+//############################## as for a prelude ###############################
 E.meta_0 = meta_0
 
 E.def = (o,name,ι)=>{
@@ -42,7 +42,7 @@ E.def = (o,name,ι)=>{
 	'value' in ι?
 		'writable' in ι ||( ι.writable = true )
 		: 'set' in ι ||( ι.set = function(ι){ def(this,name,{ value:ι, enumerable:true, }) } )
-	return Object.defineProperty(o,name,ι) }
+	return Object.defineProperty(o,name,ι) } // = ↩ o
 var lazy = (name,ι)=>0?0: { get(){return this[name] = ι() } }
 
 E.require_proto_assign = ()=>()=>{
@@ -90,7 +90,7 @@ _(E) ['<-'] ({ Tstr:T.string, Tnum:T.number, Tfun:T.function, Tarr:T.Array, Tpri
 T.primitive.ι = new Set(['undefined','boolean','number','string','symbol','null'])
 T.boxed.ι = new Set(['Boolean','String','Number'])
 
-// -------------------------------- requires -------------------------------- //
+//################################## requires ###################################
 ;[ ['child_process'],['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],
 	].map(function([ι,n]){ def(E, n||ι, ()=> require(ι)) })
 E._ = _
@@ -101,11 +101,17 @@ if (0){ require('util'); require('stream'); require('moment'); require('priority
 def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`; return ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 
-// --------------------------------- ζ infra -------------------------------- //
-def(eval,'·',{enumerable:true,get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }})
+//################################### ζ infra ###################################
+E.Property = function(o,name){ this.o = o; this.name = name; }
+def(Property.prototype,'ι',{ get(){return this.o[name]}, set(ι){ this.o[name] = ι } })
+// Property.prototype.descriptor = λ(ι){ if( arguments.length===0 ) ↩ Object.getOwnPropertyDescriptor(@.o,@.name); else Object.defineProperty(@.o,@.name,ι) }
+Property.prototype.def = function(ι){ def(this.o,this.name,ι); return this }
+// id like an interface more like def, but def doesnt have a getter so it is temporary
+
+new Property(eval,'·').def({ enumerable:true, get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } //! slotify and then detect and merge slots
 
-(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
+;(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
 	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
 	if (o===undefined) r = t; else o[k] = t
 	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← ()=> name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --prefer-offline i ${abs_name()}`; a.ι = b.ι = null\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\"\n}")
@@ -127,7 +133,7 @@ E.js_tokenize = code=>{
 	var tok = npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
 	return _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
-E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var anon_oenor; var anon_7cy2u; var anon_8jlo1;
+E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var anon_oenor; var anon_7cy2u; var anon_8jlo1; var anon_cbbhj;
 	var word_extra = re`♈-♓🔅🔆‡`
 	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ${word_extra}`
 	var ζ_parse = (function(){
@@ -154,7 +160,7 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 			var r = []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			return r } })()
 	var anon_3lsx8;
-	var unicode_names = persist_tmp(ι=> (
+	var unicode_names = memoize_persist(ι=> (
 		anon_3lsx8||(anon_3lsx8= (function(){
 			var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
 			return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
@@ -168,15 +174,17 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 		.replace(/@/g,'this')
 		.replace(/∞/g,'Infinity')
 		.replace(/‽(?=(\()?)/g,(ˣ,callp)=> callp? `!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}` : `!function(){throw Error('‽')}()` )
-		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]`.g ), unicode_names.X)
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||!function(){throw Error('‽')}())+x )
 		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! -= += Π& Π| ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ var t = 't_'+random_id(9); return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
+		.replace(/\[#Q/g,'new Property(') // Quote
+		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
+		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]`.g ), unicode_names.X)
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.mapcat(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).mapcat(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.length) )
-	// 	// other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
+	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
 	// 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
 	return code=> ζ_parse(code).map(ι=>0?0
 		: ι.T==='comment'? ι.ι.replace(/^#/,'//')
@@ -190,7 +198,7 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 	var super_ = require.extensions['.js']; require.extensions['.js'] = (module,ι)=>{ (path.extname(ι)==='' && fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
 	})()
 
-// ---------------------------- as for a prelude ---------------------------- //
+//############################## as for a prelude ###############################
 var simple_hash_str = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); return r } })
@@ -204,9 +212,12 @@ var memo_frp = function(names,within,f){
 		if (t) return dir.φ(t).json2.ι}
 	var a = Time().iso; var ι = f(); var b = Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = {names, date:[a,b], ι}; return ι}
-E.persist_tmp = f=>{
+// ! these persist functions overlap
+E.memoize_persist = f=>{
 	var store = φ`/tmp/ζpersist_${simple_hash(f)}`; var store_ι = store.json||{}
 	return function(...a){ var a_h = simple_hash(a); return store_ι[a_h] || ( store_ι[a_h] = f(...a), store.json = store_ι, store_ι = store.json, store_ι[a_h] ) } }
+E.slot_persist = name=>{ var o = φ`/tmp/ζpersist_${name}`; return def({name},'ι',{get(){return o.json },set(ι){ o.json = ι }}) }
+
 var regex_parse = lazy_fn(function(){ // status: output format unrefined
 	var P = require('./parsimmon2.js')
 	var dehex = ι=> chr(parseInt(ι,16))
@@ -435,7 +446,7 @@ E.schema = (function(){
 	var sc_merge = function(a,b){var ak = _.keys(a); var bk = _.keys(b); bk._.difference(ak).forEach(k=> a[k] = b[k]); _.intersection(ak,bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]); return a }
 	return ι=> T.boolean(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? ι.length===0? [] : [ι.map(schema).reduce(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
-def(E,'brightness',function(){
+new Property( E,'brightness' ).def(function(){
 	var br = hsᵥ? {
 		get(){return Π( hsᵥ`hs.brightness.get()`/100 )},
 		set(ι){return Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
@@ -452,7 +463,7 @@ E.if_main_do = f=>{ if( !module.parent ) f(...process.argv.slice(2)) }
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
 
-// ---------------------------------- .ζrc ---------------------------------- //
+//#################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']._.uniq().join(':')
 E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} = ι; ι=ι+''
 	// very nice google maps urls
@@ -531,8 +542,7 @@ E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} =
 			if( ι.ι.re`\)$` && uri.hash()==='' ) ι.ι += '#'
 			}
 		return ι}).map(ι=>ι.ι).join('')
-
-	// --------- todo --------- //
+//###############################################################################
 	// http://smile.amazon.com/gp/product/0300078153
 	// Seeing like a State http://amzn.com/0300078153
 
@@ -559,7 +569,7 @@ E.github_url = ι=>{
 	var github_remote_origin = file=>{
 		var ι = φ(file).root('/')
 		var root = ι; while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
-		if( root+''==='/' ) throw _(Error()).assign({ human:'did not find github remote origin for '+(file||'<anon>') })
+		if( root+''==='/' ) throw _(Error()) ['<-'] ({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/').length)
 		var t = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
 		// when HEAD is master, maybe use the commit id instead?
@@ -583,7 +593,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 	// windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
 	// apps_with_windows_in_current_space ← ()=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
 
-	// ------------------------- go to specific chrome window -------------------------
+//############################ go to specific chrome ############################
 	// 	wnd ← 1
 	// 	is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
 	// 	// System Events got an error: osascript is not allowed assistive access
@@ -610,7 +620,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 				var t = osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι); if (t)
 					{ var [window_,tab] = t; osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}`; osaₐ`chrome: activate`; return } }
 			if (ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` // bug workaround
-			shᵥ`open …${in_app && sh`-b ${persist_tmp(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(in_app)}`} ${!focus && '-g'} ${ι}`
+			shᵥ`open …${in_app && sh`-b ${memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(in_app)}`} ${!focus && '-g'} ${ι}`
 			}
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
@@ -663,20 +673,23 @@ E.easy_template = (function(){
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-var q0 = ι=> Tstr(ι)? ι : util.inspect(ι,{ depth:null, maxArrayLength:null, })
-var q = ι=> Tarr(ι)? ι.map(q0).join('\n') : q0(ι)
-E.p = function(ι){return arguments.length === 0? shᵥ`pbpaste`+'' : shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }
-E.sb = ()=> sb.tab.active.ι // deprecated, ish
-def(sb,'tab',{
+var q = ι=>0?0
+	: Tarr(ι)? ι.map(q0).join('\n')
+	: q0(ι); var q0 = ι=>0?0
+	: Tstr(ι)? ι
+	: util.inspect(ι,{ depth:null, maxArrayLength:null, })
+E.clipboard = def({},'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }, })
+E.sb = function self(){return self.ι() } // let personal configuration use sb as callable
+new Property( sb,'tab' ).def({
 	get(){
 		var r = sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
 		r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
-		;[...r,r.active].map(ι=> ι && def(ι,'ι',{ enumerable:false,
+		;[...r,r.active].map(ι=> ι && new Property( ι,'ι' ).def({ enumerable:false,
 			get(){return sbᵥ` view = deserialize(${this}); view.substr(Region(0,view.size())) ` },
 			set(ι){ sb_editᵥ(this)` view.replace(edit,Region(0,view.size()),${ι}) ` },
 			}) )
-		def(r,'push',{ enumerable:false, value:
-			function(ι){ shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f`; this.length = 0; (()=> this._.assign(sb.tab) ).in(0.02) } // ! wtf async/sync mix
+		new Property( r,'push' ).def({ enumerable:false, value:
+			function(ι){ shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f`; this.length = 0; (()=> _(this) ['<-'] (sb.tab) ).in(0.02) } // ! wtf async/sync mix
 			})
 		return r },
 	})
@@ -726,9 +739,7 @@ E.osa = function(ss,...ιs){var t;
 E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs); return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
 E.osaₐ = function(ss,...ιs){ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
 
-E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` }
-// inject as .bashrc
-// 	sh` alias ·='eval -- "$(cat /tmp/__·)"; rm /tmp/__·; ' `
+E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` } // ~/.bashrc.ζ :: E['·']
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
@@ -749,7 +760,7 @@ E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
 
 var sh_hash = _.memoize(ι=> shᵥ`which ${ι}`+'') //! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
-def(E,'hsᵥ',()=> !(shᵥ`which hs ;:`+'')? undefined : function(ss,...ιs){
+new Property( E,'hsᵥ' ).def(()=> !(shᵥ`which hs ;:`+'')? undefined : function(ss,...ιs){
 	var ENC = ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : !function(){throw Error('‽')}(); var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	// t ← shᵥ`hs -c ${ι}`
 	var t = child_process.spawnSync(sh_hash('hs'),['-c',ι]).stdout
@@ -783,7 +794,7 @@ var json2_show = ι=> JSON_pretty(ι,function(ι){var t;
 	if (Buffer.isBuffer(ι)) return ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
 	return ι})
 
-def(E,'φ',()=>{
+new Property( E,'φ' ).def(()=>{
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ['⁻¹'] = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 
@@ -810,7 +821,7 @@ def(E,'φ',()=>{
 				},
 			}); fs.closeSync(fd)}
 	var globmatch = (glob,ι)=> ι.re`^…${_(glob).map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`
-	def(φ,'cwd',{get(){return new Φ(process.cwd()) }, set(ι){ var t = φ(ι+'')._ι; mkdir_p(t); process.chdir(t) }})
+	new Property( φ,'cwd' ).def({get(){return new Φ(process.cwd()) }, set(ι){ var t = φ(ι+'')._ι; mkdir_p(t); process.chdir(t) }})
 
 	var normHs = function(ι){if (ι._.isEqual(['~'])) return [process.env.HOME]; Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)); return ι}
 	function Φ(ι){this._ι = ι}; Φ.prototype = {
@@ -872,7 +883,7 @@ def(E,'φ',()=>{
 		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${"npm`csv@0.4.6`.stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})"} ${t+''} ${this.root('/')+''}` },
 		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
 		set xml(ι){ this.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
-		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, // doesn't handle binary plists i guess?
+		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, # doesn't handle binary plists i guess?
 		set plist(ι){ this.text = npm`plist@2.1.0`.build(ι) },
 		get json_array__synchronized(){return function(...ιs){var _ι=this._ι
 			if (ιs.length) !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}('TODO')
@@ -922,8 +933,12 @@ def(E,'φ',()=>{
 		return new Φ(path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
 	return φ })
 
-// --------------------------------- ζ infra -------------------------------- //
-;[process,module].map(ι=> ι.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) //‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
+//########################### personal configuration ############################
+sb.ι = ()=> sb.tab.active.ι
+E.p = function(ι){ var t = clipboard; return arguments.length === 0? t.ι :( t.ι = ι ) }
+
+//################################### ζ infra ###################################
+;[process,module].map(ι=> ι.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) // ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 var Number_toFixed = function(θ,ι){ θ = round(θ/pow(10,-ι))*pow(10,-ι); return ι>0? θ.toFixed(ι) : θ+'' }
 E.pretty_time_num = ι=> _(new Number(ι)) ['<-'] ({inspect:function(ˣ,opt){ var P = 20; var ι=this; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); return opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 _(util.inspect.styles) ['<-'] ({null:'grey',quote:'bold'})
@@ -940,8 +955,8 @@ E.cn = { log:(...a)=> console.log(
 		) }
 E.util_inspect_autodepth = function(ι,opt={}){ opt.L || (opt.L = 1e6); var last; for(var i=1;;i++){ var r = util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) ['<-'] (opt)); if (r===last || r.length > opt.L) return last===undefined? '<too large>' : last; last = r } }
 
-// i know how to make the good repl for ct. i want to, but im tired
 E._double_dagger__repl_start = ()=> ζ_repl_start({
+	// i know how to make the good repl for ct. i want to, but im tired
 	prompt:'\x1b[30m\x1b[100m‡\x1b[0m ',
 	compile:ι=>{var t;
 		var lock = 0?0
@@ -990,7 +1005,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 	return this
 	}) }
 
-// ---------------------------------- main ---------------------------------- //
+//#################################### main #####################################
 var sh_ify = ι=>{var t; return Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
 	: ι===undefined? {}
@@ -1019,7 +1034,7 @@ if_main_do((...a)=> ζ_main({a}) )
 // inject as .bashrc
 // 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `
 
-// -------------------------- remaining work for φ -------------------------- //
+//############################ remaining work for φ #############################
 // https://www.npmjs.com/package/glob-to-regexp
 /*
 formats include
@@ -1048,7 +1063,7 @@ the formats are complicated to interact with, because
 // we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
 // 	“like, it should be caching urls all the time.”
 
-// --------------------- things i need ** globbing to do -------------------- //
+######################## things i need ** globbing to do #######################
 scratch/scratch.txt:107:φ`**`.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.length > 1)
 scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.length).replace(/^\//,'')
 scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι=> !ι.dir()).map(ι=> ι+'')
@@ -1057,8 +1072,8 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
 // Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
-// ---------------------------------- cruft --------------------------------- //
-// // ------------------------------ browser fixes ----------------------------- //
+//#################################### cruft ####################################
+//################################ browser fixes ################################
 // BROWSERp ← typeof window!=='undefined'
 // if (BROWSERp) if (!module.parent) module.parent = '<browser>'
 // if (BROWSERp) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)

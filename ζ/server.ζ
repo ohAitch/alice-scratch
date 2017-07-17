@@ -13,7 +13,7 @@ eval_in_worker ← (λ(){
 	process.once('exit',()=>{ […busy,…free].map(ι=> ι.kill()) })
 	make ← ()=>(
 		log('new worker',w_id),
-		eval_in_new_worker('('+λ(){
+		_( eval_in_new_worker('('+λ(){
 			wait ← ()=> process.once('message',ι=>{ ι[0]==='eval' || ‽; try{ (0,eval)(ι[1]) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι[1]}`; throw e } }) //! todo: make this logging less stupid
 			wait()
 			process.on('beforeExit',i=>{ process.send(['*',['pseudo_exit',i],['unbusy']]); process.exitCode = 0; wait() })
@@ -21,7 +21,7 @@ eval_in_worker ← (λ(){
 			}+')()')
 		.on('message',λ(ι){ (ι[0]==='*'? ι.slice(1) : [ι]).map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
-		._.assign({id: w_id++})
+		) <- ({id: w_id++})
 		); w_id ← 0
 	;(λ(){ t ← free.pop(); free._.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
 	cleanup ← ()=>{
