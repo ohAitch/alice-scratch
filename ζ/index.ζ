@@ -103,10 +103,11 @@ def(E,'require_new',lazy('require_new',()=>{ t ← npm`require-uncached@1.0.3`; 
 
 #################################### ζ infra ###################################
 E.Property = λ(o,name){ this.o = o; this.name = name; }
-def(Property.prototype,'ι',{ get(){↩ @.o[name]}, set(ι){ @.o[name] = ι } })
+def(Property.prototype,'ι',{ get(){↩ @.o[@.name]}, set(ι){ @.o[@.name] = ι } })
 # Property.prototype.descriptor = λ(ι){ if( arguments.length===0 ) ↩ Object.getOwnPropertyDescriptor(@.o,@.name); else Object.defineProperty(@.o,@.name,ι) }
 Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 # id like an interface more like def, but def doesnt have a getter so it is temporary
+# this should probably supercede def, since <3 firstclassness?
 
 new Property(eval,'·').def({ enumerable:true, get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } //! slotify and then detect and merge slots
@@ -670,12 +671,7 @@ E.easy_template = (λ(){
 	↩ f=> λ(ss,…ιs){↩ f.call(@,read(ss,ιs),show) }
 	})()
 
-q ← ι⇒
-	: Tarr(ι)? ι.map(q0).join('\n')
-	: q0(ι); q0 ← ι⇒
-	: Tstr(ι)? ι
-	: util.inspect(ι,{ depth:null, maxArrayLength:null, })
-E.clipboard = def({},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }, })
+E.clipboard = def({},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
 E.sb = λ self(){↩ self.ι() } # let personal configuration use sb as callable
 [#Q sb.tab #Q].def({
 	get(){
@@ -686,10 +682,18 @@ E.sb = λ self(){↩ self.ι() } # let personal configuration use sb as callable
 			set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
 			}) )
 		[#Q r.push #Q].def({ enumerable:false, value:
-			λ(ι){ shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f`; @.length = 0; (()=> _(@) <- (sb.tab) ).in(0.02) } # ! wtf async/sync mix
+			λ(ι){ shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f`; @.length = 0; (()=> _(@) <- (sb.tab) ).in(0.02) } # ! wtf async/sync mix
 			})
 		↩ r },
 	})
+sb.encode = (()=>{
+	line ← ι⇒
+		: Tstr(ι)? ι
+		: util.inspect(ι,{ depth:null, maxArrayLength:null, })
+	↩ ι⇒
+		: ι===undefined? ''
+		: Tarr(ι)? ι.map(line).join('\n')
+		: line(ι) })()
 
 E.re = λ(ss,…ιs){
 	// would like to embed regex in [] and have that be ok
@@ -877,10 +881,16 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		get ini(){↩ npm`ini@1.3.4`.parse(@.text) },
 		# set ini(ι){},
 		# get csv(){↩},
-		set csv(ι){ t ← φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${"npm`csv@0.4.6`.stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})"} ${t+''} ${@.root('/')+''}` },
+		set csv(ι){ t ← φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${@.root('/')+''}).buf = ι })`}` },
 		# get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
 		set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
-		# get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, # doesn't handle binary plists i guess?
+		get plist(){t←; buf ← @.buf; ↩ 0?0
+			# in case bplist-parser has bugs, this is available:
+			# which ← memoize_persist(ι=>{ try{ shᵥ`which ${ι}`; ↩ true }catch(e){} })
+			# : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
+			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist_${random_id(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
+			: npm`plist@2.1.0`.parse(@.text)
+			},
 		set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) },
 		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
 			if (ιs.length) ‽('TODO')

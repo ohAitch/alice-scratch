@@ -1,28 +1,25 @@
-[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
-[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
-
-export PROMPT_COMMAND='_PC_t $? "$(history 1)"; hash -r'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
-
 ###### for external use ######
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 alias Z=ζ # ! temporary while terminal unicode is broken
 
-eval "$(ζ ' require_new(φ`~/.bashrc.ζ`)._.pairs().map(([name,ι])=>{
+eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
 	φpostrun ← "/tmp/postrun_"+random_id(9)
 	↩ name+sh`(){
-		ζ ${ι.cant_pool && "--fresh"} ${js` [process.env.?,process.shell_pid,…a] = a
+		ζ ${ι.cant_pool && "--fresh"} ${js` [process.env.?,process.env.$,…a] = a
 			global.postrun = ι=> φ(${φpostrun}).text = ι
 			require_new(φ("~/.bashrc.ζ"))[${name}](…a)
 			`} $? $$ "$@"; E=$?
-		[ -e ${φpostrun} ] && { eval -- "$(cat ${φpostrun})"; rm ${φpostrun}; }
+		[ -e ${φpostrun} ] && { eval -- "$(cat ${φpostrun})"; E=$?; rm ${φpostrun}; }
 		return $E; }` }).join("\n") ')"
 
-# convert me to ζ
-# it'll be easy and it'll be fun, getting all of the design right
-# the key idea is “conf”
-# right?
+# convert me to ζ. the key idea is conf
 
-################### as for a prelude ### for interactive mode ##################
+#################################### prelude ###################################
+[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
+[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
+
+######################### prelude ### interactive mode #########################
+export PROMPT_COMMAND='__prompt $? "$(history 1)"'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 l(){ ls -AG "$@"; }

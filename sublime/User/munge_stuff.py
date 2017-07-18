@@ -83,15 +83,16 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		r = json.loads(ζ("""
 			hook_stdouterr ← ()=>{
 				r ← [,'stdout','stderr'].map(io_id=>{
-					io ← [#Q process[io_id].write #Q]; r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
+					io ← [#Q process[io_id].write #Q]
+					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
 					}); ↩ _.memoize( ()=> r.map(ι=> ι()) ) }
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
 				std ← hook_stdouterr()
-				t←; e←; (λ __special_es__u7h7zxgvi__(){ try{ global.code = ι; global.require = require; t = (0,eval)(ζ_compile(ι+'')) }catch(e_){ e = e_ } })()
+				r←; e←; (λ __special_es__u7h7zxgvi__(){ try{ global.code = ι; global.require = require; r = (0,eval)(ζ_compile(ι+'')) }catch(e_){ e = e_ } })()
 				↩ [
 					,… std().slice(1)
-					, t===undefined? '' : t
+					, sb.encode(r)
 					, e===undefined? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
 					].join('')
 					}) """,E(ι)))

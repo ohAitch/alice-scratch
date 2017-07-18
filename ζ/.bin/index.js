@@ -103,10 +103,11 @@ def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`
 
 //################################### ζ infra ###################################
 E.Property = function(o,name){ this.o = o; this.name = name; }
-def(Property.prototype,'ι',{ get(){return this.o[name]}, set(ι){ this.o[name] = ι } })
+def(Property.prototype,'ι',{ get(){return this.o[this.name]}, set(ι){ this.o[this.name] = ι } })
 // Property.prototype.descriptor = λ(ι){ if( arguments.length===0 ) ↩ Object.getOwnPropertyDescriptor(@.o,@.name); else Object.defineProperty(@.o,@.name,ι) }
 Property.prototype.def = function(ι){ def(this.o,this.name,ι); return this }
 // id like an interface more like def, but def doesnt have a getter so it is temporary
+// this should probably supercede def, since <3 firstclassness?
 
 new Property(eval,'·').def({ enumerable:true, get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } //! slotify and then detect and merge slots
@@ -673,12 +674,7 @@ E.easy_template = (function(){
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-var q = ι=>0?0
-	: Tarr(ι)? ι.map(q0).join('\n')
-	: q0(ι); var q0 = ι=>0?0
-	: Tstr(ι)? ι
-	: util.inspect(ι,{ depth:null, maxArrayLength:null, })
-E.clipboard = def({},'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${q(ι===undefined? '' : ι)} |`` pbcopy` }, })
+E.clipboard = def({},'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
 E.sb = function self(){return self.ι() } // let personal configuration use sb as callable
 new Property( sb,'tab' ).def({
 	get(){
@@ -689,10 +685,18 @@ new Property( sb,'tab' ).def({
 			set(ι){ sb_editᵥ(this)` view.replace(edit,Region(0,view.size()),${ι}) ` },
 			}) )
 		new Property( r,'push' ).def({ enumerable:false, value:
-			function(ι){ shₐ`${q(ι)} |`` open -a 'Sublime Text.app' -f`; this.length = 0; (()=> _(this) ['<-'] (sb.tab) ).in(0.02) } // ! wtf async/sync mix
+			function(ι){ shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f`; this.length = 0; (()=> _(this) ['<-'] (sb.tab) ).in(0.02) } // ! wtf async/sync mix
 			})
 		return r },
 	})
+sb.encode = (()=>{
+	var line = ι=>0?0
+		: Tstr(ι)? ι
+		: util.inspect(ι,{ depth:null, maxArrayLength:null, })
+	return ι=>0?0
+		: ι===undefined? ''
+		: Tarr(ι)? ι.map(line).join('\n')
+		: line(ι) })()
 
 E.re = function(ss,...ιs){
 	// would like to embed regex in [] and have that be ok
@@ -880,10 +884,16 @@ new Property( E,'φ' ).def(()=>{
 		get ini(){return npm`ini@1.3.4`.parse(this.text) },
 		// set ini(ι){},
 		// get csv(){↩},
-		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${"npm`csv@0.4.6`.stringify(φ(a0).json,λ(e,ι){φ(a1).buf = ι})"} ${t+''} ${this.root('/')+''}` },
+		set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}`; t.json = ι; shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${this.root('/')+''}).buf = ι })`}` },
 		// get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
 		set xml(ι){ this.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
-		// get plist(){↩ npm`plist@2.1.0`.parse(@.buf) }, # doesn't handle binary plists i guess?
+		get plist(){var t; var buf = this.buf; return 0?0
+			// in case bplist-parser has bugs, this is available:
+			// which ← memoize_persist(ι=>{ try{ shᵥ`which ${ι}`; ↩ true }catch(e){} })
+			// : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
+			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist_${random_id(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${this.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
+			: npm`plist@2.1.0`.parse(this.text)
+			},
 		set plist(ι){ this.text = npm`plist@2.1.0`.build(ι) },
 		get json_array__synchronized(){return function(...ιs){var _ι=this._ι
 			if (ιs.length) !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}('TODO')

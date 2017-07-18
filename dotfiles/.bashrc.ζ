@@ -1,15 +1,17 @@
 E ← module.exports
 
 ############################# terminal_do_script ‽ #############################
-E['·'] = ()=>{ t ← φ`/tmp/__·`.text; φ`/tmp/__·`.ι = null; postrun(t) }
+E['·'] = ()=>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = null }
 
 ################################# bash prompt ‽ ################################
 # !! mixes prelude and personal config !!
-E._PC_t = (E,history_1)=>{ E = E|0; cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
+E.__prompt = (E,history_1)=>{t←; E ← E |0
+	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
 	fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
-	last_cwd ← slot_persist('last_cwd_'+process.shell_pid); last_cwd.ι ||( last_cwd.ι = φ.cwd+'' ); last_cwd.ι === φ.cwd+'' ||( last_cwd.ι = φ.cwd+'', out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) )
+	last_cwd ← slot_persist('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
+	postrun('hash -r')
 	}
 
 ############################### as for a prelude ###############################
@@ -32,7 +34,7 @@ _pastebin_id ← ()=> Π(yes=>
 E.pb.cant_pool = true
 
 E.ps2 = ()=>{
-	startup_procs ← λ(){ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
+	startup_procs ← ()=>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
 	bad ← new Set(startup_procs())
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
@@ -74,8 +76,8 @@ E['‡'].cant_pool = true
 ################ personal configuration ### for interactive mode ###############
 E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } //! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
-	mv ← λ(a,b){a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b)}
-	a.filter(ι=> ι.re`\.jpg$`).map(λ(ι){
+	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
+	a.filter(ι=> ι.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -verbose ${ι}`+'').re`exif:DateTimeOriginal: (.*)`
 		if (!t) ↩
 		t = t[1].split(' '); t = t[0].replace(/:/g,'-')+'T'+t[1]
@@ -116,15 +118,16 @@ E.run_project.cant_pool = true
 E.d = (a='.')=>{
 	sum ← 0
 	q ← (ι,fl)=> cn.log( (' '.repeat(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
-	fs.readdirSync(a).map(λ(fl){
+	fs.readdirSync(a).map(fl=>{
 		if (φ(fl).is_dir){
-			o ← process.stderr.write; process.stderr.write = λ(){}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
+			# should probably use hook_stdouterr
+			o ← process.stderr.write; process.stderr.write = ()=>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
 			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
 		else b ← φ(fl).size
 		sum += b; q(b,fl) })
 	q(sum,a)
 
-	progress_bar ← (L,at)=>( L-=2, '['+('='.repeat(L)+'>').slice(-floor(at*L))+' '.repeat(L-floor(at*L))+']' )
+	progress_bar ← (L,at)=>( L -= 2, at = floor(at*L), '['+('='.repeat(L)+'>').slice(-at)+' '.repeat(L-at)+']' )
 	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
@@ -144,16 +147,16 @@ E.ct = E.chrome_tabs = λ(i){
 	}
 
 E.bookmarks = ι=>{
-	//! should use nice_url
+	# ! should use nice_url
 	use_chrome ← true
 	safari_bookmarks ← ι=>{
-		ι = npm`plist@1.2.0`.parse(shᵥ`plutil -convert xml1 -o - ${ι||φ`~/Library/Safari/Bookmarks.plist`+''}`+'')
-		my_walk ← ι=>
-			ι.WebBookmarkType==='WebBookmarkTypeProxy'? [] :
-			ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{name:ι.URIDictionary.title, ι:ι.URLString}] :
-			ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.mapcat(ι=> my_walk(ι))}] :
-				{name:'', ι:JSON.stringify(ι)}
-		↩ my_walk(ι)[0].ιs }
+		my_walk ← ι⇒
+			: Tarr(ι)? ι.mapcat(my_walk)
+			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
+			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{name:ι.URIDictionary.title, ι:ι.URLString}]
+			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.mapcat(ι=> my_walk(ι))}]
+			: {name:'', ι:JSON.stringify(ι)}
+		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
 	chrome_bookmarks ← ι=>{
 		ι = φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children
 		my_walk_a ← ι=> ι.map(ι=> my_walk(ι))
