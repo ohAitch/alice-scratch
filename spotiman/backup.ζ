@@ -4,8 +4,9 @@ async ← npm`async@2.1.4`
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
 // -------------------------------------------------------------------------- //
+# link spotify.credentials with ~/.auth/spotiman
 spotify.setCredentials(φ`~/.auth/spotiman`.json)
-update_creds ← ι=>{ t ← spotify.getCredentials(); ι.access_token && (t.accessToken = ι.access_token); ι.refresh_token && (t.refreshToken = ι.refresh_token); spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
+update_creds ← ι=>{ t ← spotify.getCredentials(); ι.access_token &&( t.accessToken = ι.access_token ); ι.refresh_token &&( t.refreshToken = ι.refresh_token ); spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
 
 say_progress ← (λ(){ i←0; ↩ ()=>{ i++; i%10===0 && cn.log(APP,'working @ page #'+i) } })()
 

@@ -48,7 +48,7 @@ E.ps2 = ()=>{
 
 E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
-		a ← new Set(fs.readdirSync(base)) //! should walk all subfiles
+		a ← new Set(fs.readdirSync(base)) # ! should walk all subfiles
 		b ← new Set(fs.readdirSync(edit))
 		[same,changed] ← _([…a.∩(b)]).partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].mapcat(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
@@ -74,13 +74,15 @@ E.D = E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
 E['‡'].cant_pool = true
 
 ################ personal configuration ### for interactive mode ###############
-E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } //! wth are you using scale
+E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
 	a.filter(ι=> ι.re`\.jpg$`).map(ι=>{
-		t ← (shᵥ`identify -verbose ${ι}`+'').re`exif:DateTimeOriginal: (.*)`
+		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
+		# cn.log('got',ι,t&&t[1])
 		if (!t) ↩
-		t = t[1].split(' '); t = t[0].replace(/:/g,'-')+'T'+t[1]
+		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong, but slightly better semantic?
+		# also see https://www.npmjs.com/package/exif-parser
 		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = null), 'PANO/') : '')+t+'.jpg')
 		}) }
 

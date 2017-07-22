@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-// odd synonym: k, name(, id)
+// hey, if you're gonna break this, keep a previous stable version ready this time. weve spent entirely too much time rescuing our configurations.
+
+// odd synonym: k, name(, id)(, i?)
 
 //############################## as for a prelude ###############################
 var _ = require('underscore')
@@ -110,7 +112,7 @@ Property.prototype.def = function(ι){ def(this.o,this.name,ι); return this }
 // this should probably supercede def, since <3 firstclassness?
 
 new Property(eval,'·').def({ enumerable:true, get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
-var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } //! slotify and then detect and merge slots
+var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } // ! slotify and then detect and merge slots
 
 ;(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
 	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
@@ -311,7 +313,7 @@ var genex = function Λ(ι){return 0,
 	ι.T==='escape'? !function(){throw Error('‽')}() :
 	ι.T==='or'? ι.ι.mapcat(Λ) :
 	ι.T==='seq'? cartesian_str(ι.ι.map(Λ)) :
-	// ι.T==='times'? // Λ(ι.ι).mapcat(x=> _.range(ι.for[0],ι.for[1]+1).map(i=> x.repeat(i)) ) :
+	// ι.T==='times'? # Λ(ι.ι).mapcat(x=> _.range(ι.for[0],ι.for[1]+1).map(i=> x.repeat(i)) ) :
 	// 	ιs ← Λ(ι.ι)
 	ι.T==='set'? ι.ι.mapcat(ι=>
 		Tarr(ι)? _.range(ord(ι[0]),ord(ι[1])+1).map(chr) :
@@ -323,15 +325,15 @@ _(E) ['<-'] (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min',
 E.multiline = function(ι){ ι = (ι+'').split('\n').slice(1,-1); var t = ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); return (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ var h; for(var hr=hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
-	//! really should include a confidence interval or smth
+	// ! really should include a confidence interval or smth
 	var r=0; var I=1; var hr=hrtime(); var R = ()=> pretty_time_num(hrtime(hr) / r)
 	var t=f(); r++
 	if( T.Promise(t) ) return Π(yes=>{ t.then(function Λ(){ if( hrtime(hr) < TH ){ r++; f().then(Λ) }else yes(R()) }) })
 	else{ for(;hrtime(hr) < TH;){ for(var i=0;i<I;i++) f(); r += I; I = ceil(I*1.5) }; return R() } }
 E.bench1 = f=>{ var hr = hrtime(); f(); return pretty_time_num(hrtime(hr)) }
-E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
+E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) // ! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
-E.random_id = L=> L.map(()=> random(az09||(az09=[.../[0-9a-z]/]))).join(''); var az09; //§
+E.random_id = L=> L.map(()=> random(az09||(az09=[.../[0-9a-z]/]))).join(''); var az09; // §
 E.ord = ι=> Tnum(ι)? ι : ι.codePointAt()
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 
@@ -480,7 +482,7 @@ E.nice_url = function(ι){var t; var urijs = require('urijs'); var {sourcemap} =
 	// wait-click: wait for ι.length; ι.click()
 	// decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
 
-	if (t=ι.re`^"(.*)"$`) return '“'+t[1]+'”' //! bad hack
+	if (t=ι.re`^"(.*)"$`) return '“'+t[1]+'”' // ! bad hack
 
 	var apply_regexes = regs=> multiline(regs).split(/\n/g).map(function(t){ var [a,b] = t.split(/  +/g); ι = ι.replace(RegExp(a),b) })
 	var URL = /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
@@ -597,8 +599,8 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 //############################ go to specific chrome ############################
 	// 	wnd ← 1
 	// 	is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
-	// 	// System Events got an error: osascript is not allowed assistive access
-	// 	// compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
+	// 	# System Events got an error: osascript is not allowed assistive access
+	// 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
 	// 	if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
 	//  
 	// 	t ← [2,1]; chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
@@ -637,7 +639,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 	else if (type==='path'){ ( !new_ && focus )||!function(){throw Error('‽')}()
 		// ! i think this might be a pretty badly designed type
 		new_ = true
-		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(){throw Error('‽')}() //! duplication with munge_stuff.py:FIND_RESULT
+		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(){throw Error('‽')}() // ! duplication with munge_stuff.py:FIND_RESULT
 			// in_app = 'sublime text'
 			var [,ι,line] = ι.re`^(.+):(\d+):$`
 			ι = φ('~/file/'+ι)
@@ -736,7 +738,7 @@ E.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
 
 E.osa = function(ss,...ιs){var t;
 	var ι = simple_template(ss,ιs)
-	//! this is such a mess
+	// ! this is such a mess
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)){ ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, ...ι, '; end tell'] }
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, ...ι, '; end tell'] }
 	return ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n')).join('') }
@@ -748,10 +750,10 @@ E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
 	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
-	// 	// E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
-	// // probably add a random_id(10) call to '#applescript_hack'
+	// 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
+	// # probably add a random_id(10) call to '#applescript_hack'
 	// 	t ← "t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"
-	//	chrome_simple_js_ᵥ(t,tab)
+	// 	chrome_simple_js_ᵥ(t,tab)
 	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
 
@@ -762,7 +764,7 @@ E.sbᵥ = function(ss,...ιs){
 	var t = JSON.parse(fs_ipc_emit(34289,ι)); t===null && (t = undefined); return t }
 E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
 
-var sh_hash = _.memoize(ι=> shᵥ`which ${ι}`+'') //! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
+var sh_hash = _.memoize(ι=> shᵥ`which ${ι}`+'') // ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
 new Property( E,'hsᵥ' ).def(()=> !(shᵥ`which hs ;:`+'')? undefined : function(ss,...ιs){
 	var ENC = ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : !function(){throw Error('‽')}(); var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
@@ -837,7 +839,7 @@ new Property( E,'φ' ).def(()=>{
 		get nlink(){return fs.statSync(this._ι).nlink },
 		get mtime(){return fs.statSync(this._ι).mtime },
 		get birthtime(){return fs.statSync(this._ι).birthtime },
-		get url(){return encodeURI('file:'+this.root('/')) }, //! should this be part of root
+		get url(){return encodeURI('file:'+this.root('/')) }, // ! should this be part of root
 		get is_dir(){return !!catch_ι(()=> fs.statSync(this._ι).isDirectory()) },
 		get name(){return path.basename(this._ι) },
 		BAD_exists(){return existsSync(this._ι) },
@@ -1066,12 +1068,12 @@ the formats are complicated to interact with, because
 * GET POST PUT have really tangly apis for all sorts of efficiency concerns
 * DELETE especially, we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help)
 
-// paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
+# paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
 
-// we need to be careful with non-atomic transactions
-// we need to think about how this interacts with concurrency
-// we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
-// 	“like, it should be caching urls all the time.”
+# we need to be careful with non-atomic transactions
+# we need to think about how this interacts with concurrency
+# we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
+# 	“like, it should be caching urls all the time.”
 
 ######################## things i need ** globbing to do #######################
 scratch/scratch.txt:107:φ`**`.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.length > 1)
@@ -1090,11 +1092,11 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // if (BROWSERp) E.cn = { log:λ(…a){ console.log(…a); window.__ = a[-1] } }
 
 // 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
-// 	// https://github.com/Automattic/kue
-// 	// https://github.com/rschmukler/agenda
-// 	// robust to setTimeout taking extra time
-// 	//! not robust to the process failing ! should use redis or something instead !
-// 	//! wth is up with the { hrtime() <-> time } comparison
+// 	# https://github.com/Automattic/kue
+// 	# https://github.com/rschmukler/agenda
+// 	# robust to setTimeout taking extra time
+// 	# ! not robust to the process failing ! should use redis or something instead !
+// 	# ! wth is up with the { hrtime() <-> time } comparison
 // 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
 // 	P←; ensure ← λ(){if (P) ↩; P = true; (λ Λ(){t←;
 // 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
@@ -1121,10 +1123,10 @@ scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; �
 // NODEp ← typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
 
 // E.fs_ipc = {
-// 	// on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
-// 	// 	t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
-// 	// 	end ← ι=> res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
-// 	// 	}).listen(port)},
+// 	# on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
+// 	# 	t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
+// 	# 	end ← ι=> res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
+// 	# 	}).listen(port)},
 // 	}
 
 // E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id

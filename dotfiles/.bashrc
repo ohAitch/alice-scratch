@@ -2,6 +2,7 @@
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 alias Z=ζ # ! temporary while terminal unicode is broken
 
+# in theory if ζ isn't up this should wait a bit
 eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
 	φpostrun ← "/tmp/postrun_"+random_id(9)
 	↩ name+sh`(){

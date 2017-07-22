@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-// odd synonym: k, name(, id)
+# hey, if you're gonna break this, keep a previous stable version ready this time. weve spent entirely too much time rescuing our configurations.
+
+# odd synonym: k, name(, id)(, i?)
 
 ############################### as for a prelude ###############################
 _ ← require('underscore')
@@ -20,13 +22,13 @@ properties_tree_formalify ← ι=>
 			new Descriptor( Tfun(ι)? { value:ι, enumerable:true } : ι )
 			), {})
 
-// mixin_forever ← (to,from)=>{}
-// mixin_forever_informal ← (to,from)=>{}
+# mixin_forever ← (to,from)=>{}
+# mixin_forever_informal ← (to,from)=>{}
 E_ ← {}
 patched ← new Set([E_,global])
-E ← new Proxy({},{ // exports
-	// get(           self,k){  },
-	// getOwnPropertyDescriptor()
+E ← new Proxy({},{ # exports
+	# get(           self,k){  },
+	# getOwnPropertyDescriptor()
 	set(           self,k,ι){ […patched].forEach(o=> o[k] = ι ) },
   defineProperty(self,k,ι){ […patched].forEach(o=> def(o,k,ι)); ↩ true },
 	})
@@ -97,7 +99,7 @@ E._ = _
 path ← require('path')
 fs ← require('fs')
 moment ← require('moment')
-if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } // browserify
+if (0){ require('util'); require('stream'); require('moment'); require('priorityqueuejs'); require('urijs') } # browserify
 def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ t ← npm`require-uncached@1.0.3`; ↩ ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 
@@ -110,7 +112,7 @@ Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 # this should probably supercede def, since <3 firstclassness?
 
 new Property(eval,'·').def({ enumerable:true, get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
-lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } //! slotify and then detect and merge slots
+lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # ! slotify and then detect and merge slots
 
 ;[#persist_here ~/code/declare/npm]
 E.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\x1b[34m[npm]\x1b[0m'
@@ -175,7 +177,7 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||‽)+x )
 		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! -= += Π& Π| ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
-		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ t ← 't_'+random_id(9); ↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
+		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ t ← 't_'+random_id(9); ↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(/\[#Q/g,'new Property(') # Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
@@ -254,29 +256,29 @@ E.applescript = {
 	  ↩ ι=> ι===''? undefined : ws(value).parse(ι) }),
 	print: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : Tarr(ι)? '{'+ι.map(applescript.print.X).join(',')+'}' : ‽,
 	}
-// E.lenient_json_parse = (λ(){
-// 	P ← require('./parsimmon2.js')
+# E.lenient_json_parse = (λ(){
+# 	P ← require('./parsimmon2.js')
 
-// 	whitespace ← P(/\s*/m)
-// 	escapes ← { b:'\b', f:'\f', n:'\n', r:'\r', t:'\t', }
-// 	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/, (ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
-// 	comma_sep ← (parser)=> P.sepBy(parser, token(P(',')))
-// 	token ← p=> p.skip(whitespace)
+# 	whitespace ← P(/\s*/m)
+# 	escapes ← { b:'\b', f:'\f', n:'\n', r:'\r', t:'\t', }
+# 	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/, (ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
+# 	comma_sep ← (parser)=> P.sepBy(parser, token(P(',')))
+# 	token ← p=> p.skip(whitespace)
 
-// 	l_null ← token(P('null')).map(()=> null)
-// 	l_t ← token(P('true')).map(()=> true)
-// 	l_f ← token(P('false')).map(()=> false)
-// 	l_str ← token(P(/"((?:\\.|.)*?)"/, 1)).map(un_escape).desc('string')
-// 	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
+# 	l_null ← token(P('null')).map(()=> null)
+# 	l_t ← token(P('true')).map(()=> true)
+# 	l_f ← token(P('false')).map(()=> false)
+# 	l_str ← token(P(/"((?:\\.|.)*?)"/, 1)).map(un_escape).desc('string')
+# 	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
 
-// 	json ← P.lazy(()=> whitespace.then(P.alt( object, array, l_str, l_num, l_null, l_t, l_f )) )
-// 	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
-// 	pair ← P.seq(l_str.skip(token(P(':'))), json)
-// 	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _.object(ι))
-// 	↩ ι=> json.parse(ι).value })()
+# 	json ← P.lazy(()=> whitespace.then(P.alt( object, array, l_str, l_num, l_null, l_t, l_f )) )
+# 	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
+# 	pair ← P.seq(l_str.skip(token(P(':'))), json)
+# 	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _.object(ι))
+# 	↩ ι=> json.parse(ι).value })()
 E.JSON_pretty = (ι,replacer)=>{
 	seen ← []
-	T ← '  ' // tab
+	T ← '  ' # tab
 	wrap_width ← 140
 	indent_show ← ι=> show(ι).replace(/\n/g,'\n'+T)
 	show ← ι=>{t←;
@@ -308,8 +310,8 @@ genex ← λ Λ(ι){↩0,
 	ι.T==='escape'? ‽ :
 	ι.T==='or'? ι.ι.mapcat(Λ) :
 	ι.T==='seq'? cartesian_str(ι.ι.map(Λ)) :
-	// ι.T==='times'? // Λ(ι.ι).mapcat(x=> _.range(ι.for[0],ι.for[1]+1).map(i=> x.repeat(i)) ) :
-	// 	ιs ← Λ(ι.ι)
+	# ι.T==='times'? # Λ(ι.ι).mapcat(x=> _.range(ι.for[0],ι.for[1]+1).map(i=> x.repeat(i)) ) :
+	# 	ιs ← Λ(ι.ι)
 	ι.T==='set'? ι.ι.mapcat(ι=>
 		Tarr(ι)? _.range(ord(ι[0]),ord(ι[1])+1).map(chr) :
 		ι.T==='escape'? ‽ :
@@ -320,15 +322,15 @@ _(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','pow
 E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); ↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
-	//! really should include a confidence interval or smth
+	# ! really should include a confidence interval or smth
 	r←0; I←1; hr←hrtime(); R ← ()=> pretty_time_num(hrtime(hr) / r)
 	t←f(); r++
 	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++; f().then(Λ) }else yes(R()) }) })
 	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f(); r += I; I = ceil(I*1.5) }; ↩ R() } }
 E.bench1 = f=>{ hr ← hrtime(); f(); ↩ pretty_time_num(hrtime(hr)) }
-E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) //! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
+E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) # ! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.random = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
-E.random_id = L=> L.map(()=> random(az09||(az09=[…/[0-9a-z]/]))).join(''); az09←; //§
+E.random_id = L=> L.map(()=> random(az09||(az09=[…/[0-9a-z]/]))).join(''); az09←; # §
 E.ord = ι=> Tnum(ι)? ι : ι.codePointAt()
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 
@@ -353,7 +355,7 @@ assign_properties_in_E_informal({
 'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i; ↩ @.exec(ι) },
 'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r},
 'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
-'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, // λ(f){↩ @.map(f)._.flatten(true)}
+'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, # λ(f){↩ @.map(f)._.flatten(true)}
 'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @)},
 'Array.prototype.search':λ(f){ r←; if (@.some(λ(ι,i,l){ r = f(ι,i,l); if (r!==undefined) ↩ true })) ↩ r },
 '(Array|Buffer|String).prototype.chunk':λ(L){↩ _.range(0,@.length,L).map(i=> @.slice(i,i+L)) },
@@ -388,7 +390,7 @@ TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear(
 E.Π = ι⇒
 	: !Tfun(ι)?( T.Error(ι)? Promise.reject(ι) : Promise.resolve(ι) )
 	: /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
-	: (λ(){ // type union of new.Promise(nodeback) and Promise.resolve(object)
+	: (λ(){ # type union of new.Promise(nodeback) and Promise.resolve(object)
 		type ← '?'
 		r ← (…a)=>{ type==='?' &&( type = 'nodeback' ); ↩ type==='object'? ι(…a) : Π((yes,no)=> ι(…a,(e,ι)=>{ e? no(e) : yes(ι) })) }
 		for(var name of ['then','catch'])
@@ -397,7 +399,7 @@ E.Π = ι⇒
 Π.& = ι=> Promise.all(ι)
 Π.| = ι=> Promise.race(ι)
 assign_properties_in_E_informal({
-// 'Function.prototype.Π':λ(){ ... },
+# 'Function.prototype.Π':λ(){ ... },
 'Function.prototype.P':λ(…a1){ ι←@; ↩ λ(…a2){↩ ι.apply(@, a1.concat(a2)) } },
 'Function.prototype.X':{get(){ ι←@; ↩ λ(a){↩ ι.call(@,a) } }},
 'Function.prototype.defer':λ(){↩ setImmediate(@) },
@@ -464,26 +466,26 @@ E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(�
 ##################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.']._.uniq().join(':')
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+''
-	// very nice google maps urls
-	// if url ≈ google.com/maps/
-	// fetch short url:
-	// 	wait-click $('#searchbox-hamburger')
-	// 	wait-click $('[jsaction="settings.share"]')
-	// 	wait-check $('#share-short-url')
-	// 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
-	// 	return t
-	// 	$('.modal-container').click()
-	// wait-check: if not $`${ι}:checked`; ι.click(); wait for $`${ι}:checked`
-	// wait-click: wait for ι.length; ι.click()
-	// decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
+	# very nice google maps urls
+	# if url ≈ google.com/maps/
+	# fetch short url:
+	# 	wait-click $('#searchbox-hamburger')
+	# 	wait-click $('[jsaction="settings.share"]')
+	# 	wait-check $('#share-short-url')
+	# 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
+	# 	return t
+	# 	$('.modal-container').click()
+	# wait-check: if not $`${ι}:checked`; ι.click(); wait for $`${ι}:checked`
+	# wait-click: wait for ι.length; ι.click()
+	# decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
 
-	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' //! bad hack
+	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' # ! bad hack
 
 	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){ [a,b] ← t.split(/  +/g); ι = ι.replace(RegExp(a),b) })
 	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
 	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {type:'text', ι}), (ι.match(URL)||[]).map(ι⇒ {type:'url', ι}))._.flatten(true).filter(ι=> !(ι === undefined || (ι.type === 'text' && ι.ι === '')))
 
-	// ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=urijs(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+''); ↩ ι})._.map('ι').join('')
+	# ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=urijs(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+''); ↩ ι})._.map('ι').join('')
 
 	if (sourcemap && sourcemap.title && sourcemap.url && (t=urijs(ι.slice(…sourcemap.url)),
 		t.domain() in {'github.com':0} ||
@@ -541,18 +543,18 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+
 			}
 		↩ ι}).map(ι=>ι.ι).join('')
 ################################################################################
-	// http://smile.amazon.com/gp/product/0300078153
-	// Seeing like a State http://amzn.com/0300078153
+	# http://smile.amazon.com/gp/product/0300078153
+	# Seeing like a State http://amzn.com/0300078153
 
-	// https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
-	// http://goo.gl/0nrUfP
+	# https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+	# http://goo.gl/0nrUfP
 
-	// generalize the “fix & to ?” to many different things
+	# generalize the “fix & to ?” to many different things
 
-	// http://www.ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
-	// A Big Little Idea Called Legibility http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
-	// http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility
-	// http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
+	# http://www.ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# A Big Little Idea Called Legibility http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility
+	# http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
 
 	↩ ι}
 E.sfx = λ(ss,…ιs){ ι ← ss[0]
@@ -570,12 +572,12 @@ E.github_url = ι=>{
 		if( root+''==='/' ) throw _(Error()) <- ({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/').length)
 		t ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/)
-		// when HEAD is master, maybe use the commit id instead?
+		# when HEAD is master, maybe use the commit id instead?
 		↩ encodeURI('http://github.com/'+t[1]+'/'+t[2]+'/blob/'+root.φ`.git/HEAD`.text.match(/refs\/heads\/(.+)/)[1]+'/'+ι) }
 	[file,h] ← sbᵥ`view = deserialize(${ι}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
 	fm ← ι=> 'L'+(ι+1)
 	↩ github_remote_origin(file||'')+( _.isEqual(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
-E.go_to = (…a)=>{ // synonyms: go_to, open, search?
+E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 	opt ← !Tprim(a[-1])? a.pop() : {}
 	type ← a.length===1? null : a.shift()
 	ι ← a[0]
@@ -588,17 +590,17 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 
 	if (!focus) sfx`ack`
 
-	// windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
-	// apps_with_windows_in_current_space ← ()=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
+	# windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
+	# apps_with_windows_in_current_space ← ()=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
 
 ############################# go to specific chrome ############################
-	// 	wnd ← 1
-	// 	is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
-	// 	// System Events got an error: osascript is not allowed assistive access
-	// 	// compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
-	// 	if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
-	//  
-	// 	t ← [2,1]; chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+	# 	wnd ← 1
+	# 	is_chromeapp_active ← is_chromeapp_exist && osaᵥ`tell app "System Events"; get name of menu bar items of menu bar 1 of process (name of app ${app}); end tell`[1] !== 'Chrome'
+	# 	# System Events got an error: osascript is not allowed assistive access
+	# 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`}; exit`})`)).ι,
+	# 	if (is_chromeapp_active){ osaᵥ`tell app "System Events"; activate app "sublime text"; click menu item …${Tnum(wnd)? osa`(name of window ${wnd} of a)` : osa`${wnd}`} of menu 1 of menu bar item "Window" of menu bar 1 of process (name of app ${app}); end tell; activate app ${app}`; ↩ }
+	#  
+	# 	t ← [2,1]; chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
 
 	if (!type){ !new_ || ‽
 		if (!is_url(ι)) ι = searchify(ι)
@@ -617,7 +619,7 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 			if (in_app==='chrome'){
 				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι); if (t)
 					{ [window_,tab] ← t; osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}`; osaₐ`chrome: activate`; ↩ } }
-			if (ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` // bug workaround
+			if (ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
 			shᵥ`open …${in_app && sh`-b ${memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(in_app)}`} ${!focus && '-g'} ${ι}`
 			}
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
@@ -634,7 +636,7 @@ E.go_to = (…a)=>{ // synonyms: go_to, open, search?
 	else if (type==='path'){ ( !new_ && focus )||‽
 		# ! i think this might be a pretty badly designed type
 		new_ = true
-		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ //! duplication with munge_stuff.py:FIND_RESULT
+		if (ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with munge_stuff.py:FIND_RESULT
 			# in_app = 'sublime text'
 			[,ι,line] ← ι.re`^(.+):(\d+):$`
 			ι = φ('~/file/'+ι)
@@ -696,7 +698,7 @@ sb.encode = (()=>{
 		: line(ι) })()
 
 E.re = λ(ss,…ιs){
-	// would like to embed regex in [] and have that be ok
+	# would like to embed regex in [] and have that be ok
 	ι ← simple_template(ss,ιs,[(…a)=>re(…a).source,''])
 	ENC ← ι=> T.RegExp(ι)? ( ι.flags.replace(/[gy]/g,'')==='u' || ‽, ι.source ) : (ι+'').replace(/([.*+?^${}()\[\]|\\])/g, '\\$1')
 	↩ RegExp( ι.map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join(''), 'u' ) }
@@ -733,7 +735,7 @@ E.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
 
 E.osa = λ(ss,…ιs){t←;
 	ι ← simple_template(ss,ιs)
-	//! this is such a mess
+	# ! this is such a mess
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)){ ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, …ι, '; end tell'] }
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, …ι, '; end tell'] }
 	↩ ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n')).join('') }
@@ -743,14 +745,14 @@ E.osaₐ = λ(ss,…ιs){ ι ← osa(ss,…ιs); shₐ`osascript -ss -e ${ι}` }
 E.terminal_do_script = λ(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` } # ~/.bashrc.ζ :: E['·']
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
-// E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
-	// λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
-	// 	// E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
-	// // probably add a random_id(10) call to '#applescript_hack'
-	// 	t ← "t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"
-	//	chrome_simple_js_ᵥ(t,tab)
-	// 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
-	// 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
+# E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
+	# λ(ι,tab){tab = tab!==undefined? 'tab '+(tab+1) : 'active tab'
+	# 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10); fst ← 1; while ((r=chromeᵥ("if (window.jQuery){"+ι+"} else {"+(fst? (fst=0, "t ← document.createElement('script'); t.src = 'https://code.jquery.com/jquery-3.1.1.min.js'; document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null); ↩ r}
+	# # probably add a random_id(10) call to '#applescript_hack'
+	# 	t ← "t ← document.querySelectorAll('#applescript_hack')[0]; t && t.parentNode.removeChild(t); ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+"); t ← document.createElement('div'); t.id = 'applescript_hack'; t.style = 'display:none;'; t.textContent = JSON.stringify(ι); t2 ← document.querySelectorAll('head')[0]; t2.insertBefore(t,t2.firstChild); undefined"
+	# 	chrome_simple_js_ᵥ(t,tab)
+	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
+	# 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
 
 fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT localhost:${port}`+'' }
 
@@ -759,11 +761,11 @@ E.sbᵥ = λ(ss,…ιs){
 	t ← JSON.parse(fs_ipc_emit(34289,ι)); t===null && (t = undefined); ↩ t }
 E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
 
-sh_hash ← _.memoize(ι=> shᵥ`which ${ι}`+'') //! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
+sh_hash ← _.memoize(ι=> shᵥ`which ${ι}`+'') # ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
 [#Q E.hsᵥ #Q].def(()=> !(shᵥ`which hs ;:`+'')? undefined : λ(ss,…ιs){
 	ENC ← ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : ‽; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	// t ← shᵥ`hs -c ${ι}`
+	# t ← shᵥ`hs -c ${ι}`
 	t ← child_process.spawnSync(sh_hash('hs'),['-c',ι]).stdout
 	t ← (t+'').split('\n')[-1]; try{↩ JSON.parse(t)[0] }catch(e){↩ t } } )
 
@@ -801,9 +803,9 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 
 	existsSync ← ι=> !T.Error(catch_union(()=> fs.accessSync(ι)))
 	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if (e.code==='EEXIST'||e.code==='EISDIR') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι) } }
-	// walk ← λ*(root,files){root += '/'
-	// 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try{ fs.statSync(root+t).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t)) }catch(e){} }} catch(e){} }
-	// 	yield* walk_('') }
+	# walk ← λ*(root,files){root += '/'
+	# 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι); for (i←0;i<l.length;i++){t ← ι+l[i]; try{ fs.statSync(root+t).isDirectory()? (yield root+t, yield* walk_(t+'/')) : (files && (yield root+t)) }catch(e){} }} catch(e){} }
+	# 	yield* walk_('') }
 	read_file ← λ(ι){ try{↩ fs.readFileSync(ι) }catch(e){ if (!(e.code==='ENOENT')) throw e } }
 	ensure_exists ← λ(ι,ifdne){ existsSync(ι) || ( mkdir_p(path.resolve(path.dirname(ι))), fs.writeFileSync(ι,ifdne) ) }
 	write_file ← λ(ι,data){ try{ fs.writeFileSync(ι,data) }catch(e){ if (!(e.code==='ENOENT')) throw e; ensure_exists(ι,data) } }
@@ -834,7 +836,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		get nlink(){↩ fs.statSync(@._ι).nlink },
 		get mtime(){↩ fs.statSync(@._ι).mtime },
 		get birthtime(){↩ fs.statSync(@._ι).birthtime },
-		get url(){↩ encodeURI('file:'+@.root('/')) }, //! should this be part of root
+		get url(){↩ encodeURI('file:'+@.root('/')) }, # ! should this be part of root
 		get is_dir(){↩ !!catch_ι(()=> fs.statSync(@._ι).isDirectory()) },
 		get name(){↩ path.basename(@._ι) },
 		BAD_exists(){↩ existsSync(@._ι) },
@@ -1063,12 +1065,12 @@ the formats are complicated to interact with, because
 * GET POST PUT have really tangly apis for all sorts of efficiency concerns
 * DELETE especially, we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help)
 
-// paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
+# paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
 
-// we need to be careful with non-atomic transactions
-// we need to think about how this interacts with concurrency
-// we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
-// 	“like, it should be caching urls all the time.”
+# we need to be careful with non-atomic transactions
+# we need to think about how this interacts with concurrency
+# we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
+# 	“like, it should be caching urls all the time.”
 
 ######################## things i need ** globbing to do #######################
 scratch/scratch.txt:107:φ`**`.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.length > 1)
@@ -1076,68 +1078,68 @@ scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι=> !ι.dir()).map(λ(ι)
 scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+=''; ↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι=> !ι.dir()).map(ι=> ι+'')
 */
 
-// i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
-// Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
+# i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
+# Sequence.prototype.map = λ(f){ for (var ι of @) yield f(ι) }
 
 ##################################### cruft ####################################
 ################################# browser fixes ################################
-// BROWSERp ← typeof window!=='undefined'
-// if (BROWSERp) if (!module.parent) module.parent = '<browser>'
-// if (BROWSERp) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
-// if (BROWSERp) E.cn = { log:λ(…a){ console.log(…a); window.__ = a[-1] } }
+# BROWSERp ← typeof window!=='undefined'
+# if (BROWSERp) if (!module.parent) module.parent = '<browser>'
+# if (BROWSERp) typeof Buffer!=='undefined' && (window.Buffer = require('buffer').Buffer)
+# if (BROWSERp) E.cn = { log:λ(…a){ console.log(…a); window.__ = a[-1] } }
 
-// 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
-// 	// https://github.com/Automattic/kue
-// 	// https://github.com/rschmukler/agenda
-// 	// robust to setTimeout taking extra time
-// 	//! not robust to the process failing ! should use redis or something instead !
-// 	//! wth is up with the { hrtime() <-> time } comparison
-// 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
-// 	P←; ensure ← λ(){if (P) ↩; P = true; (λ Λ(){t←;
-// 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
-// 		})() }
-// 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
-// 'Function.prototype._1':{get(){↩ _.once(@) }},
+# 'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
+# 	# https://github.com/Automattic/kue
+# 	# https://github.com/rschmukler/agenda
+# 	# robust to setTimeout taking extra time
+# 	# ! not robust to the process failing ! should use redis or something instead !
+# 	# ! wth is up with the { hrtime() <-> time } comparison
+# 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
+# 	P←; ensure ← λ(){if (P) ↩; P = true; (λ Λ(){t←;
+# 		qu.size() === 0? (P = false) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
+# 		})() }
+# 	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
+# 'Function.prototype._1':{get(){↩ _.once(@) }},
 
-// E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
-// E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+# E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
+# E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
 
-// del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-// im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
-// convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
-// ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
+# del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+# im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
+# convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
+# ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 
-// E.ζ_compile_S = ι=> ι
-// 	.replace(/§.[^]*?§|…(?!\$[{\/]|\(\?|':'| "\)\))|(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩(?![\]"]|\([.?]|\$\/| ':'r|  │) ?|([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?))(?!['"]| ↑)/g,
-// 		(ι,name,s,semi)=> ι[0]==='§'? ι : {'λ':'function', 'λ λ':'function λ','λ*':'function*', 'λ* λ':'function* λ', '↩':'return ', '↩ ':'return ', '…':'...'}[ι] || (semi===';'? 'var '+name+s+';' : 'var '+name+s+'=') )
-// 	.replace(/§.[^]*?§|(^|[^'"])@(?![-`'"\w\/\\/$]| #|\([?.])/g,(ι,a1)=> ι[0]==='§'? ι : a1+'this')
-// 	.replace(/§.[^]*?§|(?!"‽"|'‽')(^|[^])‽(?!\(\?)(\(?)/g, (ˣ,a,ι)=> ˣ[0]==='§'? ˣ : a+(ι? '!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{colors:true})).join(" "))}(' : '!function(){throw Error("‽")}()') )
-// E.ζS_compile = ι=> require('/Users/home/code/scratch/§/ζ§.ζ').S_macro_transform(E.ζ_compile_S(ι))
-	// t==='.ζ§' || (t==='' && d().re`#!/usr/bin/env ζ§\s`)? module._compile(E.ζS_compile(d()),ι) :
+# E.ζ_compile_S = ι=> ι
+# 	.replace(/§.[^]*?§|…(?!\$[{\/]|\(\?|':'| "\)\))|(?:λ\*?(?: λ)?(?=(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)|↩(?![\]"]|\([.?]|\$\/| ':'r|  │) ?|([\w$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ]+)(\s*)←(;?))(?!['"]| ↑)/g,
+# 		(ι,name,s,semi)=> ι[0]==='§'? ι : {'λ':'function', 'λ λ':'function λ','λ*':'function*', 'λ* λ':'function* λ', '↩':'return ', '↩ ':'return ', '…':'...'}[ι] || (semi===';'? 'var '+name+s+';' : 'var '+name+s+'=') )
+# 	.replace(/§.[^]*?§|(^|[^'"])@(?![-`'"\w\/\\/$]| #|\([?.])/g,(ι,a1)=> ι[0]==='§'? ι : a1+'this')
+# 	.replace(/§.[^]*?§|(?!"‽"|'‽')(^|[^])‽(?!\(\?)(\(?)/g, (ˣ,a,ι)=> ˣ[0]==='§'? ˣ : a+(ι? '!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{colors:true})).join(" "))}(' : '!function(){throw Error("‽")}()') )
+# E.ζS_compile = ι=> require('/Users/home/code/scratch/§/ζ§.ζ').S_macro_transform(E.ζ_compile_S(ι))
+	# t==='.ζ§' || (t==='' && d().re`#!/usr/bin/env ζ§\s`)? module._compile(E.ζS_compile(d()),ι) :
 
-// NODEp ← typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
+# NODEp ← typeof process!=='undefined' && Object.prototype.toString.call(process)==='[object process]'
 
-// E.fs_ipc = {
-// 	// on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
-// 	// 	t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
-// 	// 	end ← ι=> res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
-// 	// 	}).listen(port)},
-// 	}
+# E.fs_ipc = {
+# 	# on: λ(port,cbₐ){http.createServer(λ(ˣ,res){a←;
+# 	# 	t ← (a=φ`/tmp/fs_ipc_${port}`).ι; a.ι = null; global.ι = (a=φ`/tmp/fs_ipc_${port}_stdin`).ι.replace(/\n$/,''); a.ι = null
+# 	# 	end ← ι=> res.end(ι === undefined? '' : ι+''); r ← hook_stdouterr(); try {cbₐ(t); end(r().join('\n'))} catch(e){end(r().join('\n')+''+(e.stack||e)+"\n")}
+# 	# 	}).listen(port)},
+# 	}
 
-// E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
+# E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 
-	// ζ_compile_nonliteral_tree ← ι=>{
-	// 	ι = ι.mapcat(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).mapcat(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.length) )
-	// 	other_bracket ← i=>{ if( !'[](){}'.includes(ι[i]) ) ↩; at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
-	// 	fₛ ← (l,iₛ,iₑ)=>{t←;
-	// 		if( t=l[iₛ].re`^([^]*)<-\s*$` ){ l[iₛ] = t[1]+'["<-"]('; l.splice(iₑ,0,')') }
-	// 		}
-	// 	for(i←0;i<ι.length;i++){
-	// 		if( ι[i].T ) continue
-	// 		iₛ ← i; iₐ ← iₛ+1; iᵇ ← other_bracket(iₐ); iₑ ← iᵇ+1
-	// 		if( !(iᵇ > iₐ) ) continue
+	# ζ_compile_nonliteral_tree ← ι=>{
+	# 	ι = ι.mapcat(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).mapcat(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.length) )
+	# 	other_bracket ← i=>{ if( !'[](){}'.includes(ι[i]) ) ↩; at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
+	# 	fₛ ← (l,iₛ,iₑ)=>{t←;
+	# 		if( t=l[iₛ].re`^([^]*)<-\s*$` ){ l[iₛ] = t[1]+'["<-"]('; l.splice(iₑ,0,')') }
+	# 		}
+	# 	for(i←0;i<ι.length;i++){
+	# 		if( ι[i].T ) continue
+	# 		iₛ ← i; iₐ ← iₛ+1; iᵇ ← other_bracket(iₐ); iₑ ← iᵇ+1
+	# 		if( !(iᵇ > iₐ) ) continue
 
-	// 		if (iₒ > i+1)
-	// 		if( iₒ > i+1 ) fₛ(ι,i,iₒ+1)
-	// 		}
-	// 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
+	# 		if (iₒ > i+1)
+	# 		if( iₒ > i+1 ) fₛ(ι,i,iₒ+1)
+	# 		}
+	# 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
