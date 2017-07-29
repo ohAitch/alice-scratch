@@ -92,7 +92,7 @@ get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_n
 # E.build = ...
 E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
-		{ isTTY && ‽; terminal_do_script(sh`…${sh.clear}; cd ${get_filename(ι) || ‽}; run_project ${JSON.stringify(ι)} ✓; x`) }
+		{ isTTY && ‽; terminal_do_script(sh`…${sh.clear}; cd ${φ(get_filename(ι)).φ`..`}; run_project ${JSON.stringify(ι)} ✓; x`) }
 	else{
 		is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
 		

@@ -12,8 +12,8 @@ compare
 
 you can do that in
 
-players ← 128..map(ι=> pow(2,ι*8/128 |0))
-players ← 128..map(ι=> pow(2,ι%8))
+players ← 128..map(ι=> 2**(ι*8/128 |0))
+players ← 128..map(ι=> 2**(ι%8))
 fight ← (a,b)=> random()*(a+b) > a? b : a
 do_round ← pl=>{ r←[]; for(i←0;i<pl.length;i+=2) r.push(fight(pl[i],pl[i+1])); ↩ r}
 fight_all ← pl=>{ while (pl.length > 1) pl = do_round(pl); ↩ pl[0] }
@@ -34,9 +34,9 @@ which in js would be
 
 random_by ← (l,f)=>{ ms ← l.map(f); t ← random() * ms.reduce((a,b)=>a+b); ↩ l[ms.findIndex(ι=> (t-=ι) <= 0)] }
 tournament ← ι=>{ while( ι.length>1 ) ι = ι.chunk(2).map(ι=> random_by(ι,ι=>ι)); ↩ ι[0] }
-2e6.map(()=> tournament(128..map(ι=> pow(2,ι*8/128 |0))))._.countBy()
-2e6.map(()=> tournament(128..map(ι=> pow(2,ι%8))))._.countBy()
-2e6.map(()=> tournament(128..map(ι=> pow(2,ι%8))._.shuffle()))._.countBy()
+2e6.map(()=> tournament(128..map(ι=> 2**(ι*8/128 |0))))._.countBy()
+2e6.map(()=> tournament(128..map(ι=> 2**(ι%8))))._.countBy()
+2e6.map(()=> tournament(128..map(ι=> 2**(ι%8))._.shuffle()))._.countBy()
 
 not so bad! 50% bonus character shit plus 50% bonus dealing with shit libs, but that's not the worst thing possible
 i note that there's an exciting “by” abstraction for a very simple mapping path. that could be generalized.

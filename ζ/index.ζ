@@ -6,13 +6,12 @@
 
 ############################### as for a prelude ###############################
 _ ← require('underscore')
-_.mixin({
-'<-':λ(…a){↩ @ .assign (…a) },
-})
-meta_0 ← o=> new Map( […Object.getOwnPropertyNames(o),…Object.getOwnPropertySymbols(o)].map(ι=> [ι,Object.getOwnPropertyDescriptor(o,ι)] ) )
-define_properties_in ← (o,names,ι)=>{ t ← o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; ↩ o }
+_.mixin({    '<-':λ(…a){↩ @ .assign (…a) },    })
+Object_entries_w_Symbol ← ι=>{ r ← []; q ← k=> r.push([k,ι[k]]); Object.getOwnPropertySymbols(ι).forEach(q); Object.getOwnPropertyNames(ι).forEach(q); ↩ r }
+
 λ Descriptor(ι){ _(@) <- (ι) }
-assign_properties_in ← (o,ι)=>{ […meta_0(ι)].forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
+define_properties_in ← (o,names,ι)=>{ t ← o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; ↩ o }
+assign_properties_in ← (o,ι)=>{ Object_entries_w_Symbol(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
 
 ########################## local metaprogramming utils #########################
 properties_tree_formalify ← ι=>
@@ -36,14 +35,10 @@ assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); [�
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 ############################### as for a prelude ###############################
-E.meta_0 = meta_0
-
 E.def = (o,name,ι)=>{
 	Tfun(ι) &&( ι = lazy(name,ι) )
 	'configurable' in ι ||( ι.configurable = true )
-	'value' in ι?
-		'writable' in ι ||( ι.writable = true )
-		: 'set' in ι ||( ι.set = λ(ι){ def(@,name,{ value:ι, enumerable:true, }) } )
+	if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
 	↩ Object.defineProperty(o,name,ι) } # = ↩ o
 lazy ← (name,ι)⇒ { get(){↩ @[name] = ι() } }
 
@@ -110,6 +105,18 @@ def(Property.prototype,'ι',{ get(){↩ @.o[@.name]}, set(ι){ @.o[@.name] = ι 
 Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 # id like an interface more like def, but def doesnt have a getter so it is temporary
 # this should probably supercede def, since <3 firstclassness?
+
+# Object.getOwnPropertyDescriptor(obj, prop)
+# Object.getOwnPropertyDescriptors(obj)
+
+# Object.defineProperty(obj, prop, descriptor)
+# Object.defineProperties(obj, props)
+# props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
+
+# enumerable -> …
+# configurable -> 🔒
+# value:
+# writable:
 
 new Property(eval,'·').def({ enumerable:true, get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # ! slotify and then detect and merge slots
@@ -318,7 +325,7 @@ genex ← λ Λ(ι){↩0,
 			[ι] ):
 		‽(ι) }
 
-_(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','pow','round','sqrt','cos','sin','tan')); _(E) <- ({ln:Math.log, π:Math.PI, τ:Math.PI*2})
+_(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) <- ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E})
 E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); ↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
@@ -349,7 +356,7 @@ E.copy_deep = ι⇒
 		↩ r })()
 assign_properties_in_E_informal({
 '(Array|Set|Map).prototype._':{get(){↩ _(@)}},
-'Object.prototype._':{get(){↩ _(@)}},
+'Object.prototype._':{ get(){↩ _(@)}, set(ι){ def(@,'_',{ value:ι, enumerable:true, }) }, },
 
 'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse(@)) },
 'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i; ↩ @.exec(ι) },
@@ -948,7 +955,7 @@ E.p = λ(ι){ t ← clipboard; ↩ arguments.length === 0? t.ι :( t.ι = ι ) }
 
 #################################### ζ infra ###################################
 ;[process,module].map(ι=> ι.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
-Number_toFixed ← λ(θ,ι){ θ = round(θ/pow(10,-ι))*pow(10,-ι); ↩ ι>0? θ.toFixed(ι) : θ+'' }
+Number_toFixed ← λ(θ,ι){ θ = round(θ / 10**-ι) * 10**-ι; ↩ ι>0? θ.toFixed(ι) : θ+'' }
 E.pretty_time_num = ι=> _(new Number(ι)) <- ({inspect:λ(ˣ,opt){ P ← 20; ι←@; [ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); ↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 _(util.inspect.styles) <- ({null:'grey',quote:'bold'})
 ;['global','Object'].map(ι=>{

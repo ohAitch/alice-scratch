@@ -15,6 +15,10 @@ variables:
 
 contexts:
   main:
+    - match: '((?<=[\s\[]|^)#)([^\d\s\]#][^\s\]]*|(?=\d))'
+      captures:
+        1: markup.hashtag.hash
+        2: markup.hashtag
     - include: comments-top-level
     - include: keywords-top-level
     - include: statements

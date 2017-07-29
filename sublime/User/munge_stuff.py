@@ -31,7 +31,7 @@ def serialize(ι):
 
 ################################## munge_stuff #################################
 URL = r'\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
-FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:'
+FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}?:\d+:'
 
 def merge_overlapping_regions(ι):
 	for i in range(len(ι)-1):

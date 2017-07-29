@@ -6,6 +6,10 @@
 // server -> client: 1 stdout, 2 stderr, X exit, S send stdin
 // client -> server: A argv, E env, D cwd, R ready, H heartbeat, 0 stdin, . stdin eof
 
+// its a shame that my refactoring broke things
+// mb i just need to learn C
+// i could ask conifer
+
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>

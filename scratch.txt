@@ -128,7 +128,7 @@ entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHt
 
 ------------------------------------ stats? ------------------------------------
 erf ← npm`math-erf@1.0.0`
-normal_PDF ← x=>{ μ ← 0; σ ← 1; v ← pow(σ,2); ↩ 1/sqrt(v*τ)*exp(-pow(x-μ,2)/(2*v)) }
+normal_PDF ← x=>{ μ ← 0; σ ← 1; v ← σ**2; ↩ 1/sqrt(v*τ)*exp(-(x-μ)**2/(2*v)) }
 normal_CDF ← x=>{ μ ← 0; σ ← 1; ↩ (1 + erf( (x-μ) / (σ*sqrt(2)) ))/2 }
 invert_specific ← f=> fx=>{ t ← 0; while (f(t) > fx) t+=0.01; ↩ t }
 

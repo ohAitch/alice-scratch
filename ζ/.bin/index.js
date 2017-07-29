@@ -6,13 +6,12 @@
 
 //############################## as for a prelude ###############################
 var _ = require('underscore')
-_.mixin({
-'<-':function(...a){return this .assign (...a) },
-})
-var meta_0 = o=> new Map( [...Object.getOwnPropertyNames(o),...Object.getOwnPropertySymbols(o)].map(ι=> [ι,Object.getOwnPropertyDescriptor(o,ι)] ) )
-var define_properties_in = (o,names,ι)=>{ var t = o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; return o }
+_.mixin({    '<-':function(...a){return this .assign (...a) },    })
+var Object_entries_w_Symbol = ι=>{ var r = []; var q = k=> r.push([k,ι[k]]); Object.getOwnPropertySymbols(ι).forEach(q); Object.getOwnPropertyNames(ι).forEach(q); return r }
+
 function Descriptor(ι){ _(this) ['<-'] (ι) }
-var assign_properties_in = (o,ι)=>{ [...meta_0(ι)].forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); return o }
+var define_properties_in = (o,names,ι)=>{ var t = o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; return o }
+var assign_properties_in = (o,ι)=>{ Object_entries_w_Symbol(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); return o }
 
 //######################### local metaprogramming utils #########################
 var properties_tree_formalify = ι=>
@@ -36,14 +35,10 @@ var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι); 
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 //############################## as for a prelude ###############################
-E.meta_0 = meta_0
-
 E.def = (o,name,ι)=>{
 	Tfun(ι) &&( ι = lazy(name,ι) )
 	'configurable' in ι ||( ι.configurable = true )
-	'value' in ι?
-		'writable' in ι ||( ι.writable = true )
-		: 'set' in ι ||( ι.set = function(ι){ def(this,name,{ value:ι, enumerable:true, }) } )
+	if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
 	return Object.defineProperty(o,name,ι) } // = ↩ o
 var lazy = (name,ι)=>0?0: { get(){return this[name] = ι() } }
 
@@ -111,13 +106,25 @@ Property.prototype.def = function(ι){ def(this.o,this.name,ι); return this }
 // id like an interface more like def, but def doesnt have a getter so it is temporary
 // this should probably supercede def, since <3 firstclassness?
 
+// Object.getOwnPropertyDescriptor(obj, prop)
+// Object.getOwnPropertyDescriptors(obj)
+
+// Object.defineProperty(obj, prop, descriptor)
+// Object.defineProperties(obj, props)
+// props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
+
+// enumerable -> …
+// configurable -> 🔒
+// value:
+// writable:
+
 new Property(eval,'·').def({ enumerable:true, get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } // ! slotify and then detect and merge slots
 
 ;(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if (ι.type==='Buffer') {
 	var t = 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : !function(){throw Error('‽')}()
 	if (o===undefined) r = t; else o[k] = t
-	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← ()=> name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --prefer-offline i ${abs_name()}`; a.ι = b.ι = null\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\"\n}")
+	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← ()=> name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = null\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\\npackages are supposed to be installed in node_modules\\nthis is fine for projects but dreadful for non-projects\\ni prefer to simply install each version of each package once on a system level, and intervene manually if it needs multiple copies\\n\\n\\nsingle_install\\n\\nnpm`builtin-modules@1.1.1` is a list of builtin modules\\n\\n\\n\\n\\n\\nwe have these on disk:\\nasync@2.1.4\\nbase-x@1.0.4\\nchokidar@1.7.0\\nicc@1.0.0\\nini@1.3.4\\nplist@2.1.0\\nrequire-new@1.1.0\\nrequire-uncached@1.0.3\\nrobotjs@0.4.5\\nspotify-web-api-node@2.3.2\\nsuncalc@1.7.0\\nunicode@0.6.1\\nxmlbuilder@8.2.2\\n\\nwe require these:\\nrequire('async')\\nrequire('body-parser')\\nrequire('buffer')\\nrequire('child_process')\\nrequire('color')\\nrequire('cookie-parser')\\nrequire('crypto')\\nrequire('easyimage')\\nrequire('express')\\nrequire('ffi')\\nrequire('fs')\\nrequire('jquery')\\nrequire('lame')\\nrequire('moment')\\nrequire('node-spotify')\\nrequire('numeric')\\nrequire('parsimmon')\\nrequire('path')\\nrequire('priorityqueuejs')\\nrequire('ref')\\nrequire('ref-struct')\\nrequire('set-input-source')\\nrequire('socket.io')\\nrequire('socket.io-client')\\nrequire('stream')\\nrequire('through2')\\nrequire('underscore')\\nrequire('urijs')\\nrequire('util')\\nrequire('wav')\\nrequire('zeta-lang')\\n\\n\\n\\n\\n\\ncode/declare/system maintenance:16:\\t(sh`brew leaves` sh`brew cask list` sh`npm -g ls --depth=0`) Q -> package/*\\ncode/projection/README:12:$ cd ~; git clone git@github.com:alice0meta/projection.git; cd ~/projection; npm i\\ncode/projection/run.sh:9:\\t[ -d node_modules ] || npm --cache-min=Infinity i\\ncode/projection/run.sh:15:\\tnpm update # zeta-lang\\ncode/projection/tech todos.txt:39:\\tnpm shrinkwrap\\ncode/scratch/daily.sh:22:{ echo '# brew leaves'; brew leaves; echo $'\\\\n# brew cask list'; brew cask list; echo $'\\\\n# npm -g ls'; npm -g ls --depth=0; } > \\\"ls/$(ζ 'Time().ymdhms') package manager ls\\\"\\ncode/scratch/keyrc/README.md:5:  npm -g i zeta-lang\\ncode/scratch/keyrc/README.md:8:  npm -g i keyrc && keyrc start\\n\\nnpm --cache-min=Infinity -g install .\\nnpm install --prefer-offline -g .\\n\\nnpm -g install .\\nnpm install -g .\\n\\nnpm install\\nnpm install .\\nnpm --cache-min=Infinity install --ignore-scripts\\n\\nnpm -g install 0x\\n\\nnpm -g uninstall zeta-lang\\n\\nnpm -v\\n\\nnpm -g ls\\nnpm -g ls --depth=0\\nnpm ls -g --depth=0\\n\\nnpm prefix\\nnpm prefix -g\\nnpm config get prefix\\nnpm root\\nnpm root -g\\n\\nnpm publish\\n\\nnpm install npm@latest\\nnpm upgrade npm\\n\\nnpm doctor\\n\\tneeds: net\\n\\n\\n\\n\\n\\n\\n```\\ndependencies:\\n\\tbrew cask install totalspaces; brew install ruby; gem install totalspaces2\\n  brew cask install hammerspoon\\n  npm -g i zeta-lang\\n  https://github.com/tekezo/Karabiner-Elements/\\ninstall:\\n  npm -g i keyrc && keyrc start\\n```\\n\\n* will overwrite hammerspoon settings and karabiner private.xml\\n\\n\\\\#todo clean up dependencies\\n\\n\\n\\n\\n\\n\\n\\n\\nnpm cache add <tarball file>\\nnpm cache add <folder>\\nnpm cache add <tarball url>\\nnpm cache add <name>@<version>\\n\\nnpm cache clean [<path>]\\naliases: npm cache clear, npm cache rm\\n\\n\\nsh`npm config get cache` = ~/.npm (takes way too long to execute, cache)\\n\\ncaching_thing = ι=> this_kind_of_cache\\nname = φ`~/.cache`\\nφ`…${name}_${simple_hash(caching_thing).slice(0,4)}`.φ`.meta`.json2 = {key:caching_thing,name}\\n\\ndict in fs by hash\\ntie hash to ... appropriate secret? what?\\nwhy\\ndatabase ... uniqueness ... separation ... uh\\n\\n\\n\\nget npm registry info\\nnpm view [<@scope>/]<name>[@<version>]\\n\\n\\n\\nhttps://docs.npmjs.com/files/package-locks\\n\\n\\nfriends\\n\\tfriend meat\\n\\tlocked machine interpretation\\ncode\\n\\tcode\\n\\tmetadata\\n\\t\\tmanifest\\n\\nreplace [init update install] with sync\\ninit: [code] -> [manifest]\\nadd: [code] -> [manifest]\\nrm: [code] -> [manifest]\\nupdate: [manifest] -> [locked machine interpretation]\\ninstall: [locked machine interpretation] -> [friend meat]\\n\\ndeveloper friends\\nfriends' feature flags\\n\"\n}")
 E.npm = function(ι){ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 	var [,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	var abs_name = ()=> name+'@'+version
@@ -321,7 +328,7 @@ var genex = function Λ(ι){return 0,
 			[ι] ):
 		!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}(ι) }
 
-_(E) ['<-'] (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','pow','round','sqrt','cos','sin','tan')); _(E) ['<-'] ({ln:Math.log, π:Math.PI, τ:Math.PI*2})
+_(E) ['<-'] (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) ['<-'] ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E})
 E.multiline = function(ι){ ι = (ι+'').split('\n').slice(1,-1); var t = ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); return (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ var h; for(var hr=hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
@@ -352,7 +359,7 @@ E.copy_deep = ι=>0?0
 		return r })()
 assign_properties_in_E_informal({
 '(Array|Set|Map).prototype._':{get(){return _(this)}},
-'Object.prototype._':{get(){return _(this)}},
+'Object.prototype._':{ get(){return _(this)}, set(ι){ def(this,'_',{ value:ι, enumerable:true, }) }, },
 
 'RegExp.prototype.@@iterator':function*(){yield* genex(regex_parse(this)) },
 'RegExp.prototype.exec_at':function(ι,i){ this.lastIndex = i; return this.exec(ι) },
@@ -951,7 +958,7 @@ E.p = function(ι){ var t = clipboard; return arguments.length === 0? t.ι :( t.
 
 //################################### ζ infra ###################################
 ;[process,module].map(ι=> ι.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) // ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
-var Number_toFixed = function(θ,ι){ θ = round(θ/pow(10,-ι))*pow(10,-ι); return ι>0? θ.toFixed(ι) : θ+'' }
+var Number_toFixed = function(θ,ι){ θ = round(θ / 10**-ι) * 10**-ι; return ι>0? θ.toFixed(ι) : θ+'' }
 E.pretty_time_num = ι=> _(new Number(ι)) ['<-'] ({inspect:function(ˣ,opt){ var P = 20; var ι=this; var [ι,u] = (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']); return opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 _(util.inspect.styles) ['<-'] ({null:'grey',quote:'bold'})
 ;['global','Object'].map(ι=>{
