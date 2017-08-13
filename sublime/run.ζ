@@ -27,9 +27,9 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 // 	roots ← from.φ`*`.φs.map(ι=> (ι+'').replace(from+'',dest+''))
 // 	out ← dest.φ`**`.filter(ι=> roots.some(r=> (ι+'').re`^${r}`)).filter(ι=> !ι.dir()).map(ι=> ι+'')
 // // -------------------------------------------------------------------------- //
-// 	_.difference(out,written)
+// 	out.-(written)
 // 		.filter(ι=> !ι.replace(dest+'','').re`Package Control\.` )
-// 		.forEach(λ(ι){ φ(ι).ι = null })
+// 		.forEach(ι=> φ(ι).ι = null )
 // 	}
 
 colors_to_tmTheme ← λ(from,to){
@@ -41,7 +41,7 @@ colors_to_tmTheme ← λ(from,to){
 	t = t.re`^\s*(\{[^]+?\})([^]*)`
 	r ← {name:φ(from).name.replace(/\.colors$/,''), settings:[
 		{settings:JSON.parse(t[1])},
-		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]]._.filter(1)._.object(), scope: […re`…${t[4].replace(/\./g,'\\.')}`].join(',')} }),
+		…t[2].trim().split('\n').map(λ(ι){ t ← ι.re`^(#\S+)? *(?:bg (#\S+))? *(?:\[([\w ]+)\])? *(.+)$`; ↩ {settings:[['foreground',t[1]],['background',t[2]],['fontStyle',t[3]]].filter(ι=>ι[1])._.object(), scope: […re`…${t[4].replace(/\./g,'\\.')}`].join(',')} }),
 		] }
 	φ(to).buf = plist.build(r)
 	}

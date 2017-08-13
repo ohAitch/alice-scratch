@@ -1,0 +1,22 @@
+this is cute but idk if useful
+
+inverse :: (val -> val') -> (val' -> val)
+inverse fun val' | fun val =:= val' = val where val free
+
+type Expr = Sum
+
+data Sum     = Sum Product [Product]
+data Product = Product Atom [Atom]
+data Atom    = Num Int | Para Sum
+
+toString = sumToString
+sumToString (Sum product products) = productToString product ++ concatMap ((" + " ++) . productToString) products
+productToString (Product atom atoms) = atomToString atom ++ concatMap ((" * " ++) . atomToString) atoms
+atomToString (Num num)  = show num
+atomToString (Para sum) = "(" ++ sumToString sum ++ ")"
+
+parse :: String -> Expr
+parse = inverse toString
+> ◍ but this doesnt work, so we have to
+:set bfs
+parse "2 * (3 + 4)"

@@ -35,26 +35,6 @@ assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); [�
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 ############################### as for a prelude ###############################
-E.def = (o,name,ι)=>{
-	Tfun(ι) &&( ι = lazy(name,ι) )
-	'configurable' in ι ||( ι.configurable = true )
-	if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
-	↩ Object.defineProperty(o,name,ι) } # = ↩ o
-lazy ← (name,ι)⇒ { get(){↩ @[name] = ι() } }
-
-E.require_proto_assign = ()=>()=>{
-	done ← new Set()
-	assign_me ← []
-	r ← (names,f)=>{ !done.size || ‽; assign_me.push([ Tarr(names)? names : [names], f ]) }
-	r.declare = ι=>{
-		name ← ι.constructor.name || ‽('declared object has no constructor name')
-		found ← false
-		done.has(name) ||( done.add(name), assign_me.forEach(([names,f])=>{ names.length===1 || ‽; if (names[0]===name){ found = true; f(ι.constructor) } }) )
-		found || ‽('nothing added to prototype for '+name)
-		}
-	↩ r }
-proto_assign ← require_proto_assign()()
-
 E.catch_union = f=>{ try{ r ← f(); bad ← T.Error(r); if (!bad) ↩ r }catch(e){ r ← e; T.Error(r) || ‽; ↩ r }; bad && ‽ }
 E.catch_ι = f=>{ try{ r ← f(); bad ← r===undefined; if (!bad) ↩ r }catch(e){}; bad && ‽ }
 E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e } }
@@ -87,8 +67,31 @@ _(E) <- ({ Tstr:T.string, Tnum:T.number, Tfun:T.function, Tarr:T.Array, Tprim:T.
 T.primitive.ι = new Set(['undefined','boolean','number','string','symbol','null'])
 T.boxed.ι = new Set(['Boolean','String','Number'])
 
+E.def = (o,name,ι)=>{
+	Tfun(ι) &&( ι = lazy(name,ι) )
+	'configurable' in ι ||( ι.configurable = true )
+	if( !ι.configurable ) ι.writable = false; else{
+		if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
+		else if( ι.writable ){ delete ι.writable; ι.set && ‽; ι.set = λ(ι){ def(@,name,{ value:ι, enumerable:true, }) } }
+		}
+	↩ Object.defineProperty(o,name,ι) } # = ↩ o
+lazy ← (name,ι)⇒ { writable:true, get(){↩ @[name] = ι() } }
+
+E.require_proto_assign = ()=>()=>{
+	done ← new Set()
+	assign_me ← []
+	r ← (names,f)=>{ !done.size || ‽; assign_me.push([ Tarr(names)? names : [names], f ]) }
+	r.declare = ι=>{
+		name ← ι.constructor.name || ‽('declared object has no constructor name')
+		found ← false
+		done.has(name) ||( done.add(name), assign_me.forEach(([names,f])=>{ names.length===1 || ‽; if (names[0]===name){ found = true; f(ι.constructor) } }) )
+		found || ‽('nothing added to prototype for '+name)
+		}
+	↩ r }
+proto_assign ← require_proto_assign()()
+
 ################################### requires ###################################
-;[ ['child_process'],['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['repl'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],
+;[ ['child_process'],['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],
 	].map(λ([ι,n]){ def(E, n||ι, ()=> require(ι)) })
 E._ = _
 path ← require('path')
@@ -113,10 +116,16 @@ Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 # Object.defineProperties(obj, props)
 # props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
 
-# enumerable -> …
-# configurable -> 🔒
+# enumerable -> … or #…
+# configurable -> 🔒 or #🔒
 # value:
 # writable:
+# get:
+# set:
+
+# and delete
+
+# unifying is hard
 
 new Property(eval,'·').def({ enumerable:true, get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # ! slotify and then detect and merge slots
@@ -182,22 +191,25 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 		.replace(/∞/g,'Infinity')
 		.replace(/‽(?=(\()?)/g,(ˣ,callp)=> callp? `!function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}` : `!function(){throw Error('‽')}()` )
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||‽)+x )
-		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! -= += Π& Π| ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
+		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! -= += Π& Π| ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - ⊕ & | ≈'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ t ← 't_'+random_id(9); ↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(/\[#Q/g,'new Property(') # Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
 		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]`.g ), unicode_names.X)
+		.replace(/([{(]\s*),/g,'$1')
 	# ζ_compile_nonliteral_tree ← ι=>{
 	# 	ι = ι.mapcat(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).mapcat(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.length) )
 	# 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.length)) ↩; }; ↩ i }
 	# 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
-	↩ code=> ζ_parse(code).map(ι⇒
-		: ι.T==='comment'? ι.ι.replace(/^#/,'//')
-		: ι.T? ι.ι
-		: ζ_compile_nonliteral(ι)
-		).join('') })
+	↩ code=>{
+		t ← code; t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t; if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t # ! it is a clumsy hack to put this on all of these code paths
+		↩ ζ_parse(t).map(ι⇒
+			: ι.T==='comment'? ι.ι.replace(/^#/,'//')
+			: ι.T? ι.ι
+			: ζ_compile_nonliteral(ι)
+			).join('') } })
 ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, λ(ι,name,s,eq){↩ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;')})
 
 if( require.extensions && !require.extensions['.ζ'] )(()=>{
@@ -206,10 +218,11 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 	})()
 
 ############################### as for a prelude ###############################
-simple_hash_str ← ι⇒
+E.simple_hash_str = ι⇒
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι; else{ r←{}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); ↩ r } })
-b36 ← ι=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode(ι)
+E.fromUInt32BE = ι=>{ t ← Buffer.alloc(4); t.writeUIntBE(ι,0,4); ↩ t }
+E.b36 = ι=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode(ι).replace(/^0+(?!$)/,'')
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
 memo_frp ← λ(names,within,f){
 	dir ← φ`~/.memo_frp/${names}`
@@ -225,19 +238,31 @@ E.memoize_persist = f=>{
 	↩ λ(…a){ a_h ← simple_hash(a); ↩ store_ι[a_h] || ( store_ι[a_h] = f(…a), store.json = store_ι, store_ι = store.json, store_ι[a_h] ) } }
 E.slot_persist = name=>{ o ← φ`/tmp/ζpersist_${name}`; ↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }}) }
 
+# slot.push()
+# slot[-1]
+
+
+
+# a => b
+# IO a => IO b
+
+# bind_@local ← ()=>{
+
+# }
+
 regex_parse ← lazy_fn(λ(){ # status: output format unrefined
 	P ← require('./parsimmon2.js')
 	dehex ← ι=> chr(parseInt(ι,16))
 	ESCAPE ← P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex), P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex), P(/u([0-9a-fA-F]{4})/,1).map(dehex), P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
 	s1 ← P.alt(
-		P(/[^.()[\]^$|\\]/),
-		ESCAPE,
-		P`.`.T`any`,
-		P`(?:${()=>OR_or_SEQ})`,
-		P`(?=${()=>OR_or_SEQ})`.T`lookahead`,
-		P`(?!${()=>OR_or_SEQ})`.T`nlookahead`,
-		P`(${()=>OR_or_SEQ})`.T`capture`,
-		P`[${[ /\^?/, (λ(){ t ← ESCAPE.or(/[^\]]/); ↩ P([ t.skip('-'), t ]).or(t) })().many() ]}]`.map(ι=> P.T(ι[0]? 'nset' : 'set', ι[1]))
+		, P(/[^.()[\]^$|\\]/)
+		, ESCAPE
+		, P`.`.T`any`
+		, P`(?:${()=>OR_or_SEQ})`
+		, P`(?=${()=>OR_or_SEQ})`.T`lookahead`
+		, P`(?!${()=>OR_or_SEQ})`.T`nlookahead`
+		, P`(${()=>OR_or_SEQ})`.T`capture`
+		, P`[${[ /\^?/, (λ(){ t ← ESCAPE.or(/[^\]]/); ↩ P([ t.skip('-'), t ]).or(t) })().many() ]}]`.map(ι=> P.T(ι[0]? 'nset' : 'set', ι[1]))
 		)
 	TIMES ← P([ s1, P.alt('*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/,P.of())
 		.map(ι=> ι = !ι? ι : ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (λ(){ [ˣ,a,two,b] ← ι.match(/\{([0-9]+)(?:(,)([0-9]*))?\}/); ↩ [a|0,b? b|0 : two? ∞ : a|0] })() )
@@ -325,7 +350,7 @@ genex ← λ Λ(ι){↩0,
 			[ι] ):
 		‽(ι) }
 
-_(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) <- ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E})
+_(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) <- ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E, '⍟':Math.log, })
 E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].length)._.min(); ι = ι.map(ι=> ι.slice(t)); ↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
@@ -343,9 +368,6 @@ E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 
 find_closest_ISU ← (ιs,ι)=>{ for(i←0;i<ιs.length;i++) if( ι <= ιs[i] ) ↩ i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1; ↩ ιs.length-1 }
 cartesian_str ← ι=> ι.reduce((a,b)=>{ r ← []; a.forEach(a=> b.forEach(b=> r.push(a+b))); ↩ r }, [''])
-_.mixin({
-difference_eq(ι,…a){ t ← ι._.groupBy(simple_hash_str); a.forEach(ι=> ι.forEach(ι=> delete t[simple_hash_str(ι)])); ↩ _(t).values()._.flatten(true) },
-})
 E.copy_deep = ι⇒
 	: Tprim(ι)? ι
 	: T.Map(ι)? new Map(ι)
@@ -355,42 +377,65 @@ E.copy_deep = ι⇒
 		for(var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k) ) r[k] = copy_deep(ι[k])
 		↩ r })()
 assign_properties_in_E_informal({
-'(Array|Set|Map).prototype._':{get(){↩ _(@)}},
-'Object.prototype._':{ get(){↩ _(@)}, set(ι){ def(@,'_',{ value:ι, enumerable:true, }) }, },
+,'Object.prototype._':{ writable:true, get(){↩ _(@)}, } # ! remove this
+,'(Array|Set|Map).prototype._':{ get(){↩ _(@)} }
 
-'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse(@)) },
-'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i; ↩ @.exec(ι) },
-'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r},
-'Number.prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true)},
-'Array.prototype.mapcat':λ(f){r ← []; for(i←0;i<@.length;i++) {t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j])}; ↩ r}, # λ(f){↩ @.map(f)._.flatten(true)}
-'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @)},
-'Array.prototype.search':λ(f){ r←; if (@.some(λ(ι,i,l){ r = f(ι,i,l); if (r!==undefined) ↩ true })) ↩ r },
-'(Array|Buffer|String).prototype.chunk':λ(L){↩ _.range(0,@.length,L).map(i=> @.slice(i,i+L)) },
-'(Array|Buffer|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i=> @.slice(i,i+L)) },
-'Array.prototype.find_index_deep':λ(f){
+# 'Array.prototype.map'
+,'Buffer.prototype.map':λ(f){ r ← Buffer.alloc(@.length); for(i←0;i<@.length;i++) r.push(f(@[i])); ↩ r }
+,'Set.prototype.map':λ(f){↩ […@].map(f) }
+,'Map.prototype.map':λ(f){↩ […@.entries()].map(([i,v])=> f(v,i,@)) }
+,'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r }
+
+,'Array.prototype.mapcat':λ(f){ r ← []; for(i←0;i<@.length;i++){ t ← f(@[i],i,@); for (j←0;j<t.length;j++) r.push(t[j]) }; ↩ r }
+,'Buffer.prototype.mapcat':λ(f){↩ Buffer.concat(@.map(f)) }
+,'(Set|Map|Number).prototype.mapcat':λ(f){↩ @.map(f)._.flatten(true) }
+
+,'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.mapcat(()=> @) }
+,'Buffer.prototype.repeat':λ(x){↩ Buffer.concat(x<=0? [] : x.map(()=> @)) }
+
+,'Set.prototype.join':λ(ι){↩ […@].join(ι) }
+
+,'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map(); for (var t of @) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r }
+,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι); r ← new Map(); for (var t of @){ t2 ← f(t); r.set(t2, (r.get(t2)||new Set()).∪([t])) }; ↩ r }
+
+,'(Array|Buffer|String).prototype.chunk':λ(L){↩ _.range(0,@.length,L).map(i=> @.slice(i,i+L)) }
+,'(Array|Buffer|String).prototype.windows':λ(L){↩ (@.length-L+1).map(i=> @.slice(i,i+L)) }
+,'(Array|Buffer|String).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1] },set(ι){ @.length<1 || (@[@.length-1] = ι) }}
+,'(Array|Buffer|String).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2] },set(ι){ @.length<2 || (@[@.length-2] = ι) }}
+,'(Array|Buffer|String).prototype.-3':{get(){↩ @.length<3? undefined : @[@.length-3] },set(ι){ @.length<3 || (@[@.length-3] = ι) }}
+,'(Array|Buffer|String).prototype.-4':{get(){↩ @.length<4? undefined : @[@.length-4] },set(ι){ @.length<4 || (@[@.length-4] = ι) }}
+
+,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].mapcat(ι=> […ι])) }
+,'(Array|Set).prototype.∩':λ(…a){ r ← new Set(@); for(var x of a){ x = T.Set(x)? x : new Set(x); for(var ι of r) x.has(ι) || r.delete(ι) }; ↩ r }
+,'(Array|Set).prototype.-':λ(…a){ r ← new Set(@); for(var t of a) for(var ι of t) r.delete(ι); ↩ r }
+,'(Array|Set).prototype.⊕':λ(b){a←@; ↩ a.-(b).∪(b.-(a)) }
+
+,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
+,'Set.prototype.pop':λ(){ t ← @[0]; @.delete(t); ↩ t }
+,'Set.prototype.0':{get(){↩ @.values().next().value }}
+,'(Array|Set).prototype.-eq':λ(…a){ t ← _([…@]).groupBy(simple_hash_str); a.forEach(ι=> ι.forEach(ι=> delete t[simple_hash_str(ι)])); ↩ _(t).values()._.flatten(true) }
+
+,'Map.prototype.⁻¹declare_uniq':{get(){↩ new Map([…@.entries()].map(ι=>[ι[1],ι[0]])) }}
+,'Map.prototype.⁻¹':{get(){↩ […@.keys()].group(ι=> @.get(ι)) }}
+
+,'Array.prototype.search':λ(f){ r←; if (@.some(λ(ι,i,l){ r = f(ι,i,l); if (r!==undefined) ↩ true })) ↩ r }
+,'Array.prototype.find_index_deep':λ(f){
 	for(i←0;i<@.length;i++){ ι ← @[i]
 		if (Tarr(ι)){ t ← ι.find_index_deep(f); if (t) ↩ [i,…t] }
 		else{ if (f(ι)) ↩ [i] }
-		} },
-'Array.prototype.Π&':{get(){↩ Π.&(@) }},
-'Array.prototype.Π|':{get(){↩ Π.|(@) }},
-'Array.prototype.seq':{get(){ θ ← λ*(){ for(;θ.i<θ.ι.length;) yield θ.ι[θ.i++] }(); _(θ) <- ({ ι:@, i:0, clone(){↩ _(@.ι.seq) <- (@) } }); ↩ θ }},
-'Array.prototype.find_last_index':λ(f){ for(i←@.length-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i },
+		} }
+,'Array.prototype.Π&':{get(){↩ Π.&(@) }}
+,'Array.prototype.Π|':{get(){↩ Π.|(@) }}
+,'Array.prototype.seq':{get(){ θ ← λ*(){ for(;θ.i<θ.ι.length;) yield θ.ι[θ.i++] }(); _(θ) <- ({ ι:@, i:0, clone(){↩ _(@.ι.seq) <- (@) } }); ↩ θ }}
+,'Array.prototype.find_last_index':λ(f){ for(i←@.length-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
 
-'Set.prototype.filter!':λ(f){ @.forEach(ι=> f(ι) || @.delete(ι)) },
-'Set.prototype.pop':λ(){ t ← @.values().next().value; @.delete(t); ↩ t },
-'Set.prototype.∪':λ(…a){↩ new Set([@,…a].map(ι=> […ι])._.flatten(true)) },
-'Set.prototype.∩':λ(…a){ r ← new Set(@); for(var x of a) for(var ι of r) x.has(ι) || r.delete(ι); ↩ r },
-'Set.prototype.-':λ(…a){ r ← new Set(@); for(var t of a) for(var ι of t) r.delete(ι); ↩ r },
-'Set.prototype.map':λ(f){↩ […@].map(f) },
+,'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse(@)) }
+,'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i; ↩ @.exec(ι) }
 
-'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map(); for (var t of @) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r },
+,'Promise.prototype.status':{writable:true, get(){ [s,v] ← b_util.getPromiseDetails(@); r ← [,true,false][s]; if( r!==undefined ){ [@.status,@.ι] = [r,v]; ↩ r } }}
+,'Promise.prototype.ι':{writable:true, get(){ if( @.status!==undefined ) ↩ @.ι }}
 
-'stream.Readable.prototype.read_all':λ(){↩ Π(yes=>{ t ← []; @.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })},
-'(Array|Buffer|String).prototype.-1':{get(){↩ @.length<1? undefined : @[@.length-1] },set(ι){ @.length<1 || (@[@.length-1] = ι) }},
-'(Array|Buffer|String).prototype.-2':{get(){↩ @.length<2? undefined : @[@.length-2] },set(ι){ @.length<2 || (@[@.length-2] = ι) }},
-'(Array|Buffer|String).prototype.-3':{get(){↩ @.length<3? undefined : @[@.length-3] },set(ι){ @.length<3 || (@[@.length-3] = ι) }},
-'(Array|Buffer|String).prototype.-4':{get(){↩ @.length<4? undefined : @[@.length-4] },set(ι){ @.length<4 || (@[@.length-4] = ι) }},
+,'stream.Readable.prototype.read_all':λ(){↩ Π(yes=>{ t ← []; @.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
 })
 
 TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
@@ -450,9 +495,10 @@ assign_properties_in_E_informal({
 })
 
 E.schema = (λ(){
-	sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b); bk._.difference(ak).forEach(k=> a[k] = b[k]); _.intersection(ak,bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]); ↩ a }
+	sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b); bk.-(ak).forEach(k=> a[k] = b[k]); ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]); ↩ a }
 	↩ ι=> T.boolean(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? ι.length===0? [] : [ι.map(schema).reduce(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
+
 [#Q E.brightness #Q].def(λ(){
 	br ← hsᵥ? {
 		get(){↩Π( hsᵥ`hs.brightness.get()`/100 )},
@@ -460,23 +506,26 @@ E.schema = (λ(){
 		} : npm`brightness@3.0.0`
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
 	↩ br })
+
 E.restart_and_keep_alive = prog=>{
 	Label ← 'local.'+prog.replace(/\W/g,'_')
 	t ← φ`~/Library/LaunchAgents/${Label}.plist`; t.ι = {Label, KeepAlive:true, ProgramArguments:['sh','-c',sh`PATH=${process.env.PATH}; ${prog}`]}
 	shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}`
 	}
+
 E.if_main_do = f=>{ if( !module.parent ) f(…process.argv.slice(2)) }
 
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(…a)
 
 ##################################### .ζrc #####################################
-process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.']._.uniq().join(':')
+process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
 E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+''
 	# very nice google maps urls
 	# if url ≈ google.com/maps/
 	# fetch short url:
-	# 	wait-click $('#searchbox-hamburger')
+	# 	# @2016-08-18 wait-click $('#searchbox-hamburger')
+	# 	wait-click $('[guidedhelpid="searchbox_hamburger"]')
 	# 	wait-click $('[jsaction="settings.share"]')
 	# 	wait-check $('#share-short-url')
 	# 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
@@ -549,7 +598,8 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+
 			if( ι.ι.re`\)$` && uri.hash()==='' ) ι.ι += '#'
 			}
 		↩ ι}).map(ι=>ι.ι).join('')
-################################################################################
+
+	#################################### todo ####################################
 	# http://smile.amazon.com/gp/product/0300078153
 	# Seeing like a State http://amzn.com/0300078153
 
@@ -562,6 +612,11 @@ E.nice_url = λ(ι){t←; urijs ← require('urijs'); {sourcemap} ← ι; ι=ι+
 	# A Big Little Idea Called Legibility http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
 	# http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility
 	# http://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
+
+	# decodeURI('https://www.google.com/search?q=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&oq=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0')
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2
+	# https://www.google.com/search?q=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2&oq=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2
 
 	↩ ι}
 E.sfx = λ(ss,…ιs){ ι ← ss[0]
@@ -651,7 +706,7 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 		if (in_app==='terminal'){
 			here ← hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
 			unbusy ← ()=> osaᵥ`terminal: id of windows where busy = false`
-			available ← here.length && _.intersection(here,unbusy())[0]
+			available ← here.∩(unbusy())[0]
 			terminal_do_script( sh`cd ${ι}; …${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); ↩ }
 		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
 		}
@@ -704,6 +759,17 @@ sb.encode = (()=>{
 		: Tarr(ι)? ι.map(line).join('\n')
 		: line(ι) })()
 
+fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT localhost:${port}`+'' }
+
+E.sbᵥ = λ(ss,…ιs){
+	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	t ← JSON.parse(fs_ipc_emit(34289,ι)); t===null && (t = undefined); ↩ t }
+E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
+
+# sublime/sb
+# 	tab
+# 	view
+
 E.re = λ(ss,…ιs){
 	# would like to embed regex in [] and have that be ok
 	ι ← simple_template(ss,ιs,[(…a)=>re(…a).source,''])
@@ -728,15 +794,14 @@ if_sh_err ← (name,code,ι)=>{ if (ι.status!==0) throw _(Error(name+'`'+code+'
 E.shᵥ = λ(ss,…ιs){ code ← sh(ss,…ιs)
 	ι ← child_process.spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
-	↩ _(ι.stdout) <- ({ toString(…a){ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι} }) }
+	↩ _(ι.stdout) <- ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a); ↩ a.length===0? ι.replace(/\n$/,'') : ι } }) }
 str_to_fd_stream ← ι=>{ t ← φ`/tmp/${random_id(20)}`; t.text = ι; fd ← fs.openSync(t+'','r'); ↩ fs.createReadStream(null,{fd}) }
 _shₐ ← (ss,ιs,opt={})=>{
-	if (ss.length===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽; opt.stdio = [str_to_fd_stream(ιs[0]),,,]; ↩ shₐ2(opt) }
-	else ↩ Π((yes,no)=>{
-		code ← sh(ss,…ιs)
+	if (ss.length===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽; opt.stdio = [str_to_fd_stream(ιs[0]),'pipe','pipe',]; ↩ shₐ2(opt) }
+	else{ code ← sh(ss,…ιs)
 		ι ← child_process.spawn(code,_({shell:true}) <- (_(opt).pick('stdio')))
-			.on('exit',λ(status){ if_sh_err('shₐ',code,_({status}) <- (ι)); (status===0? yes : no)(ι) })
-		}) }
+			.on('exit',λ(status){ if_sh_err('shₐ',code,_({status}) <- (ι)) })
+		↩ ι } }
 E.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
 
@@ -745,7 +810,7 @@ E.osa = λ(ss,…ιs){t←;
 	# ! this is such a mess
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)){ ι[0] = ι[0].slice(t[0].length); ι = [osa`tell app ${t[1]};`, …ι, '; end tell'] }
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].length); ι = [osa`tell app ${ι.shift().raw};`, …ι, '; end tell'] }
-	↩ ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n')).join('') }
+	↩ ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
 E.osaᵥ = λ(ss,…ιs){ ι ← osa(ss,…ιs); ↩ applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
 E.osaₐ = λ(ss,…ιs){ ι ← osa(ss,…ιs); shₐ`osascript -ss -e ${ι}` }
 
@@ -761,20 +826,13 @@ E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${w
 	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	# 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
 
-fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι; ↩ shᵥ`curl -s -X PUT localhost:${port}`+'' }
+E.which = _.memoize((…a)=> !is_template(a)? which`${a[0]}` : catch_ι(()=> shᵥ`which …${sh(…a)}`+'')) # ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
-E.sbᵥ = λ(ss,…ιs){
-	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	t ← JSON.parse(fs_ipc_emit(34289,ι)); t===null && (t = undefined); ↩ t }
-E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
-
-sh_hash ← _.memoize(ι=> shᵥ`which ${ι}`+'') # ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
-
-[#Q E.hsᵥ #Q].def(()=> !(shᵥ`which hs ;:`+'')? undefined : λ(ss,…ιs){
+[#Q E.hsᵥ #Q].def(()=> which('hs') && λ(ss,…ιs){
 	ENC ← ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : ‽; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	# t ← shᵥ`hs -c ${ι}`
-	t ← child_process.spawnSync(sh_hash('hs'),['-c',ι]).stdout
-	t ← (t+'').split('\n')[-1]; try{↩ JSON.parse(t)[0] }catch(e){↩ t } } )
+	t ← child_process.spawnSync(which('hs'),['-c',ι]).stdout
+	t ← (t+'').split('\n')[-1]; r ← catch_ι(()=> JSON.parse(t)[0]); ↩ r!==undefined?r: t } )
 
 E.tsᵥ = λ(ss,…ιs){
 	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
@@ -895,7 +953,6 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:true}).end({pretty:true}) },
 		get plist(){t←; buf ← @.buf; ↩ 0?0
 			# in case bplist-parser has bugs, this is available:
-			# which ← memoize_persist(ι=>{ try{ shᵥ`which ${ι}`; ↩ true }catch(e){} })
 			# : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
 			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist_${random_id(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
 			: npm`plist@2.1.0`.parse(@.text)
@@ -914,7 +971,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 					fl.write((is_0?'':',')+JSON.stringify(ι,null,'  ')+']',i)
 					})
 				})},
-			filter(f){↩ d._.filter(f)},
+			filter(f){↩ d.filter(f)},
 			} }},
 		}
 	λ Φs(ι){@._ι = ι}; Φs.prototype = {
@@ -976,46 +1033,59 @@ E.‡_repl_start = ()=> ζ_repl_start({
 	prompt:'\x1b[30m\x1b[100m‡\x1b[0m ',
 	compile:ι=>{t←;
 		lock ← 0?0
-			: ['ct','chrome_tabs','ps2','d','bookmarks']._.contains(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
+			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
 		lock===ι || cn.log('⛓  '+lock)
 		↩ ζ_compile(lock) }, })
+anon_b5s81←; anon_7268v←;
 E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '}) <- (opt)
-	↩ (f=> f.call( repl.start(_({useGlobal:true}) <- (_(opt).pick('prompt'))) ))(λ(){
+	my_eval ← code=>{ # ! can be refactored further
+		t ← opt.compile(code)
+		try{ t = new vm.Script(t,{ filename:'repl', displayErrors:false }) }
+		catch(e){ if( e.name==='SyntaxError' ) ↩ {parse_error:e}; e.stack = e.name+': '+e.message+'\n    at <repl>'; ↩ {error:e} }
+		try{ ↩ {v:t.runInThisContext()} }
+		catch(e){ e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') ); ↩ {error:e} }
+		}
+	q ← ι=> util_inspect_autodepth(ι,{colors:@.useColors})
+	promise_watch ← ι=>{
+		ι.id = b36(fromUInt32BE([#Q (anon_b5s81||( anon_b5s81 = [0] )).0 #Q].ι++))
+		hr ← hrtime(); ι.then(v=> hrtime(hr) < 5 && hsᵥ`hs.alert(${`Promise #${ι.id} = ${my_inspect(v).slice(0,200)}`},12)` ) }
+	my_inspect ← ι⇒
+		: ι===undefined? ''
+		: T.Promise(ι)? 0?0
+			: ι.status? my_inspect(ι.ι)
+			: ι.status===undefined?( promise_watch(ι), `Promise #${ι.id} { <pending> }` )
+			: q(ι)
+		: Tarr(ι) && ι.length > 1 && ι.every(t=> t===ι[0]) && _.range(ι.length).every(t=> t in ι)
+			? q([ι[0]])+' * '+q(ι.length)
+		: q(ι)
+	↩ (f=> f.call( require('repl').start(_({useGlobal:true}) <- (_(opt).pick('prompt'))) ))(λ(){
 	@.In = []; @.Out = []
 	super_ ← @.completer; @.completer = λ(line,cb){ line.trim()===''? cb(null,[]) : super_.call(@,line,cb) }
-	inspect ← ι=> util_inspect_autodepth(ι,{colors:@.useColors})
 	@.removeAllListeners('line').on('line',λ(line){
-		global.rl = @
-		if (line==='') ↩;
-		if (@.bufferedCommand){ @.history[1] += '\n'+@.history[0]; @.history.shift() }
-		t ← @.bufferedCommand + (line||''); code ← t
-		if (/(^\{[^]*\}$)|(^λ\()/.test(t)) t = '('+t+')' # ! it is a clumsy hack to put this on all of these code paths
-		t = opt.compile(t)
-		try{ sc ← new vm.Script(t,{ filename:'repl', displayErrors:false }) }
-		catch(e){ if( e.name==='SyntaxError' ){ @.bufferedCommand += line+'\n'; @.outputStream.write('    '); ↩ }; e.stack = e.name+': '+e.message+'\n    at <repl>'; err ← e }
-		if (sc)
-		try{ ret ← sc.runInThisContext() }
-		catch(e){ e && Tstr(e.stack) && (e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>')); err ← e }
-		φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
-		@.In.push(code); @.Out.push(err || ret)
-		if (err) @._domain.emit('error', err.err || err)
+		@.context.rl = @
+		if( @.bufferedCommand ){ ι ← @.history; ι.reverse(); t ← ι.pop(); ι[-1] += '\n'+t; ι.reverse() }
+		code ← @.bufferedCommand+line
+		{parse_error,error,v} ← my_eval(code)
+		if( parse_error ){ @.bufferedCommand = code+'\n'; @.outputStream.write('    '); ↩ }
 		@.bufferedCommand = ''
-		if (!err && ret !== undefined) {
-			global.__ = ret
-			try{
-				if (Tarr(ret) && ret.length > 1 && ret.every(ι=> ι===ret[0]) && _.range(ret.length).every(ι=> ι in ret))
-					t ← inspect([ret[0]])+' * '+inspect(ret.length)
-				else
-					t ← inspect(ret)
-			}catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
-			@.outputStream.write(t+'\n') }
+		if( code ){
+			φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
+			@.In.push(code); @.Out.push(error || v)
+			}
+		if( error ) @._domain.emit('error', error.err || error)
+		else{
+			if( T.Promise(v) ) [#Q @.context.__ #Q].def({get(){↩ v.status? @.__ = v.ι : v }, writable:true})
+			else if( v!==undefined ) @.context.__ = v
+			try{ t ← my_inspect(v) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
+			@.outputStream.write(t && t+'\n') }
 		@.displayPrompt()
 		})
 	@.removeAllListeners('SIGINT').on('SIGINT',λ(){
-		if( @.bufferedCommand+@.line ){ @.clearLine(); @.lineParser.reset(); @.bufferedCommand = ''; @.lines.level = []; @.displayPrompt() }
-		else{ @.clearLine(); @.close() }
+		is_line ← @.bufferedCommand+@.line
+		@.clearLine()
+		if( is_line ){ @.bufferedCommand = ''; @.displayPrompt() } else @.close()
 		})
 	delete @.context._; @.context._ = _
 	↩ @
@@ -1034,15 +1104,14 @@ eval_ ← λ __53gt7j(ι){
 		try{ new vm.Script(ι); ↩ (0,eval)(ι) }catch(e){ if(!( e.name==='SyntaxError' && e.message==='Illegal return statement' )) throw e; ↩ (0,eval)('(()=>{'+ι+'})()') }
 	}catch(e){ e!==undefined && e!==null && Tstr(e.stack) && (e.stack = e.stack.replace(/    at __53gt7j[^]*/,'    at <eval>')); throw e }
 	}
-E.ζ_main = opt=>{ι←; {compile,a} ← opt=_({ compile:ζ_compile }) <- (opt)
+E.ζ_main = ({a})=>{ι←;
 	a[0]==='--fresh' && a.shift()
-	if( !a.length ) ζ_repl_start(opt)
+	if( !a.length ) ζ_repl_start()
 	else if( ι=a[0], φ(ι).BAD_exists() || ι.re`^\.?/` ){ process.argv = [process.argv[0],…a]; t ← φ(ι).root('/')+''; o←Module._cache;m←Module._resolveFilename(t,null,true);oι←o[m]; o[m] = undefined; Module._load(t,null,true); o[m] = oι }
 	else {
 		global.require = require; global.code = a.shift(); global.a = a; [global.a0,global.a1] = a; global.ι = a[0]
 		code = code.replace(/;\s*$/,'; undefined')
-		code = opt.compile(code)
-		sh_ify(eval_(opt.compile(code)))
+		sh_ify(eval_(ζ_compile(code)))
 			.then(ι=>{ ι.out && process.stdout.write(ι.out); ι.code &&( process.exitCode = ι.code ) })
 		}
 	}

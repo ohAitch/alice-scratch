@@ -10,6 +10,15 @@ E.__prompt = (E,history_1)=>{t←; E ← E |0
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
 	fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
+	# bind @[process sh`$$`] watch(φ.cwd)
+	# bind( @[process sh`$$`], watch([#Q φ.cwd #Q]) )
+	# http://docs-next.witheve.com/v0.2/handbook/bind/
+	# parse_bash('$$')
+
+	# issues with sh inline
+	# sh has statement vs expressions
+
+
 	last_cwd ← slot_persist('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	postrun('hash -r')
 	}
@@ -35,7 +44,7 @@ E.pb.cant_pool = true
 
 E.ps2 = ()=>{
 	startup_procs ← ()=>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
-	bad ← new Set(startup_procs())
+	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
 	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.length + 1, h.search('ELAPSED')+'ELAPSED'.length)
@@ -55,7 +64,7 @@ E.diff = (base,edit)=>{
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
 		t = t.split('\n')
-		iL ← t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length)))._.sortBy()._.uniq(true)
+		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length))).∪([])]._.sortBy()
 		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
 		t = iG.map(ι=> ι.map(i=> [t[i],i]))
 		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
@@ -105,14 +114,16 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 		;(build || package || run) || ‽
 
 		a ← ()=> build && shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
-		b ← ()=>{if (package){
+		b ← ()=>{if( package ){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
 			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )
 			shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
 			}}
 		c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
-		;(a()||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
+
+		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',status=> status===0? yes() : no()))
+		;(child_process_as_promise(a())||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
 		} }
 E.run_project.cant_pool = true
 
@@ -197,7 +208,7 @@ E.keypresses.cant_pool = true
 
 E.regex_set = ()=>{
 	process.stdin.read_all().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
-		t←[]; […ι].sort()._.uniq(true).map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+		t←[]; […[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
 		x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
 		out(ι)

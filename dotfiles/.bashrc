@@ -36,7 +36,8 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; 
 			cat /tmp/man | col -bfx
 		else
 			rm -rf /tmp/sublime
-			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows[0].buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents }).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
+			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.mapcat(ι=> ι.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
+			echo / "$1"; echo
 			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime ~/.archive_* --ignore 'public/lib/'; _ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
 		fi
 	fi | sb; }

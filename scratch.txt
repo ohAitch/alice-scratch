@@ -90,7 +90,6 @@ ax.set_zlabel('B Label')
 plt.show()
 
 ------------------------------ sublime api things ------------------------------
-sbᵥ`window = sublime.active_window(); window.focus_view(window.views()[-1])`
 T ← 10; i←0; (λ(){sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
 ------------------------------------- life -------------------------------------

@@ -46,7 +46,7 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.archive(/|$)` || /\.
 
 // ---------- so let's add another fucked up bit, and poll spotify ---------- //
 spotify_state ← ()=>{ var [[id,playL,size],volume,state,at] = osaᵥ`spotify: { {id, played count, duration} of current track, sound volume, player state, player position }`; t ← osaᵥ`get volume settings`; ↩ { time:Time().i, track:{ id,size,playL, }, spotify_volume:volume, volume:t['output volume'], muted:t['output muted'], at, action:state.ι/*∈['stopped','playing','paused']*/, } }
-;(()=>{ φ`~/file/spotify.txt`.text += util_inspect_autodepth(spotify_state())+'\n' }).every(30)
+;(()=>{ φ`~/file/spotify.txt`.text += util_inspect_autodepth(spotify_state())+'\n' }).every(10)
 
 // ---------- so let's add another fucked up bit, and kill DS_Store --------- //
 chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){

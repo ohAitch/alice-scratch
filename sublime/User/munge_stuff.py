@@ -119,14 +119,14 @@ class nice_url(sublime_plugin.TextCommand):
 			t = ζ('nice_url(ι)',ι)
 			if t is not ι: view.replace(edit, reg, t)
 
-class _(sublime_plugin.EventListener):
+class _0(sublime_plugin.EventListener):
 	def on_post_save(self,view): view.substr(Region(0,2)) == '#!' and ζ('shᵥ`chmod +x ${ι}`',view.file_name())
 
 class goto_last_tab(sublime_plugin.WindowCommand):
 	def run(self):
 		window = self.window
-		vs = window.views()
-		len(vs) and window.focus_view(vs[-1])
+		t = window.views(); len(t) and window.focus_view(t[-1])
+		# sbᵥ t←; ( t=window.views()[-1] )&& window.focus_view(t)
 
 class run_project(sublime_plugin.TextCommand):
 	def run(self,edit):
@@ -143,3 +143,31 @@ class toggle_comment_2(sublime_plugin.TextCommand):
 class zeta(sublime_plugin.WindowCommand):
 	def run(self,x):
 		ζfresh_async(x)
+
+# class zeta2(sublime_plugin.WindowCommand):
+# 	def run(self,x):
+# 		ζfresh(x)
+
+# class _1(sublime_plugin.EventListener):
+# 	# def on_pre_save(self,view):
+# 	# 	if view is undergoing ✨inline_build
+# 	# 		remove ✨inline_build, output
+# 	# 		pause ✨inline_build
+# 	# def on_post_save(self,view):
+# 	# 	if ✨inline_build paused:
+# 	# 		return ✨inline_build, output
+# 	# 		resume
+# 	def on_modified(self,view):
+# 		# ζ("""
+# 		# 	ι.match(/^✨(.+)$/mg).map(ι=>{
+# 		# 		hsᵥ`hs.alert(${ι})`
+# 		# 		})
+# 		# 	""",view.substr(view.line(Region(0,10000))))
+# 		ζ("""
+# 			ι = sbᵥ`view.substr(view.line(Region(0,10000)))`
+# 			ι.match(/^✨(.+)$/mg).map(ι=>{
+# 				hsᵥ`hs.alert(${ι})`
+# 				})
+# 			""")
+# 		# if view can undergo ✨inline_build:
+# 		# 	do it
