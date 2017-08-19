@@ -1,7 +1,7 @@
 call ← axiom(S⇒{
 	syntax(){↩ S`(${@.o} ${@.args})` },
 	eval(){
-		stack.push({ call:@, vars:new Map(_.zip(@.o.params,@.args).slice(0,@.o.params.length)), })
+		stack.push({ call:@, vars:new Map(_.zip(@.o.params,@.args).slice(0,@.o.params.‖)), })
 		r ← @.o.code.eval()
 		stack.pop()
 		↩ r },
@@ -37,7 +37,7 @@ Pretty_Typed ← λ(type,ι){ @.type = type; _(@) <- (ι) }
 Pretty_Typed.prototype.inspect = λ(d,opt){t←; r←;
 	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
 	if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
-	if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.size)
+	if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
 	ty ← opt.stylize(@.type,'special')
 	if (_(@).keys()._.isEqual(['type','ι'])) r = ty+' '+util.inspect(@.ι,opt)
@@ -94,7 +94,7 @@ vmζ_parse ← code=>{
 	r ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:true})
 	r = walk_obj_edit(r,ι=>{
 		// --------------- error on asts i dont know how to handle -------------- //
-		ι.directives && ( !ι.directives.length || ‽(ι) )
+		ι.directives && ( !ι.directives.‖ || ‽(ι) )
 		if (ι.type==='VariableDeclaration') ι.kind==='var' || ‽(ι)
 		if (ι.type==='VariableDeclarator') ι.id.type==='name' || ‽(ι)
 		if (ι.type==='MemberExpression') (!ι.computed || ι.property.type==='name') || ‽(ι)
@@ -135,13 +135,13 @@ vmζ_parse ← code=>{
 	opti_semantic ← ι=>{ // or simplify_or_enhance_semantics
 		if (ι.type==='seq'){
 			// seq[seq[]] -> seq[]
-			ι.ι = ι.ι.mapcat(ι=> ι.type==='seq'? ι.ι : [ι])
+			ι.ι = ι.ι.map…(ι=> ι.type==='seq'? ι.ι : [ι])
 			// break; foo() -> warning
 			i ← ι.ι.findIndex(ι=> ι.type==='break_fn')
 			dead ← i===-1? [] : ι.ι.splice(i+1,∞)
 			if (dead.some(interesting)) cn.log('[warning]','you have interesting dead code',dead)
 			// seq[ι] -> ι
-			if (ι.ι.length===1) ι = ι.ι[0]
+			if (ι.ι.‖===1) ι = ι.ι[0]
 			}
 		if (ι.type==='function'){
 			edit ← false
@@ -170,7 +170,7 @@ vmζ_runInContext ← (ast,global_)=>{
 
 	eval_ ← ι⇒
 		: ι.type==='seq'? ι.ι.map(eval_)[-1]
-			// (λ(){ t←; for(i←0;i<ι.ι.length;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
+			// (λ(){ t←; for(i←0;i<ι.ι.‖;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
 		: ι.type==='local_private_slot'? stack[-1].ι[ι.name.ι] = eval_(ι.ι)
 		: ι.type==='name'? resolve(ι.ι)
 		: ι.type==='call'? call(eval_(ι.o),[ι.self,…ι.a].map(eval_))

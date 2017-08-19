@@ -4,5 +4,8 @@
 
 if [[ $PWD == /usr/local/lib/node_modules/* ]] && &>/dev/null which launchctl; then
 	gcc -Wall -pedantic -O3 -o .bin/ipc_shell ipc_shell.c
-	ζ --fresh ' restart_and_keep_alive(φ.cwd.φ`server.ζ`+"") ;'
+	ζ --fresh '
+		(φ.cwd+"").re`^/Users/` ? hsᵥ`hs.alert("no")` :
+			restart_and_keep_alive(φ.cwd.φ`server.ζ`+"") ;'
+	sleep 1 # wtf (prevents this error /usr/local/lib/node_modules/zeta-lang/.bin/ipc_shell:1 / (function (exports, require, module, __filename, __dirname) { ����)
 fi

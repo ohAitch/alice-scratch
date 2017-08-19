@@ -1,56 +1,67 @@
 #!/usr/bin/env ζ
-// APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
+# APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
 log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text + [Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' ')+'\n'
+log2 ← ι=> ι.map(ι=> ι.Δ && log('Δ',ι.Δ) )
 
-// ---------------------------- as for a prelude ---------------------------- //
+############################### as for a prelude ###############################
 on_off ← ()=>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=> ee.removeListener(m,f)); ons = [] } }}
+require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{ pid:${@.pid} …}` }
+Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:null }); r ← util.inspect(@,_({}) <- (opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
+Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:null }); r ← util.inspect(@,_({}) <- (opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
+normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); ↩ ι }
+diff ← (a,b)=>{r←; ↩0?0
+	: [a,b].every(T.Set)?
+		# [a,b] *.count zip **|0 *-
+		( r = normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(ι=> ι.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), [#Q r.name #Q].def({ value:b.name }), r )
+	: ‽ }
+Δ ← (…a)=>{ f ← a.pop()
+	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
+	f()
+	↩ _.zip(start,a).map(a=> diff(…a)).filter(ι=> ι.‖).map(ι⇒ { Δ:ι }) }
 
-// ----------------------------------- lib ---------------------------------- //
-as_module ← ι=>{ t ← φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`; t.ι = ι; ↩ t+'' }
+###################################### lib #####################################
+as_module ←  ι=> _(φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`) <- ({ι}) +''
 eval_in_new_worker ← code=>{ t ← as_module(js`require(${__dirname})(global);`+code); ↩ require('child_process').fork(t,[],{silent:true}) }
 eval_in_worker ← (λ(){
-	busy ← new Set(); free ← new Set()
+	🏷busy ← new Set(); 🏷free ← new Set()
 	process.once('exit',()=>{ […busy,…free].map(ι=> ι.kill()) })
-	make ← ()=>(
-		log('new worker',w_id),
-		_( eval_in_new_worker('('+λ(){
-			wait ← ()=> process.once('message',ι=>{ ι[0]==='eval' || ‽; try{ (0,eval)(ι[1]) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι[1]}`; throw e } }) //! todo: make this logging less stupid
-			wait()
-			process.on('beforeExit',i=>{ process.send(['*',['pseudo_exit',i],['unbusy']]); process.exitCode = 0; wait() })
-			process.on('exit',i=>{ process.send(['pseudo_exit',i]) })
-			}+')()')
-		.on('message',λ(ι){ (ι[0]==='*'? ι.slice(1) : [ι]).map(ι=> @.emit(…ι) ) })
+	make ← ()=> eval_in_new_worker('('+λ(){ ♓ ← process
+		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
+		wait ← ()=> ♓_once_eval(ι=>{ try{ (0,eval)(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
+		wait()
+		♓.on('beforeExit',i=>{ ♓.send([['em_exit',i],['unbusy']]); ♓.exitCode = 0; wait() })
+		♓.on('exit',i=>{ ♓.send([['em_exit',i]]) })
+		}+')()')
+		.on('message',λ(ι){ ι.map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
-		) <- ({id: w_id++})
-		); w_id ← 0
 	;(λ(){ t ← free.pop(); free.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
-	cleanup ← ()=>{
-		busy.filter!(ι=> ι.connected || (log('lost busy worker',ι.id),0))
-		free.filter!(ι=> ι.connected || (log('lost free worker',ι.id),0))
-		free.size || free.add(make()) }
-	↩ code=>{ cleanup(); t ← free.pop(); busy.add(t); t.send(['eval',code]); ↩ t }
+	↩ code=>{
+		log2(Δ(busy,free,()=>{ # cleanup
+			;[busy,free].map(ι=> ι.filter!(ι=> ι.connected))
+			free.‖ || free.add(make())    }))
+		♓ ← free.pop(); busy.add(♓); ♓.send([['eval',code]]); ↩ ♓ }
 	})()
 procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
-	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode || (♓.exitCode = 1) )
+	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode ||( ♓.exitCode = 1 ) )
 	{on,off} ← on_off(); on(♓,'uncaughtException',e=>{ err(e); ♓.exit() }); on(♓,'beforeExit',off)
 	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; [♓.stdin,♓.stdout,♓.stderr]._.zip(a.isTTY).map(([fd,t])=> fd.isTTY = t)
 	try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code) )
 
-// ---------------------------------- main ---------------------------------- //
-if (!module.parent){
+################################################################################
+if_main_do(()=>{
 	on_ready ← ()=>{        log('server ready'  ); shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
 	process.on('exit',()=>{ log('server exiting'); shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ` })
 	new net.Server()
 		.listen(+φ(__dirname).φ`PORT`.text.re`\d+`[0],'localhost',on_ready)
 		.on('connection',λ(socket){t←;
 			worker←; ended←;
-			c_send ← λ(type,ι){ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.length,0); socket.write(Buffer.concat([a,b,c])) }
+			c_send ← λ(type,ι){ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); socket.write(Buffer.concat([a,b,c])) }
 			socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGINT'); ended = true })).on('error',t)
 			socket.on('data',catch_(λ(ι){
 				if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
-				i←0; get ← n=> i+n <= ι.length ||( buf = ι.slice(i), return_() )
-				while(i<ι.length){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
+				i←0; get ← n=> i+n <= ι.‖ ||( buf = ι.slice(i), return_() )
+				while(i<ι.‖){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 				})); buf←;
 			a ← {argv:[], cwd:'', env:{}, isTTY:[,,,]}
 			on_msg ← ι=>{switch(ι.type){default: ‽
@@ -62,17 +73,17 @@ if (!module.parent){
 					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
 					{on,off} ← on_off()
 					;[1,2].map(i=> on(worker.stdio[i],'data',ι=> c_send(i+'',ι)) )
-					on(worker,'pseudo_exit',λ(i){ c_send('X',i+''); ended = true; off() })
-					// c_send('S')
-				break; case 'H': // not sure what this is for
-				break; case '0': // c_send('S'); worker.stdin.write(ι.ι)
-				break; case '.': // worker.stdin.end()
+					on(worker,'em_exit',λ(i){ c_send('X',i+''); ended = true; off() })
+					# c_send('S')
+				break; case 'H': # not sure what this is for
+				break; case '0': # c_send('S'); worker.stdin.write(ι.ι)
+				break; case '.': # worker.stdin.end()
 				}}
 			})
-}
-// old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
-// new issue: ignores stdin because it's complicated on the node side
-// (old code: fs.fstatSync(0).isFIFO()? read_stdin(t) : t() )
+	})
+# old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
+# new issue: ignores stdin because it's complicated on the node side
+# (old code: fs.fstatSync(0).isFIFO()? read_stdin(t) : t() )
 
 #################################### ‡ todo ####################################
 # ! important features:

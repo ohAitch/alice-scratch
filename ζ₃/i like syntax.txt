@@ -13,3 +13,24 @@ and auto insert parens into the code when the code is not known to be legible
 i would like this syntax: […λ*(){ a ← ()=> yield* [5]; a(); }()] = […λ*(){ yield* [5] }()]
 
 i would like a bit more than just syntax here: Stephen Wolfram's Introduction to the Wolfram Language http://youtu.be/_P9HqHVPeik#t=1m02.5s
+
+
+wolfram language neat things
+	f[x]         f(x)
+	f @ x        f(x)
+	x // f       f(x)
+	f @@ x       f(…x)
+	f @@@ x      x.map(x=> f(…x))
+	f /@ x       x.map(f)
+	f //@ x      postwalk(x,f) # MapAll
+	f @* g       x=> f(g(x))
+	f /* g       x=> g(f(x))
+
+	f @ x + 1    f( x + 1 )
+
+	x >>> φ      append(φ,x)
+	x >> φ       write(φ,x)
+	<< φ         require(φ)
+	_            .
+	x..          x+
+	x...         x*

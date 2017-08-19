@@ -47,7 +47,7 @@ E.ps2 = ()=>{
 	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
-	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.length + 1, h.search('ELAPSED')+'ELAPSED'.length)
+	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.‖ + 1, h.search('ELAPSED')+'ELAPSED'.‖)
 	r ← h+'\n'+r
 		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool|iBooks|Preview|Path Finder|CIJScannerRegister|Image Capture Extension|Audacity|Karabiner|LaunchControl).app/`)
@@ -60,15 +60,15 @@ E.diff = (base,edit)=>{
 		a ← new Set(fs.readdirSync(base)) # ! should walk all subfiles
 		b ← new Set(fs.readdirSync(edit))
 		[same,changed] ← _([…a.∩(b)]).partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
-		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].mapcat(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
+		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
 		t = t.split('\n')
-		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).mapcat(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.length))).∪([])]._.sortBy()
+		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
 		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
 		t = iG.map(ι=> ι.map(i=> [t[i],i]))
 		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
-		process.exitCode = t.length ?1:0
+		process.exitCode = t.‖ ?1:0
 		↩ t.map(ι=> ι.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
 			.join('\n')+'\n')
 			.join('\x1b[90m'+'-'.repeat(30)+'\x1b[0m'+'\n')
@@ -136,7 +136,7 @@ E.d = (a='.')=>{
 			# should probably use hook_stdouterr
 			o ← process.stderr.write; process.stderr.write = ()=>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
 			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
-		else b ← φ(fl).size
+		else b ← φ(fl).‖
 		sum += b; q(b,fl) })
 	q(sum,a)
 
@@ -153,7 +153,7 @@ E.d = (a='.')=>{
 # 	}
 
 E.ct = E.chrome_tabs = λ(i){
-	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.length], url:[(title+' ').length,(title+' '+url).length]}; ↩ nice_url(t)}
+	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.‖], url:[(title+' ').‖,(title+' '+url).‖]}; ↩ nice_url(t)}
 	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
 	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
 	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb.tab.push(t) }
@@ -164,10 +164,10 @@ E.bookmarks = ι=>{
 	use_chrome ← true
 	safari_bookmarks ← ι=>{
 		my_walk ← ι⇒
-			: Tarr(ι)? ι.mapcat(my_walk)
+			: Tarr(ι)? ι.map…(my_walk)
 			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
 			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{name:ι.URIDictionary.title, ι:ι.URLString}]
-			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.mapcat(ι=> my_walk(ι))}]
+			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.map…(ι=> my_walk(ι))}]
 			: {name:'', ι:JSON.stringify(ι)}
 		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
 	chrome_bookmarks ← ι=>{

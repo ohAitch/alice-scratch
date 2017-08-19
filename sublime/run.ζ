@@ -7,7 +7,7 @@
 plist ← npm`plist@1.2.0`
 
 // ------------------------------- generic lib ------------------------------ //
-match_json_head ← ι=> _.range(ι.length).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
+match_json_head ← ι=> _.range(ι.‖).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
 
 // ----------------------------------- lib ---------------------------------- //
 compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','␣':'space','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
@@ -19,7 +19,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 // 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`
 // 	written ← []; R ← ι=> (written.push(ι+''), ι)
 // // ------------------------------- broken part ------------------------------ //
-// 	from.φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice((from+'').length).replace(/^\//,'') // .root(from) ?
+// 	from.φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice((from+'').‖).replace(/^\//,'') // .root(from) ?
 // 		;(t=ι.match(/^(.*)\.json$/))?
 // 			( R(dest.φ(t[1])).buf = plist.build(from.φ(ι).json) )
 // 		: ( R(dest.φ(ι)).buf = from.φ(ι).buf )
@@ -35,7 +35,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 colors_to_tmTheme ← λ(from,to){
 	t ← φ(from).text.replace(/#[\s#].*/g,'').replace(/\n\n+/g,'\n')
 	t = t.re`^([^{]*)([^]*)`
-	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(ι=> ι.match(/([\w# [\]]+) → ([\w,]+)/)).mapcat(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
+	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(ι=> ι.match(/([\w# [\]]+) → ([\w,]+)/)).map…(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
 	t = t[2]
 	defs.forEach(ι=> t = t.replace(re`\$…${ι[0]}(\w*)`.g, (ˣ,t)=> ι[1].replace(/(?= |$)/,t)))
 	t = t.re`^\s*(\{[^]+?\})([^]*)`

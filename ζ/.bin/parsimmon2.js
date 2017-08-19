@@ -11,27 +11,27 @@ var __lazy = ι=> P2({
 var __match_string = ι=> P2({
 	type:'match_string',
 	ι,
-	_(stream,i){ var head = stream.slice(i,i+this.ι.length); return head===this.ι? make_win(i+this.ι.length,head) : make_lose(i,this.ι) },
+	_(stream,i){ var head = stream.slice(i,i+this.ι["‖"]); return head===this.ι? make_win(i+this.ι["‖"],head) : make_lose(i,this.ι) },
 	})
 var __match = (ι,group)=> P2({
 	type:'match',
 	re: RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y'),
 	group,
-	_(stream,i){ var t = this.re.exec_at(stream,i); return t && !(t[this.group]===null||t[this.group]===undefined)? make_win(i+t[0].length, t[this.group]) : make_lose(i,this.re+'') },
+	_(stream,i){ var t = this.re.exec_at(stream,i); return t && !(t[this.group]===null||t[this.group]===undefined)? make_win(i+t[0]["‖"], t[this.group]) : make_lose(i,this.re+'') },
 	})
 var __seq = ps=> P2({
 	type:'seq',
 	ps,
 	_(stream,i){var r;
 		var accum = []
-		for (var j=0;j<this.ps.length;j++){var p=this.ps[j];  r = merge_replies(p._(stream,i), r); if (!r.status) return r; accum.push(r.value); i = r.index  }
+		for (var j=0;j<this.ps["‖"];j++){var p=this.ps[j];  r = merge_replies(p._(stream,i), r); if (!r.status) return r; accum.push(r.value); i = r.index  }
 		return merge_replies(make_win(i,accum), r) },
 	})
 var __alt = ps=> P2({
 	type:'alt',
 	ps,
 	_(stream,i){var r;
-		for (var j=0;j<this.ps.length;j++){var p=this.ps[j];  r = merge_replies(p._(stream,i), r); if (r.status) return r  }
+		for (var j=0;j<this.ps["‖"];j++){var p=this.ps[j];  r = merge_replies(p._(stream,i), r); if (r.status) return r  }
 		return r },
 	})
 var __times = (p,min,max)=> P2({
@@ -64,7 +64,7 @@ var __map_js = (p,f)=> P2({ type:'map_js', p, f, _(stream,i){ var r = this.p._(s
 var __chain = (p,f)=> P2({ type:'chain', p, f, _(stream,i){ var r = this.p._(stream,i); return !r.status? r : merge_replies(this.f(r.value)._(stream,r.index), r) }, })
 var __of = ι=> P2({ type:'of', ι, _(stream,i){return make_win(i,this.ι) }, })
 var __fail = expected=> P2({ type:'fail', expected, _(stream,i){return make_lose(i,this.expected) }, })
-var __eof = ()=> P2({ type:'eof', _(stream,i){return i < stream.length? make_lose(i,'EOF') : make_win(i,null) }, })
+var __eof = ()=> P2({ type:'eof', _(stream,i){return i < stream["‖"]? make_lose(i,'EOF') : make_win(i,null) }, })
 var __index = ()=> P2({ type:'index', _(stream,i){return make_win(i,make_line_col_index(stream,i)) }, })
 
 // issue: makes parser not reentrant, as perf optimization
@@ -75,7 +75,7 @@ var P = (ι,...ιs)=>0?0
 	: is_template([ι,...ιs])? (()=>{
 		ι = easy_template(ι=>ι)(ι,...ιs)
 		var i = ι.map((ι,i)=>[ι,i]).filter(([ι,i])=>Tarr(ι)).map(([ι,i])=>i)
-		return P(ι.map(ι=> Tarr(ι)?ι[0]:ι)).map(ι=> i.length===1? ι[i[0]] : i.map(i=> ι[i]) )
+		return P(ι.map(ι=> Tarr(ι)?ι[0]:ι)).map(ι=> i["‖"]===1? ι[i[0]] : i.map(i=> ι[i]) )
 		})()
 	: Tfun(ι)? __lazy(ι)
 	: Tstr(ι)? __match_string(ι)
@@ -121,7 +121,7 @@ var make_lose = (index,expected)=>0?0: { status:false, index:-1, value:null, fur
 
 P.seq = (...ps)=> __seq(ps.map(P.X))
 
-var alt = P.alt = (...ps)=>{ ps = ps.map(P.X); ps.length || !function(){throw Error('‽')}(); return __alt(ps) }
+var alt = P.alt = (...ps)=>{ ps = ps.map(P.X); ps["‖"] || !function(){throw Error('‽')}(); return __alt(ps) }
 
 Parser.prototype.many = function(){return this.times(0,Infinity) }
 Parser.prototype.times = function(min,max){ if (arguments.length < 2) max = min; Tnum(min) || !function(){throw Error('‽')}(); Tnum(max) || !function(){throw Error('‽')}(); return __times(this,min,max) }
@@ -145,8 +145,8 @@ var merge_replies = (r,last)=>{
 
 // Returns the sorted set union of two arrays of strings. Note that if both arrays are empty, it simply returns the first array, and if exactly one array is empty, it returns the other one unsorted. This is safe because expectation arrays always start as [] or [x], so as long as we merge with this function, we know they stay in sorted order.
 var unsafe_union = (xs,ys)=>{
-	var xL = xs.length
-	var yL = ys.length
+	var xL = xs["‖"]
+	var yL = ys["‖"]
 	if (xL===0) return ys; else if (yL===0) return xs
 	var r = {}
 	for (var i = 0; i < xL; i++) r[xs[i]] = true
@@ -154,11 +154,11 @@ var unsafe_union = (xs,ys)=>{
 	return _.keys(r).sort() }
 
 P.format_error = (stream,error)=>{
-	var t = error.expected; var ex = t.length===1? t[0] : 'one of '+t.join(', ')
+	var t = error.expected; var ex = t["‖"]===1? t[0] : 'one of '+t.join(', ')
 	var index = error.index; var i = index.offset
 	var prefix = (i > 0 ? "'..." : "'")
-	var suffix = (stream.length - i > 12 ? "...'" : "'")
-	if (i===stream.length) return ', got the end of the stream'
+	var suffix = (stream["‖"] - i > 12 ? "...'" : "'")
+	if (i===stream["‖"]) return ', got the end of the stream'
 	return 'expected '+ex+' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix }
 
 var seq_map = P.seq_map = (...a)=>{ var f = a[-1]; a = a.slice(0,-1); Tfun(f) || !function(){throw Error('‽')}(); return P(a).map(ι=> f(...ι)) }
@@ -182,19 +182,19 @@ Parser.prototype.mark = function(){return seq_map(index,this,index,(start,value,
 
 P.of = __of
 var fail = P.fail = __fail
-//X P.any = p_wrap((stream,i)=> i >= stream.length? make_lose(i,'any character') : make_win(i+1, stream[i]) )
-//X P.all = p_wrap((stream,i)=> make_win(stream.length, stream.slice(i)) )
+//X P.any = p_wrap((stream,i)=> i >= stream.‖? make_lose(i,'any character') : make_win(i+1, stream[i]) )
+//X P.all = p_wrap((stream,i)=> make_win(stream.‖, stream.slice(i)) )
 
 //X test ← P.test = test=>( Tfun(test) || ‽,
-//X   p_wrap((stream,i)=> i < stream.length && test(stream[i])? make_win(i+1,stream[i]) : make_lose(i,'a character matching '+test) )
+//X   p_wrap((stream,i)=> i < stream.‖ && test(stream[i])? make_win(i+1,stream[i]) : make_lose(i,'a character matching '+test) )
 //X   )
 //X P.one_of = s=> test(ch=> s.indexOf(ch) >= 0 )
 //X P.none_of = s=> test(ch=> s.indexOf(ch) < 0 )
 //X P.take_while = test=>( Tfun(test) || ‽,
-//X   p_wrap((stream,i)=>{ j ← i; while (j < stream.length && test(stream[j])) j++; ↩ make_win(j,stream.slice(i,j)) })
+//X   p_wrap((stream,i)=>{ j ← i; while (j < stream.‖ && test(stream[j])) j++; ↩ make_win(j,stream.slice(i,j)) })
 //X   )
 
-var make_line_col_index = (stream,i)=>{ var lines = stream.slice(0,i).split('\n'); return { offset:i, line:lines.length, column:lines[-1].length+1, } }
+var make_line_col_index = (stream,i)=>{ var lines = stream.slice(0,i).split('\n'); return { offset:i, line:lines["‖"], column:lines[-1]["‖"]+1, } }
 
 var index = P.index = __index()
 

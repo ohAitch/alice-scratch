@@ -7,7 +7,7 @@ delete Object.prototype._
 Parser ← λ(tag,ι){ if (!(@ instanceof Parser)) ↩ new Parser(tag,ι); _(@) <- ({tag},ι) }
 P ← ι⇒
 	: ι instanceof Parser? ι
-	: Tstr(ι)? ι.length===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
+	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
 	: Tfun(ι)? P._graph_thunk(ι)
 	: Tarr(ι)? P._seq(ι)
 	: T.RegExp(ι)? P._regex(ι)
@@ -34,7 +34,7 @@ P.not = ι=> Parser('not',{
 	})
 __seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if (done) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
 // __seq ← λ* Λ(ps,ps_i,in_,i){
-// 	if( ps.length - ps_i === 0 ) yield {i,ι:[]}
+// 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
 // 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }
 // 	}
 P._seq = ι=> Parser('seq',{
@@ -71,7 +71,7 @@ P.prototype.repeat = function(for_,greedy=true){↩ Parser('repeat',{
 	}) }
 P._regex = ι=> Parser('regex',{
 	ι,
-	_:λ*(in_,i){t←; !@.ι.flags.replace(/[muy]/g,'')||‽; if( t=@.ι.u.y.exec_at(in_,i) ) yield { i: i+t[0].length, ι: t.length===1? t[0] : t.slice() } },
+	_:λ*(in_,i){t←; !@.ι.flags.replace(/[muy]/g,'')||‽; if( t=@.ι.u.y.exec_at(in_,i) ) yield { i: i+t[0].‖, ι: t.‖===1? t[0] : t.slice() } },
 	})
 P._graph_thunk = f=> Parser('graph_thunk',{
 	ι:f,

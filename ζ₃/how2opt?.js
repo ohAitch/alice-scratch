@@ -18,8 +18,8 @@ price <i * 256>.map(ι=> chr(ι))
 	cpu: 256 * (1 + 1) simple instructions = 512
 	<str_cp * 256>
 price str.match(/[0-9a-z]/)
-	heap: 4 + (str.length * 2 bytes) words
-	cpu: str.length simple instructions
+	heap: 4 + (str.‖ * 2 bytes) words
+	cpu: str.‖ simple instructions
 	<match result>
 price <str_cp * 256>.filter(ι=> ι.match(/[0-9a-z]/))
 	heap: 0x100 + 1 words = 257

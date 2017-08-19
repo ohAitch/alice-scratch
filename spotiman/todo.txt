@@ -11,7 +11,7 @@ think about that and figure out what we want to do with this
 			is:local
 			[playlist]
 			]
-	> 	aaaaaa tracks.map(λ(v){v=v._.clone();v.tags=v.tags._.without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.length > 1}).map(λ(v){↩ [v.name, …v.tags].join('    ')})
+	> 	aaaaaa tracks.map(λ(v){v=v._.clone();v.tags=v.tags._.without('p.i.l.t.'); ↩v}).filter(λ(v){↩ v.tags.‖ > 1}).map(λ(v){↩ [v.name, …v.tags].join('    ')})
 	> 	i want to say:
 	> 		# god i don't know. i'm sad.
 	> 		tracks where createTime * 0 group max size > 1
@@ -25,3 +25,5 @@ think about that and figure out what we want to do with this
 	>			for playlists, tracks order:date uniq!:id
 
 rename to metaspotify?
+
+split playlist by is_✓

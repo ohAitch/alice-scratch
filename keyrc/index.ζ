@@ -32,12 +32,12 @@ builtin_keys ← parse_boards0(multiline`
 	└──────────────────────────────┘
 	`)[0].keys._.flatten(true)
 parse_boards ← λ(ι){
-	ι ← ι.mapcat(parse_boards0)
-	ι.filter(ι=> ι.keys.length === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
+	ι ← ι.map…(parse_boards0)
+	ι.filter(ι=> ι.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
 	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(true) })
 	ι.forEach(λ(ι){ ι.keys = ι.keys.map(ι=> Object.hasOwnProperty(macros,ι)? macros[ι] : ι) })
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
-	ι = ι.mapcat(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
+	ι = ι.map…(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 	↩ ι.map(ι=> M(…ι)) }
 keycodes ← _(parse_boards([multiline`
 	┌──────────────────────────────┐
@@ -78,9 +78,9 @@ show_private_xml ← λ(mappings){t←;
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
 			[md,ky] ← split_with(/FnF.|F.|.[LR]|./g.λ(ι), Mod)
-			if (md.length === 1 && ky.length === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
-			if (!{1:1,2:1}[ky.length]) ‽(APP+' invalid keystring: '+util.inspect(ι))
-			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.length], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
+			if (md.‖ === 1 && ky.‖ === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
+			if (!{1:1,2:1}[ky.‖]) ‽(APP+' invalid keystring: '+util.inspect(ι))
+			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.‖], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← ι=>{ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← ι=>{t←; ↩0,
 			(t=/^\] ([^]*)$/.λ(ι))? compile_keystring(t[1]).ι :
@@ -145,8 +145,8 @@ module.exports.KEY_once = λ(trigger,f,…a){
 	}
 module.exports.robot_key_tap = λ(ι){t←; c←;
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
-	;[…c].∪([]).size===c.length || ‽
-	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.length : true)){
+	;[…c].∪([]).‖===c.‖ || ‽
+	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : true)){
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
 		osaᵥ`system events: key code ${[,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}

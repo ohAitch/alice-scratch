@@ -11,7 +11,7 @@ APP ← '[φΔs]'
 
 log2 ← (…a)=> φ`/tmp/log_φΔs.txt`.text += [APP,…a].join(' ')+'\n'
 
-pad ← (ι,s)=> ι+s.slice(ι.length)
+pad ← (ι,s)=> ι+s.slice(ι.‖)
 fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩ }
 	fsʷ._events[fl] || chokidar.watch(fl,{ignoreInitial:true,alwaysStat:true})

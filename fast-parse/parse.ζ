@@ -52,7 +52,7 @@ P ← require('./mainβ')
 			if (!rep) ↩ ι
 			for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (λ(){ [ˣ,a,two,b] ← ι; ↩ [a|0,b? b|0 : two? ∞ : a|0] })()
 			↩ R({ ι, for:for_(rep[0]), greedy:!rep[1], }).+=`#repeat` })
-		Infix ← Postfix.*?.R`#seq`.sep_by('|').?.map(ι=> ι.length===1? ι[0] : R`#alt ${ι}` )
+		Infix ← Postfix.*?.R`#seq`.sep_by('|').?.map(ι=> ι.‖===1? ι[0] : R`#alt ${ι}` )
 		Regex ← Infix
 		↩ Regex })()
 	parse_regex ← ι=>{ flags ← ι.flags||'u'; ι = ι.source||ι
@@ -78,11 +78,11 @@ P ← require('./mainβ')
 			is_null ← ι=> Tstr(ι)? false : ( (ι.≈`#alt` || ι.≈`#seq`) && ι.ι.every(is_null) ) || ( ι.≈`#not` && is_bottom(ι.ι) )
 			is_bottom ← ι=> Tstr(ι)? false : ( ι.≈`#alt` && ι.ι.every(is_bottom) ) || ( ι.≈`#seq` && ι.ι.some(is_bottom) ) || ( ι.≈`#not` && is_null(ι.ι) )
 			if( ι.≈`#seq` ){
-				ι = change({ ι: ι.ι.mapcat(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] ) }, _.isEqual)
-				if (ι.ι.length===1) ↩ ι.ι[0]
+				ι = change({ ι: ι.ι.map…(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] ) }, _.isEqual)
+				if (ι.ι.‖===1) ↩ ι.ι[0]
 				}
 			if( !skip_e2rbm ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_e2rbm = true; r = $(r); skip_e2rbm = false; ↩ r } })
-			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.length ) ↩ $(/(?:)/u)
+			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
 		_(ι) <- ({version})
@@ -93,7 +93,7 @@ P ← require('./mainβ')
 	_(t).map(ι=> _(ι) <- ({version}) )
 	_(exports) <- (t)
 
-	if( !module.parent ) [
+	if_main_do(()=>{ [
 		/(?:(|))/u,
 		/(|)/u,
 
@@ -111,5 +111,6 @@ P ← require('./mainβ')
 		/[\D]/u,
 		/[^\D]/u,
 		].forEach(ι=> cn.log('test:parse_regex',ι,'=',normalize_to_axioms_regex(parse_regex(ι))))
+		})
 
 	})()

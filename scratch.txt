@@ -44,8 +44,8 @@ gen2fn ← f=>{ t ← f(); ↩ ()=> t.next().value }
 namegen ← gen2fn(λ*(){
 	long ← 'bekas cahlo caris cekla dedna dekik emiak eseik gazok gihza girim gumlu halbo hanka henuh kadut kagzi kakki kamor kehul kisar kizak kofur kohig lopra mesat mesip mezid motka nahso nalic nirsu omiac radil ratis repgi resra rukan siral sorzo tarak tilke zalsi zehaz zekhu zeluz zephu zifin zirez zohip zokmi zonri zusci'.split(' ')
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
-	short = short.mapcat(ι=> 10..map(i=> ι+' '+i))._.shuffle()
-	to ← round(long.length/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
+	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
+	to ← round(long.‖/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
@@ -69,7 +69,7 @@ $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] 
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
 -------------------------------- de-duplication --------------------------------
-φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.length > 1)
+φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.‖ > 1)
 
 ------------------------------ python data science -----------------------------
 import matplotlib.pyplot as plt
@@ -96,7 +96,7 @@ T ← 10; i←0; (λ(){sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].
 sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0,view.size()),${ι})`
 
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
-braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].length;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
+braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = new Buffer((ι.X*ι.Y).map(λ(){↩ random()<0.5 ?1:0})); ↩ ι} // 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
@@ -118,7 +118,7 @@ life ← λ(ι){
 ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
 --------------------------------------------------------------------------------
-bit_reverse = λ(length,ι){r ← 0; for (i←0;i<length;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
+bit_reverse = λ(L,ι){r ← 0; for (i←0;i<L;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
 to_binary_LE ← ι=> […ι].map(ι=> ('00000000'+ι.toString(2)).slice(-8).split('').reverse().join('')).join('')
 
 ----------------------------------- entities -----------------------------------
@@ -133,7 +133,7 @@ invert_specific ← f=> fx=>{ t ← 0; while (f(t) > fx) t+=0.01; ↩ t }
 
 ------------------------ fun with fraction approximation -----------------------
 wu ← npm`wu@2.1.0`
-Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.length), f(ι,i,l) )) }
+Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.‖), f(ι,i,l) )) }
 gcd ← (a,b)=> b>0? gcd(b, a%b) : a
 reduced ← (a,b)=>{ t ← gcd(a,b); ↩ [a/t,b/t] }
 bits ← ι=> log2(ι[0]*ι[1])
@@ -230,7 +230,7 @@ http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
 Zgoogle_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.length < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>

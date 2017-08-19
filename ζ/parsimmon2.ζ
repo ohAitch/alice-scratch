@@ -11,27 +11,27 @@ __lazy ← ι=> P2({
 __match_string ← ι=> P2({
 	type:'match_string',
 	ι,
-	_(stream,i){ head ← stream.slice(i,i+@.ι.length); ↩ head===@.ι? make_win(i+@.ι.length,head) : make_lose(i,@.ι) },
+	_(stream,i){ head ← stream.slice(i,i+@.ι.‖); ↩ head===@.ι? make_win(i+@.ι.‖,head) : make_lose(i,@.ι) },
 	})
 __match ← (ι,group)=> P2({
 	type:'match',
 	re: RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y'),
 	group,
-	_(stream,i){ t ← @.re.exec_at(stream,i); ↩ t && !(t[@.group]===null||t[@.group]===undefined)? make_win(i+t[0].length, t[@.group]) : make_lose(i,@.re+'') },
+	_(stream,i){ t ← @.re.exec_at(stream,i); ↩ t && !(t[@.group]===null||t[@.group]===undefined)? make_win(i+t[0].‖, t[@.group]) : make_lose(i,@.re+'') },
 	})
 __seq ← ps=> P2({
 	type:'seq',
 	ps,
 	_(stream,i){r←;
 		accum ← []
-		for (j←0;j<@.ps.length;j++){p←@.ps[j];  r = merge_replies(p._(stream,i), r); if (!r.status) ↩ r; accum.push(r.value); i = r.index  }
+		for (j←0;j<@.ps.‖;j++){p←@.ps[j];  r = merge_replies(p._(stream,i), r); if (!r.status) ↩ r; accum.push(r.value); i = r.index  }
 		↩ merge_replies(make_win(i,accum), r) },
 	})
 __alt ← ps=> P2({
 	type:'alt',
 	ps,
 	_(stream,i){r←;
-		for (j←0;j<@.ps.length;j++){p←@.ps[j];  r = merge_replies(p._(stream,i), r); if (r.status) ↩ r  }
+		for (j←0;j<@.ps.‖;j++){p←@.ps[j];  r = merge_replies(p._(stream,i), r); if (r.status) ↩ r  }
 		↩ r },
 	})
 __times ← (p,min,max)=> P2({
@@ -64,7 +64,7 @@ __map_js ← (p,f)=> P2({ type:'map_js', p, f, _(stream,i){ r ← @.p._(stream,i
 __chain ← (p,f)=> P2({ type:'chain', p, f, _(stream,i){ r ← @.p._(stream,i); ↩ !r.status? r : merge_replies(@.f(r.value)._(stream,r.index), r) }, })
 __of ← ι=> P2({ type:'of', ι, _(stream,i){↩ make_win(i,@.ι) }, })
 __fail ← expected=> P2({ type:'fail', expected, _(stream,i){↩ make_lose(i,@.expected) }, })
-__eof ← ()=> P2({ type:'eof', _(stream,i){↩ i < stream.length? make_lose(i,'EOF') : make_win(i,null) }, })
+__eof ← ()=> P2({ type:'eof', _(stream,i){↩ i < stream.‖? make_lose(i,'EOF') : make_win(i,null) }, })
 __index ← ()=> P2({ type:'index', _(stream,i){↩ make_win(i,make_line_col_index(stream,i)) }, })
 
 // issue: makes parser not reentrant, as perf optimization
@@ -75,7 +75,7 @@ P ← (ι,…ιs)⇒
 	: is_template([ι,…ιs])? (()=>{
 		ι = easy_template(ι=>ι)(ι,…ιs)
 		i ← ι.map((ι,i)=>[ι,i]).filter(([ι,i])=>Tarr(ι)).map(([ι,i])=>i)
-		↩ P(ι.map(ι=> Tarr(ι)?ι[0]:ι)).map(ι=> i.length===1? ι[i[0]] : i.map(i=> ι[i]) )
+		↩ P(ι.map(ι=> Tarr(ι)?ι[0]:ι)).map(ι=> i.‖===1? ι[i[0]] : i.map(i=> ι[i]) )
 		})()
 	: Tfun(ι)? __lazy(ι)
 	: Tstr(ι)? __match_string(ι)
@@ -121,7 +121,7 @@ make_lose ← (index,expected)⇒ { status:false, index:-1, value:null, furthest
 
 P.seq = (…ps)=> __seq(ps.map(P.X))
 
-alt ← P.alt = (…ps)=>{ ps = ps.map(P.X); ps.length || ‽; ↩ __alt(ps) }
+alt ← P.alt = (…ps)=>{ ps = ps.map(P.X); ps.‖ || ‽; ↩ __alt(ps) }
 
 Parser.prototype.many = λ(){↩ @.times(0,∞) }
 Parser.prototype.times = λ(min,max){ if (arguments.length < 2) max = min; Tnum(min) || ‽; Tnum(max) || ‽; ↩ __times(@,min,max) }
@@ -145,8 +145,8 @@ merge_replies ← (r,last)=>{
 
 // Returns the sorted set union of two arrays of strings. Note that if both arrays are empty, it simply returns the first array, and if exactly one array is empty, it returns the other one unsorted. This is safe because expectation arrays always start as [] or [x], so as long as we merge with this function, we know they stay in sorted order.
 unsafe_union ← (xs,ys)=>{
-	xL ← xs.length
-	yL ← ys.length
+	xL ← xs.‖
+	yL ← ys.‖
 	if (xL===0) ↩ ys; else if (yL===0) ↩ xs
 	r ← {}
 	for (i ← 0; i < xL; i++) r[xs[i]] = true
@@ -154,11 +154,11 @@ unsafe_union ← (xs,ys)=>{
 	↩ _.keys(r).sort() }
 
 P.format_error = (stream,error)=>{
-	t ← error.expected; ex ← t.length===1? t[0] : 'one of '+t.join(', ')
+	t ← error.expected; ex ← t.‖===1? t[0] : 'one of '+t.join(', ')
 	index ← error.index; i ← index.offset
 	prefix ← (i > 0 ? "'..." : "'")
-	suffix ← (stream.length - i > 12 ? "...'" : "'")
-	if (i===stream.length) ↩ ', got the end of the stream'
+	suffix ← (stream.‖ - i > 12 ? "...'" : "'")
+	if (i===stream.‖) ↩ ', got the end of the stream'
 	↩ 'expected '+ex+' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix }
 
 seq_map ← P.seq_map = (…a)=>{ f ← a[-1]; a = a.slice(0,-1); Tfun(f) || ‽; ↩ P(a).map(ι=> f(…ι)) }
@@ -182,19 +182,19 @@ Parser.prototype.mark = λ(){↩ seq_map(index,@,index,(start,value,end)⇒ { st
 
 P.of = __of
 fail ← P.fail = __fail
-//X P.any = p_wrap((stream,i)=> i >= stream.length? make_lose(i,'any character') : make_win(i+1, stream[i]) )
-//X P.all = p_wrap((stream,i)=> make_win(stream.length, stream.slice(i)) )
+//X P.any = p_wrap((stream,i)=> i >= stream.‖? make_lose(i,'any character') : make_win(i+1, stream[i]) )
+//X P.all = p_wrap((stream,i)=> make_win(stream.‖, stream.slice(i)) )
 
 //X test ← P.test = test=>( Tfun(test) || ‽,
-//X   p_wrap((stream,i)=> i < stream.length && test(stream[i])? make_win(i+1,stream[i]) : make_lose(i,'a character matching '+test) )
+//X   p_wrap((stream,i)=> i < stream.‖ && test(stream[i])? make_win(i+1,stream[i]) : make_lose(i,'a character matching '+test) )
 //X   )
 //X P.one_of = s=> test(ch=> s.indexOf(ch) >= 0 )
 //X P.none_of = s=> test(ch=> s.indexOf(ch) < 0 )
 //X P.take_while = test=>( Tfun(test) || ‽,
-//X   p_wrap((stream,i)=>{ j ← i; while (j < stream.length && test(stream[j])) j++; ↩ make_win(j,stream.slice(i,j)) })
+//X   p_wrap((stream,i)=>{ j ← i; while (j < stream.‖ && test(stream[j])) j++; ↩ make_win(j,stream.slice(i,j)) })
 //X   )
 
-make_line_col_index ← (stream,i)=>{ lines ← stream.slice(0,i).split('\n'); ↩ { offset:i, line:lines.length, column:lines[-1].length+1, } }
+make_line_col_index ← (stream,i)=>{ lines ← stream.slice(0,i).split('\n'); ↩ { offset:i, line:lines.‖, column:lines[-1].‖+1, } }
 
 index ← P.index = __index()
 
