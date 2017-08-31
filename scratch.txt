@@ -214,10 +214,6 @@ spotify_song ← poll(()=> osaᵥ`spotify: {artist,album,name} of current track`
 ----------------------- coding things that should be easy ----------------------
 wait for beep then if it was win send keyboard input
 
----------------------------- i would like to make a ----------------------------
-⇪ command console
-http://www.hammerspoon.org/docs/hs.chooser.html would be useful
-
 ------ neat chrome apis ------
 http://developer.chrome.com/extensions/accessibilityFeatures
 http://developer.chrome.com/extensions/debugger

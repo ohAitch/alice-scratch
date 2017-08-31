@@ -70,6 +70,7 @@
 ⇧⌥q  cmd.insert_snippet({ "contents":"ℚ" })
 ⇧⌥r  cmd.insert_snippet({ "contents":"ℝ" })
 ⇧⌥s  cmd.insert_snippet({ "contents":"‖" })
+⌥s  cmd.insert_snippet({ "contents":"⚓" })
 ⇧⌥u  cmd.insert_snippet({ "contents":"∩" })
 ⇧⌥x  cmd.insert_snippet({ "contents":"ˣ" })
 ⇧⌥z  cmd.insert_snippet({ "contents":"ℤ" })

@@ -10,12 +10,9 @@ operator precedence defaults you can define how you want, but also define
 known legible operator precedence
 and auto insert parens into the code when the code is not known to be legible
 
-i would like this syntax: […λ*(){ a ← ()=> yield* [5]; a(); }()] = […λ*(){ yield* [5] }()]
-
-i would like a bit more than just syntax here: Stephen Wolfram's Introduction to the Wolfram Language http://youtu.be/_P9HqHVPeik#t=1m02.5s
-
-
 wolfram language neat things
+not sure if actually neat but, here they are
+used them as inspiration for [ map… ]
 	f[x]         f(x)
 	f @ x        f(x)
 	x // f       f(x)

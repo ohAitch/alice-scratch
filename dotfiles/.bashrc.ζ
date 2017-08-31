@@ -10,15 +10,9 @@ E.__prompt = (E,history_1)=>{t←; E ← E |0
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
 	fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
-	# bind @[process sh`$$`] watch(φ.cwd)
-	# bind( @[process sh`$$`], watch([#Q φ.cwd #Q]) )
-	# http://docs-next.witheve.com/v0.2/handbook/bind/
-	# parse_bash('$$')
-
-	# issues with sh inline
-	# sh has statement vs expressions
-
-
+	# ideal:
+	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
+	# t ← bind( D(sh`$$`), [#Q φ.cwd #Q], { 'ℍ.‖':2 }).ℍ; t[0]!==t[1] && out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
 	last_cwd ← slot_persist('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	postrun('hash -r')
 	}

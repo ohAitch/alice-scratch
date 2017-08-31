@@ -44,3 +44,11 @@ warn: @user get_attention_on <days
 info: encode history with an ontology of the first n high-level bits of the program's architecture
 verb: encode history with an ontology of all of the major actions taken by the program
 sill: encode history with an ontology of all of the program's key data
+
+
+
+@alice
+@local dataflow
+@local actions
+
+@alice i need to get <this> into <type>. help?

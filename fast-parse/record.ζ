@@ -2,8 +2,9 @@
 
 Tagged ← λ(){ @.tag = new Set() }
 Tagged.prototype.inspect = λ(d,opt){
-	ks ← (…a)=> _(@).keys().sort()._.isEqual(a.sort())
-	↩ (Tstr(@.tag)? [@.tag] : @.tag).map(ι=> opt.stylize('#'+ι,'regexp')).join('')+( ks('tag')? '' : ' '+util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag') ,opt) ) }
+	ks ← (…a)=> _.isEqual( new Set(_(@).keys()).-(['inspect']), new Set(a) )
+	↩ (Tstr(@.tag)? [@.tag] : @.tag).map(ι=> opt.stylize('#'+ι,'regexp')).join('')
+		+( ks('tag')? '' : ' '+util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag','inspect') ,opt) ) }
 Tagged.prototype.≈  = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; ↩ @.tag.has(ι.replace(/^#/,'')) }
 Tagged.prototype.+= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.add(ι.replace(/^#/,'')); ↩ @ }
 Tagged.prototype.-= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.delete(ι.replace(/^#/,'')); ↩ @ }

@@ -1,19 +1,20 @@
-// ---------------------------------- util ---------------------------------- //
-proto_assign ← require_proto_assign()()
-proto_assign('Socket',Socket=> Socket.prototype.inspect = (d,opt)=> opt.stylize('<socket>','special') )
+#################################### prelude ###################################
+patch_Socket ← ι=> _(Object.getPrototypeOf(ι) <- ({
+	,inspect(d,opt){↩ opt.stylize('<socket>','special') }
+	})
 
-// ---------------------------------- main ---------------------------------- //
+##################################### main #####################################
 express ← require('express')
 
 server ← express()
-	.use((req,res,next)=>{ res.header('Access-Control-Allow-Origin','*').header('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept'); next() }) // enable CORS
+	.use((req,res,next)=>{ res.header('Access-Control-Allow-Origin','*').header('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept'); next() }) # enable CORS
 	.use(express.static('public'))
 	.get('/',(req,res)=>{ res.sendFile(__dirname+'/views/index.html') })
 	.listen(65330,()=> cn.log('Your app is listening on port '+server.address().port) )
 
 io ← require('socket.io')(server)
 
-io.on('connection',client=>{ proto_assign.declare(client)
+io.on('connection',client=>{ patch_Socket(client)
 	clients_add({ name:random_id(10), socket:client, addrs:[], connected:true })
 	cl ← clients_by_socket.get(client)
 	cl.socket
@@ -42,4 +43,4 @@ to_tell_about__add ← (a,b)=>{t←; ( to_tell_about.get(a) || (to_tell_about.se
 clients_add ← ι=>{ clients.add(ι); clients_by_socket.set(ι.socket,ι); clients_by_name.set(ι.name,ι) }
 clients_delete ← ι=>{ clients.delete(ι); clients_by_socket.delete(ι.socket); clients_by_name.delete(ι.name); to_tell_about.delete(ι); […to_tell_about.values()].forEach(bs=> bs.delete(ι) ) }
 
-// make sure it's wss
+# make sure it's wss

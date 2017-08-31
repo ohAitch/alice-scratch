@@ -328,7 +328,7 @@ contexts:
         - match: \*/
           scope: punctuation.definition.comment.js
           pop: true
-    - match: '//|#[\s#]'
+    - match: '//|#([ \t#]|$)'
       scope: punctuation.definition.comment.js
       push:
         - meta_scope: comment.line.double-slash.js

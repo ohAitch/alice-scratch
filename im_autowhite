@@ -17,23 +17,23 @@ quantumrange ← shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+''|0
 get_channel_mean ← ι=> +(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'') / quantumrange
 get_average ← (a,b)=>{ a = get_channel_mean(a); b = get_channel_mean(b); ↩ a===0 || b===0? 1 : a/b }
 
-tmp ← φ`/tmp/im_autowhite_${random_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); T ← tmp.φ.bind(tmp)
+tmp ← φ`/tmp/im_autowhite_${random_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',()=> shᵥ`rm -rf ${tmp} ;:`); τ ← tmp.φ.bind(tmp)
 
 main ← ι=>{
-	shᵥexit`convert -quiet ${ι} +repage ${T`A`}` ||( cn.log(APP,'error: file',ι,'is not an image'), ‽ )
-	cspace ← (shᵥ`identify -ping -verbose ${T`A`}`+'').re`Colorspace: (.+)`[1]
+	shᵥexit`convert -quiet ${ι} +repage ${τ`A`}` ||( cn.log(APP,'error: file',ι,'is not an image'), ‽ )
+	cspace ← (shᵥ`identify -ping -verbose ${τ`A`}`+'').re`Colorspace: (.+)`[1]
 	;(cspace==='sRGB' || cspace==='Grey') ||( cn.log(APP,'error: file',ι,'is not sRGB or Grey'), ‽ )
 
-	'RGB'._.map(ι=> shᵥ`convert ${T`A`} -channel ${ι} -separate ${T(ι)} ;:`)
+	'RGB'._.map(ι=> shᵥ`convert ${τ`A`} -channel ${ι} -separate ${τ(ι)} ;:`)
 
 	// get mask of top percent closest to white
 	// approximation using negated saturation and brightness channels multiplied
-	shᵥ`convert ${T`A`} -colorspace HSB -channel G -negate -channel GB -separate +channel -compose multiply -composite +channel -contrast-stretch 0,${percent}% -fill black +opaque white ${T`M`} ;:`
+	shᵥ`convert ${τ`A`} -colorspace HSB -channel G -negate -channel GB -separate +channel -compose multiply -composite +channel -contrast-stretch 0,${percent}% -fill black +opaque white ${τ`M`} ;:`
 
 	// use mask image to isolate user supplied percent of pixels closest to white
 	// then get ave graylevel for each channel of mask selected pixels
-	avgs ← 'RGB'._.map(ι=>( shᵥ`convert ${T(ι)} ${T`M`} -compose multiply -composite ${T`T`} ;:`, get_average(T`T`,T`M`) ))
-	shᵥ`convert ${T`A`} -color-matrix ${[1/avgs[0],0,0,0,1/avgs[1],0,0,0,1/avgs[2]].join(' ')} ${ι} ;:`
+	avgs ← 'RGB'._.map(ι=>( shᵥ`convert ${τ(ι)} ${τ`M`} -compose multiply -composite ${τ`T`} ;:`, get_average(τ`T`,τ`M`) ))
+	shᵥ`convert ${τ`A`} -color-matrix ${[1/avgs[0],0,0,0,1/avgs[1],0,0,0,1/avgs[2]].join(' ')} ${ι} ;:`
 	}
 
 APP ← '\x1b[34m[im_autowhite]\x1b[0m'

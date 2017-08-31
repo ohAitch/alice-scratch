@@ -146,7 +146,7 @@ if (!module.parent) ζ_main({compile:ι=> S_compile(parse(ι))})
 
 ‡ to get this to self-optimize, the ∄ fn needs to be told in advance how many times it''s going to get run? i think? so that it can know it has that much optimization budget?
 ‡ the concept here is, autoindexing
-diff(a,b :: φ)=>
+diff(a,b ∈ φ)=>
 	using ansi_color
 	if a,b are file:
 		full ← shᵥ`wdiff -n -w ${black.bg_red} -x ${reset} -y ${black.bg_green} -z ${reset} ${a} ${b} ;:` as lines * {ι,i}

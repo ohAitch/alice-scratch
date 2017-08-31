@@ -20,14 +20,14 @@ eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
 [[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
 
 ######################### prelude ### interactive mode #########################
-export PROMPT_COMMAND='__prompt $? "$(history 1)"'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
+export PROMPT_COMMAND='__prompt $? "$(history 1)" || PROMPT_COMMAND=pwd'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 l(){ ls -AG "$@"; }
 f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; } # ported to ‡; remove
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9
 …(){ eval "$(cat)"; }
-_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*'; &>/dev/null popd; } # for /
+_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*' --ignore 'package-lock.json'; &>/dev/null popd; } # for /
 /(){
 	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.archive{,/.sublime}}
 	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.archive}

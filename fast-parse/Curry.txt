@@ -1,6 +1,6 @@
 this is cute but idk if useful
 
-inverse :: (val -> val') -> (val' -> val)
+inverse ∈ (val -> val') -> (val' -> val)
 inverse fun val' | fun val =:= val' = val where val free
 
 type Expr = Sum
@@ -15,7 +15,7 @@ productToString (Product atom atoms) = atomToString atom ++ concatMap ((" * " ++
 atomToString (Num num)  = show num
 atomToString (Para sum) = "(" ++ sumToString sum ++ ")"
 
-parse :: String -> Expr
+parse ∈ String -> Expr
 parse = inverse toString
 > ◍ but this doesnt work, so we have to
 :set bfs

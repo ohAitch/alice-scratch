@@ -21,12 +21,12 @@ ctx ← λ(){
 			}else{
 				a.length===2 || ‽
 				[params,code] ← a
-				if (params.ι[0]._.isEqual(parse(`::`)) && params.ι[1].T==='list' && params.ι[1].ι[0]._.isEqual(parse(`,`)))
-					params.ι = params.ι[1].ι.slice(1).map(ι=>{ t ← parse(`(::)`); t.ι.push(ι,params.ι[2]); ↩ t })
+				if (params.ι[0]._.isEqual(parse(`∈`)) && params.ι[1].T==='list' && params.ι[1].ι[0]._.isEqual(parse(`,`)))
+					params.ι = params.ι[1].ι.slice(1).map(ι=>{ t ← parse(`(∈)`); t.ι.push(ι,params.ι[2]); ↩ t })
 				↩ Value({call:λ(ctx,a){
 					ctx.stack.push({ fn:@, vars:_.zip(params.ι,a).map(([p,ι])=>
 						//! oh man, this doesn't combine them at all
-						p.T==='ident'? {name:p.ι, ι} :( (p.T==='list' && p.ι[0]._.isEqual(parse(`::`))) || ‽, {T:'var', name:p.ι[1].ι, ι, type:p.ι[2]} )
+						p.T==='ident'? {name:p.ι, ι} :( (p.T==='list' && p.ι[0]._.isEqual(parse(`∈`))) || ‽, {T:'var', name:p.ι[1].ι, ι, type:p.ι[2]} )
 						)._.indexBy('name') })
 					//! that is a bit of a weird format, having name diverge from ident
 					//! i guess there's a lot of weird
@@ -62,7 +62,7 @@ ctx ← λ(){
 // 		(as ⧫ lines)
 // 		)
 eval_(ctx(),parse(`(;
-(λ diff_dirs (:: (, a b) φ) (;
+(λ diff_dirs (∈ (, a b) φ) (;
 	// (← (, A B) (>> (, a b) flat))
 	// (list b b a)
 	(flat a)
