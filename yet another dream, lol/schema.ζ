@@ -1,0 +1,176 @@
+/*#######################*/ global['try #1'] = _.once(()=>{ ######################
+parse_bash(φ`~/.bashrc`.text).then(ι=> global.train = ι)
+
+schema2 = ι=>{ anon_7268v←;
+	# sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b)
+	# 	bk.-(ak).forEach(k=> a[k] = b[k])
+	# 	ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k])
+	# 	↩ a }
+
+	schemas ← (()=>{ # uniq by ≈.schema , index by .ι
+		as_schema ← ι=> _(ι).mapObject(ι⇒
+			: T.boolean(ι)? true
+			: Tstr(ι)? ''
+			: Tnum(ι)? 0
+			: schemas.get_ι(ι)? schemas.get_ι(ι).id : ‽(ι) )
+		sch_to_data ← new Map()
+		ι_to_sch ← new Map()
+		↩ {
+			,get_ι: ι=> sch_to_data.get(ι_to_sch.get(ι))
+			,add_ι: ι=>{
+				schema ← as_schema(ι)
+				sch_k ← simple_hash_str(schema)
+				ι_to_sch.set(ι,sch_k)
+				sch_to_data.has(sch_k) || sch_to_data.set(sch_k,{ ι:schema, id:'#'+b36(fromUInt32BE([#Q (anon_7268v||( anon_7268v = [0] )).0 #Q].ι++)), })
+				}
+			,map: f=> […sch_to_data.values()].map(f)
+			# ,simplify: ()=>{
+			# 	...
+			# 	}
+			,show(){
+				d_t_s ← sch_to_data.⁻¹declare_uniq
+				s_t_ι ← ι_to_sch.⁻¹
+				↩ @.map(ι=> JSON_pretty(ι.ι)+' '+s_t_ι.get(d_t_s.get(ι)).‖+' '+ι.id ) }
+			} })()
+
+	walk(ι,ι=> Tprim(ι) || schemas.add_ι(ι) )
+
+	↩ schemas.show() }
+
+if( global.train ) sb.tab.push(schema2(train))
+
+# summarizes ~1200 objects with ~500 types
+# could try to simplify
+/*################################*/ }); /* ####################################
+# make pseudocode instead
+
+node ← js.object
+	using: node -> schema ← _(ι).mapObject(ι⇒
+		: T.boolean(ι)? true
+		: Tstr(ι)? ''
+		: Tnum(ι)? 0
+		: @.as.name(ι) )
+schema
+	using ≡ ← simple_hash_str
+	using [node -> schema]⁻¹
+schema <-> name : name = `#${[schema age index] as base 36}`
+
+show(){↩ schemas(λ(){↩ for @.schema: (JSON_pretty(ι) @.as.node(ι).‖ @.as.name(ι)).join(' ') }) },
+
+# simplify
+node -> schema ← for range: if ι.as.(node).‖ = 1 and ι.[* - T.prim]/and*.as.(node).‖ = 1: ι.[* - T.prim] ← *.as.schema
+
+;(async ()=>{
+	train ← await parse_bash(φ`~/.bashrc`.text)
+	sb.tab.push( schemas(λ(){↩ @(train).as.schema }) )
+	})()
+
+###################### */ global['try #2'] = _.once(()=>{ ######################
+global['support #1']()
+# compile pseudocode to js_lang
+
+Type('node',{
+	,'∈':Object
+	})
+Type('schema',{
+	,'≡':simple_hash_str
+	# ,representative(){ _(@).max(ι=> ι.precedence) }
+	,show(){↩ [ JSON_pretty(@), @.as('(node)').‖, @.as.name, ].join(' ') }
+	})
+node.->.schema = λ(ι){↩ _(ι).mapObject(ι⇒
+	: T.boolean(ι)? true
+	: Tstr(ι)? ''
+	: Tnum(ι)? 0
+	: @(ι).as.name ) },
+schema.<->.name = λ(ι){↩ `#${age(ι).index∈(age(@)).as.base(36)}` }
+
+# simplify
+# the way that all these concepts interlock is. fucky.
+# im too sleep to know how to fix this.
+# u do it
+
+schema.≡.close_over!(ι=>{
+
+
+	q_is⁻¹ ← ι=> ι.as('(node)').‖===1
+	names ← ι.filter(ι=> ι.is.name)
+
+	# should be:
+	# if your children names are contained by only one schema:
+	# 	fold them into you
+	# good skill!
+
+	↩ q_is⁻¹(ι) && names.map(ι=> q_is⁻¹)./(and)
+		? _({}) <- ( ι, names.map(ι=> ι.as.schema) )
+		: ι } )
+
+;(async ()=>{
+	sb.tab.push( node(await parse_bash(φ`~/.bashrc`.text)).as.schema )
+	})()
+
+/*################*/ }); global['support #1'] = _.once(()=>{ ###################
+and ← (a,b)=> a && b
+
+# missing:
+./
+.map
+.filter
+
+.is.typename
+.as.typename
+.as('(typename)')
+Type
+	Type(typename,{
+		'∈':
+		[typename.->.typename]:λ(ι){↩ ...}
+			@(ι).as.typename
+		'≡':
+			.close_over!
+		[Any]:
+		show:λ(){↩ ""}
+		})
+		.->
+			.⁻¹
+		.<->
+Any
+	[Any]:
+.‖
+	(Array|Set|Map|etc).prototype.‖
+age
+	age(ι ∈ typename)
+		.index∈
+	age(typename)
+		.as
+			.base(int)
+
+/*##############################*/ }) /* note ##################################
+# ‡ alice, expand schema to handle parse_bash output
+
+# sc_merge ← λ(a,b){ak ← _.keys(a); bk ← _.keys(b)
+# 	bk.-(ak).forEach(k=> a[k] = b[k])
+# 	ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k])
+# 	↩ a }
+
+it looks like you're trying to write a clustering algorithm on the semantic structure of arbitrary json documents
+why are you doing this.
+i mean it sounds cool but isnt this a major addition at this stage?
+what does it do?
+
+in other words, you're trying to write a program that makes guesses at how to parse arbitrary json you found on the internet
+why
+this is.
+
+parser inference = type inference
+
+but you dont know much about inference really
+
+
+
+so if i am?
+
+this is a, um
+this is part of the obbbbject inspector html thing?
+huh
+maybe
+i also like schemas and i think this sort of work transfers
+

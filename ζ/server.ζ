@@ -20,17 +20,18 @@ diff ← (a,b)=>{r←; ↩0?0
 	↩ _.zip(start,a).map(a=> diff(…a)).filter(ι=> ι.‖).map(ι⇒ { Δ:ι }) }
 
 ###################################### lib #####################################
-as_module ←  ι=> _(φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`) <- ({ι}) +''
+as_module ← ι=> _(φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`) <- ({ι}) +''
 eval_in_new_worker ← code=>{ t ← as_module(js`require(${__dirname})(global);`+code); ↩ require('child_process').fork(t,[],{silent:true}) }
+# the fork is equivalent to: child_process.spawn( process.execPath, […process.execArgv,t], { stdio:[…['pipe'].repeat(3),'ipc'] } )
 eval_in_worker ← (λ(){
 	🏷busy ← new Set(); 🏷free ← new Set()
-	process.once('exit',()=>{ […busy,…free].map(ι=> ι.kill()) })
+	♓_on_exits(()=>{ […busy,…free].map(ι=> ι.kill()) })
 	make ← ()=> eval_in_new_worker('('+λ(){ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
 		wait ← ()=> ♓_once_eval(ι=>{ try{ (0,eval)(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
 		wait()
-		♓.on('beforeExit',i=>{ ♓.send([['em_exit',i],['unbusy']]); ♓.exitCode = 0; wait() })
-		♓.on('exit',i=>{ ♓.send([['em_exit',i]]) })
+		♓.on('beforeExit',i=>{ ♓.send([['exit_',i],['unbusy']]); ♓.exitCode = 0; wait() })
+		♓_on_exits(i=>{ ♓.send([['exit_',i]]) })
 		}+')()')
 		.on('message',λ(ι){ ι.map(ι=> @.emit(…ι) ) })
 		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
@@ -50,8 +51,9 @@ procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+o
 
 ################################################################################
 if_main_do(()=>{
-	on_ready ← ()=>{        log('server ready'  ); shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
-	process.on('exit',()=>{ log('server exiting'); shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ` })
+	on_ready ← ()=>{ log('server ready'  ); shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
+	♓_on_exits(()=>{ log('server exiting'); shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ` })
+	# pretty sure there's a race condition in [ln -sf] and [#!/usr/bin/env node] which causes problems with ζλ calls right after a server.ζ reboot. the fix is getting ipc_shell to fallback itself
 	new net.Server()
 		.listen(+φ(__dirname).φ`PORT`.text.re`\d+`[0],'localhost',on_ready)
 		.on('connection',λ(socket){t←;
@@ -73,7 +75,7 @@ if_main_do(()=>{
 					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
 					{on,off} ← on_off()
 					;[1,2].map(i=> on(worker.stdio[i],'data',ι=> c_send(i+'',ι)) )
-					on(worker,'em_exit',λ(i){ c_send('X',i+''); ended = true; off() })
+					on(worker,'exit_',λ(i){ c_send('X',i+''); ended = true; off() })
 					# c_send('S')
 				break; case 'H': # not sure what this is for
 				break; case '0': # c_send('S'); worker.stdin.write(ι.ι)
