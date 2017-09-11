@@ -15,7 +15,7 @@ M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
 transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(ι=> ι.join('')).join('\n')
 
-macros ← {}
+macros ← {,}
 parse_boards0 ← ι=>
 	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,''])[1],
@@ -72,8 +72,8 @@ parse_keyrc ← λ(src){
 	↩ […tₐ, …tₑ].-eq(system) }
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
-	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
-	appdef ← ι=> appdefs[ι] = ->(ι)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
+	shells ← {,}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
+	appdef ← ι=> appdefs[ι] = ->(ι)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )); appdefs ← {,}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
@@ -111,8 +111,8 @@ show_private_xml ← λ(mappings){t←;
 		}} }
 
 // -------------------------------------------------------------------------- //
-regen ← (opt={})=>{
-	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …(φ`~/.keyrc.json`.json||{})._.values()])
+regen ← (opt={,})=>{
+	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …(φ`~/.keyrc.json`.json||{,})._.values()])
 	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι // file:/~/Library/Application%20Support/Karabiner/private.xml
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
@@ -139,7 +139,7 @@ regen ← (opt={})=>{
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
 	fi ← 'notsave.KEY_once_'+random_id(9)
-	db ← (φ`~/.keyrc.json`.json||{}); id ← random_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
+	db ← (φ`~/.keyrc.json`.json||{,}); id ← random_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
 	regen({minimal:true})
 	shᵥ`${KB} enable ${fi}`
 	}

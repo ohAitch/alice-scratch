@@ -46,7 +46,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
 	to ← round(long.‖/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
-	c ← {}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
+	c ← {,}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
 # # used up: alice0meta@gmail.com
@@ -58,7 +58,7 @@ tesseract ← npm`node-tesseract@0.2.7`
 
 -------------------------------- jquery ish misc -------------------------------
 $.on_view = f=> document.addEventListener('visibilitychange',()=> !document.hidden && f() )
-E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(null,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
+E.poll = λ(f,cb,time){ r←{,}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(null,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
@@ -266,7 +266,7 @@ def(E,'fi',()=>{
 			// this json needs lenient parsing (sigh)
 			t = t.replace(/,(?=\s*\])/g,'')
 			↩ JSON.parse(t) }
-		↩ def({},'ι',{ get, set(ι){ ‽ } })
+		↩ def({,},'ι',{ get, set(ι){ ‽ } })
 		}
 	↩ fi })
 
@@ -324,3 +324,6 @@ i shouldn't have to go through the filesystem to send files from web
 
 --------------- 2017-06-15 misc code things i'd like to have done --------------
 i'd really like earbud metadata
+
+-------------------------- i dont know what this does --------------------------
+;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(true) ) # sad fix

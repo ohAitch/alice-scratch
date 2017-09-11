@@ -51,7 +51,7 @@ sb_keyrc_to_sublime_keymap ← λ(from,to){
 	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
 		k ← compile_keys(ι[1])
 		cm ← ι[2]
-		t ← ι[3]; [a,t] ← t.re`^\)`? [undefined,t] : match_json_head(t); a||(a={}); t = t.replace(/^\) */,'')
+		t ← ι[3]; [a,t] ← t.re`^\)`? [undefined,t] : match_json_head(t); a||(a={,}); t = t.replace(/^\) */,'')
 		[cx,t] ← t.re`^@`? match_json_head(t.slice(1)) : [undefined,t]
 		t.trim()==='' || ‽
 		↩ {keys:[k], command:cm, args:a, context:cx}

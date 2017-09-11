@@ -148,7 +148,7 @@ var unsafe_union = (xs,ys)=>{
 	var xL = xs["‖"]
 	var yL = ys["‖"]
 	if (xL===0) return ys; else if (yL===0) return xs
-	var r = {}
+	var r = new O1()
 	for (var i = 0; i < xL; i++) r[xs[i]] = true
 	for (var i = 0; i < yL; i++) r[ys[i]] = true
 	return _.keys(r).sort() }

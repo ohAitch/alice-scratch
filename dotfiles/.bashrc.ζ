@@ -109,17 +109,18 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
 		;(build || package || run) || ‽
 
-		a ← ()=> build && shₐ2({fd:process.stdio})`cd ${project}; ${build}`
+		a ← ()=> build && shₐ2({stdio:process.stdio})`cd ${project}; ${build}`
 		b ← ()=>{if( package ){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
 			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )
-			shₐ2({fd:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
+			shₐ2({stdio:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
 			}}
-		c ← ()=> run && shₐ2({fd:process.stdio})`cd ${project}; ${run}`
+		c ← ()=> run && shₐ2({stdio:process.stdio})`cd ${project}; ${run}`
 
 		# sh⚓exit
-		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
+		# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
+		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
 		;(child_process_as_promise(a())||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
 		} }
 E.run_project.cant_pool = true
@@ -183,7 +184,7 @@ E.bookmarks = ι=>{
 # 	day_of_year ← ι=> ι.dayOfYear()-1
 # 	label_fmt ← ι=> ('...'+ι).slice(-3)
 
-# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
+# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {,}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
 
 # 	label_now ← ()=> label_fmt(day_of_year(moment()))
 # 	starts ← data.starts.map(ι=> moment.utc(ι))

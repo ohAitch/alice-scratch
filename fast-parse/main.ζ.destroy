@@ -26,5 +26,5 @@ test ← ()=> ζ_parse(in_); in_ ← φ`/tmp/foo`.text // φ`~/code/scratch/ζ/i
 // cn.log(pass?'pass ✓':'fail X')
 cn.log(js_file)
 // cn.log('perf',bench(test,{TH:3}))
-cn.log('perf',pretty_time_num(bench1(test) * (φ`~/code/scratch/ζ/index.ζ`.text.‖ / φ`/tmp/foo`.text.‖)))
+t ← bench1(test); t.ι *= φ`~/code/scratch/ζ/index.ζ`.text.‖ / φ`/tmp/foo`.text.‖; cn.log('perf',t)
 // cn.log('output',test())
