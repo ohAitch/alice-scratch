@@ -531,3 +531,58 @@ E.pixels = {
 		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
 	}
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+filesystem
+* paths
+* errors & handling
+* listening for events
+* streams (a few configurations of path and options)
+* symlinks
+* files as buffers as data structures
+* files, metadata of
+! by default don't believe in content-independent dir existence
+! by default don't believe in hard links
+‡ ∀ fs.*() either add a final cb param or add Sync to the name
+#path fs.realpath(path[, options])
+#path path.basename(path[, ext])
+#path path.dirname(path)
+#path path.extname(path)
+#path path.normalize(path)
+#path path.relative(from, to)
+#path path.resolve([path[, ...]])
+#symlink fs.readlink(path[, options])
+#symlink fs.symlink(target, path[, type])
+#file fs.rename(oldPath, newPath)
+#file fs.unlink(path)
+#file fs.open(path, flags[, mode])
+#file fs.close(fd)
+#file fs.fsync(fd)
+#file fs.fdatasync(fd)
+#file fs.read(fd, buffer, offset, length, position_in_file)
+#file fs.write(fd, buffer, offset, length, position_in_file)
+#file fs.ftruncate(fd, len)
+#metadata fs.access(path[, mode])
+#metadata fs.(|f|l)stat(f?fd:path)
+#metadata fs.(|f|l)chmod(f?fd:path, mode)
+#metadata fs.(|f|l)chown(f?fd:path, uid, gid)
+#metadata fs.(|f)utimes(f?fd:path, atime, mtime)
+#dir fs.mkdir(path[, mode])
+#dir fs.rmdir(path)
+#dir fs.readdir(path[, options])

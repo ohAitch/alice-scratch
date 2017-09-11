@@ -492,12 +492,15 @@ E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> 
 E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (λ(){ for (var k in ι) if (Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f); ↩ f(ι) })()
 E.search_obj = (ι,f)=>{ r←[]; walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)); ↩ r }
 E.search_graph = (ι,f)=>{ r←[]; walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)); ↩ r }
+# the right name for walk is going to be along the lines of
+# f /@ x       x.map(f)
+# f //@ x      postwalk(x,f) # MapAll
+# it could be a data structure that you can fmap over
 
 E.hrtime = λ(ι){ t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); ↩ t[0] + t[1]*1e-9 }
 E.Time = λ(ι){ r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι); r.toString = λ(){↩ util.inspect(@) }; ↩ r }
 fmt ← λ(a,b){ t ← @.__local? moment(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString(); t = t.slice(a,b); if (!@.__local && b > 10) t += 'Z'; ↩ t }
 assign_properties_in_E_informal({
-,'Date.prototype.inspect':λ(d,opts){↩ opts.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')}
 ,'Date.prototype.local':{get(){↩ _(new Date(@)) <- ({__local:true})}}
 ,'Date.prototype.i':{get(){↩ +@ / 1e3}}
 ,'Date.prototype.ym':      {get(){↩ fmt.call(@,0,'YYYY-MM'.‖)}}
@@ -1059,6 +1062,10 @@ assign_properties_in_E_informal({
 	: Number.isSafeInteger(ι)? ''+ι
 	: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
 	,'number') }
+,'Date.prototype.inspect':λ(d,opts){↩ opts.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')}
+# ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
+# ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
+# ,inspect(ˣ,opts){↩ opts.stylize('φ','special')+opts.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 })
 
 E.cn = { log:(…a)=> console.log(

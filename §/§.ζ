@@ -1,74 +1,5 @@
 #!/usr/bin/env ζ
-// ------- what we've learned ------- //
-// ast nodes need
-// 	type
-// 	ordered list of {abstraction-irrelevant token}s and {abstract node}s
-// 	ι.tok[ι.ι.op]
-// 	sub(ι,'op')
-// 	sub{ast nodes}, named in various ways
-// 	?maybe? other abstract data ?
-
-// AST ← (type,tokens,content)⇒ {T:type, tok:tokens}._.assign(content)
-// O ← ι⇒ {at:ι[0]}
-AST ← (type,rest)⇒ _({T:type}) <- (rest)
-
-// ------------------ ? macro evaluation & encoding to js ? ----------------- //
-
-// js_repr ← ι=>
-// 	Tnum(ι) || Tstr(ι) || T.RegExp(ι)? util.inspect(ι) :
-// 	Tarr(ι)? '['+ι.map(js_repr).join(', ')+']' :
-// 	Tfun(ι)? ι+'' :
-// 		‽('inspect:',ι)
-
-// is_stmt ← ι=> ι.T==='seq'? ι.ι.some(is_stmt) : ι.T.re`^stmt_`
-// ast_to_js←; C←; ast_to_js = C = (ι,top,t,par)=> // t,par: hack to get local variable
-// 	ι.is_macro__bad? js_repr(eval('('+C(ι.ι)+')')) :
-// 	ι.T==='void'? top? '' : ι.ι :
-// 	ι.T==='ident'? ι.ι :
-// 	ι.T==='number'? ι.ι :
-// 	ι.T==='regex'? '/'+ι.ι+'/' :
-// 	ι.T==='set'?
-// 		ι.ι.T==='regex'? C(ι.ι)+'.genex_0()' :
-// 			‽(ι) :
-// 	ι.T==='array'? '['+ι.ι.map(C.X).join(', ')+']' :
-// 	ι.T==='op'?
-// 		ι.A==='2 left' && ι.op==='÷'? C(ι.a,top)+' / '+C(ι.b) :
-// 		ι.A==='2 left' && ι.op==='*'? C(ι.a,top)+'.map('+C(ι.b)+')' :
-// 		// ι.A==='1 left'? C({T:'λ', params:[{T:'ident',ι:'a'}], code:{T:'seq',ι:[ {T:'stmt_var',name:{T:'ident',ι:'b'},ι:ι.ι} , {T:'op', A:'2 left', op:ι.op, a:{T:'ident',ι:'a'}, b:{T:'ident',ι:'b'}} ]}}) :
-// 		ι.A==='1 left'? C({T:'λ', params:[{T:'void',ι:'left'}], code:{T:'op', A:'2 left', op:ι.op, a:{T:'void',ι:'left'}, b:ι.ι} },top) :
-// 			‽(ι) :
-// 	ι.T==='λ'?
-// 		is_stmt(ι.code)?
-// 			'function('+ι.params.map(C.X).join(',')+'){'+C({T:'stmt_return', ι:ι.code})+'}' :
-// 		top && ι.params._.isEqual([{T:'void',ι:'left'}]) && ι.code.T==='op' && ι.code.a._.isEqual({T:'void',ι:'left'})?
-// 			C(ι.code,true) :
-// 			( par = ι.params.map(ι=> ι.T==='void'? _({}).assign(ι,{T:'ident'}) : ι), t = par.map(C.X).join(','), par.length===1 && par[0].T==='ident'? t : '('+t+')')+'=> '+C(ι.code) :
-// 	ι.T==='seq'? is_stmt(ι)? ι.ι.map(C.X).join('; ') : '('+ι.ι.map(C.X).join(', ')+')' :
-// 	ι.T==='stmt_var'? 'var '+C(ι.name)+' = '+C(ι.ι) :
-// 	ι.T==='stmt_return'?
-// 		ι.ι.T==='seq'?( ι.ι.ι[-1] = {T:'stmt_return', ι:ι.ι.ι[-1]}, C(ι.ι) ):
-// 		is_stmt(ι.ι)? ‽(ι) :
-// 			'return '+C(ι.ι) :
-// 		‽(ι)
-
-ast_to_S ← ι=>
-	Tstr(ι)? ι :
-	ι.T? (
-		ι.T===' '? [ι.a,ι.ι,ι.b] :
-		ι.T==='number'? [ι.ι] :
-		ι.T==='regex'? [ι.ι] :
-		ι.T==='op' && ι.A==='1 left'? [ι.op,ι.ι] :
-		ι.T==='op' && ι.A==='1 right'? [ι.ι,ι.op] :
-		//! shit, here we get to a part that breaks on a transformed AST
-		ι.T==='op' && ι.A==='2 left'? [ι.a,ι.op,ι.b] :
-		ι.T==='op' && ι.A==='2 right'? [ι.a,ι.op,ι.b] :
-		// ι.T==='macro?'
-		// ι.T==='set'
-		// ι.T==='op' && ι.A==='2 center'
-			ι.ι
-			).map(C).join('') :
-		‽(ι)
-C ← ast_to_S
+# @2017-09-11 gutted boring parts
 
 // ---------------------------------- parse --------------------------------- //
 P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
@@ -136,14 +67,6 @@ cn.log('pass')
 }
 
 // -------------------------------------------------------------------------- //
-S_compile ← (λ(){ C ← ι=> ‽
-	↩ ι=> '('+C(ι)+')(…a)' })()
-
-// -------------------------------------------------------------------------- //
-if (!module.parent) ζ_main({compile:ι=> S_compile(parse(ι))})
-
-‡ if i wanted to parse: ‡
-
 ‡ to get this to self-optimize, the ∄ fn needs to be told in advance how many times it''s going to get run? i think? so that it can know it has that much optimization budget?
 ‡ the concept here is, autoindexing
 diff(a,b ∈ φ)=>
@@ -158,11 +81,7 @@ diff(a,b ∈ φ)=>
 		[ B-A,green`+` , A-B,red`-` , A∩B∩same,grey`=` , A∩B-same,cyan`x` ] *… [l,t]=> l*{ι,t} sort by .ι * .t+' '+.ι as lines
 ‡ minus the file branch, expands to ‡
 
-fucking shit, it worked!
-
-‡ then i could go about a parse tree kind of like ‡
-‡ well, the naive version would be overcomplicated and poorly designed, but ... maybe it''s actually the good route, like, flexibility? ‡
-‡ no, right, i have to start over with imagining the program i''d rather have written; like, that up there is still way Literal ‡
+‡ i have to start over with imagining the program i''d rather have written; like, that up there is still way Literal ‡
 
 sep_by_or_end(ι,s)=> ι (s ι)* s?
 #function ident '(' structure ')' '=>' expr
@@ -180,9 +99,9 @@ sep_by_or_end(ι,s)=> ι (s ι)* s?
 #expr structure '←' expr
 #expr '{' sep_by_or_end(( ident (: expr)? ) ',') '}'
 #expr expr ' replace ' expr ' with ' expr
-lots more, very complicated
-the thing is i have a fairly complicated way of saying things!
-it's a mishmash of *all languages*
+# lots more, very complicated
+# the thing is i have a fairly complicated way of saying things!
+# it's a mishmash of *all languages*
 
 ‡ i wonder if i could mention the primary elements of it ‡
 
@@ -192,16 +111,16 @@ whitespace-clued precedence
 data structure atoms & structure atoms used for destructuring
 code sequence (stackless, stack-based); flow control; errors
 
-‡ i've tried that before. it never went anywhere. ‡
+# ‡ i've tried that before. it never went anywhere. ‡
 
-‡ 
+# ‡ 
 
-// -------------------------------------------------------------------------- //
-you were halfway into creating ORM(filesystem, js)
-you didn''t realize what you were really doing
-do the right thing
+# // -------------------------------------------------------------------------- //
+# you were halfway into creating ORM(filesystem, js)
+# you didn''t realize what you were really doing
+# do the right thing
 
-the right thing is an ORM built out of patterns? doesn't free you from working with the underlying layer; you have to implement patterns and understand pattern implementations; but does free you from having to remember it
+the right thing is an ORM built out of patterns? doesnt free you from working with the underlying layer; you have to implement patterns and understand pattern implementations; but does free you from having to remember it
 
 storage
 * persistent vs not
@@ -212,41 +131,3 @@ storage
 * many specific data structures
 * pseudostorage
 * exotic foul apis
-
-filesystem
-* paths
-* errors & handling
-* listening for events
-* streams (a few configurations of path and options)
-* symlinks
-* files as buffers as data structures
-* files, metadata of
-! by default don't believe in content-independent dir existence
-! by default don't believe in hard links
-‡ ∀ fs.*() either add a final cb param or add Sync to the name
-#path fs.realpath(path[, options])
-#path path.basename(path[, ext])
-#path path.dirname(path)
-#path path.extname(path)
-#path path.normalize(path)
-#path path.relative(from, to)
-#path path.resolve([path[, ...]])
-#symlink fs.readlink(path[, options])
-#symlink fs.symlink(target, path[, type])
-#file fs.rename(oldPath, newPath)
-#file fs.unlink(path)
-#file fs.open(path, flags[, mode])
-#file fs.close(fd)
-#file fs.fsync(fd)
-#file fs.fdatasync(fd)
-#file fs.read(fd, buffer, offset, length, position_in_file)
-#file fs.write(fd, buffer, offset, length, position_in_file)
-#file fs.ftruncate(fd, len)
-#metadata fs.access(path[, mode])
-#metadata fs.(|f|l)stat(f?fd:path)
-#metadata fs.(|f|l)chmod(f?fd:path, mode)
-#metadata fs.(|f|l)chown(f?fd:path, uid, gid)
-#metadata fs.(|f)utimes(f?fd:path, atime, mtime)
-#dir fs.mkdir(path[, mode])
-#dir fs.rmdir(path)
-#dir fs.readdir(path[, options])
