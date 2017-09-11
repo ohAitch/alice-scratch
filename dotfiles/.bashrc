@@ -1,6 +1,6 @@
 ###### for external use ######
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
-alias Z=ζ # ! temporary while terminal unicode is broken
+alias Z=ζ; alias Zlog=ζlog # ! temporary while terminal unicode is broken
 
 # in theory if ζ isn't up this should wait a bit
 eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
@@ -27,7 +27,7 @@ l(){ ls -AG "$@"; }
 f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; } # ported to ‡; remove
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9
 …(){ eval "$(cat)"; }
-_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*' --ignore 'package-lock.json'; &>/dev/null popd; } # for /
+_ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag --ignore '*.min.*' --ignore 'package-lock.json' "$@"; &>/dev/null popd; } # for /
 /(){
 	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.archive{,/.sublime}}
 	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.archive}
@@ -38,9 +38,9 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag "$@" --ignore '*.min.*' -
 			rm -rf /tmp/sublime
 			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(ι=> ι.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
 			echo / "$1"; echo
-			_ag ~/file "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime --ignore 'public/lib/'
-			_ag ~/file "$1" ~/.archive_*
-			_ag ~/file "$1" notes --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff'
+			_ag ~/file --ignore 'public/lib/' -- "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime
+			_ag ~/file -- "$1" ~/.archive_*
+			_ag ~/file --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff' -- "$1" notes
 		fi
 	fi | sb; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }

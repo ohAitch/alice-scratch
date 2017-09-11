@@ -3,11 +3,11 @@
 // adjusts white balance
 // -p percent ... PERCENT is the percentage of pixels closest in color to white that is used to compute the average graylevel of each RGB channel in the image. Values are floats between 0 and 100. Default=1
 
-// ------------------------------- general lib ------------------------------ //
+################################## general lib #################################
 // shᵥexit ← easy_template((ι,R)=> shᵥ(…R(['{ ',…ι,'; } &>/dev/null; echo $?']))+''==='0' )
-shᵥexit ← (ss,…ιs)=>{ r ← catch_union(()=>shᵥ(ss,…ιs)); ↩ T.Error(r)? e.status===0 : true }
+shᵥexit ← (ss,…ιs)=>{ r ← catch_union(()=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.code.exit===0 : true }
 
-// -------------------------------- requires -------------------------------- //
+################################### requires ###################################
 t ← (shᵥ`convert -list configure ;:`+'').re`LIB_VERSION_NUMBER (.+)`[1].split(',').map(ι=> ('00'+ι).slice(-2)).join('')
 t >= '06080504' ||( cn.log(APP,'error: imagemagick version',t,' < 06080504'), ‽ )
 

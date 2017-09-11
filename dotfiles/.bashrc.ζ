@@ -17,7 +17,7 @@ E.__prompt = (E,history_1)=>{t←; E ← E |0
 	postrun('hash -r')
 	}
 
-############################### as for a prelude ###############################
+#################################### prelude ###################################
 out ← ι=> process.stdout.write(ι)
 
 # should instead be a function that compresses all of the standard symlinks
@@ -31,7 +31,7 @@ E.x = ()=>{ E ← process.env.? |0
 
 E.pb = ()=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
 _pastebin_id ← ()=> Π(yes=>
-	process.stdin.read_all((e,ι)=>{
+	process.stdin.pin((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
 		yes( (t+'').replace(/.*\//,'') ) }) )
 E.pb.cant_pool = true
@@ -95,7 +95,9 @@ get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_n
 # E.build = ...
 E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
-		{ isTTY && ‽; terminal_do_script(sh`…${sh.clear}; cd ${φ(get_filename(ι)).φ`..`}; run_project ${JSON.stringify(ι)} ✓; x`) }
+		{ isTTY && ‽; terminal_do_script(sh`…${sh.clear}; cd ${φ(get_filename(ι)).φ`..`}; run_project ${JSON.stringify(ι)} ✓;
+			x
+			`) }
 	else{
 		is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
 		
@@ -107,16 +109,17 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
 		;(build || package || run) || ‽
 
-		a ← ()=> build && shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
+		a ← ()=> build && shₐ2({fd:process.stdio})`cd ${project}; ${build}`
 		b ← ()=>{if( package ){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
 			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )
-			shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
+			shₐ2({fd:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
 			}}
-		c ← ()=> run && shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
+		c ← ()=> run && shₐ2({fd:process.stdio})`cd ${project}; ${run}`
 
-		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',status=> status===0? yes() : no()))
+		# sh⚓exit
+		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
 		;(child_process_as_promise(a())||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
 		} }
 E.run_project.cant_pool = true
@@ -201,7 +204,7 @@ E.kp = E.keypresses = ()=>{
 E.keypresses.cant_pool = true
 
 E.regex_set = ()=>{
-	process.stdin.read_all().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
+	process.stdin.pin().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
 		t←[]; […[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
 		x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')

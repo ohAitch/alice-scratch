@@ -4,14 +4,15 @@
 
 # odd synonym: k, name(, id)(, i?)
 
-############################### as for a prelude ###############################
+#################################### prelude ###################################
 _ ← require('underscore') # lodash is better than underscore except for _()
 _.mixin({ '<-':λ(…a){↩ @ .assign (…a) } })
-Object_entries_w_Symbol ← ι=>{ r ← []; q ← k=> r.push([k,ι[k]]); Object.getOwnPropertySymbols(ι).forEach(q); Object.getOwnPropertyNames(ι).forEach(q); ↩ r }
+Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(k=> [k,ι[k]])
 
 λ Descriptor(ι){ _(@) <- (ι) }
 define_properties_in ← (o,names,ι)=>{ t ← o; for(var k of names.slice(0,-1)) t = (t[k] ||( t[k] = {} )); t[names[names.length-1]] = ι; ↩ o }
-assign_properties_in ← (o,ι)=>{ Object_entries_w_Symbol(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
+assign_properties_in ← (o,ι)=>{ Reflect_ownEntries(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
+# ! does that need Object.getOwnPropertyDescriptors at all?
 
 ########################## local metaprogramming utils #########################
 properties_tree_formalify ← ι=>
@@ -34,7 +35,17 @@ E ← new Proxy({},{ # exports
 assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); […patched].forEach(o=> assign_properties_in(o,ι)) }
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
-############################### as for a prelude ###############################
+#################################### prelude ###################################
+E.O1 = _(λ(){}) <- ({ prototype:Object.freeze(Object.create(null)) })
+E.__global = (()=>{
+	anon_e4jlu ← ι=> catch_ι(()=> ι.toString.constructor('return this')() )
+	id ← Symbol.for('⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙')
+	↩ ι=>{t←;G←; if( Tprim(ι) ) ↩; if(t= ι[id] ) ↩ t; if(!(G= anon_e4jlu(ι) )) ↩; new Property(G.Object.prototype,id).def({ ,value:G ,configurable:false }); ↩ ι[id] } })()
+# Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
+# ι=> __global(ι) && ι instanceof __global(ι)[T]     super mega slow
+# ι=> ι instanceof Array                             faster or on par with builtin
+# ι=> ι instanceof global.Array                      very slow??
+
 E.catch_union = f=>{ try{ r ← f(); bad ← T.Error(r); if (!bad) ↩ r }catch(e){ r ← e; T.Error(r) || ‽; ↩ r }; bad && ‽ }
 E.catch_ι = f=>{ try{ r ← f(); bad ← r===undefined; if (!bad) ↩ r }catch(e){}; bad && ‽ }
 E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e } }
@@ -96,6 +107,7 @@ Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 Property.prototype.delete = λ(){ delete @.o[@.name]; ↩ @ }
 Property.prototype.map! = λ(f){ @.ι = f(@.ι,@.name,@.o); ↩ @ }
 def(Property.prototype,'bind',{get(){↩ @.o[@.name].bind(@.o) }})
+def(Property.prototype,'∃',{get(){↩ @.name in @.o }})
 # id like an interface more like def, but def doesnt have a getter so it is temporary
 # this should probably supercede def, since <3 firstclassness?
 
@@ -139,7 +151,7 @@ E.js_tokenize = code=>{
 	tok ← npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
 	↩ _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
-E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oenor←; anon_7cy2u←; anon_8jlo1←; anon_cbbhj←; anon_wg4h5←; anon_pxt5h←;
+E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oenor←; anon_7cy2u←; anon_8jlo1←; anon_cbbhj←; anon_wg4h5←; anon_pxt5h←; anon_xq7qg←; anon_xzihh←;
 	word_extra ← re`♈-♓🔅🔆‡`
 	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓${word_extra}`
 	ζ_parse ← (λ(){
@@ -165,20 +177,19 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 			ι ← js_file.parse(code)._.flatten()
 			r ← []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			↩ r } })()
-	anon_3lsx8←;
-	unicode_names ← memoize_persist(ι=> (
-		anon_3lsx8||(anon_3lsx8= (λ(){
-			unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
-			↩ unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
-			})() ) )[ord(ι)])
+	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
+	id_g ← '->'
+	id_c ←'filter! map… map! ⁻¹declare_uniq ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
+	id_d ← [ '-0',id_g,id_c ].join(' ')
 	ζ_compile_nonliteral ← ι=> ι
-		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι =`) # an initial try; probably .name inference needs another form
+		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι=`) # an initial try; probably .name inference needs another form
 		.replace(/‽(?=(\()?)/g,(ˣ,callp)=> callp? `!λ(…a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}` : `!λ(){throw Error('‽')}()` )
 		.replace(anon_x818h||(anon_x818h= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
-		.replace(anon_oenor||(anon_oenor=re`\.?@@([${word}]+)`.g),'[Symbol.$1]')
-		.replace(anon_t4nzb||(anon_t4nzb= re`\.(…${'filter! map… map! -= += Π& Π| ⁻¹declare_uniq ⁻¹ -0 ∪! ∩! ∩s -! ?? *? +? ? * + ∪ ∩ - ⊕ & | ≈ ‖'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> js`[${ι}]`)
-		.replace(anon_pxt5h||(anon_pxt5h= re`\.?(…${'⚓'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> js`[${ι}]`)
+		.replace(anon_oenor||(anon_oenor= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
+		.replace(anon_t4nzb||(anon_t4nzb= re`\.(${s_or(id_d)})`.g ),(ˣ,ι)=> js`[${ι}]`)
+		.replace(anon_xzihh||(anon_xzihh= re`(${s_or(id_g)}(?!["']))`.g ),(ˣ,ι)=> js`global[${ι}]`)
+		.replace(anon_xq7qg||(anon_xq7qg= re`(${s_or(id_c)}):`.g ),(ˣ,ι)=> js`${ι}:`)
 		.replace(/↩ ?/g,'return ')
 		.replace(/…/g,'...')
 		.replace(/\[(['"])map\.\.\.\1\]/g,'["map…"]') # ! this is going to be really hard to take out
@@ -190,7 +201,8 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(/\[#Q/g,'new Property(') # Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
-		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]`.g ), unicode_names.X)
+		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X)
+		.replace(/\{,\}/g,'new O1()')
 		.replace(/([{(]\s*),/g,'$1')
 	# ζ_compile_nonliteral_tree ← ι=>{
 	# 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.‖) )
@@ -211,7 +223,8 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 	super_ ← require.extensions['.js']; require.extensions['.js'] = (module,ι)=>{ (path.extname(ι)==='' && fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
 	})()
 
-############################### as for a prelude ###############################
+#################################### prelude ###################################
+E.-> = ι=> (…f)=> f.reduce((ι,f)=> f(ι),ι)
 E.simple_hash_str = ι⇒
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι; else{ r←{}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]); ↩ r } })
@@ -228,9 +241,16 @@ memo_frp ← (names,within,f)=>{
 	dir.φ`${a} ${random_id(10)}`.json2 = { ,names ,date:[a,b] ,ι }; ↩ ι }
 E.memoize_persist = f=>{
 	store ← φ`/tmp/ζpersist_${simple_hash(f)}`; store_ι ← store.json||{}
-	↩ (…a)=>{ a_h ← simple_hash(a); ↩ store_ι[a_h] || ( store_ι[a_h] = f(…a), store.json = store_ι, store_ι = store.json, store_ι[a_h] ) } }
+	↩ (…a)=>{ t ← new Property(store_ι,simple_hash(a)); ↩ t['∃']? t.ι : ( t.ι = f(…a), store.json = store_ι, store_ι = store.json, t.ι ) } }
 # frp will remove the last use of slot_persist
 E.slot_persist = name=>{ o ← φ`/tmp/ζpersist_${name}`; ↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }}) }
+E.memoize = f=>{ cache ← new WeakMap(); ↩ _(ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r); ↩ r }) <- ({cache}) }
+
+E.unicode_names = ι=> […ι].map(memoize_persist(ι=>
+	(anon_3lsx8||(anon_3lsx8= (λ(){
+		unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
+		↩ unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
+		})() ) )[ord(ι)]).X).join(''); anon_3lsx8←;
 
 regex_parse ← lazy_fn(λ(){ # status: output format unrefined
 	P ← require('./parsimmon2.js')
@@ -344,10 +364,11 @@ E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 E.bench1 = f=>{ hr ← hrtime(); f(); ↩ pretty_time_num(hrtime(hr)) }
 E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) # ! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.random = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
-E.random_id = L=> L.map(()=> random(az09||(az09=[…/[0-9a-z]/]))).join(''); az09←; # §
+E.random_id = L=> L.map(()=> random(anon_clqkb||(anon_clqkb=[…/[0-9a-z]/]))).join(''); anon_clqkb←;
+random_id.braille = L=> L.map(()=> random(anon_8zw5b||(anon_8zw5b= […re`[⠀-⣿]`] ))).join(''); anon_8zw5b←;
+
 E.ord = ι=> Tnum(ι)? ι : ι.codePointAt()
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
-# ? E.♓ = process
 E.♓_on_exits = f=> (anon_gjyfd||(anon_gjyfd= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
 	f(i,sig) }); anon_gjyfd←;
@@ -371,7 +392,7 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.‖':{ get(){↩ @.size } }
 
 # 'Array.prototype.map'
-,'Buffer.prototype.map':λ(f){ r ← Buffer.alloc(@.‖); for(i←0;i<@.‖;i++) r.push(f(@[i])); ↩ r }
+# ,'Buffer.prototype.map':λ(f){ r ← Buffer.alloc(@.‖); for(i←0;i<@.‖;i++) r.push(f(@[i])); ↩ r } does not even work
 ,'Set.prototype.map':λ(f){↩ […@].map(f) }
 ,'Map.prototype.map':λ(f){↩ […@.entries()].map(([i,v])=> f(v,i,@)) }
 ,'Number.prototype.map':λ(f){'use strict'; ι←+@; r ← Array(ι); for(i←0;i<ι;i++) r[i] = f(i,i,ι); ↩ r }
@@ -427,7 +448,7 @@ assign_properties_in_E_informal({
 ,'Promise.prototype.status':{writable:true, get(){ [s,v] ← b_util.getPromiseDetails(@); r ← [,true,false][s]; if( r!==undefined ){ [@.status,@.ι] = [r,v]; ↩ r } }}
 ,'Promise.prototype.ι':{writable:true, get(){ if( @.status!==undefined ) ↩ @.ι }}
 
-,'stream.Readable.prototype.read_all':λ(){↩ Π(yes=>{ t ← []; @.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
+,'stream.Readable.prototype.pin':λ(){↩ Π(yes=>{ t ← []; @.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
 })
 
 TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
@@ -518,36 +539,60 @@ E.if_main_do = f=>{ if( !module.parent ) f(…process.argv.slice(2)) }
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(…a)
 
-# Command ← ι=> ι.includes('/')? φ(ι) : process.env.PATH.split(path.delimiter).map(d=> φ(d).φ(ι)).find(ι=> ι.BAD_exists())
-# E.process_spawn = (cmd,opt={})=>{ opt = _({ ,args:[] ,cwd:φ.cwd ,env:process.env ,fd:['pipe'].repeat(3) ,child:true ,ipc:false ,⚓:false ,timeout:undefined }) <- (opt)
-# 	t ← { ,env:opt.env ,cwd:opt.cwd+'' ,detached:!opt.child ,stdio:[…pad_r(opt.fd,[null].repeat(3)),…(opt.ipc?['ipc']:[])].map(ι=> ι===undefined||ι===null? 'ignore' : ι) }
-# 	opt.timeout!==undefined &&( t.timeout = opt.timeout*1e3 )
-# 	opt.⚓ &&( t.maxBuffer = 5e6 )
-# 	opt.⚓ &&( opt.ipc || !opt.child ) && ‽
-# 	!opt.⚓ &&( opt.timeout ) && ‽
-# 	t ← require('child_process')[opt.⚓?'spawnSync':'spawn'](Command(cmd)+'',opt.args,t)
-# 	!opt.child && t.unref()
-# 	r ← {
-# 		,id:t.pid
-# 		,pipe: opt.⚓? t.output : t.stdio
-# 		,exit: opt.⚓? { code:t.status, signal:t.signal } : Π(yes=> t.on('exit',(code,signal)=> yes({code,signal})) )
-# 		}
-# 	def(r,'constructor',{ value:λ Proc(){} })
-# 	!opt.⚓ && def(r,'ref',{ value:[#Q t.ref #Q].bind })
-# 	!opt.⚓ && def(r,'unref',{ value:[#Q t.unref #Q].bind })
-# 	# ! isn't the ref on 'exit' though?
-# 	if( opt.ipc ){
-# 		r.ipc = { ,write(ι){ t.send(ι) } ,each(f){ t.on('message',f.X) } }
-# 		t.on('disconnect',()=> delete r.ipc )
-# 		}
-# 	def(r,'_wrapped',{ value:t })
-# 	↩ r }
-# if( process.connected )(λ(){
-# 	t ← process; r ← process.parent = {}
-# 	r.ipc = { ,write(ι){ t.send(ι) } ,each(f){ t.on('message',f.X) } }
-# 	t.on('disconnect',()=> delete r.ipc )
-# 	})()
-# process.stdio = [process.stdin,process.stdout,process.stderr]
+_anchor_ify ← f=> _(f) <- ({ ⚓:(…a)=>{ opt ← a[-1]; _(opt) <- ({ ⚓:true }); ↩ f(…a) } })
+E.process_spawn = _anchor_ify((…a)=>{ opt ← a.pop(); a.‖ &&( opt.command = a.shift() ); a.‖ &&( opt.args = a ); opt = _({ ,command:undefined ,args:[] ,'.':φ.cwd ,env:process.env ,fd:[] ,ipc:false ,child:true ,timeout:undefined }) <- (opt)
+	command ← opt.command; args ← opt.args; _dot_ ← opt['.']; env ← opt.env; fd ← opt.fd; ipc ← opt.ipc; child ← opt.child; timeout ← opt.timeout; S ← opt.⚓
+	if( S ) ( ipc || !child )&& ‽
+	else timeout && ‽
+	t ← { ,env ,cwd:_dot_+'' ,detached:!child ,stdio:_(['pipe'].repeat(3))<-(fd).map(ι=> ι===undefined||ι===null? 'ignore' : ι) ,maxBuffer:∞ }
+	Tnum(timeout) &&( t.timeout = timeout*1e3 )
+	ipc &&( fd[t.stdio.‖] = t.stdio[t.stdio.‖] = 'ipc' )
+	t ← require('child_process')[S?'spawnSync':'spawn'](Command(command)+'',args,t)
+	t ← Proc.recognize(t)
+	!child &&( ,t.unref() ,t.pipe.forEach(ι=> ι&&ι.unref()) ,t.msg.unref() )
+	[#Q t.opt #Q].def({ ,get(){↩ opt} ,enumerable:true })
+	↩ t })
+E.Proc = { ,recognize:memoize(♓=>{p←;
+	if(p= ♓.channel ){
+		p.Node_Ipc = {
+			,send:[#Q ♓.send #Q].bind
+			,each(f){ ♓.on('message',f.X) }
+			,next(f){ ♓.once('message',f.X) }
+			,Pipe:p
+			}; mixin_ref(p,p.Node_Ipc)
+		♓.on('disconnect',()=>delete p.Node_Ipc); ♓===process && p.unref() }
+	r ← 0?0
+		: ♓===process? { ,stdio:[ ♓.stdin,♓.stdout,♓.stderr ] ,parent:p&&{ ,get msg(){↩ p.Node_Ipc } } }
+		: ♓ instanceof require('child_process').ChildProcess? mixin_ref(♓,{
+			,pipe:♓.stdio
+			,exit:Π(yes=> ♓.on('exit',(code,signal)=> yes({code,signal})) )
+			,get msg(){↩ p&&p.Node_Ipc }
+			# [#Q r.msg #Q].def({ get(){↩ p&&p.Node_Ipc } ,enumerable:true })
+			})
+		: { ,pipe:♓.output ,exit:{ code:♓.status, signal:♓.signal } }
+	r.id = ♓.pid
+	[#Q r.constructor #Q].def({ value:λ Proc(){} }) # for util.inspect
+	[#Q r._node #Q].def({ value:♓ })
+	[#Q r.kill #Q].def({ value:λ(){ ♓===process? process.exit() : process.kill(@.id,'SIGKILL') } })
+	↩ r }) }
+Command ← ι=> ι.includes('/')? φ(ι) : process.env.PATH.split(path.delimiter).map(d=> φ(d).φ(ι)).find(ι=> ι.BAD_exists())
+mixin_ref ← (from,to)=>{
+	[#Q to.ref #Q].def({ value:[#Q from.ref #Q].bind })
+	[#Q to.unref #Q].def({ value:[#Q from.unref #Q].bind })
+	↩ to }
+
+process.stdio = Proc.recognize(process).stdio
+# maker_name ← ι=> ι&&ι.constructor&&ι.constructor.name
+# patcher ← o=>{ seen ← new WeakSet(); ↩ ι=>{ p ← Object.getPrototypeOf(ι); if( seen.has(p) ) ↩; seen.add(p); _(p) <- (o) } }
+# patch_Pipe ← ι=>{}
+# patch_Socket ← ι=>{}
+# patch_Pipe ← ι=> _(Object.getPrototypeOf(ι)) <- ({ ,inspect(d,opt){↩ js`Pipe { fd:${@.fd} }` } })
+# patch_Socket ← ι=> _(Object.getPrototypeOf(ι)) <- ({ ,inspect(d,opt){t←; ↩0?0
+# 	: ->(@._handle)(ι=> maker_name(ι)==='Pipe' && (patch_Pipe(ι),1))
+# 		? js`Socket { …${util.inspect(@._handle)} }`
+# 	: ( @.inspect = null, t= util.inspect(@,opt), delete @.inspect, t )
+# 	} })
+# !S && ->(r.pipe.find(ι=> maker_name(ι)==='Socket'))(ι=>ι&&patch_Socket(ι))
 
 ##################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
@@ -713,7 +758,7 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι); if (t)
 					{ [window_,tab] ← t; osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}`; osaₐ`chrome: activate`; ↩ } }
 			if (ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
-			shᵥ`open …${in_app && sh`-b ${memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )(in_app)}`} ${!focus && '-g'} ${ι}`
+			shᵥ`open …${in_app && sh`-b ${->(in_app)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
 			}
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
@@ -767,7 +812,7 @@ E.easy_template = (λ(){
 	})()
 
 E.clipboard = def({},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
-E.sb = λ self(){↩ self.ι() } # let personal configuration use sb as callable
+E.sb = λ self(){↩ self._call() } # let personal configuration use sb as callable
 [#Q sb.tab #Q].def({
 	get(){
 		r ← sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -822,22 +867,17 @@ E.sh = λ(ss,…ιs){ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'"; ↩ si
 sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
 ellipsify ← ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.slice(100).‖?'…':'')
 
-# if_sh_err ← (name,code,ι)=>{ if( ι.exit.code ) throw _(Error(name+'`'+code+'` → status:'+ι.exit.code+', stderr:'+ellipsify(ι.pipe[2]+''))) <- (_(ι).pick('exit','pipe')) }
-# E.shᵥ = λ(ss,…ιs){ code ← sh(ss,…ιs)
-# 	ι ← process_spawn('/bin/sh',['-c',code],{⚓:1})
-# 	if_sh_err('shᵥ',code,ι)
-# 	↩ _(ι.pipe[1]) <- ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a); ↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
-if_sh_err ← (name,code,ι)=>{ if (ι.status!==0) throw _(Error(name+'`'+code+'` → status:'+ι.status+', stderr:'+ellipsify(ι.stderr+''))) <- (_(ι).pick('status','stdout','stderr')) }
+if_sh_err ← (name,code,ι)=>{ if( ι.exit.code ) throw _(Error(name+'`'+code+'` → status:'+ι.exit.code+', stderr:'+ellipsify(ι.pipe[2]+''))) <- (_(ι).pick('exit','pipe')) }
 E.shᵥ = λ(ss,…ιs){ code ← sh(ss,…ιs)
-	ι ← require('child_process').spawnSync(code,{shell:true})
+	ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	if_sh_err('shᵥ',code,ι)
-	↩ _(ι.stdout) <- ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a); ↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
-str_to_fd_stream ← ι=>{ t ← φ`/tmp/${random_id(20)}`; t.text = ι; fd ← fs.openSync(t+'','r'); ↩ fs.createReadStream(null,{fd}) }
+	# ι.exit.⚓(exit=>{ if_sh_err('shᵥ',code,_(ι) <- ({exit})) })
+	↩ _(ι.pipe[1]) <- ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a); ↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
 _shₐ ← (ss,ιs,opt={})=>{
-	if (ss.‖===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽; opt.stdio = [str_to_fd_stream(ιs[0]),'pipe','pipe',]; ↩ shₐ2(opt) }
+	if (ss.‖===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.fd && ‽; opt.fd = [φ.fd.from(ιs[0])]; ↩ shₐ2(opt) }
 	else{ code ← sh(ss,…ιs)
-		ι ← require('child_process').spawn(code,_({shell:true}) <- (_(opt).pick('stdio')))
-			.on('exit',λ(status){ if_sh_err('shₐ',code,_({status}) <- (ι)) })
+		ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) <- (opt))
+		ι.exit.then(exit=>{ if_sh_err('shₐ',code,_(ι) <- ({exit})) })
 		↩ ι } }
 E.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
@@ -879,7 +919,7 @@ E.tsᵥ = λ(ss,…ιs){
 	R ← ()=> JSON.parse(fs_ipc_emit(PORT,ι))[0]
 	launch_serv ← λ(){
 		(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
-		tmp ← φ`/tmp/evalserv_${random_id(9)}.rb`; tmp.text = String.raw`#!/usr/bin/env ruby
+		t ← φ`/tmp/evalserv_${random_id(9)}.rb`; t.text = String.raw`#!/usr/bin/env ruby
 			require "socket"; require "json"
 			server = TCPServer.new("localhost",${PORT})
 			loop do
@@ -888,21 +928,22 @@ E.tsᵥ = λ(ss,…ιs){
 			  t.print "HTTP/1.1 200 OK\r\n"+"Content-Type: text/plain\r\n"+"Content-Length: #{r.bytesize}\r\n"+"Connection: close\r\n"+"\r\n"+r
 			  t.close
 			end`
-		shᵥ`chmod +x ${tmp}`; require('child_process').spawn(tmp,{shell:true,detached:true,stdio:'ignore'}).unref() }
-	try{ ↩ R() }catch(e){ if (e.status===7) launch_serv(); sleep(0.1); ↩ R() } }
+		shᵥ`chmod +x ${t}`; process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:false }) }
+	try{ ↩ R() }catch(e){ if (e.exit.code===7) launch_serv(); sleep(0.1); ↩ R() } }
 
 # such hack
-json2_read ← ι=>{ r ← JSON.parse(ι); (λ Λ(ι,k,o){if (ι.type==='Buffer') {
-	t ← 'data' in ι || 'utf8' in ι? new Buffer(ι.data||ι.utf8) : 'base64' in ι? new Buffer(ι.base64,'base64') : ‽
-	if (o===undefined) r = t; else o[k] = t
-	} else if (!Tprim(ι)) _(ι).forEach(Λ)})(r); ↩ r }
+json2_read ← ι=>{ r ← JSON.parse(ι); (λ Λ(ι,k,o){if( ι.type==='Buffer' ){
+	t ← 'data' in ι || 'utf8' in ι? Buffer.from(ι.data||ι.utf8) : 'base64' in ι? Buffer.from(ι.base64,'base64') : ‽
+	if( o===undefined ) r = t; else o[k] = t
+	} else if(! Tprim(ι) ) _(ι).forEach(Λ)})(r); ↩ r }
 json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
-	if (Buffer.isBuffer(ι)) ↩ ι.equals(new Buffer(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
+	if (Buffer.isBuffer(ι)) ↩ ι.equals(Buffer.from(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
 	↩ ι})
 
 [#Q E.φ #Q].def(()=>{
 	ENC ← ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ.⁻¹ = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
+	φ.fd = {}; φ.fd.from = ι=> fs.createReadStream(null,{ fd:fs.openSync(_(φ`/tmp/${random_id(20)}`) <- ({ι}) +'','r') })
 
 	existsSync ← ι=> !T.Error(catch_union(()=> fs.accessSync(ι)))
 	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if (e.code==='EEXIST'||e.code==='EISDIR') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι) } }
@@ -916,7 +957,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		ensure_exists(ι,ifdne); Lc ← new Φ(ι).‖
 		fd ← fs.openSync(ι,'r+'); f({
 			get L(){↩ Lc},
-			read(i,L){t ← new Buffer(L); fs.readSync(fd,t,0,L,i) === L || ‽; ↩ t},
+			read(i,L){t ← Buffer.allocUnsafe(L); fs.readSync(fd,t,0,L,i) === L || ‽; ↩ t},
 			write(ι,i){L ← fs.writeSync(fd,ι,i); Lc = max(Lc, L+i)},
 			truncate(L){fs.ftruncateSync(fd,L); Lc = min(Lc,L)},
 			indexOf_skipping(from,to,step,find,skip){fl←@
@@ -942,7 +983,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		get is_dir(){↩ !!catch_ι(()=> fs.statSync(@._ι).isDirectory()) },
 		get name(){↩ path.basename(@._ι) },
 		BAD_exists(){↩ existsSync(@._ι) },
-		TMP_children(){↩ (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] })(@._ι) },
+		TMP_children(){↩ ->(@._ι)(λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) },
 		TMP_parents(){ r ← [@.root('/')]; while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`); ↩ r.slice(1) },
 		root(x){switch(arguments.length){default: ‽
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
@@ -953,18 +994,19 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		# get ι(){↩},
 		set ι(ι){
 			if (@.is_dir) ‽('TODO')
-			if (ι == null){ catch_union(()=> fs.unlinkSync(@._ι) ); ↩ }
+			if (ι===undefined||ι===null){ catch_union(()=> fs.unlinkSync(@._ι) ); ↩ }
 			e ← path.extname(@._ι)
 			if (e==='.csv'){ @.csv = ι; ↩ }
 			if (e==='.xml'){ @.xml = ι; ↩ }
 			if (e==='.plist'){ @.plist = ι; ↩ }
 			ι = e==='.json'? JSON_pretty(ι) :
 				Tstr(ι)? ι :
+				ι instanceof Buffer? ι :
 				JSON_pretty(ι)
 			write_file(@._ι,ι) },
-		get buf(){↩ read_file(@._ι) || new Buffer(0) },
+		get buf(){↩ read_file(@._ι) || Buffer.alloc(0) },
 		set buf(ι){ write_file(@._ι,ι) },
-		get base64(){↩ new Buffer(@.text,'base64') },
+		get base64(){↩ Buffer.from(@.text,'base64') },
 		# set base64(ι){},
 		get text(){↩ (read_file(@._ι) || '')+'' },
 		set text(ι){ write_file(@._ι,ι) },
@@ -1048,7 +1090,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 	↩ φ })
 
 ############################ personal configuration ############################
-sb.ι = ()=> sb.tab.active.ι
+sb._call = ()=> sb.tab.active.ι
 E.p = λ(ι){ t ← clipboard; ↩ arguments.length === 0? t.ι :( t.ι = ι ) }
 
 #################################### ζ infra ###################################
@@ -1060,7 +1102,8 @@ _(util.inspect.styles) <- ({null:'grey',quote:'bold'})
 global[ι].inspect = λ(d,opt){↩ opt.stylize(ι,'quote') }
 })
 assign_properties_in_E_informal({
-'Number.prototype.inspect':λ(d,opt){'use strict'; ↩ opt.stylize(( Object.is(@,-0)? '-0' : @===∞? '∞' : @===-∞? '-∞' : @+'' ), 'number') },
+# 'Number.prototype.inspect':λ(d,opt){'use strict'; ↩ opt.stylize(( Object.is(@,-0)? '-0' : @===∞? '∞' : @===-∞? '-∞' : @+'' ), 'number') },
+'Number.prototype.inspect':λ(d,opt){'use strict'; ↩ opt.stylize(( Object.is(@,-0)? '-0' : @===∞? '∞' : @===-∞? '-∞' : @ ), 'number') },
 })
 E.cn = { log:(…a)=> console.log(
 	is_template(a)?
@@ -1099,7 +1142,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 			: ι.status===undefined?( promise_watch(ι), `Π #${ι.id} { <pending> }` )
 			: q(ι,opt)
 		: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && _.range(ι.‖).every(t=> t in ι)
-			? q([ι[0]],opt)+' * '+q(ι.‖,opt)
+			? q([ι[0]],opt)+' × '+q(ι.‖,opt)
 		: q(ι,opt)
 	↩ (f=> f.call( require('repl').start(_({useGlobal:true}) <- (_(opt).pick('prompt'))) ))(λ(){
 	@.In = []; @.Out = []

@@ -142,11 +142,11 @@ class toggle_comment_2(sublime_plugin.TextCommand):
 
 class zeta(sublime_plugin.WindowCommand):
 	def run(self,x):
-		ζfresh_async(x)
+		ζ(x)
 
-# class zeta2(sublime_plugin.WindowCommand):
+# class zeta_fresh_async(sublime_plugin.WindowCommand):
 # 	def run(self,x):
-# 		ζfresh(x)
+# 		ζfresh_async(x)
 
 # class _1(sublime_plugin.EventListener):
 # 	# def on_pre_save(self,view):

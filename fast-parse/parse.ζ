@@ -5,12 +5,12 @@ P ← require('./mainβ')
 ;(λ(){
 	{Rₐ:R} ← require('./record')
 	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
-	walk_regex ← (ι,f)=> (λ Λ(ι){ if (ι && ι.tag){
+	walk_regex ← (ι,f)=> ->(ι)(λ Λ(ι){ if (ι && ι.tag){
 		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
 		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
 		ι = f(ι,{change})
-		}; ↩ ι })(ι)
+		}; ↩ ι })
 
 	version ← '0.0.0'
 	$ ← ι=>{ r ← parse_normalize_regex_memoized(ι); r.version === version || ‽; delete r.version; ↩ r }
@@ -67,10 +67,10 @@ P ← require('./mainβ')
 			if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 			})
 		_(ι) <- ({version})
-		// ;(λ Λ(ι){ if (ι && ι.tag){
-		// 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
-		// 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
-		// 	}; ↩ ι })(ι)
+		# ->(ι)(λ Λ(ι){ if (ι && ι.tag){
+		# 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
+		# 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
+		# 	}; ↩ ι })
 		↩ ι }
 	normalize_to_axioms_regex ← ι=>{
 		ι.version === version || ‽
@@ -87,7 +87,7 @@ P ← require('./mainβ')
 			↩ ι })
 		_(ι) <- ({version})
 		↩ ι }
-	parse_normalize_regex_memoized ← ι=>{ t ← (anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) ))(ι); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+	parse_normalize_regex_memoized ← ι=>{ t ← ->(ι)(anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
 	_(t).map(ι=> _(ι) <- ({version}) )
