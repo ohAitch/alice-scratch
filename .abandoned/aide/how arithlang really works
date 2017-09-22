@@ -1,8 +1,6 @@
 # the arithlang we'd write if we had the tools for it
 # i think there would be absolute technical grace
 # #define technical grace "sometimes things are sufficiently modular and well-written that modifying the behavior *really is* just a matter of changing a couple lines of code"
-# #relevant? http://baconjs.github.io/api.html
-# #relevant bret victor
 # ‡ i`m refactoring acorn.js. and - i - i want to just _pick up_ the damn graph and _splay it out all over the walls and floor and ceiling and_ MOVE the components DIRECTLY instead of this utter "text editor" bullshit
 
 if we have a model of code-thoughts that allows for expressing
@@ -1002,59 +1000,10 @@ construct an instance of $type with $values
 	the action of sending an agent with code well_code_gen() to the node above it
 
 ‡ ‡ ‡
+goto / each tick, each agent may choose an action to attempt
+eat rest of section
 
-	each tick, each agent may choose an action to attempt
-		send X soul or fire to adjacent node
-		send X soul from adjacent node with well to own node
-		send a new agent with X soul and code φ to adjacent node with an agent-slot
-	impl: its code is called on a description of its node plus adjacent nodes plus nodes below those (represented as a graph with its node as the root). it should return an action to be created. (if the action`s cost > the agent`s soul, the action is not created)
-
-	each tick, soul in a node with no agents and a node below it sends itself at the cost of itself to the node below
-
-	all actions happen simultaneously: after everything else has happened, each node resolves the actions directed towards it
-
-		fire is negative soul.
-		soul and soul the same cell immediately combine. if the soul is not directed towards a particular agent, it combines with all agents in the cell in proportion to their existing amounts of soul
-
-		any agent with zero soul is immediately removed
-
-		agents in the same node fight. their code is called on a description of the node and it should return an action to be created
-			it may also send X fire to a particular agent in the node
-			all¹ agents that send no fire send all of their soul to the node
-				[1] if no agent sends fire, all except the agent with the most soul
-		this iterates until there are no longer multiple agents in the same node
-
-	sending X fire costs ⌈ X*1.1 ⌉ soul, + 0.05 if it`s to another node
-	sending X soul costs X soul, + 0.05 if it`s to another node
-	sending a new agent with X soul and code φ costs X + 0.1 soul
-	sending X soul from adjacent node to own node costs 0.1 soul
-
-	the code is a method agent.code(node).
-
-	let well_code_gen() =
-		λ(node):
-			the node has agents other than me ->
-				do nothing
-			the adjacent nodes with agents with code ≠ mine have total soul < the amount of fire half my soul would buy ->
-				send enough fire to the one with most soul to reduce it to zero soul
-			the node below me has >10 soul or (>30% of my soul and >1 soul) ->
-				send all soul from it to my node
-			my soul < 0.1 ->
-				do nothing
-			a node below an empty adjacent node has >10 soul ->
-				send a new agent with half of my soul and the same code as me to such a node with the most soul
-
-	create a grid and controls for running ticks on it. (as a static js app, in a browser tab, with no scrolling)
-		let the grid be the largest that visually fits in the window
-	display the top grid nodes as 12×12px squares
-		if empty, a solid square of the soul-color of the well in the node below it
-		else, the empty version plus a centered 9×9px square of the agent`s soul-color, plus 2 ascii chars to represent the agent`s code
-	on mouseover grid square, display its node`s contents in detail in an html tooltip
-
-	soul color: {0: #000, 10: #f00, 100: #ff0, 1000: #08f, 10000: #00f} with linear interpolation
-
-// --------------------------------- <impl> --------------------------------- //
-
+eat section <impl> except
 # <noteified>
 # you can watch descendants ∈ path by /* explains how to implement watch from above */
 # subscribe to <event name>: <function> /* implicitly on `it` */
@@ -1062,30 +1011,3 @@ construct an instance of $type with $values
 # change <var> by <dict>
 # (change <var> by <expr>. <var> was changed) should be true iff the change statement altered <var>
 # (a, b -> a += 5) isa function
-
-you can watch descendants ∈ path by
-	require npm::chokidar
-	chokidar.watch(path, {persistent:true, ignoreInitial:true}). subscribe to 'all': event, path ->
-		change event by ('addDir': 'add', 'unlinkDir': 'unlink')        (note: path is dir iff event was changed)
-
-read plist: npm::plist.parse(it)
-show plist: npm::plist.build(it)
-
-# this is my first attempt at stringifying json nicely. i do not think it will be my last.
-let pretty-print 'json' = λ λ(it):
-	let wrap_width = 150
-	let TAB = '  '
-	let indent it = .replace(/\n/g,'\n'+TAB)
-
-	if it is in the callstack of this recursive function:
-		throw TypeError('Converting circular structure to JSON')
-
-	if .toJSON isa function: .toJSON()
-	elif it isa ∈ null undefined function boolean number string: JSON.stringify(it)
-	else:
-		if it isa array, ensure all indexes of it have elements
-		let ts ←
-			it isa array -> it * λ * indent
-			it isa object -> (k,v in pairs(it) if v!==undefined && typeof(v)!=='function') * indent(λ(k)+': '+λ(v))
-		let a,b ← it isa array? '[]' : '{}'
-		a+ts.join(', ')+b, unless its .length > wrap_width, then a+'\n'+TAB+ts.join(',\n'+TAB)+'\n'+b

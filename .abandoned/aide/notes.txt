@@ -1,42 +1,23 @@
 #don't-forget it looks like both alignment and indentation are totally redundant
 # play some hours with http://scipy.org/getting-started.html. maybe make something with it (http://vetta.org/2008/05/scipy-the-embarrassing-way-to-code/)
-# useful pl thoughts http://lisperator.net/pltut/cps-evaluator/yield
 # generalized mutation operators (+=, swap!, etc) e.g. something like `(t=f()).string = t.string.toUpperCase()` -> `f().string ??? .toUpperCase()`
-	haskell lens
+	# haskell lens
 
 ------- important but probably not in the scope of ✨ -------
-# powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language). also mathematica
-pattern matching (ocaml?)
-	what are the patterns that can be matched?
-		are they just json&spreads?
-		this would go quite nicely with algebraic datatypes, wouldn't it
-			wow, javascript is so imperative
-	how can they be matched?
-		is it just ordered-choice?
-			with ordered-choice, there are also "when" clauses to allow arbitrary logic matches
-		also has [a-z]
-	http://en.wikipedia.org/wiki/Perl_6_rules (? http://pegjs.org/ https://github.com/ingydotnet/pegex-js)
-# haskell magic
-# algebraic datatypes (ocaml?)
+powerful collection manipulation https://en.wikipedia.org/wiki/Rank_(J_programming_language)
+? http://pegjs.org/ https://github.com/ingydotnet/pegex-js
 # http://elm-lang.org/ http://elm-lang.org/blog/Introducing-Elm-Reactor.elm
 # so what *is* up with static typing?
 	# * well, it's a type of static annotation so that you can do static analysis
 	# * also it's a way of writing programs so that they're extra amenable to static analysis
-	-> but we are guessing that those two things should be replaced with hints and questions
-	* and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
-	-> now that is an interesting idea. but i think we need experience implementing ✨ before we're ready to implement ✨ with this feature.
+	# -> but we are guessing that those two things should be replaced with hints and questions
+	# * and it's an anti-needless-extra-programming-languages way of eliminating pointless continual redefinition of things which act like types at some layer of abstraction
+	# -> now that is an interesting idea. but i think we need experience implementing ✨ before we're ready to implement ✨ with this feature.
 
--------- bah. in-list. -------
-i want the word "clique" to be a meaningful macro or smth
+# -------- bah. in-list. -------
+# i want the word "clique" to be a meaningful macro or smth
 
 -------------------------- list comprehension syntaxes -------------------------
-scala
-val s = for (x <- Stream.from(0) if x*x > 3) yield 2*x
-
-Perl 6
-my @s = ($_ * 2 if $_ ** 2 > 3 for ^100);
-my @s = gather { for ^100 { take 2 * $_ if $_ ** 2 > 3 } };
-
 <unsure>
 0..100 | Where {$_ * $_ -gt 3} | ForEach {$_ * 2}
 var s = from x in Enumerable.Range(0, 100) where x*x > 3 select x*2;

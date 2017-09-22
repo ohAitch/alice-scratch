@@ -28,7 +28,7 @@ formats include
 	pixels (grey)    
 	stdin            fd:0
 	FIFO             fd:0…
-	:executable      ,/^#!/ | try{fs.accessSync(ι,fs.X_OK); ↩ true} catch(e){↩ false}
+	:executable      ,/^#!/ | catch_ι(()=>( fs.accessSync(ι,fs.X_OK), true ))
 files at paths can be GET POST PUT DELETE, but POST PUT DELETE can be folded into SET, but we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help). GET POST PUT have really tangly apis for all sorts of efficiency concerns. symlinks pretend to be their targets sometimes and show themselves as symlinks some other times.
 	? transform-move $bashpath (includes mv)
 	? synchronize datasource 1 with datasource 2 (includes cp -r)
@@ -548,7 +548,7 @@ E.pixels = {
 
 
 
-
+# http://nodejs.org/api/fs.html
 filesystem
 * paths
 * errors & handling

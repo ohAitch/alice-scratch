@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ₂
 
-// file:///~/ali/github/lang-alpha/how\ code-thoughts\ really\ work.✨.js
+# file:/~/code/scratch/.abandoned/aide/how%20arithlang%20really%20works
 // file:///~/ali/github/scratch/#archive/README.txt
 // bug: line wrapping doesn't work
 
@@ -9,7 +9,7 @@
 argv ← process.argv.slice(2)
 stdout ← λ(ι){process.stdout.write(ι)}
 remove_ansi_colors ← λ(ι){↩ ι.replace(/\[.+?m/g,'')}
-diy_stdin ← λ(f){process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',λ(key){f(key) === -1 && process.stdin.pause()})}
+diy_stdin ← f=>{ process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
 IS_URL ← /^((https?|file):\/\/|mailto:)/.λ
 FIND_URL ← /\b((https?|file):[⟩\/][⟩\/](?:\\ |\S)+|mailto:[^\s\\@]+@[^\s\\@]+)/.λ
 postredirect_url ← λ(ι){↩ ι

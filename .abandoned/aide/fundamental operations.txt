@@ -1,6 +1,5 @@
 ------------------------------------- notes ------------------------------------
 	anything we do *definitely* needs to be super extensible
-	kill sublime nag?
 	improve run command
 	lots of these command exclusively use either right-modifiers or left-modifiers. you maybe should write down which ones.
 

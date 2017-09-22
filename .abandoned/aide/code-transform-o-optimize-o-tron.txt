@@ -1,9 +1,0 @@
-http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/bw_paper.ζ
-http://github.com/alice0meta/scratch/blob/30c27d2e5b550eefc17cbb45ff872734acb48607/ζ/builtins.ζ#L370-L384
-is like
-http://github.com/alice0meta/scratch/blob/da73f35b25da6b96da7d369c2da2af40c1ba20a3/bw_paper.ζ
-http://github.com/alice0meta/scratch/blob/da73f35b25da6b96da7d369c2da2af40c1ba20a3/ζ/builtins.ζ#L366-L379
-but way faster, and also some other things
-and it’s way faster in a really mechanical way
-we, like, profiled, and noticed a fucking slow library, and took it out, and other shit like that
-http://github.com/alice0meta/scratch/blob/master/bw_paper.ζ
