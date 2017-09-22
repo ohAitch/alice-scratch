@@ -47,7 +47,7 @@ p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
 sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb.tab.active.ι'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
 
-################ personal configuration ### for interactive mode ###############
+################## personal concepts ### for interactive mode ##################
 
 ############# im_ ############
 im_size(){ for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }

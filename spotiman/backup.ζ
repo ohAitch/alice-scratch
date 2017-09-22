@@ -27,7 +27,7 @@ get_my_tracks ← ()=>Π(yes=>{
 				depaginate(opt=> spotify.getPlaylistTracks(ι.owner.id,ι.id,opt), r=>{
 					pl ← ι; r.map(ι=> intern_track(ι.track).tags.push({name:pl.name, added_at:ι.added_at}) )
 					cb() })
-			},()=>{ yes(tracks_r._.values()) }
+			},()=>{ yes(_(tracks_r).values()) }
 			) }) }).done() })
 
 // ---------------------------------- main ---------------------------------- //

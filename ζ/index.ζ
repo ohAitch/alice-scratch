@@ -81,7 +81,8 @@ T.boxed.ι = new Set(['Boolean','String','Number'])
 E.def = (o,name,ι)=>{
 	Tfun(ι) &&( ι = lazy(name,ι) )
 	'configurable' in ι ||( ι.configurable = true )
-	if( !ι.configurable ) ι.writable = false; else{
+	if( !ι.configurable ){ if( 'value' in ι ) ι.writable = false }
+	else{
 		if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
 		else if( ι.writable ){ delete ι.writable; ι.set && ‽; ι.set = λ(ι){ def(@,name,{ value:ι, enumerable:true, }) } }
 		}
@@ -100,34 +101,36 @@ def(E,'require_new',lazy('require_new',()=>{ t ← npm`require-uncached@1.0.3`; 
 _.mixin({ isEqual:lodash.isEqual })
 
 #################################### ζ infra ###################################
-E.Property = λ(o,name){ this.o = o; this.name = name; }
-def(Property.prototype,'ι',{ get(){↩ @.o[@.name]}, set(ι){ @.o[@.name] = ι } })
-# Property.prototype.descriptor = λ(ι){ if( arguments.length===0 ) ↩ Object.getOwnPropertyDescriptor(@.o,@.name); else Object.defineProperty(@.o,@.name,ι) }
+E.Property = λ(o,name){ ;this.o = o ;this.name = name }
+def(Property.prototype,'ι',{ get(){↩ @.o[@.name] }, set(ι){ @.o[@.name] = ι } })
 Property.prototype.def = λ(ι){ def(@.o,@.name,ι); ↩ @ }
 Property.prototype.delete = λ(){ delete @.o[@.name]; ↩ @ }
 Property.prototype.map! = λ(f){ @.ι = f(@.ι,@.name,@.o); ↩ @ }
 def(Property.prototype,'bind',{get(){↩ @.o[@.name].bind(@.o) }})
 def(Property.prototype,'∃',{get(){↩ @.name in @.o }})
-# id like an interface more like def, but def doesnt have a getter so it is temporary
-# this should probably supercede def, since <3 firstclassness?
 
-# Object.getOwnPropertyDescriptor(obj, prop)
-# Object.getOwnPropertyDescriptors(obj)
-
-# Object.defineProperty(obj, prop, descriptor)
-# Object.defineProperties(obj, props)
-# props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
-
-# enumerable -> … or #…
-# configurable -> 🔒 or #🔒
-# value:
-# writable:
-# get:
-# set:
-
-# and delete
-
-# unifying is hard
+# Property :: Place
+# 	host:{ ,o: ,id: }
+# 	__ι
+# 		__←
+# 		instrument?
+# 	__forget
+# 	__🔒 ← configurable
+# Property ← Relation( ,🔒 ,obj ,id ,place ,enumerable )
+# 	Object.getOwnPropertyDescriptor(obj,id) -> with⇒{
+# 		,🔒: !configurable
+# 		,enumerable
+# 		,place:
+# 			: ∈value? { ,🔒:!writable ,ι:value }
+# 			: { ,get ,set }
+# 		}
+# 	Object.getOwnPropertyDescriptors(obj) -> ι=> Reflect_ownEntries(ι).forEach(([id,ι])=> ι = Object.getOwnPropertyDescriptor(obj,id) )
+# 	# Object.defineProperty(obj, prop, descriptor)
+# 	# Object.defineProperties(obj, props)
+# 	# props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
+# 	# / '\benumerable\b'
+# 	# / def
+# 	# / Property
 
 new Property(eval,'·').def({ enumerable:true, get(){ @(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # ! slotify and then detect and merge slots
@@ -179,7 +182,7 @@ E.ζ_compile = lazy_fn(λ(){ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_o
 			↩ r } })()
 	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
 	id_g ← '->'
-	id_c ←'filter! map… map! ⁻¹declare_uniq ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
+	id_c ←'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
 	id_d ← [ '-0',id_g,id_c ].join(' ')
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι=`) # an initial try; probably .name inference needs another form
@@ -746,7 +749,7 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 # s is interned, so use it as a memoization key for things
 E.is_template = ([ss,…ιs])=> ss && Tarr(ss.raw) && ss.raw.‖-1 === ιs.‖
 tmpl_flatten ← (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
-simple_template ← λ(ss,ιs,filter){ is_template([ss,…ιs]) || ‽
+E.simple_template = λ(ss,ιs,filter){ is_template([ss,…ιs]) || ‽
 	falsy ← ι=> ι===undefined||ι===null||ι===false
 	if( filter && !Tfun(filter) ){ [root,join] ← filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	filter_special ← ι=> falsy(ι)? '' : ι+''
@@ -761,7 +764,7 @@ E.easy_template = (λ(){
 	})()
 
 E.clipboard = def({,},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
-E.sb = λ self(){↩ self._call() } # let personal configuration use sb as callable
+E.sb = λ self(){↩ self._call() } # let personal concepts use sb as callable
 [#Q sb.tab #Q].def({
 	get(){
 		r ← sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -827,7 +830,7 @@ _shₐ ← (ss,ιs,opt={,})=>{
 	else{ code ← sh(ss,…ιs)
 		# ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) <- (opt))
 		# ι.exit.then(exit=>{ if_sh_err('shₐ',code,_(ι) <- ({exit})) })
-		ι ← require('child_process').spawn(code,_({shell:true}) <- (_(opt).pick('stdio')))
+		ι ← require('child_process').spawn(code,_({shell:true}) <- (_(opt).pick('stdio','detached')))
 			.on('exit',λ(status){ if_sh_err('shₐ',code,_({status}) <- (ι)) })
 		↩ ι } }
 E.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
@@ -1043,7 +1046,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 		↩ new Φ(path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
 	↩ φ })
 
-############################ personal configuration ############################
+############################### personal concepts ##############################
 sb._call = ()=> sb.tab.active.ι
 E.p = λ(ι){ t ← clipboard; ↩ arguments.length === 0? t.ι :( t.ι = ι ) }
 
@@ -1101,7 +1104,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 	my_inspect ← (ι,opt={,})⇒
 		: ι===undefined? ''
 		: T.Promise(ι)? 0?0
-			: ι.status? 'Π '+my_inspect(ι.ι,opt)
+			: ι.status? 'Π '+q(ι.ι,opt)
 			: ι.status===undefined?( promise_watch(ι), `Π #${ι.id} { <pending> }` )
 			: q(ι,opt)
 		: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && _.range(ι.‖).every(t=> t in ι)

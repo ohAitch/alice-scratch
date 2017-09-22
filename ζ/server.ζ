@@ -22,12 +22,11 @@ diff ← (a,b)=>{r←; ↩0?0
 	↩ _.zip(start,a).map(a=> diff(…a)).filter(ι=> ι.‖).map(ι⇒ { Δ:ι }) }
 
 ###################################### lib #####################################
-# as_module ← ι=> _(φ`/tmp/node_${simple_hash(ι).slice(0,20)}.js`) <- ({ι}) +''
 # eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; t ← as_module(code); ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:true }) }
 eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; ↩ require('child_process').spawn(process.execPath,[…process.execArgv,'-e',code],{ stdio:[…['pipe'].repeat(3),'ipc'] }) }
 eval_in_worker ← (λ(){
 	🏷busy ← new Set(); 🏷free ← new Set()
-	♓_on_exits(()=>{ […busy,…free].map(ι=> ι.kill()) })
+	♓_on_exits(()=> […busy,…free].map(ι=> ι.kill()) ) # ! WET
 	make ← ()=>{ r ← eval_in_new_worker('('+λ(){ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
 		wait ← ()=> ♓_once_eval(ι=>{ try{ (0,eval)(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid

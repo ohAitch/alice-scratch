@@ -4,7 +4,7 @@ E ← module.exports
 E['·'] = ()=>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = null }
 
 ################################# bash prompt ‽ ################################
-# !! mixes prelude and personal config !!
+# !! mixes prelude and personal concepts !!
 E.__prompt = (E,history_1)=>{t←; E ← E |0
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
@@ -76,7 +76,7 @@ E['sb[-1]'] = ()=> sb.tab[-1].ι
 E.D = E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
 E['‡'].cant_pool = true
 
-################ personal configuration ### for interactive mode ###############
+################## personal concepts ### for interactive mode ##################
 E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
@@ -198,9 +198,9 @@ E.bookmarks = ι=>{
 # 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
 
 E.kp = E.keypresses = ()=>{
-	diy_stdin ← λ(f){ process.stdin.setRawMode(true); process.stdin.resume().setEncoding("utf8").on("data",λ(key){ f(key) === -1 && process.stdin.pause() }) }
-	disp ← ["",…";;;;#;;;;█;;;;#;;;;█"].join("-".repeat(9))
-	o←; diy_stdin(λ(ι){ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+"\n")})
+	diy_stdin ← f=>{ process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
+	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.repeat(9))
+	o←; diy_stdin(ι=>{ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
 	}
 E.keypresses.cant_pool = true
 

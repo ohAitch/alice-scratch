@@ -52,6 +52,7 @@
 ^d   cmd.zeta({ "x":"go_to('app','discord')" })
 ^s   cmd.zeta({ "x":"go_to('app','spotify')" })
 ^g   cmd.zeta({ "x":"go_to('app','github desktop')" })
+^i   cmd.zeta({ "x":"go_to('app','google chrome')" })
 ⌥^l  cmd.zeta({ "x":" sfx`ack`; go_to('genius lyrics: '+osaᵥ`spotify: {artist,name} of current track`.join(' - ')) " })
 ^9   cmd.zeta({ "x":" [windows,spaces] ← tsᵥ`[ TS.window_list, (1..TS.number_of_spaces).map{|ι| TS.name_for_space(ι)} ]`; tsᵥ`TS.move_to_space(${spaces.length-1 +1})` " })
 ⌘⇧v  cmd.zeta({ "x":" t ← hsᵥ`hs.pasteboard.typesAvailable()`; if (t.image && !t.string){ out ← φ`~/.image_cache/${random_id(6)}.png`.ensure_dir(); p('file:/'+(out+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')); hsᵥ`hs.pasteboard.readImage():saveToFile(${out+''})` }; robot_key_tap('⌘⇧v') // ! really should be ⌘v " })

@@ -81,7 +81,8 @@ T.boxed.ι = new Set(['Boolean','String','Number'])
 E.def = (o,name,ι)=>{
 	Tfun(ι) &&( ι = lazy(name,ι) )
 	'configurable' in ι ||( ι.configurable = true )
-	if( !ι.configurable ) ι.writable = false; else{
+	if( !ι.configurable ){ if( 'value' in ι ) ι.writable = false }
+	else{
 		if( 'value' in ι ) 'writable' in ι ||( ι.writable = true )
 		else if( ι.writable ){ delete ι.writable; ι.set && !function(){throw Error('‽')}(); ι.set = function(ι){ def(this,name,{ value:ι, enumerable:true, }) } }
 		}
@@ -100,34 +101,36 @@ def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`
 _.mixin({ isEqual:lodash.isEqual })
 
 //################################### ζ infra ###################################
-E.Property = function(o,name){ this.o = o; this.name = name; }
-def(Property.prototype,'ι',{ get(){return this.o[this.name]}, set(ι){ this.o[this.name] = ι } })
-// Property.prototype.descriptor = λ(ι){ if( arguments.length===0 ) ↩ Object.getOwnPropertyDescriptor(@.o,@.name); else Object.defineProperty(@.o,@.name,ι) }
+E.Property = function(o,name){ ;this.o = o ;this.name = name }
+def(Property.prototype,'ι',{ get(){return this.o[this.name] }, set(ι){ this.o[this.name] = ι } })
 Property.prototype.def = function(ι){ def(this.o,this.name,ι); return this }
 Property.prototype.delete = function(){ delete this.o[this.name]; return this }
 Property.prototype["map!"] = function(f){ this.ι = f(this.ι,this.name,this.o); return this }
 def(Property.prototype,'bind',{get(){return this.o[this.name].bind(this.o) }})
 def(Property.prototype,'∃',{get(){return this.name in this.o }})
-// id like an interface more like def, but def doesnt have a getter so it is temporary
-// this should probably supercede def, since <3 firstclassness?
 
-// Object.getOwnPropertyDescriptor(obj, prop)
-// Object.getOwnPropertyDescriptors(obj)
-
-// Object.defineProperty(obj, prop, descriptor)
-// Object.defineProperties(obj, props)
-// props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
-
-// enumerable -> … or #…
-// configurable -> 🔒 or #🔒
-// value:
-// writable:
-// get:
-// set:
-
-// and delete
-
-// unifying is hard
+// Property :: Place
+// 	host:{ ,o: ,id: }
+// 	__ι
+// 		__←
+// 		instrument?
+// 	__forget
+// 	__🔒 ← configurable
+// Property ← Relation( ,🔒 ,obj ,id ,place ,enumerable )
+// 	Object.getOwnPropertyDescriptor(obj,id) -> with⇒{
+// 		,🔒: !configurable
+// 		,enumerable
+// 		,place:
+// 			: ∈value? { ,🔒:!writable ,ι:value }
+// 			: { ,get ,set }
+// 		}
+// 	Object.getOwnPropertyDescriptors(obj) -> ι=> Reflect_ownEntries(ι).forEach(([id,ι])=> ι = Object.getOwnPropertyDescriptor(obj,id) )
+// 	# Object.defineProperty(obj, prop, descriptor)
+// 	# Object.defineProperties(obj, props)
+// 	# props An object whose own enumerable properties constitute descriptors for the properties to be defined or modified.
+// 	# / '\benumerable\b'
+// 	# / def
+// 	# / Property
 
 new Property(eval,'·').def({ enumerable:true, get(){ this(ζ_compile(φ`/tmp/__·`.text).replace(/^#!.*/,'')) }, })
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } // ! slotify and then detect and merge slots
@@ -182,7 +185,7 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 			return r } })()
 	var s_or = ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
 	var id_g = '->'
-	var id_c ='filter! map… map! ⁻¹declare_uniq ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
+	var id_c ='filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
 	var id_d = [ '-0',id_g,id_c ].join(' ')
 	var ζ_compile_nonliteral = ι=> ι
 		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι=`) // an initial try; probably .name inference needs another form
@@ -495,13 +498,16 @@ E.walk_reduce = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> 
 E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (function(){ for (var k in ι) if (Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f); return f(ι) })()
 E.search_obj = (ι,f)=>{ var r=[]; walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)); return r }
 E.search_graph = (ι,f)=>{ var r=[]; walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)); return r }
+// the right name for walk is going to be along the lines of
+// f /@ x       x.map(f)
+// f //@ x      postwalk(x,f) # MapAll
+// it could be a data structure that you can fmap over
 
 E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]); return t[0] + t[1]*1e-9 }
 E.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι); r.toString = function(){return util.inspect(this) }; return r }
 var fmt = function(a,b){ var t = this.__local? moment(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString(); t = t.slice(a,b); if (!this.__local && b > 10) t += 'Z'; return t }
 assign_properties_in_E_informal({
-'Date.prototype.inspect':function(d,opts){return opts.stylize(isNaN(+this)? 'Invalid Date' : this.getUTCSeconds()!==0? this.ymdhms : this.getUTCMinutes()!==0? this.ymdhm : this.getUTCHours()!==0? this.ymdh : this.ymd, 'date')}
-,'Date.prototype.local':{get(){return _(new Date(this)) ['<-'] ({__local:true})}}
+'Date.prototype.local':{get(){return _(new Date(this)) ['<-'] ({__local:true})}}
 ,'Date.prototype.i':{get(){return +this / 1e3}}
 ,'Date.prototype.ym':      {get(){return fmt.call(this,0,'YYYY-MM'["‖"])}}
 ,'Date.prototype.ymd':     {get(){return fmt.call(this,0,'YYYY-MM-DD'["‖"])}}
@@ -746,7 +752,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 // s is interned, so use it as a memoization key for things
 E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
 var tmpl_flatten = (raw2,ιs2)=> _.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
-var simple_template = function(ss,ιs,filter){ is_template([ss,...ιs]) || !function(){throw Error('‽')}()
+E.simple_template = function(ss,ιs,filter){ is_template([ss,...ιs]) || !function(){throw Error('‽')}()
 	var falsy = ι=> ι===undefined||ι===null||ι===false
 	if( filter && !Tfun(filter) ){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	var filter_special = ι=> falsy(ι)? '' : ι+''
@@ -761,7 +767,7 @@ E.easy_template = (function(){
 	})()
 
 E.clipboard = def(new O1(),'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
-E.sb = function self(){return self._call() } // let personal configuration use sb as callable
+E.sb = function self(){return self._call() } // let personal concepts use sb as callable
 new Property( sb,'tab' ).def({
 	get(){
 		var r = sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -827,7 +833,7 @@ var _shₐ = (ss,ιs,opt=new O1())=>{
 	else{ var code = sh(ss,...ιs)
 		// ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) <- (opt))
 		// ι.exit.then(exit=>{ if_sh_err('shₐ',code,_(ι) <- ({exit})) })
-		var ι = require('child_process').spawn(code,_({shell:true}) ['<-'] (_(opt).pick('stdio')))
+		var ι = require('child_process').spawn(code,_({shell:true}) ['<-'] (_(opt).pick('stdio','detached')))
 			.on('exit',function(status){ if_sh_err('shₐ',code,_({status}) ['<-'] (ι)) })
 		return ι } }
 E.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
@@ -1043,7 +1049,7 @@ new Property( E,'φ' ).def(()=>{
 		return new Φ(path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
 	return φ })
 
-//########################### personal configuration ############################
+//############################## personal concepts ##############################
 sb._call = ()=> sb.tab.active.ι
 E.p = function(ι){ var t = clipboard; return arguments.length === 0? t.ι :( t.ι = ι ) }
 
@@ -1062,6 +1068,10 @@ assign_properties_in_E_informal({
 	: Number.isSafeInteger(ι)? ''+ι
 	: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
 	,'number') }
+,'Date.prototype.inspect':function(d,opts){return opts.stylize(isNaN(+this)? 'Invalid Date' : this.getUTCSeconds()!==0? this.ymdhms : this.getUTCMinutes()!==0? this.ymdhm : this.getUTCHours()!==0? this.ymdh : this.ymd, 'date')}
+// ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/); ↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
+// ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
+// ,inspect(ˣ,opts){↩ opts.stylize('φ','special')+opts.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 })
 
 E.cn = { log:(...a)=> console.log(
@@ -1097,7 +1107,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 	var my_inspect = (ι,opt=new O1())=>0?0
 		: ι===undefined? ''
 		: T.Promise(ι)? 0?0
-			: ι.status? 'Π '+my_inspect(ι.ι,opt)
+			: ι.status? 'Π '+q(ι.ι,opt)
 			: ι.status===undefined?( promise_watch(ι), `Π #${ι.id} { <pending> }` )
 			: q(ι,opt)
 		: Tarr(ι) && ι["‖"] > 1 && ι.every(t=> t===ι[0]) && _.range(ι["‖"]).every(t=> t in ι)

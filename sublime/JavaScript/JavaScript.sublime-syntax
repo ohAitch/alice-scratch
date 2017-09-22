@@ -561,7 +561,7 @@ contexts:
         \*   | # multiplication  left-to-right   both
         \+   | # addition        left-to-right   both
         -    | # subtraction     left-to-right   both
-        ∪|∩|∃|∄|∈|∉|∀|≈
+        ∪|∩|∃|∄|∈|∉|∀|≈|[⧗∋∌⌈⌊‖⍟⋯‼·⌕⚓¶]
       scope: keyword.operator.arithmetic.js
       push: after-operator
     - match: '\?|:'

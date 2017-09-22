@@ -42,7 +42,10 @@ host2 ← location.host.split('.').slice(-2).join('.')
 if( when_at.some(ι=> host2===ι) )
 	css('* { image-rendering:pixelated; }')
 
-has_prop(window,'my') ||( window.my = ()=> window.$ = $ )
+has_prop(window,'my') ||( window.my = ()=>{
+	window.global = window
+	global.$ = $
+	})
 
 // -------------------------------------------------------------------------- //
 if( at_url('*github.com') || at_url('*githubusercontent.com') )

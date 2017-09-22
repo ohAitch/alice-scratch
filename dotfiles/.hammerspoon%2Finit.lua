@@ -18,14 +18,6 @@ start(hs.pathwatcher.new(__filename, function(files)
 	local t = false; for _,file in pairs(files) do if file:sub(-4) == '.lua' then t = true end end; if t then hs.reload() end
 	end))
 
------- external command ------
-function hs.ipc.handler(x) local fn, err = load('return '..x); if not fn then fn, err = load(x) end; local r; if fn then r = fn() else r = err end; return hs.json.encode({r}) end
--- local PORT = 34290
--- start(hs.httpserver.new(false,false):setPort(PORT):setCallback(function(type_,path,headers,body)
--- 	local x = assert(loadfile('/tmp/fs_ipc_'..PORT))()
--- 	return hs.json.encode({x}),200,{}
--- 	end))
-
 ------------------------------
 -- start(hs.speech.listener.new():commands({'build','start','yes','github'}):setCallback(function(this,x) hs.alert('heard '..x) end))
 
