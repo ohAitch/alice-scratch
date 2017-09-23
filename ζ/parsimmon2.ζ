@@ -111,13 +111,13 @@ Parser ← λ(a){ _(@) <- (a) }
 
 Parser.prototype.parse = λ(stream){ Tstr(stream) || ‽
 	p ← @//.resolve()
-	G_opt.fast = true; r ← p.skip(eof)._(stream,0)
-	if (!r.status){ G_opt.fast = false; r ← p.skip(eof)._(stream,0); !!r.status && ‽; ‽({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
+	G_opt.fast = ✓; r ← p.skip(eof)._(stream,0)
+	if (!r.status){ G_opt.fast = ✗; r ← p.skip(eof)._(stream,0); !!r.status && ‽; ‽({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
 	↩ r.value }
 
-// make_win ← (index,value)⇒ { status:true, index, value, }
-make_win ← (index,value)⇒ { status:true, index, value, furthest:-1, expected:[], }
-make_lose ← (index,expected)⇒ { status:false, index:-1, value:null, furthest:index, expected:[expected], }
+// make_win ← (index,value)⇒ { status:✓, index, value, }
+make_win ← (index,value)⇒ { status:✓, index, value, furthest:-1, expected:[], }
+make_lose ← (index,expected)⇒ { status:✗, index:-1, value:null, furthest:index, expected:[expected], }
 
 P.seq = (…ps)=> __seq(ps.map(P.X))
 
@@ -149,8 +149,8 @@ unsafe_union ← (xs,ys)=>{
 	yL ← ys.‖
 	if (xL===0) ↩ ys; else if (yL===0) ↩ xs
 	r ← {,}
-	for (i ← 0; i < xL; i++) r[xs[i]] = true
-	for (i ← 0; i < yL; i++) r[ys[i]] = true
+	for (i ← 0; i < xL; i++) r[xs[i]] = ✓
+	for (i ← 0; i < yL; i++) r[ys[i]] = ✓
 	↩ _.keys(r).sort() }
 
 P.format_error = (stream,error)=>{

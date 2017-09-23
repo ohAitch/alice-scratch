@@ -4,10 +4,10 @@ _ ← require('underscore')
 $ ← require('jquery')
 def ← (o,name,ι)=>{
 	if (Tfun(ι)) ι = lazy(name,ι)
-	'configurable' in ι || (ι.configurable = true)
+	'configurable' in ι || (ι.configurable = ✓)
 	'value' in ι?
-		'writable' in ι || (ι.writable = true) :
-		'set' in ι || (ι.set = λ(ι){ def(@,name,{value:ι, enumerable:true}) })
+		'writable' in ι || (ι.writable = ✓) :
+		'set' in ι || (ι.set = λ(ι){ def(@,name,{value:ι, enumerable:✓}) })
 	Object.defineProperty(o,name,ι); ↩ o }
 Tfun ← E.Tfun = ι=> typeof ι === 'function'
 Function.prototype.every = λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); /*↩ !(opt&&opt.leading)? r : new TimerCons(@.in(0),r)*/ }

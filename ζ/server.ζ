@@ -22,7 +22,7 @@ diff ← (a,b)=>{r←; ↩0?0
 	↩ _.zip(start,a).map(a=> diff(…a)).filter(ι=> ι.‖).map(ι⇒ { Δ:ι }) }
 
 ###################################### lib #####################################
-# eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; t ← as_module(code); ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:true }) }
+# eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; t ← as_module(code); ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
 eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; ↩ require('child_process').spawn(process.execPath,[…process.execArgv,'-e',code],{ stdio:[…['pipe'].repeat(3),'ipc'] }) }
 eval_in_worker ← (λ(){
 	🏷busy ← new Set(); 🏷free ← new Set()
@@ -61,7 +61,7 @@ if_main_do(()=>{
 		.on('connection',λ(socket){t←;
 			worker←; ended←;
 			c_send ← λ(type,ι){ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); socket.write(Buffer.concat([a,b,c])) }
-			socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGKILL'); ended = true })).on('error',t)
+			socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGKILL'); ended = ✓ })).on('error',t)
 			socket.on('data',catch_(λ(ι){
 				if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
 				i←0; get ← n=> i+n <= ι.‖ ||( buf = ι.slice(i), return_() )
@@ -73,11 +73,11 @@ if_main_do(()=>{
 				break; case 'E': [,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
 				break; case 'D': a.cwd = ι.ι+''
 				break; case 'R':
-					if( a.argv[1]==='TEST' ){ c_send('X',5+''); ended = true; ↩ }
+					if( a.argv[1]==='TEST' ){ c_send('X',5+''); ended = ✓; ↩ }
 					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
 					{on,off} ← on_off()
 					;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
-					on(worker,'exit_',λ(i){ c_send('X',i+''); ended = true; off() })
+					on(worker,'exit_',λ(i){ c_send('X',i+''); ended = ✓; off() })
 					# c_send('S')
 				break; case 'H': # not sure what this is for
 				break; case '0': # c_send('S'); worker.stdio[0].write(ι.ι)

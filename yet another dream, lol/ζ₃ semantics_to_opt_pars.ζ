@@ -29,7 +29,7 @@ countBy ← ι=>{ r ← new Map(); for (var t of ι) r.set(t, (r.has(t)? r.get(t
 interesting ← ι⇒
 	: ι.type==='seq'? ι.ι.some(interesting)
 	: ι.type==='js_data'? ι.ι !== undefined
-	: true
+	: ✓
 
 // ------------------------- instrumented data types ------------------------ //
 // so far just pretty printing
@@ -91,16 +91,16 @@ call closure function js_data local_private_slot member name number object seq s
 // -------------- convert babylon ast into intermediate format -------------- //
 vmζ_parse ← code=>{
 	// https://github.com/babel/babylon/blob/master/ast/spec.md
-	r ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:true})
+	r ← npm`babylon@6.14.1`.parse(ζ_compile(code),{allowReturnOutsideFunction:✓})
 	r = walk_obj_edit(r,ι=>{
 		// --------------- error on asts i dont know how to handle -------------- //
 		ι.directives && ( !ι.directives.‖ || ‽(ι) )
 		if (ι.type==='VariableDeclaration') ι.kind==='var' || ‽(ι)
 		if (ι.type==='VariableDeclarator') ι.id.type==='name' || ‽(ι)
 		if (ι.type==='MemberExpression') (!ι.computed || ι.property.type==='name') || ‽(ι)
-		if (ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression') ( ι.generator===false && ι.async===false && ι.params.every(ι=> ι.type==='name') ) || ‽(ι)
+		if (ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression') ( ι.generator===✗ && ι.async===✗ && ι.params.every(ι=> ι.type==='name') ) || ‽(ι)
 		if (ι.type==='BinaryExpression') _(['+','*']).contains(ι.operator) || ‽(ι)
-		if (ι.type==='ObjectProperty') ι.method===false || ‽(ι)
+		if (ι.type==='ObjectProperty') ι.method===✗ || ‽(ι)
 		// ----------------------- simplify babylon's ast ----------------------- //
 		ι = _(ι).omit('start end loc directives leadingComments trailingComments __clone'.split(' '))
 		↩ 0?0
@@ -144,9 +144,9 @@ vmζ_parse ← code=>{
 			if (ι.ι.‖===1) ι = ι.ι[0]
 			}
 		if (ι.type==='function'){
-			edit ← false
-			if (ι.ι.type==='seq' && ι.ι.ι[-1].type==='break_fn'){ ι.ι.ι.pop(); edit = true }
-			if (ι.ι.type==='seq' && ι.ι.ι[-1].type==='set_result'){ ι.ι.ι[-1] = ι.ι.ι[-1].ι; edit = true }
+			edit ← ✗
+			if (ι.ι.type==='seq' && ι.ι.ι[-1].type==='break_fn'){ ι.ι.ι.pop(); edit = ✓ }
+			if (ι.ι.type==='seq' && ι.ι.ι[-1].type==='set_result'){ ι.ι.ι[-1] = ι.ι.ι[-1].ι; edit = ✓ }
 			if (edit) ι.ι = opti_semantic(ι.ι)
 			}
 		↩ ι}

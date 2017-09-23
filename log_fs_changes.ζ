@@ -11,7 +11,7 @@ log2 ← (…a)=> φ`/tmp/log_φΔs.txt`.text += [APP,…a].join(' ')+'\n'
 
 fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩ }
-	fsʷ._events[fl] || npm`chokidar@1.7.0`.watch(fl,{ignoreInitial:true,alwaysStat:true})
+	fsʷ._events[fl] || npm`chokidar@1.7.0`.watch(fl,{ ,ignoreInitial:✓ ,alwaysStat:✓ })
 		.on('error',λ(ι){ console.error('[fs_watch] wat '+ι) })
 		.on('all',λ(ev,ι,stat){ t ← {'addDir':'add','unlinkDir':'unlink'}; type ← t[ev]||ev; fsʷ.emit(fl, ι, {type, dir: !!t[ev], stat, time: type==='unlink'? new Date() : stat.ctime}) })
 	})
@@ -32,8 +32,8 @@ fsʷ.on('.', λ(fl,{type,dir,time}){if (dir || fl.re`(^|/)\.archive(/|$)` || /\.
 // // ------- so let's add another fucked up bit, and watch for doi files ------ //
 // E.has_doi = φι=>{
 // 	is_doi ← re`(doi:|doi\.org/) *…${npm`doi-regex@0.1.4`().source}`.i
-// 	↩ Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(false) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
-// chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
+// 	↩ Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(✗) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
+// chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
 // 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
 // 		has_doi(ι).then(t=>{ if (t) {
 // 			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
@@ -46,7 +46,7 @@ spotify_state ← ()=>{ var [[id,playL,size],volume,state,at] = osaᵥ`spotify: 
 ;(()=>{ φ`~/file/spotify.txt`.text += util_inspect_autodepth(spotify_state())+'\n' }).every(10)
 
 // ---------- so let's add another fucked up bit, and kill DS_Store --------- //
-chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:true}).on('all',λ(ev,ι){
+chokidar.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'')
 	if (φ(ι).name === '.DS_Store')
 		shᵥ`rm ${ι}`

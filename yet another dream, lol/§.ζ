@@ -42,7 +42,7 @@ parse ← (λ(){
 		['2 center','=','≠','<','>','≤','≥'],
 		['1 right','!'],
 		])
-	// root ← P.seq_map(P('°').or(P.of('')), expr, λ(is_macro,ι){ ↩ is_macro? {is_macro__bad:true, ι} : ι })
+	// root ← P.seq_map(P('°').or(P.of('')), expr, λ(is_macro,ι){ ↩ is_macro? {is_macro__bad:✓, ι} : ι })
 	root ← P.seq(P('°').or(P.of('')), WS, expr, WS).map(ι=> AST('macro?',{ι}))
 	↩ λ(src){ ι ← root.parse(src); ι.status || ‽('§ tried to parse',[src],'and got',ι); ↩ ι.value } })()
 

@@ -328,4 +328,34 @@ i shouldn't have to go through the filesystem to send files from web
 i'd really like earbud metadata
 
 -------------------------- i dont know what this does --------------------------
-;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(true) ) # sad fix
+;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(✓) ) # sad fix
+
+------------------------ global-invariant type detection -----------------------
+E.__global = (()=>{
+	anon_e4jlu ← ι=> catch_ι(()=> ι.toString.constructor('return this')() )
+	id ← Symbol.for('⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙')
+	↩ ι=>{t←;G←; if( Tprim(ι) ) ↩; if(t= ι[id] ) ↩ t; if(!(G= anon_e4jlu(ι) )) ↩; new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ }); ↩ ι[id] } })()
+Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
+ι=> __global(ι) && ι instanceof __global(ι)[T]     super mega slow
+ι=> ι instanceof Array                             faster or on par with builtin
+ι=> ι instanceof global.Array                      very slow??
+
+------------------------------------- cruft ------------------------------------
+'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
+	# https://github.com/Automattic/kue
+	# https://github.com/rschmukler/agenda
+	# robust to setTimeout taking extra time
+	# ! not robust to the process failing ! should use redis or something instead !
+	# ! wth is up with the { hrtime() <-> time } comparison
+	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
+	P←; ensure ← λ(){if (P) ↩; P = ✓; (λ Λ(){t←;
+		qu.size() === 0? (P = ✗) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
+		})() }
+	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = null}) } }),
+E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
+E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
+del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
+im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
+convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
+ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
+E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id

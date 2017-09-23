@@ -5,7 +5,7 @@ P ← require('./mainβ')
 ;(λ(){
 	{Rₐ:R} ← require('./record')
 	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
-	walk_regex ← (ι,f)=> ->(ι)(λ Λ(ι){ if (ι && ι.tag){
+	walk_regex ← (ι,f)=> |>(ι)(λ Λ(ι){ if (ι && ι.tag){
 		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
 		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
@@ -67,7 +67,7 @@ P ← require('./mainβ')
 			if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 			})
 		_(ι) <- ({version})
-		# ->(ι)(λ Λ(ι){ if (ι && ι.tag){
+		# |>(ι)(λ Λ(ι){ if (ι && ι.tag){
 		# 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
 		# 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 		# 	}; ↩ ι })
@@ -75,19 +75,19 @@ P ← require('./mainβ')
 	normalize_to_axioms_regex ← ι=>{
 		ι.version === version || ‽
 		ι = walk_regex(ι,(ι,{change})=>{
-			is_null ← ι=> Tstr(ι)? false : ( (ι.≈`#alt` || ι.≈`#seq`) && ι.ι.every(is_null) ) || ( ι.≈`#not` && is_bottom(ι.ι) )
-			is_bottom ← ι=> Tstr(ι)? false : ( ι.≈`#alt` && ι.ι.every(is_bottom) ) || ( ι.≈`#seq` && ι.ι.some(is_bottom) ) || ( ι.≈`#not` && is_null(ι.ι) )
+			is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`#alt` || ι.≈`#seq`) && ι.ι.every(is_null) ) || ( ι.≈`#not` && is_bottom(ι.ι) )
+			is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`#alt` && ι.ι.every(is_bottom) ) || ( ι.≈`#seq` && ι.ι.some(is_bottom) ) || ( ι.≈`#not` && is_null(ι.ι) )
 			if( ι.≈`#seq` ){
 				ι = change({ ι: ι.ι.map…(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] ) }, _.isEqual)
 				if (ι.ι.‖===1) ↩ ι.ι[0]
 				}
-			if( !skip_e2rbm ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_e2rbm = true; r = $(r); skip_e2rbm = false; ↩ r } })
+			if( !skip_e2rbm ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_e2rbm = ✓; r = $(r); skip_e2rbm = ✗; ↩ r } })
 			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
 		_(ι) <- ({version})
 		↩ ι }
-	parse_normalize_regex_memoized ← ι=>{ t ← ->(ι)(anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+	parse_normalize_regex_memoized ← ι=>{ t ← |>(ι)(anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
 	_(t).map(ι=> _(ι) <- ({version}) )

@@ -34,7 +34,7 @@ _pastebin_id ← ()=> Π(yes=>
 	process.stdin.pin((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
 		yes( (t+'').replace(/.*\//,'') ) }) )
-E.pb.cant_pool = true
+E.pb.cant_pool = ✓
 
 E.ps2 = ()=>{
 	startup_procs ← ()=>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
@@ -74,7 +74,7 @@ E['sb[-1]'] = ()=> sb.tab[-1].ι
 
 ####################################### ζ ######################################
 E.D = E.diesis = E['‡'] = ()=>{ ‡_repl_start() }
-E['‡'].cant_pool = true
+E['‡'].cant_pool = ✓
 
 ################## personal concepts ### for interactive mode ##################
 E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
@@ -99,7 +99,7 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 			x
 			`) }
 	else{
-		is_project ← ι=> !ι.is_dir? false : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
+		is_project ← ι=> !ι.is_dir? ✗ : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
 		
 		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
 		sfx`ack`
@@ -123,7 +123,7 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(()=> Tstr(ι) &&( ι = JS
 		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
 		;(child_process_as_promise(a())||Promise.resolve()).then(()=> (b()||Promise.resolve()).then(()=> (c()||Promise.resolve()) ) )
 		} }
-E.run_project.cant_pool = true
+E.run_project.cant_pool = ✓
 
 ############################ single-purpose commands ###########################
 E.d = (a='.')=>{
@@ -159,7 +159,7 @@ E.ct = E.chrome_tabs = λ(i){
 
 E.bookmarks = ι=>{
 	# ! should use nice_url
-	use_chrome ← true
+	use_chrome ← ✓
 	safari_bookmarks ← ι=>{
 		my_walk ← ι⇒
 			: Tarr(ι)? ι.map…(my_walk)
@@ -198,11 +198,11 @@ E.bookmarks = ι=>{
 # 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
 
 E.kp = E.keypresses = ()=>{
-	diy_stdin ← f=>{ process.stdin.setRawMode(true); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
+	diy_stdin ← f=>{ process.stdin.setRawMode(✓); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.repeat(9))
 	o←; diy_stdin(ι=>{ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
 	}
-E.keypresses.cant_pool = true
+E.keypresses.cant_pool = ✓
 
 E.regex_set = ()=>{
 	process.stdin.pin().then(ι=>{ ι = (ι+'').replace(/\n$/,'')

@@ -9,7 +9,7 @@ schema2 = ι=>{ anon_7268v←;
 
 	schemas ← (()=>{ # uniq by ≈.schema , index by .ι
 		as_schema ← ι=> _(ι).mapObject(ι⇒
-			: T.boolean(ι)? true
+			: T.boolean(ι)? ✓
 			: Tstr(ι)? ''
 			: Tnum(ι)? 0
 			: schemas.get_ι(ι)? schemas.get_ι(ι).id : ‽(ι) )
@@ -46,7 +46,7 @@ if( global.train ) sb.tab.push(schema2(train))
 
 node ← js.object
 	using: node -> schema ← _(ι).mapObject(ι⇒
-		: T.boolean(ι)? true
+		: T.boolean(ι)? ✓
 		: Tstr(ι)? ''
 		: Tnum(ι)? 0
 		: @.as.name(ι) )
@@ -78,7 +78,7 @@ Type('schema',{
 	,show(){↩ [ JSON_pretty(@), @.as('(node)').‖, @.as.name, ].join(' ') }
 	})
 node.->.schema = λ(ι){↩ _(ι).mapObject(ι⇒
-	: T.boolean(ι)? true
+	: T.boolean(ι)? ✓
 	: Tstr(ι)? ''
 	: Tnum(ι)? 0
 	: @(ι).as.name ) },

@@ -18,7 +18,7 @@ server.emit('talk_to','7ctvbp999d')
 // $('form').submit(λ(){
 //   socket.emit('chat message', $('#m').val())
 //   $('#m').val('')
-//   ↩ false
+//   ↩ ✗
 // })
 // socket.on('chat message', λ(msg){
 //   $('#messages').append($('<li>').text(msg))
@@ -92,8 +92,8 @@ server.emit('talk_to','7ctvbp999d')
 
 //   // get a local stream, show it in a self-view and add it to be sent
 //   navigator.getUserMedia({
-//     'audio': true,
-//     'video': true
+//     'audio': ✓,
+//     'video': ✓
 //   }, λ (stream) {
 //     selfView.src = URL.createObjectURL(stream)
 //     pc.addStream(stream)

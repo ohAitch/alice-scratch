@@ -111,13 +111,13 @@ var Parser = function(a){ _(this) ['<-'] (a) }
 
 Parser.prototype.parse = function(stream){ Tstr(stream) || !function(){throw Error('‽')}()
 	var p = this//.resolve()
-	G_opt.fast = true; var r = p.skip(eof)._(stream,0)
-	if (!r.status){ G_opt.fast = false; var r = p.skip(eof)._(stream,0); !!r.status && !function(){throw Error('‽')}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
+	G_opt.fast = global["✓"]; var r = p.skip(eof)._(stream,0)
+	if (!r.status){ G_opt.fast = global["✗"]; var r = p.skip(eof)._(stream,0); !!r.status && !function(){throw Error('‽')}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
 	return r.value }
 
-// make_win ← (index,value)⇒ { status:true, index, value, }
-var make_win = (index,value)=>0?0: { status:true, index, value, furthest:-1, expected:[], }
-var make_lose = (index,expected)=>0?0: { status:false, index:-1, value:null, furthest:index, expected:[expected], }
+// make_win ← (index,value)⇒ { status:✓, index, value, }
+var make_win = (index,value)=>0?0: { status:global["✓"], index, value, furthest:-1, expected:[], }
+var make_lose = (index,expected)=>0?0: { status:global["✗"], index:-1, value:null, furthest:index, expected:[expected], }
 
 P.seq = (...ps)=> __seq(ps.map(P.X))
 
@@ -149,8 +149,8 @@ var unsafe_union = (xs,ys)=>{
 	var yL = ys["‖"]
 	if (xL===0) return ys; else if (yL===0) return xs
 	var r = new O1()
-	for (var i = 0; i < xL; i++) r[xs[i]] = true
-	for (var i = 0; i < yL; i++) r[ys[i]] = true
+	for (var i = 0; i < xL; i++) r[xs[i]] = global["✓"]
+	for (var i = 0; i < yL; i++) r[ys[i]] = global["✓"]
 	return _.keys(r).sort() }
 
 P.format_error = (stream,error)=>{

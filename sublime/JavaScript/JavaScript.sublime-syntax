@@ -561,7 +561,7 @@ contexts:
         \*   | # multiplication  left-to-right   both
         \+   | # addition        left-to-right   both
         -    | # subtraction     left-to-right   both
-        ∪|∩|∃|∄|∈|∉|∀|≈|[⧗∋∌⌈⌊‖⍟⋯‼·⌕⚓¶]
+        ∪|∩|∃|∄|∈|∉|∀|≈|[⧗∋∌⌈⌊‖⍟⋯‼·⌕⚓¶≉×÷√≠≤≥⊂⊃⊄⊅]
       scope: keyword.operator.arithmetic.js
       push: after-operator
     - match: '\?|:'
@@ -620,10 +620,8 @@ contexts:
       scope: variable.language.Symbol.js
 
   constants:
-    - match: \btrue\b
-      scope: constant.language.boolean.true.js
-    - match: \bfalse\b
-      scope: constant.language.boolean.false.js
+    - match: \b(true|false)\b|✓|✗
+      scope: constant.language.boolean.js
     - match: \bnull\b
       scope: constant.language.null.js
     - match: \bundefined\b

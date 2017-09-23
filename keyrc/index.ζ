@@ -30,11 +30,11 @@ builtin_keys ← parse_boards0(multiline`
 	│  ⇧L z x c v b n m , . /  ⇧R  │
 	│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │
 	└──────────────────────────────┘
-	`)[0].keys._.flatten(true)
+	`)[0].keys._.flatten(✓)
 parse_boards ← λ(ι){
 	ι ← ι.map…(parse_boards0)
 	ι.filter(ι=> ι.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
-	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(true) })
+	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(✓) })
 	ι.forEach(λ(ι){ ι.keys = ι.keys.map(ι=> Object.hasOwnProperty(macros,ι)? macros[ι] : ι) })
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
 	ι = ι.map…(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
@@ -73,7 +73,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {,}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
-	appdef ← ι=> appdefs[ι] = ->(ι)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )); appdefs ← {,}
+	appdef ← ι=> appdefs[ι] = |>(ι)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )); appdefs ← {,}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
@@ -140,13 +140,13 @@ module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
 	fi ← 'notsave.KEY_once_'+random_id(9)
 	db ← (φ`~/.keyrc.json`.json||{,}); id ← random_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
-	regen({minimal:true})
+	regen({minimal:✓})
 	shᵥ`${KB} enable ${fi}`
 	}
 module.exports.robot_key_tap = λ(ι){t←; c←;
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
 	;[…c].∪([]).‖===c.‖ || ‽
-	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : true)){
+	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : ✓)){
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
 		osaᵥ`system events: key code ${[,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}

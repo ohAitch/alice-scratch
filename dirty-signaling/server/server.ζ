@@ -17,15 +17,15 @@ server ← express()
 io ← require('socket.io')(server)
 
 io.on('connection',client=>{ patch_Socket(client)
-	clients_add({ name:random_id(10), socket:client, addrs:[], connected:true })
+	clients_add({ name:random_id(10), socket:client, addrs:[], connected:✓ })
 	cl ← clients_by_socket.get(client)
 	cl.socket
-		.on('disconnect',()=>{ cl.connected = false; updated(cl); clients_delete(cl) })
+		.on('disconnect',()=>{ cl.connected = ✗; updated(cl); clients_delete(cl) })
 		.on('addr_bit',ι=>{ _(cl).addrs.push(ι); updated(cl) })
 		.on('talk_to',name=>{
 			cn.log('client talking to',cl,name)
 			t ← clients_by_name.get(name)
-			if (!t) cl.socket.emit('they_are',{ name, connected:false })
+			if (!t) cl.socket.emit('they_are',{ name, connected:✗ })
 			else{ tell_about_always(cl,t); tell_about_always(t,cl) }
 			})
 	cl.socket.emit('your_name', cl.name )

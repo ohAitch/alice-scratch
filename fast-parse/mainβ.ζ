@@ -61,7 +61,7 @@ P.alt_range = (a,b)=> Parser('alt',{
 	a, b,
 	_:λ*(in_,i){ ι ← in_[i]; if( a<=ι&&ι<b ) yield {i:i+1,ι} },
 	})
-P.prototype.repeat = function(for_,greedy=true){↩ Parser('repeat',{
+P.prototype.repeat = function(for_,greedy=✓){↩ Parser('repeat',{
 	ι:@, for_, greedy,
 	_:λ*(in_,i){
 		if (!@.for_[1]){ yield {i,ι:[]}; ↩ }
@@ -83,9 +83,9 @@ P.prototype.map = λ(f){↩ @.chain( _(λ self(ι,etc){↩ P.return(self.f(ι,et
 def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
 def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
 def(P.prototype,'+',{get(){↩ @.repeat([1,∞]) }})
-def(P.prototype,'??',{get(){↩ @.repeat([0,1],false).map(ι=>ι[0]) }})
-def(P.prototype,'*?',{get(){↩ @.repeat([0,∞],false) }})
-def(P.prototype,'+?',{get(){↩ @.repeat([1,∞],false) }})
+def(P.prototype,'??',{get(){↩ @.repeat([0,1],✗).map(ι=>ι[0]) }})
+def(P.prototype,'*?',{get(){↩ @.repeat([0,∞],✗) }})
+def(P.prototype,'+?',{get(){↩ @.repeat([1,∞],✗) }})
 P.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
 P.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
 P.prototype.sep_by = λ(sep){↩ P([ @, P([sep,@]).map(ι=>ι[1]).* ]).map(([ι,ιs])=> [ι,…ιs]) }
