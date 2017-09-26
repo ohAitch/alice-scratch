@@ -359,3 +359,6 @@ im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v
 convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
+
+---------------------------- which ports are in use ----------------------------
+sudo lsof -PiTCP -sTCP:LISTEN

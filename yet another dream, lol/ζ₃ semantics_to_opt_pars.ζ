@@ -32,22 +32,24 @@ interesting ← ι⇒
 	: ✓
 
 // ------------------------- instrumented data types ------------------------ //
+
 // so far just pretty printing
-Pretty_Typed ← λ(type,ι){ @.type = type; _(@) <- (ι) }
-Pretty_Typed.prototype.inspect = λ(d,opt){t←; r←;
-	if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
-	if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
-	if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
+pt ← {
+	,inspect(d,opt){t←; r←;
+		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
+		if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
+		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
-	ty ← opt.stylize(@.type,'special')
-	if (_(@).keys()._.isEqual(['type','ι'])) r = ty+' '+util.inspect(@.ι,opt)
-	else{
-		t ← _(_(@).pairs()._.object()).omit('type')
-		if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
-		t = util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
+		ty ← opt.stylize(@.type,'special')
+		if (_(@).keys()._.isEqual(['type','ι'])) r = ty+' '+util.inspect(@.ι,opt)
+		else{
+			t ← _(_(@).pairs()._.object()).omit('type')
+			if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
+			t = util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
 
-	↩ ((t=opt._cache.get(@))!==undefined? opt.stylize('#'+t,'quote')+'=' : '')+r }
-τ ← (type,ι)=> new Pretty_Typed(type,ι)
+		↩ ((t=opt._cache.get(@))!==undefined? opt.stylize('#'+t,'quote')+'=' : '')+r }
+	}
+τ ← (type,ι)=> _(Object.create(pt)) <- ({type},ι)
 τι ← (type,ι)=> τ(type,{ι})
 
 // -------------------------------------------------------------------------- //

@@ -32,7 +32,7 @@ tournament ← ι=> until ι≈[r], ι >>← chunk(2) * random by ι
 
 which in js would be
 
-random_by ← (l,f)=>{ ms ← l.map(f); t ← random() * ms.reduce((a,b)=>a+b); ↩ l[ms.findIndex(ι=> (t-=ι) <= 0)] }
+random_by ← (l,f)=>{ ms ← l.map(f); t ← random() * ms.fold((a,b)=>a+b); ↩ l[ms.findIndex(ι=> (t-=ι) <= 0)] }
 tournament ← ι=>{ while( ι.length>1 ) ι = ι.chunk(2).map(ι=> random_by(ι,ι=>ι)); ↩ ι[0] }
 2e6.map(()=> tournament(128..map(ι=> 2**(ι*8/128 |0))))._.countBy()
 2e6.map(()=> tournament(128..map(ι=> 2**(ι%8))))._.countBy()

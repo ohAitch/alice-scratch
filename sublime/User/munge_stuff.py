@@ -82,7 +82,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		ι = [view.substr(ι) for ι in sel]
 		r = json.loads(ζ("""
 			hook_stdouterr ← ()=>{
-				r ← [,'stdout','stderr'].map(io_id=>{
+				r ← [,,'stdout','stderr'].map(io_id=>{
 					io ← [#Q process[io_id].write #Q]
 					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
 					}); ↩ _.memoize( ()=> r.map(ι=> ι()) ) }

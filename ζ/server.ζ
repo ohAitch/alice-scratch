@@ -58,26 +58,26 @@ if_main_do(()=>{
 	# pretty sure there's a race condition in [ln -sf] and [#!/usr/bin/env node] which causes problems with ζλ calls right after a server.ζ reboot. the fix is getting ipc_shell to fallback itself
 	new net.Server()
 		.listen(+φ(__dirname).φ`PORT`.text.re`\d+`[0],'localhost',on_ready)
-		.on('connection',λ(socket){t←;
+		.on('connection',socket=>{t←;
 			worker←; ended←;
-			c_send ← λ(type,ι){ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); socket.write(Buffer.concat([a,b,c])) }
-			socket.on('end',t=_.once(λ(){ !ended && worker && worker.kill('SIGKILL'); ended = ✓ })).on('error',t)
-			socket.on('data',catch_(λ(ι){
+			c_send ← (type,ι)=>{ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); socket.write(Buffer.concat([a,b,c])) }
+			socket.on('end',t=_.once(()=>{ !ended && worker && worker.kill('SIGKILL'); ended = ✓ })).on('error',t)
+			socket.on('data',catch_(ι=>{
 				if (buf){ ι = Buffer.concat([buf,ι]); buf = null }
 				i←0; get ← n=> i+n <= ι.‖ ||( buf = ι.slice(i), return_() )
 				while(i<ι.‖){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
 				})); buf←;
-			a ← {argv:[], cwd:'', env:{,}, isTTY:[,,,]}
+			a ← {argv:[], cwd:'', env:{,}, isTTY:[,,,,]}
 			on_msg ← ι=>{switch(ι.type){default: ‽
 				break; case 'A': a.argv.push(ι.ι+'')
-				break; case 'E': [,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
+				break; case 'E': [ˣ,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
 				break; case 'D': a.cwd = ι.ι+''
 				break; case 'R':
 					if( a.argv[1]==='TEST' ){ c_send('X',5+''); ended = ✓; ↩ }
 					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
 					{on,off} ← on_off()
 					;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
-					on(worker,'exit_',λ(i){ c_send('X',i+''); ended = ✓; off() })
+					on(worker,'exit_',i=>{ c_send('X',i+''); ended = ✓; off() })
 					# c_send('S')
 				break; case 'H': # not sure what this is for
 				break; case '0': # c_send('S'); worker.stdio[0].write(ι.ι)

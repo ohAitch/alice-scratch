@@ -37,7 +37,7 @@ _pastebin_id ← ()=> Π(yes=>
 E.pb.cant_pool = ✓
 
 E.ps2 = ()=>{
-	startup_procs ← ()=>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
+	startup_procs ← ()=>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs._.map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
 	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← ι=> ι.slice(h.search('COMMAND'))
@@ -175,7 +175,7 @@ E.bookmarks = ι=>{
 		↩ my_walk_a(ι) }
 	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
 	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' && (ι.ι = null))
-	ι = walk_reduce(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
+	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
 	sb.tab.push(ι) }
 
 # E.push = ι=>{

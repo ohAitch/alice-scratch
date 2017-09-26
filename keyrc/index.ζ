@@ -18,7 +18,7 @@ transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(ι=> ι.joi
 macros ← {,}
 parse_boards0 ← ι=>
 	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
-		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,''])[1],
+		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,,''])[1],
 		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/gu.λ(ι)),
 		} })
 builtin_keys ← parse_boards0(multiline`
@@ -148,7 +148,7 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 	;[…c].∪([]).‖===c.‖ || ‽
 	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : ✓)){
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
-		osaᵥ`system events: key code ${[,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
+		osaᵥ`system events: key code ${[,,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}
 	else {
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
