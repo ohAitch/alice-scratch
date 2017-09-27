@@ -21,12 +21,12 @@ ctx ← λ(){
 			}else{
 				a.length===2 || ‽
 				[params,code] ← a
-				if (params.ι[0]._.isEqual(parse(`∈`)) && params.ι[1].T==='list' && params.ι[1].ι[0]._.isEqual(parse(`,`)))
+				if (_(params.ι[0]).isEqual(parse(`∈`)) && params.ι[1].T==='list' && _(params.ι[1].ι[0]).isEqual(parse(`,`)))
 					params.ι = params.ι[1].ι.slice(1).map(ι=>{ t ← parse(`(∈)`); t.ι.push(ι,params.ι[2]); ↩ t })
 				↩ Value({call:λ(ctx,a){
 					ctx.stack.push({ fn:@, vars:_.zip(params.ι,a).map(([p,ι])=>
 						//! oh man, this doesn't combine them at all
-						p.T==='ident'? {name:p.ι, ι} :( (p.T==='list' && p.ι[0]._.isEqual(parse(`∈`))) || ‽, {T:'var', name:p.ι[1].ι, ι, type:p.ι[2]} )
+						p.T==='ident'? {name:p.ι, ι} :( (p.T==='list' && _(p.ι[0]).isEqual(parse(`∈`))) || ‽, {T:'var', name:p.ι[1].ι, ι, type:p.ι[2]} )
 						)._.indexBy('name') })
 					//! that is a bit of a weird format, having name diverge from ident
 					//! i guess there's a lot of weird
@@ -34,7 +34,7 @@ ctx ← λ(){
 					ctx.stack.pop()
 					↩ r }})
 			} }, },
-		'←':{ macro:✓, call:λ(ctx,a){ name ← a[0].ι; t ← eval_(ctx,a[1]); t._.omit('ι','type','T')._.keys().length===0 || ‽; ↩ ctx.stack[-1].vars[name] = t._.pick('ι','type')._.assign({T:'var',name}) }, },
+		'←':{ macro:✓, call:λ(ctx,a){ name ← a[0].ι; t ← eval_(ctx,a[1]); _(_(t).omit('ι','type','T')).keys().length===0 || ‽; ↩ ctx.stack[-1].vars[name] = _(_(t).pick('ι','type')).assign({T:'var',name}) }, },
 		';':{ call:λ(ctx,a){↩ a[-1] }, },
 		'list':{ call:λ(ctx,a){↩ Value(a) }, },
 		'flat':{ call:λ(ctx,a){ a.length===1||‽; ι ← a[0]

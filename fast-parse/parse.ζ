@@ -1,10 +1,10 @@
 #!/usr/bin/env ζ
 exports←; exports || ( exports = global )
-P ← require('./mainβ')
+P ← require('./parsimmon')
 
 ;(λ(){
 	{Rₐ:R} ← require('./record')
-	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,null]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
+	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,∅]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
 	walk_regex ← (ι,f)=> |>(ι)(λ Λ(ι){ if (ι && ι.tag){
 		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
@@ -12,8 +12,6 @@ P ← require('./mainβ')
 		ι = f(ι,{change})
 		}; ↩ ι })
 
-	version ← '0.0.0'
-	$ ← ι=>{ r ← parse_normalize_regex_memoized(ι); r.version === version || ‽; delete r.version; ↩ r }
 	skip_e2rbm←; anon_w9lb3←;
 
 	Regex ← (λ(){
@@ -66,14 +64,12 @@ P ← require('./mainβ')
 		walk_regex(ι,ι=>{
 			if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 			})
-		_(ι) <- ({version})
 		# |>(ι)(λ Λ(ι){ if (ι && ι.tag){
 		# 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
 		# 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 		# 	}; ↩ ι })
 		↩ ι }
 	normalize_to_axioms_regex ← ι=>{
-		ι.version === version || ‽
 		ι = walk_regex(ι,(ι,{change})=>{
 			is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`#alt` || ι.≈`#seq`) && ι.ι.every(is_null) ) || ( ι.≈`#not` && is_bottom(ι.ι) )
 			is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`#alt` && ι.ι.every(is_bottom) ) || ( ι.≈`#seq` && ι.ι.some(is_bottom) ) || ( ι.≈`#not` && is_null(ι.ι) )
@@ -85,12 +81,11 @@ P ← require('./mainβ')
 			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
-		_(ι) <- ({version})
 		↩ ι }
 	parse_normalize_regex_memoized ← ι=>{ t ← |>(ι)(anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+	$ ← parse_normalize_regex_memoized
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
-	_(t).map(ι=> _(ι) <- ({version}) )
 	_(exports) <- (t)
 
 	if_main_do(()=>{ [

@@ -12,7 +12,7 @@ binary_search_num_by_low ← (l,ι,f)=>{ t ← binary_search(l,ι,(a,b)=> f(a)-f
 	Object.freeze(@) }
 def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 ℝ_interval.prototype.∩ = λ(b){ a ← @; ↩ ℝ_interval(max(a.a,b.a),min(a.b,b.b)) }
-ℝ_interval.prototype.∩s = λ(b){↩ !!@.∩(b).‖ }
+# ℝ_interval.prototype.∩s = λ(b){↩ !!@.∩(b).‖ }
 ℝ_interval.touches = (a,b)=>{ if (!(a.a <= b.a)) #swap a b; ↩ b.b >= a.a && a.b >= b.a }
 ℝ_interval.cover = (…a)=> ℝ_interval(min(…a.map(ι=>ι.a)),max(…a.map(ι=>ι.b)))
 // cn.log([ [[1,2],[3,4]],[[1,3],[2,4]],[[1,2],[1,4]],[[1,4],[2,4]],[[1,2],[2,4]], ].map(ι=>{ ι = ι.map(ι=> ℝ_interval(…ι)); ↩ [ι,!!ι[0].∩(ι[1]).‖,!!ι[1].∩(ι[0]).‖] }))
@@ -26,7 +26,7 @@ def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 // nonoverlapping [,) interval set
 ℝ_set ← λ(ι){ if (!(@ instanceof ℝ_set)) ↩ new ℝ_set(ι)
 	@.ι = 0?0
-		: ι===undefined? []
+		: ι===∅? []
 		: T.ℤ(ι)? [ ℝ_interval(ι,ι+1) ]
 		: Tarr(ι)? [ ℝ_interval(ι) ]
 		: ι instanceof ℝ_interval? [ι]

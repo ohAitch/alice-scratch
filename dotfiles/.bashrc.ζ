@@ -1,7 +1,7 @@
 E ← module.exports
 
 ############################# terminal_do_script ‽ #############################
-E['·'] = ()=>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = null }
+E['·'] = ()=>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = ∅ }
 
 ################################# bash prompt ‽ ################################
 # !! mixes prelude and personal concepts !!
@@ -86,7 +86,7 @@ E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 		if (!t) ↩
 		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong, but slightly better semantic?
 		# also see https://www.npmjs.com/package/exif-parser
-		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = null), 'PANO/') : '')+t+'.jpg')
+		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = ∅), 'PANO/') : '')+t+'.jpg')
 		}) }
 
 ########################### build/release/run project ##########################
@@ -174,7 +174,7 @@ E.bookmarks = ι=>{
 		my_walk ← ι=> ι.children? {name:ι.name, ιs:my_walk_a(ι.children)} : ι.url? {name:ι.name, ι:ι.url} : {name:'', ι:JSON.stringify(ι)}
 		↩ my_walk_a(ι) }
 	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
-	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' && (ι.ι = null))
+	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' && (ι.ι = ∅))
 	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
 	sb.tab.push(ι) }
 

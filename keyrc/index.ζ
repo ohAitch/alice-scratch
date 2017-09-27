@@ -18,7 +18,7 @@ transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(ι=> ι.joi
 macros ← {,}
 parse_boards0 ← ι=>
 	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
-		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[,,''])[1],
+		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[∅,''])[1],
 		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/gu.λ(ι)),
 		} })
 builtin_keys ← parse_boards0(multiline`
@@ -58,7 +58,7 @@ system ← parse_boards([multiline`
 	│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
 	└──────────────────────────────┘ └──────────────────────────────┘
 	`])
-text_keys ← […system._.map('trigger').filter(ι=> ι[0]!=='⇧'), ' ']
+text_keys ← […system.map(ι=>ι.trigger).filter(ι=> ι[0]!=='⇧'), ' ']
 macros['X'] = '; sfx`nack`'
 
 parse_key_line ← ι=>{ t ← ι.match(/^\s*(@\w+)?\s*(\S+)\s+([^]*\S)/); ↩ M(t[2],t[3],t[1]) }
@@ -86,9 +86,9 @@ show_private_xml ← λ(mappings){t←;
 			(t=/^\] ([^]*)$/.λ(ι))? compile_keystring(t[1]).ι :
 			// (t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 			(t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
-				ι._.map(ι=> char16hex(ι)._.map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
-		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),null) )
-		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ null }
+				_(ι).map(ι=> _(char16hex(ι)).map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
+		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),∅) )
+		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ ∅ }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if:if_} }
 	[onces,mappings] ← mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) )
 	compile_key_line ← ι=> compile_mapping(parse_key_line(ι)).ι
@@ -104,7 +104,7 @@ show_private_xml ← λ(mappings){t←;
 				].map(compile_key_line) ),
 			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.λ(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.λ(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
-			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι._.map('ι').reverse(), ι[0].if )),
+			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(ι=>ι.ι).reverse(), ι[0].if )),
 			],
 		vkopenurldef: shells._.map((name,ι)⇒ {name, url:{'@type':'shell', '#text':ι}}),
 		appdef: appdefs._.map((ι,k)⇒ {appname:k, equal:ι}),
@@ -148,7 +148,7 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 	;[…c].∪([]).‖===c.‖ || ‽
 	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : ✓)){
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
-		osaᵥ`system events: key code ${[,,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
+		osaᵥ`system events: key code ${[∅,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}
 	else {
 		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])

@@ -17,7 +17,7 @@ __match ← (ι,group)=> P2({
 	type:'match',
 	re: RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y'),
 	group,
-	_(stream,i){ t ← @.re.exec_at(stream,i); ↩ t && !(t[@.group]===null||t[@.group]===undefined)? make_win(i+t[0].‖, t[@.group]) : make_lose(i,@.re+'') },
+	_(stream,i){ t ← @.re.exec_at(stream,i); ↩ t && !(t[@.group]===null||t[@.group]===∅)? make_win(i+t[0].‖, t[@.group]) : make_lose(i,@.re+'') },
 	})
 __seq ← ps=> P2({
 	type:'seq',
@@ -64,11 +64,11 @@ __map_js ← (p,f)=> P2({ type:'map_js', p, f, _(stream,i){ r ← @.p._(stream,i
 __chain ← (p,f)=> P2({ type:'chain', p, f, _(stream,i){ r ← @.p._(stream,i); ↩ !r.status? r : merge_replies(@.f(r.value)._(stream,r.index), r) }, })
 __of ← ι=> P2({ type:'of', ι, _(stream,i){↩ make_win(i,@.ι) }, })
 __fail ← expected=> P2({ type:'fail', expected, _(stream,i){↩ make_lose(i,@.expected) }, })
-__eof ← ()=> P2({ type:'eof', _(stream,i){↩ i < stream.‖? make_lose(i,'EOF') : make_win(i,null) }, })
+__eof ← ()=> P2({ type:'eof', _(stream,i){↩ i < stream.‖? make_lose(i,'EOF') : make_win(i,∅) }, })
 __index ← ()=> P2({ type:'index', _(stream,i){↩ make_win(i,make_line_col_index(stream,i)) }, })
 
 // issue: makes parser not reentrant, as perf optimization
-G_opt ← {fast:null}
+G_opt ← {fast:∅}
 
 P ← (ι,…ιs)⇒
 	: ι instanceof Parser? ι
@@ -117,7 +117,7 @@ Parser.prototype.parse = λ(stream){ Tstr(stream) || ‽
 
 // make_win ← (index,value)⇒ { status:✓, index, value, }
 make_win ← (index,value)⇒ { status:✓, index, value, furthest:-1, expected:[], }
-make_lose ← (index,expected)⇒ { status:✗, index:-1, value:null, furthest:index, expected:[expected], }
+make_lose ← (index,expected)⇒ { status:✗, index:-1, value:∅, furthest:index, expected:[expected], }
 
 P.seq = (…ps)=> __seq(ps.map(P.X))
 

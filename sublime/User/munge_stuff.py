@@ -82,7 +82,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		ι = [view.substr(ι) for ι in sel]
 		r = json.loads(ζ("""
 			hook_stdouterr ← ()=>{
-				r ← [,,'stdout','stderr'].map(io_id=>{
+				r ← [∅,'stdout','stderr'].map(io_id=>{
 					io ← [#Q process[io_id].write #Q]
 					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
 					}); ↩ _.memoize( ()=> r.map(ι=> ι()) ) }
@@ -93,7 +93,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				↩ [
 					,… std().slice(1)
 					, sb.encode(r)
-					, e===undefined? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
+					, e===∅? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
 					].join('')
 					}) """,E(ι)))
 		for i in range(len(sel))[::-1]:

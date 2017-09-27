@@ -29,7 +29,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 // // -------------------------------------------------------------------------- //
 // 	out.-(written)
 // 		.filter(ι=> !ι.replace(dest+'','').re`Package Control\.` )
-// 		.forEach(ι=> φ(ι).ι = null )
+// 		.forEach(ι=> φ(ι).ι = ∅ )
 // 	}
 
 colors_to_tmTheme ← λ(from,to){
@@ -51,8 +51,8 @@ sb_keyrc_to_sublime_keymap ← λ(from,to){
 	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
 		k ← compile_keys(ι[1])
 		cm ← ι[2]
-		t ← ι[3]; [a,t] ← t.re`^\)`? [undefined,t] : match_json_head(t); a||(a={,}); t = t.replace(/^\) */,'')
-		[cx,t] ← t.re`^@`? match_json_head(t.slice(1)) : [undefined,t]
+		t ← ι[3]; [a,t] ← t.re`^\)`? [∅,t] : match_json_head(t); a||(a={,}); t = t.replace(/^\) */,'')
+		[cx,t] ← t.re`^@`? match_json_head(t.slice(1)) : [∅,t]
 		t.trim()==='' || ‽
 		↩ {keys:[k], command:cm, args:a, context:cx}
 		})

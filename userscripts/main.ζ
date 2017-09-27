@@ -14,7 +14,7 @@ Function.prototype.every = λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); /
 max ← Math.max; min ← Math.min
 
 // ---------------------------------- utils --------------------------------- //
-has_prop ← (o,m)=> Object.getOwnPropertyDescriptor(o,m) !== undefined
+has_prop ← (o,m)=> Object.getOwnPropertyDescriptor(o,m) !== ∅
 
 css ← ι=>{ t ← document.createElement('style'); t.innerHTML = ι; document.head.appendChild(t) }
 mk_script ← ι=>{ t ← document.createElement('script'); Object.assign(t,ι); document.getElementsByTagName('head')[0].appendChild(t) }

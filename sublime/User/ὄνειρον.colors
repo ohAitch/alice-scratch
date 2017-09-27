@@ -63,8 +63,7 @@ $function storage.type
 $function string.regexp
 $const constant
 $const constant.language
-$const constant.language.null
-$const constant.language.undefined
+#9a8462 [bold] constant.language.(null|undefined)
 $const support.constant
 $comment comment
 # $comment60 punctuation.definition.comment

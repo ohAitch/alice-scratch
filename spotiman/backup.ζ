@@ -12,7 +12,7 @@ say_progress ← (λ(){ i←0; ↩ ()=>{ i++; i%10===0 && cn.log(APP,'working @ 
 
 depaginate ← λ(f,cbₐ){ // see googleapis usage for a more up to date version of this function
 	r ← []; async.doWhilst(
-		cb=> f({offset:r.‖}).then(ι=>{ ι = ι.body; r.push(…ι.items); say_progress(); cb.P(null,ι).in(0.1) /*baby the rate limit*/ }).done(),
+		cb=> f({offset:r.‖}).then(ι=>{ ι = ι.body; r.push(…ι.items); say_progress(); cb.P(∅,ι).in(0.1) /*baby the rate limit*/ }).done(),
 		ι=> r.‖ < ι.total,
 		()=> cbₐ(r) ) }
 

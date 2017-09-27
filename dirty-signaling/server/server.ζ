@@ -34,7 +34,7 @@ io.on('connection',client=>{ patch_Socket(client)
 
 tell_about_always ← (a,b)=>{ to_tell_about__add(a,b); tell_about(a,b) }
 updated ← cl=>{ […to_tell_about.entries()].forEach(([a,bs])=>{ if (bs.has(cl)) tell_about(a,cl) }); cn.log('got updated()',cl) }
-tell_about ← (a,b)=>{ t ← _(b).pick('name','addrs','connected'); if (!clients.has(b)) t.addrs = null; a.socket.emit('they_are',t) }
+tell_about ← (a,b)=>{ t ← _(b).pick('name','addrs','connected'); if (!clients.has(b)) t.addrs = ∅; a.socket.emit('they_are',t) }
 
 clients ← new Set()
 to_tell_about ← new Map()

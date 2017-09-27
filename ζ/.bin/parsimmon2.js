@@ -64,11 +64,11 @@ var __map_js = (p,f)=> P2({ type:'map_js', p, f, _(stream,i){ var r = this.p._(s
 var __chain = (p,f)=> P2({ type:'chain', p, f, _(stream,i){ var r = this.p._(stream,i); return !r.status? r : merge_replies(this.f(r.value)._(stream,r.index), r) }, })
 var __of = ι=> P2({ type:'of', ι, _(stream,i){return make_win(i,this.ι) }, })
 var __fail = expected=> P2({ type:'fail', expected, _(stream,i){return make_lose(i,this.expected) }, })
-var __eof = ()=> P2({ type:'eof', _(stream,i){return i < stream["‖"]? make_lose(i,'EOF') : make_win(i,null) }, })
+var __eof = ()=> P2({ type:'eof', _(stream,i){return i < stream["‖"]? make_lose(i,'EOF') : make_win(i,undefined) }, })
 var __index = ()=> P2({ type:'index', _(stream,i){return make_win(i,make_line_col_index(stream,i)) }, })
 
 // issue: makes parser not reentrant, as perf optimization
-var G_opt = {fast:null}
+var G_opt = {fast:undefined}
 
 var P = (ι,...ιs)=>0?0
 	: ι instanceof Parser? ι
@@ -111,13 +111,13 @@ var Parser = function(a){ _(this) ['<-'] (a) }
 
 Parser.prototype.parse = function(stream){ Tstr(stream) || !function(){throw Error('‽')}()
 	var p = this//.resolve()
-	G_opt.fast = global["✓"]; var r = p.skip(eof)._(stream,0)
-	if (!r.status){ G_opt.fast = global["✗"]; var r = p.skip(eof)._(stream,0); !!r.status && !function(){throw Error('‽')}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
+	G_opt.fast = true; var r = p.skip(eof)._(stream,0)
+	if (!r.status){ G_opt.fast = false; var r = p.skip(eof)._(stream,0); !!r.status && !function(){throw Error('‽')}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
 	return r.value }
 
 // make_win ← (index,value)⇒ { status:✓, index, value, }
-var make_win = (index,value)=>0?0: { status:global["✓"], index, value, furthest:-1, expected:[], }
-var make_lose = (index,expected)=>0?0: { status:global["✗"], index:-1, value:null, furthest:index, expected:[expected], }
+var make_win = (index,value)=>0?0: { status:true, index, value, furthest:-1, expected:[], }
+var make_lose = (index,expected)=>0?0: { status:false, index:-1, value:undefined, furthest:index, expected:[expected], }
 
 P.seq = (...ps)=> __seq(ps.map(P.X))
 
@@ -149,8 +149,8 @@ var unsafe_union = (xs,ys)=>{
 	var yL = ys["‖"]
 	if (xL===0) return ys; else if (yL===0) return xs
 	var r = new O1()
-	for (var i = 0; i < xL; i++) r[xs[i]] = global["✓"]
-	for (var i = 0; i < yL; i++) r[ys[i]] = global["✓"]
+	for (var i = 0; i < xL; i++) r[xs[i]] = true
+	for (var i = 0; i < yL; i++) r[ys[i]] = true
 	return _.keys(r).sort() }
 
 P.format_error = (stream,error)=>{

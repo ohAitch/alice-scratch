@@ -28,7 +28,7 @@ countBy ← ι=>{ r ← new Map(); for (var t of ι) r.set(t, (r.has(t)? r.get(t
 // ast -> bool
 interesting ← ι⇒
 	: ι.type==='seq'? ι.ι.some(interesting)
-	: ι.type==='js_data'? ι.ι !== undefined
+	: ι.type==='js_data'? ι.ι !== ∅
 	: ✓
 
 // ------------------------- instrumented data types ------------------------ //
@@ -37,7 +37,7 @@ interesting ← ι⇒
 pt ← {
 	,inspect(d,opt){t←; r←;
 		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
-		if ((t=opt._cache.get(@))!==undefined) ↩ opt.stylize('#'+t,'quote')
+		if ((t=opt._cache.get(@))!==∅) ↩ opt.stylize('#'+t,'quote')
 		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
 		ty ← opt.stylize(@.type,'special')
@@ -47,7 +47,7 @@ pt ← {
 			if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
 			t = util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
 
-		↩ ((t=opt._cache.get(@))!==undefined? opt.stylize('#'+t,'quote')+'=' : '')+r }
+		↩ ((t=opt._cache.get(@))!==∅? opt.stylize('#'+t,'quote')+'=' : '')+r }
 	}
 τ ← (type,ι)=> _(Object.create(pt)) <- ({type},ι)
 τι ← (type,ι)=> τ(type,{ι})
@@ -118,7 +118,7 @@ vmζ_parse ← code=>{
 				τ('call',{ o:τ('member',{ o:
 					τ('local_private_slot',{ name:tname=τι('name',random_id(5)), ι:o.o }),
 					m:o.m }), self:tname, a:ι.arguments })
-			: τ('call',{ o, self:τι('js_data',undefined), a:ι.arguments })
+			: τ('call',{ o, self:τι('js_data',∅), a:ι.arguments })
 			})()
 		: ι.type==='NumericLiteral'? τι('js_data',ι.value)
 		: ι.type==='StringLiteral'? τι('js_data',ι.value)
@@ -127,8 +127,8 @@ vmζ_parse ← code=>{
 		: ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression'?
 			τ('function',{
 				name:ι.id,
-				params:[ ι.type==='ArrowFunctionExpression'? undefined : 'this', …ι.params.map(ι=>ι.ι) ],
-				ι:ι.expression? ι.body : τι('seq',[ι.body,τι('js_data',undefined)]) })
+				params:[ ι.type==='ArrowFunctionExpression'? ∅ : 'this', …ι.params.map(ι=>ι.ι) ],
+				ι:ι.expression? ι.body : τι('seq',[ι.body,τι('js_data',∅)]) })
 		: ι.type==='BinaryExpression'? τ('builtin',{ f:ι.operator, a:[ι.left,ι.right] })
 		: ι.type==='BlockStatement'? τι('seq',ι.body)
 		: ι.type==='ReturnStatement'? τι('seq',[τι('set_result',ι.argument),τ('break_fn',{,})])
@@ -196,10 +196,10 @@ vmζ_runInContext ← (ast,global_)=>{
 
 	member ← (o,m)=> τι('js_data', 0?0
 		: o.type==='js_data'? o.ι[m]
-		: o.type==='closure'? m==='name'? o.ι.name.ι : undefined
-		: undefined )
+		: o.type==='closure'? m==='name'? o.ι.name.ι : ∅
+		: ∅ )
 
-	ast = τ('call',{ o:τ('function',{ name:undefined, params:[undefined], ι:ast }), self:τι('js_data',undefined), a:[] })
+	ast = τ('call',{ o:τ('function',{ name:∅, params:[∅], ι:ast }), self:τι('js_data',∅), a:[] })
 	↩ eval_(ast) }
 
 // ---------------------------------- test ---------------------------------- //

@@ -1,36 +1,42 @@
 #!/usr/bin/env ζ
 delete Object.prototype._
-{Rᵢ} ← require_new('./record')
-ℝ_set ← require_new('./ℝ_set')
+{Rᵢ:R} ← require_new(__dirname+'/record')
+# ℝ_set ← require_new(__dirname+'/ℝ_set')
 
-// ------------------------------- Parser type ------------------------------ //
-Parser ← λ(tag,ι){ if (!(@ instanceof Parser)) ↩ new Parser(tag,ι); _(@) <- ({tag},ι) }
+# _Stream ← (str,i)=>{ t← Object.create(_Stream.prototype); t.str=str; t.i=i; ↩ t }
+# _Stream.prototype = {
+# 	,‖:λ(){↩ @.str.‖-i }
+# 	,slice(i){↩ _Stream(@.str,@.i+i) }
+# 	,h_slice(a,b){ q ← ι=> ι===∅? 0 : ι<0? (@.str.‖-i)+ι : ι; ↩ @.str.slice(q(a),q(b)) }
+# 	,match(ι){re←; ↩ Tstr(ι)? @.str.startsWith(ι,@.i) :( re = RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y') ,re.exec_at(@.str,@.i) ) }
+# 	}
+# [#Q _Stream.prototype.host #Q].def({ ,enumerable:false ,get(){↩ @.str.slice(i) }})
+
+#################################### Parser ####################################
+Parser ← (tag,ι)=> _(Object.create(P.prototype)) <- ({tag},ι)
 P ← ι⇒
-	: ι instanceof Parser? ι
+	: P.prototype.isPrototypeOf(ι)? ι
 	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
 	: Tfun(ι)? P._graph_thunk(ι)
 	: Tarr(ι)? P._seq(ι)
 	: T.RegExp(ι)? P._regex(ι)
 	: ‽('cant make parser from',ι)
-P.prototype = Parser.prototype
-Rᵢ(P.prototype)
-P.prototype.exec0 = λ(in_){ for(var t of @._(in_,0)) ↩ t.ι }
-P.prototype.exec = λ(in_){ for(var t of @.skip(EOF)._(in_,0)) ↩ t.ι }
-
-EOF ← /(?![^])/
+P.prototype = R(∅,{})
+# P.prototype.exec0 = λ(in_){ for(var t of @._(in_,0)) ↩ t.ι }
+P.prototype.exec = λ(in_){ for(var t of @.skip(/(?![^])/)._(in_,0)) ↩ t.ι }
 
 module.exports = P
 
-// ------------------------------- root types ------------------------------- //
+################################## root types ##################################
 P._unit = ι=> Parser('unit',{
 	ι,
 	_:λ*(in_,i){ if( in_[i]===@.ι ) yield { i:i+1, ι:in_[i] } },
 	})
 P.not = ι=> Parser('not',{
 	ι:P(ι),
-	// not:not: -> t.status? make_win(i,undefined) : t
-	// not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,undefined)
-	_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩; yield { i, ι:undefined } },
+	// not:not: -> t.status? make_win(i,∅) : t
+	// not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
+	_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩; yield { i, ι:∅ } },
 	})
 __seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if (done) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
 // __seq ← λ* Λ(ps,ps_i,in_,i){
@@ -55,7 +61,7 @@ P.prototype.chain = λ(f){↩ Parser('chain',{
 	_:λ*(in_,i){ start ← i; for(var {i,ι} of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) },
 	}) }
 
-// -------------------------- pseudocomposite types ------------------------- //
+############################# pseudocomposite types ############################
 P.alt_range = (a,b)=> Parser('alt',{
 	// def(,'ι',{get(){ }})
 	a, b,
@@ -78,7 +84,7 @@ P._graph_thunk = f=> Parser('graph_thunk',{
 	_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ); ↩ (0,@.ι)._(in_,i) },
 	})
 
-// ----------------------------- composite types ---------------------------- //
+################################ composite types ###############################
 P.prototype.map = λ(f){↩ @.chain( _(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }) <- ({f}) ) }
 def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
 def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
@@ -90,56 +96,5 @@ P.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
 P.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
 P.prototype.sep_by = λ(sep){↩ P([ @, P([sep,@]).map(ι=>ι[1]).* ]).map(([ι,ιs])=> [ι,…ιs]) }
 
-// --------------------------- regex ast -> Parser -------------------------- //
-require_new('./parse')
-
-// old thing:
-interpret_regex_exec_at ← (ι,str,i)=>{
-// 	regex_parse produces these tags:
-// 	any
-// 	not
-// 	or
-// 	repeat
-// 	seq
-
-// 	behind
-// 	set
-
-// 	backref
-// 	capture
-// 	ignore_case
-// 	RegExp
-// 	sticky
-// 	unicode
-	ι = regex_parse(ι)
-	ι.≈`#unicode` || ‽
-	ι = ι.ι
-	ι.≈`#seq` && ι.ι[0].≈`#sticky` || ‽
-	ι.ι.shift()
-	ι = map_tag_tree(ι,ι⇒
-		: Tstr(ι)? P(ι)
-		: ι.tag &&( ι.≈`#seq` || ι.≈`#repeat`)? ι.map(ι=> ι.join(''))
-		: ι )
-	cn.log('running',ι)
-	log.set('info')
-	t ← parse(ι,str,i)
-	log.set('warn')
-	↩ !t.status? null : t.ι }
-
-// -------------------------------------------------------------------------- //
-// Don't use backtracking, instead explore all variants concurrently. Backtracking requires to keep the entire input in memory (also known as a memory leak).
-// ‡ this sounds like “do breadth first search instead of depth first” which has its own issues
-// Support left recursion.
-
-// cn.log(/(?:b|a|r| |f|o|m)*foo+/uy.exec_at('bar fooooooo m fooo fo',0))
-// cn.log([interpret_regex_exec_at(/(?:b|a|r| |f|o|m)*foo+/uy,'bar fooooooo m fooo fo',0)])
-
-// parse_regex
-// 	-> thing w/ .version
-// normalize_to_axioms_regex
-// 	requires version match
-// P(ι)
-// 	requires version match, calls normalize_to_axioms_regex and parse_regex
-
-// ----------------------------- todo eventually ---------------------------- //
-// pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
+################################ todo eventually ###############################
+# pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
