@@ -36,7 +36,7 @@ interesting ← ι⇒
 // so far just pretty printing
 pt ← {
 	,inspect(d,opt){t←; r←;
-		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count().entries()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
+		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
 		if ((t=opt._cache.get(@))!==∅) ↩ opt.stylize('#'+t,'quote')
 		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
@@ -55,10 +55,10 @@ pt ← {
 // -------------------------------------------------------------------------- //
 ‡ i wish it looked something like this maybe?
 ‡ you need to actually think about it, i haven't and so what i've written is sketchy and might be bogus
-lisp ← (λ(){
+lisp ← (=>{
 	P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 	ws ← P(/[ \t]*/)
-	unit ← P(()=> ws.then(P.alt(
+	unit ← P(=> ws.then(P.alt(
 		group,
 		P(/[0-9][^\s()]*/).map(parseFloat.X).map(ι=> τι('number',ι)),
 		P(/'([^]*?)'/,1).map(ι=> τι('string',ι)),
@@ -113,7 +113,7 @@ vmζ_parse ← code=>{
 		: ι.type==='Identifier'? τι('name',ι.name)
 		: ι.type==='ExpressionStatement'? ι.expression
 		: ι.type==='MemberExpression'? τ('member',{ o:ι.object, m: ι.computed? ι.property : τι('js_data',ι.property.ι) })
-		: ι.type==='CallExpression'? (λ(){ o ← ι.callee; tname←; ↩ 0?0
+		: ι.type==='CallExpression'? (=>{ o ← ι.callee; tname←; ↩ 0?0
 			: o.type==='member'?
 				τ('call',{ o:τ('member',{ o:
 					τ('local_private_slot',{ name:tname=τι('name',random_id(5)), ι:o.o }),
@@ -172,11 +172,11 @@ vmζ_runInContext ← (ast,global_)=>{
 
 	eval_ ← ι⇒
 		: ι.type==='seq'? ι.ι.map(eval_)[-1]
-			// (λ(){ t←; for(i←0;i<ι.ι.‖;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
+			// (=>{ t←; for(i←0;i<ι.ι.‖;i++){ t = eval_(ι.ι[i]); if (t.type==='‽') ↩ [t,eval_(ι.ι.slice(i+1))] }; ↩ t })()
 		: ι.type==='local_private_slot'? stack[-1].ι[ι.name.ι] = eval_(ι.ι)
 		: ι.type==='name'? resolve(ι.ι)
 		: ι.type==='call'? call(eval_(ι.o),[ι.self,…ι.a].map(eval_))
-		: ι.type==='member'?(λ(){ o ← eval_(ι.o); m ← compile(eval_(ι.m)); Tstr(m) || ‽(ι); ↩ member(o,m) })()
+		: ι.type==='member'?(=>{ o ← eval_(ι.o); m ← compile(eval_(ι.m)); Tstr(m) || ‽(ι); ↩ member(o,m) })()
 		: ι.type==='function'? τ('closure',{ ι, scope_parent:stack[-1] })
 		: ι.type==='object'? τι('js_data', ι.ι.map(ι=>{ ι = ι.map(eval_).map(compile); Tstr(ι[0]) || ‽; ↩ ι })._.object() )
 		: ι.type==='js_data' || ι.type==='closure'? ι
@@ -207,7 +207,7 @@ vmζ_runInContext ← (ast,global_)=>{
 code ← `random_id_ ← L=> L.map(()=> random( _.range(0,0x100).map(ι=> chr(ι)).filter(ι=> ι.match(/[0-9a-z]/)) )).join(''); _.range(8).map(random_id_)`
 ctx ← _({ _,random,String, }).map((ι,k)=> [k,τ('js_data',{ι,found_by:k})])._.object()
 ast = vmζ_parse(code)
-t←; dur ← bench1(()=> t = vmζ_runInContext(ast,ctx) )
+t←; dur ← bench1(=> t = vmζ_runInContext(ast,ctx) )
 ;({ ast, global:ctx, ι:t, dur })
 
 // ‡ figure out how you want to handle native exceptions, applicable on ι.type call and maybe member

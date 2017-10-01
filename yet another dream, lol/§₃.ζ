@@ -2,7 +2,7 @@ has ← (o,ι)=> Object.prototype.hasOwnProperty.call(o,ι)
 
 P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 spaced ← p=> WS.then(p).skip(WS); WS ← P(/\s*/)
-expr ← P(()=> spaced(P.alt( P(/'([^']*)'/,1).type('string'), P(/[^\s()]+/).type('ident'), P('(').then(expr.many()).skip(P(')')).type('list') )) )
+expr ← P(=> spaced(P.alt( P(/'([^']*)'/,1).type('string'), P(/[^\s()]+/).type('ident'), P('(').then(expr.many()).skip(P(')')).type('list') )) )
 parse ← ι=> expr.parse(ι.replace(/\/\/.*/g,''))
 
 Value ← ι⇒ {T:'value', ι}
@@ -12,7 +12,7 @@ eval_ ← (ctx,ι)=>{t←; ↩0,
 	ι.T==='ident'? ctx.resolve(ι.ι) :
 	ι.T==='list'?( t = eval_(ctx,ι.ι[0]), (t&&t.ι)||‽('tried to call null fn',ι.ι[0],ctx), t = t.ι, t.macro? t.call(ctx,ι.ι.slice(1)) : t.call(ctx,ι.ι.slice(1).map(ι=> eval_(ctx,ι))) ):
 		‽ }
-ctx ← λ(){
+ctx ← =>{
 	ctx ← { stack:[{vars:{
 		'λ':{ macro:✓, call:λ(ctx,a){
 			if (a[0].T==='ident'){

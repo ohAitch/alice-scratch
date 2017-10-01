@@ -12,7 +12,7 @@ server ← express()
 	.use((req,res,next)=>{ res.header('Access-Control-Allow-Origin','*').header('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept'); next() }) # enable CORS
 	.use(express.static('public'))
 	.get('/',(req,res)=>{ res.sendFile(__dirname+'/views/index.html') })
-	.listen(65330,()=> cn.log('Your app is listening on port '+server.address().port) )
+	.listen(65330,=> cn.log('Your app is listening on port '+server.address().port) )
 
 io ← require('socket.io')(server)
 
@@ -20,7 +20,7 @@ io.on('connection',client=>{ patch_Socket(client)
 	clients_add({ name:random_id(10), socket:client, addrs:[], connected:✓ })
 	cl ← clients_by_socket.get(client)
 	cl.socket
-		.on('disconnect',()=>{ cl.connected = ✗; updated(cl); clients_delete(cl) })
+		.on('disconnect',=>{ cl.connected = ✗; updated(cl); clients_delete(cl) })
 		.on('addr_bit',ι=>{ _(cl).addrs.push(ι); updated(cl) })
 		.on('talk_to',name=>{
 			cn.log('client talking to',cl,name)
@@ -33,7 +33,7 @@ io.on('connection',client=>{ patch_Socket(client)
 	})
 
 tell_about_always ← (a,b)=>{ to_tell_about__add(a,b); tell_about(a,b) }
-updated ← cl=>{ […to_tell_about.entries()].forEach(([a,bs])=>{ if (bs.has(cl)) tell_about(a,cl) }); cn.log('got updated()',cl) }
+updated ← cl=>{ […to_tell_about].forEach(([a,bs])=>{ if (bs.has(cl)) tell_about(a,cl) }); cn.log('got updated()',cl) }
 tell_about ← (a,b)=>{ t ← _(b).pick('name','addrs','connected'); if (!clients.has(b)) t.addrs = ∅; a.socket.emit('they_are',t) }
 
 clients ← new Set()

@@ -11,7 +11,7 @@ variables:
   dollar_only_identifier: '\$(?![_$[:alnum:]])'
   dollar_identifier: '(\$)[_$[:alnum:]]+'
   func_lookahead: '\s*\b(async\s+)?(?:function|λ)\s*(?:\*\s*)?(?:{{identifier}}\s*)?\('
-  arrow_func_lookahead: '\s*(\basync\s*)?({{identifier}}|\([^\(]*?\))\s*(=>|⇒)'
+  arrow_func_lookahead: '\s*(\basync\s*)?({{identifier}}|\([^\(]*?\))?\s*(=>|⇒)'
 
 contexts:
   main:
@@ -510,7 +510,7 @@ contexts:
     - match: '\.?(&|&&|\||\|\||‖|\b(and|or)\b)'
       scope: keyword.operator.logical.js
       push: after-operator
-    - match: '=(?!=)|←'
+    - match: '=(?![=>])|←'
       scope: keyword.operator.assignment.js
       push: after-operator
     - match: |-

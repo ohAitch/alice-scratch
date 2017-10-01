@@ -40,12 +40,13 @@ split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_bra
 
 ------------------------------ this is pretty cute -----------------------------
 //! color names randomly in ansi 12359abc
-gen2fn ← f=>{ t ← f(); ↩ ()=> t.next().value }
+gen2fn ← f=>{ t ← f(); ↩ => t.next().value }
+# gen2fn ← f=> [#Q seq(f()).next_ι #Q].bind
 namegen ← gen2fn(λ*(){
 	long ← 'bekas cahlo caris cekla dedna dekik emiak eseik gazok gihza girim gumlu halbo hanka henuh kadut kagzi kakki kamor kehul kisar kizak kofur kohig lopra mesat mesip mezid motka nahso nalic nirsu omiac radil ratis repgi resra rukan siral sorzo tarak tilke zalsi zehaz zekhu zeluz zephu zifin zirez zohip zokmi zonri zusci'.split(' ')
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
-	to ← round(long.‖/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
+	to ← round((long.‖)/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
 	c ← {,}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
 -------------------------------------- ocr -------------------------------------
@@ -57,8 +58,7 @@ tesseract ← npm`node-tesseract@0.2.7`
 φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 -------------------------------- jquery ish misc -------------------------------
-$.on_view = f=> document.addEventListener('visibilitychange',()=> !document.hidden && f() )
-E.poll = λ(f,cb,time){ r←{,}; (λ Λ(){ nxt ← ()=> nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
+E.poll = λ(f,cb,time){ r←{,}; (λ Λ(){ nxt ← => nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
@@ -90,7 +90,7 @@ ax.set_zlabel('B Label')
 plt.show()
 
 ------------------------------ sublime api things ------------------------------
-T ← 10; i←0; (λ(){sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
+T ← 10; i←0; (=>{sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
 ------------------------------------- life -------------------------------------
 sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0,view.size()),${ι})`
@@ -98,7 +98,7 @@ sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer.from((ι.X*ι.Y).map(λ(){↩ random()<0.5 ?1:0})); ↩ ι} // 115,46
+	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )); ↩ ι} // 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
 		r ← Buffer.from(ι)
 		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
@@ -147,7 +147,7 @@ score ← (ι,approx)=> ((ι[0]*ι[1]) / (approx[0]*approx[1])) * (1/error(ι,ap
 best_approx ← x=>{ size_x ← x[0]*x[1]; ↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
 
 to ← 1e5
-bench(()=> cn.log(
+bench(=> cn.log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
 
@@ -198,7 +198,7 @@ spotify_song ← poll osaᵥ`spotify: {artist,album,name} of current track`
 		bind ⎋
 
 ------------------------------
-duration_instrument ← f=>()=>{ t ← hrtime(); ι ← f(); ↩ [hrtime(t),ι] }
+duration_instrument ← f=>=>{ t ← hrtime(); ι ← f(); ↩ [hrtime(t),ι] }
 stream ← ()⇒ {
 	ι: [],
 	push(time,ι){ @.ι.push({time,ι}) },
@@ -207,10 +207,10 @@ stream ← ()⇒ {
 	}
 poll ← f=>{
 	r ← stream()
-	q ← ()=>{ [dur,ι] ← duration_instrument(f)(); r.slice().some(t=> _.isEqual(t,ι)) || r.push(Time().i,ι); q.in(min(max( 0.1, dur*10 ), 3 )) }; q.in()
+	q ← =>{ [dur,ι] ← duration_instrument(f)(); r.slice().some(t=> _.isEqual(t,ι)) || r.push(Time().i,ι); q.in(min(max( 0.1, dur*10 ), 3 )) }; q.in()
 	↩ r }
 
-spotify_song ← poll(()=> osaᵥ`spotify: {artist,album,name} of current track` )
+spotify_song ← poll(=> osaᵥ`spotify: {artist,album,name} of current track` )
 
 ----------------------- coding things that should be easy ----------------------
 wait for beep then if it was win send keyboard input
@@ -227,7 +227,7 @@ http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (()=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
@@ -253,7 +253,7 @@ global key command: chrome bookmarks?
 really why dont you have sublime's command autocomplete yet
 [ …fi`/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands`.ι, …φ`~/Library/Application Support/Sublime Text 3/Packages/User/Default.sublime-commands`.json ]
 
-def(E,'fi',()=>{
+def(E,'fi',=>{
 	// do the right thing by hardcoding it for each input you want to give it :/ hm
 	λ fi(ss,…ιs){
 		is_template([ss,…ιs]) || ‽
@@ -261,7 +261,7 @@ def(E,'fi',()=>{
 		_.isEqual( ss.raw, [ι] ) || ‽
 		zip ← '/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package'
 		sub ← 'Default.sublime-commands'
-		get ← ()=>{
+		get ← =>{
 			shᵥ`rm -rf /tmp/mbq3p; mkdir /tmp/mbq3p; unzip ${zip} -d /tmp/mbq3p/Default`
 			t ← φ`/tmp/mbq3p/Default/${sub}`.text
 			// this json needs lenient parsing (sigh)
@@ -331,8 +331,8 @@ i'd really like earbud metadata
 ;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(✓) ) # sad fix
 
 ------------------------ global-invariant type detection -----------------------
-E.__global = (()=>{
-	anon_e4jlu ← ι=> catch_ι(()=> ι.toString.constructor('return this')() )
+E.__global = (=>{
+	anon_e4jlu ← ι=> catch_ι(=> ι.toString.constructor('return this')() )
 	id ← Symbol.for('⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙')
 	↩ ι=>{t←;G←; if( Tprim(ι) ) ↩; if(t= ι[id] ) ↩ t; if(!(G= anon_e4jlu(ι) )) ↩; new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ }); ↩ ι[id] } })()
 Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
@@ -341,17 +341,17 @@ Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
 ι=> ι instanceof global.Array                      very slow??
 
 ------------------------------------- cruft ------------------------------------
-'Function.prototype.at':lazy('at',λ(){priorityqueuejs ← require('priorityqueuejs')
+'Function.prototype.at':lazy('at',=>{priorityqueuejs ← require('priorityqueuejs')
 	# https://github.com/Automattic/kue
 	# https://github.com/rschmukler/agenda
 	# robust to setTimeout taking extra time
 	# ! not robust to the process failing ! should use redis or something instead !
 	# ! wth is up with the { hrtime() <-> time } comparison
 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
-	P←; ensure ← λ(){if (P) ↩; P = ✓; (λ Λ(){t←;
+	P←; ensure ← =>{if (P) ↩; P = ✓; (λ Λ(){t←;
 		qu.size() === 0? (P = ✗) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
 		})() }
-	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), λ(){}) : (qu.enq(t), ensure(), λ(){t.ι = ∅}) } }),
+	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), =>{}) : (qu.enq(t), ensure(), =>{t.ι = ∅}) } }),
 E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
 E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
 del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }

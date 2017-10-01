@@ -81,11 +81,11 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 		sel = left_trim_regions(view, sel)
 		ι = [view.substr(ι) for ι in sel]
 		r = json.loads(ζ("""
-			hook_stdouterr ← ()=>{
-				r ← [∅,'stdout','stderr'].map(io_id=>{
-					io ← [#Q process[io_id].write #Q]
-					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ ()=>{ io.ι = o; ↩ r.join('') }
-					}); ↩ _.memoize( ()=> r.map(ι=> ι()) ) }
+			hook_stdouterr ← =>{
+				r ← process.stdio.slice(1).map(io=>{
+					io = [#Q io.write #Q]
+					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ =>{ io.ι = o; ↩ r.join('') }
+					}); ↩ _.once(=> r.map(ι=> ι()) ) }
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
 				std ← hook_stdouterr()

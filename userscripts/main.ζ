@@ -13,36 +13,38 @@ Tfun ← E.Tfun = ι=> typeof ι === 'function'
 Function.prototype.every = λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); /*↩ !(opt&&opt.leading)? r : new TimerCons(@.in(0),r)*/ }
 max ← Math.max; min ← Math.min
 
-// ---------------------------------- utils --------------------------------- //
+#################################### prelude ###################################
 has_prop ← (o,m)=> Object.getOwnPropertyDescriptor(o,m) !== ∅
 
 css ← ι=>{ t ← document.createElement('style'); t.innerHTML = ι; document.head.appendChild(t) }
 mk_script ← ι=>{ t ← document.createElement('script'); Object.assign(t,ι); document.getElementsByTagName('head')[0].appendChild(t) }
 
-// util_inspect_autodepth(    at_url\('.*?'\)    .map(ι=> [ι,RegExp('^'+ι.replace(/\./g,'\\.').replace(/\*/g,'.*')+'$')])._.object())
-at_urls ← {'*github.com':/^.*github\.com$/,'*githubusercontent.com':/^.*githubusercontent\.com$/,'imgur.com':/^imgur\.com$/,'*stackexchange.com':/^.*stackexchange\.com$/,'*stackoverflow.com':/^.*stackoverflow\.com$/,'*serverfault.com':/^.*serverfault\.com$/,'*superuser.com':/^.*superuser\.com$/,'*.askubuntu.com':/^.*\.askubuntu\.com$/,'stackexchange.com':/^stackexchange\.com$/,'math.stackexchange.com':/^math\.stackexchange\.com$/,'stats.stackexchange.com':/^stats\.stackexchange\.com$/,'*asoftmurmur.com':/^.*asoftmurmur\.com$/,'*wordpress.com':/^.*wordpress\.com$/,'hangouts.google.com':/^hangouts\.google\.com$/,'*google.com':/^.*google\.com$/}
+# util_inspect_autodepth(    at_url\('.*?'\)    .map(ι=> [ι,RegExp('^'+ι.replace(/\./g,'\\.').replace(/\*/g,'.*')+'$')])._.object())
+at_urls ← { ,'*github.com':/^.*github\.com$/ ,'*githubusercontent.com':/^.*githubusercontent\.com$/ ,'imgur.com':/^imgur\.com$/ ,'*stackexchange.com':/^.*stackexchange\.com$/ ,'*stackoverflow.com':/^.*stackoverflow\.com$/ ,'*serverfault.com':/^.*serverfault\.com$/ ,'*superuser.com':/^.*superuser\.com$/ ,'*.askubuntu.com':/^.*\.askubuntu\.com$/ ,'stackexchange.com':/^stackexchange\.com$/ ,'math.stackexchange.com':/^math\.stackexchange\.com$/ ,'stats.stackexchange.com':/^stats\.stackexchange\.com$/ ,'*asoftmurmur.com':/^.*asoftmurmur\.com$/ ,'*wordpress.com':/^.*wordpress\.com$/ ,'hangouts.google.com':/^hangouts\.google\.com$/ ,'*google.com':/^.*google\.com$/ ,'*discordapp.com':/^.*discordapp\.com$/ }
 at_url ← ι=> location.hostname.match(at_urls[ι])
 
+on_seen_Δ ← f=> document.addEventListener('visibilitychange',=> f(!document.hidden))
+
 // -------------------------------------------------------------------------- //
-get_viaudeo ← ()=>{
+get_viaudeo ← =>{
 	vs ← document.getElementsByTagName('video'); as ← document.getElementsByTagName('audio')
 	if (vs.length + as.length === 0) console.warn('no (vi|au)dios')
 	if (!(vs.length === 1 || (vs.length === 0 && as.length === 1))) console.warn('too many (vi|au)dios: '+vs.length+', '+as.length)
 	↩ vs[0] || as[0] }
 has_prop(window,'rate') || def(window,'rate',{ get(){↩ get_viaudeo().playbackRate }, set(ι){ get_viaudeo().playbackRate = ι }, })
-// rate_el ← ()=>{
+// rate_el ← =>{
 // 	vs ← $`video`; as ← $`audio`; bs ← […vs,…as]
 // 	if bs ≈ []: warn('no (vi|au)dios')
 // 	(vs≈[*]  |  vs≈[] & as≈[*]) | warn('too many (vi|au)dios: '+vs.L+', '+as.L)
 // 	↩ bs[0].prop`playbackRate` }
-// def(window,'rate') || def(window,'rate', ()=> rate_el().ι, ι isa 0 => rate_el().ι = ι)
+// def(window,'rate') || def(window,'rate', => rate_el().ι, ι isa 0 => rate_el().ι = ι)
 
 when_at ← [ 'scholtek.com','xkcd.com','egscomics.com','strongfemaleprotagonist.com','smbc-comics.com','kongregate.com', ]
 host2 ← location.host.split('.').slice(-2).join('.')
 if( when_at.some(ι=> host2===ι) )
 	css('* { image-rendering:pixelated; }')
 
-has_prop(window,'my') ||( window.my = ()=>{
+has_prop(window,'my') ||( window.my = =>{
 	window.global = window
 	global.$ = $
 	})
@@ -81,24 +83,24 @@ if( at_url('*asoftmurmur.com') ){
 	$('#pb').css('margin','50px auto 0px auto')
 	}
 
-// if( location.href.match(/^https:\/\/calendar\.google\.com\/calendar\/render.*$/) ){
-// 	t ← document.getElementById('onegoogbar')
-// 	while (t.firstChild) t.removeChild(t.firstChild)
-// 	t.style.height = '30px'
-// 	t.style.background_color = '#f1f1f1'
-// 	}
+# if( location.href.match(/^https:\/\/calendar\.google\.com\/calendar\/render.*$/) ){
+# 	t ← document.getElementById('onegoogbar')
+# 	while (t.firstChild) t.removeChild(t.firstChild)
+# 	t.style.height = '30px'
+# 	t.style.background_color = '#f1f1f1'
+# 	}
 
 if( at_url('*wordpress.com') ){
 	$('#wpadminbar').remove()
 	}
 
 if( at_url('hangouts.google.com') ){
-	f ← ()=>{ $('.g-Ue-v0h5Oe, .g-Qx-eb, .g-Qx-F').remove() }; f(); f.every(0.5)
+	f ← =>{ $('.g-Ue-v0h5Oe, .g-Qx-eb, .g-Qx-F').remove() }; f(); f.every(0.5)
 	}
 
 if( at_url('*google.com') ){
 	$in ← $('input[title="Search"]')
-	if ($('#searchform').length && $in.length) {
+	if( $('#searchform').length && $in.length ){
 		// todo: the svg thing should extend off the left side farther than it does
 		$('body').append($('<svg xmlns="http://www.w3.org/2000/svg" style="z-index:5000; position:absolute; top:74px; height:30px; width:9px;"><polygon points="0,0 0,9 9,9"></polygon><polygon points="0,9 9,9 9,21 0,21"></polygon><polygon points="0,30 0,21 9,21"></polygon></svg>'))
 		update ← ι=>{
@@ -109,9 +111,17 @@ if( at_url('*google.com') ){
 				// .replace(/\B∈/i,'site:')
 				.replace(/((?!-).)\bdl\b/i,'$1'+'-inurl:htm -inurl:html intitle:”index of”')
 			t===ι || $in.val(t).submit() }
-		input ← ''; (()=>{t←; input === (t=$in.val()) || update(input = t)}).every(0.05)
+		input ← ''; (=>{t←; input === (t=$in.val()) || update(input = t)}).every(0.05)
 		}
 	}
+
+# if( at_url('*discordapp.com') ){
+# 	q0 ← => $('.user-name').map(λ(){ $(@).text().match(/^[‡◍]$/) ||( $(@).text()==='alice'? $(@).text('‡').css({color:'#5ac767'}) : $(@).text('◍').css({color:'#d54d47'}) ) })
+# 	q ← =>( q0(), token = q0.every(100) ); token←;
+# 	q(); on_seen_Δ(seen=> seen? q() : clearInterval(token))
+# 	}
+
+
 
 // @match       *://books.google.com/*
 
@@ -139,10 +149,10 @@ if( at_url('*google.com') ){
 // // localStorage.removeItem('book_dl__dl_cache')
 // var dl_cache = persist_o('book_dl__dl_cache')
 
-// setTimeout(()=>{
+// setTimeout(=>{
 
 // var title = $('.gb-volume-title').text().trim() || location.href
-// setInterval(catch_(()=>{
+// setInterval(catch_(=>{
 // 	$('.pageImageDisplay img').toArray().map(ι=> {
 // 		ι.complete || return_()
 // 		var h = $(ι).attr('src') || return_()
@@ -182,9 +192,9 @@ if( at_url('*google.com') ){
 // $('body').append('<button id="load_friends" style="z-index:1000; position:fixed; top:3px; left:22px;">load all</button>')
 // $('body').append('<button id="compact" style="z-index:1000; position:fixed; top:23px; left:13px;">compactify</button>')
 // $('#load_friends').click(load_friends)
-// $('#compact').click( ()=>{
+// $('#compact').click( =>{
 // 	$('#pagelet_sidebar, #pagelet_dock').remove()
-// 	load_friends( ()=>{
+// 	load_friends( =>{
 // 		$('u:contains("Acquaintance")').closest('li').remove()
 
 // 		$('#pagelet_timeline_medley_friends ~').remove()

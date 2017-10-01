@@ -51,6 +51,7 @@ E.T = ι=>{
 var b_util = catch_ι(()=> process.binding('util') )
 var is_l = [
 	 ['Array',Array.isArray]
+	// , ['Error',ι=> Object.prototype.toString.call(ι)==='[object Error]' || ι instanceof Error]
 	,... ['Error','String','Boolean','Number'].map(ty=> [ty,ι=> Object.prototype.toString.call(ι)==='[object '+ty+']'])
 	,... (!b_util? [] : ['ArrayBuffer','DataView','Date','Map','MapIterator','Promise','RegExp','Set','SetIterator','TypedArray'].map(ι=> [ι,x=> b_util['is'+ι](x)]) )
 	]
@@ -83,14 +84,14 @@ E.def = (o,name,ι)=>{
 var lazy = (name,ι)=>0?0: { writable:true, get(){return this[name] = ι() } }
 
 //################################## requires ###################################
-;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['lodash']
+;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['lodash','lo'],['highland','h']
 	].map(([ι,n])=> def(E, n||ι, ()=> require(ι)) )
 E._ = _
 var path = require('path')
 var fs = require('fs')
 def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3`; return ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
-_.mixin({ isEqual:lodash.isEqual })
+_.mixin({ isEqual:lo.isEqual })
 
 //################################### ζ infra ###################################
 E.Property = function(o,name){ ;this.o = o ;this.name = name }
@@ -109,7 +110,7 @@ var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,argume
 ;(ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if( ι.type==='Buffer' ){
 	var t = 'data' in ι || 'utf8' in ι? Buffer.from(ι.data||ι.utf8) : 'base64' in ι? Buffer.from(ι.base64,'base64') : !function(){throw Error('‽')}()
 	if( o===undefined ) r = t; else o[k] = t
-	} else if(! Tprim(ι) ) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← ()=> name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = ∅\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\\npackages are supposed to be installed in node_modules\\nthis is fine for projects but dreadful for non-projects\\ni prefer to simply install each version of each package once on a system level, and intervene manually if it needs multiple copies\\n\\n\\nsingle_install\\n\\nnpm`builtin-modules@1.1.1` is a list of builtin modules\\n\\n\\n\\n\\n\\nwe have these on disk:\\nasync@2.1.4\\nbase-x@1.0.4\\nchokidar@1.7.0\\nicc@1.0.0\\nini@1.3.4\\nplist@2.1.0\\nrequire-new@1.1.0\\nrequire-uncached@1.0.3\\nrobotjs@0.4.5\\nspotify-web-api-node@2.3.2\\nsuncalc@1.7.0\\nunicode@0.6.1\\nxmlbuilder@8.2.2\\n\\nwe require these:\\nrequire('async')\\nrequire('body-parser')\\nrequire('buffer')\\nrequire('child_process')\\nrequire('color')\\nrequire('cookie-parser')\\nrequire('crypto')\\nrequire('easyimage')\\nrequire('express')\\nrequire('ffi')\\nrequire('fs')\\nrequire('jquery')\\nrequire('lame')\\nrequire('moment')\\nrequire('node-spotify')\\nrequire('numeric')\\nrequire('parsimmon')\\nrequire('path')\\nrequire('priorityqueuejs')\\nrequire('ref')\\nrequire('ref-struct')\\nrequire('set-input-source')\\nrequire('socket.io')\\nrequire('socket.io-client')\\nrequire('stream')\\nrequire('through2')\\nrequire('underscore')\\nrequire('urijs')\\nrequire('util')\\nrequire('wav')\\nrequire('zeta-lang')\\n\\n\\n\\n\\n\\ncode/declare/system maintenance:16:\\t(sh`brew leaves` sh`brew cask list` sh`npm -g ls --depth=0`) Q -> package/*\\ncode/projection/README:12:$ cd ~; git clone git@github.com:alice0meta/projection.git; cd ~/projection; npm i\\ncode/projection/run.sh:9:\\t[ -d node_modules ] || npm --cache-min=Infinity i\\ncode/projection/run.sh:15:\\tnpm update # zeta-lang\\ncode/projection/tech todos.txt:39:\\tnpm shrinkwrap\\ncode/scratch/daily.sh:22:{ echo '# brew leaves'; brew leaves; echo $'\\\\n# brew cask list'; brew cask list; echo $'\\\\n# npm -g ls'; npm -g ls --depth=0; } > \\\"ls/$(ζ 'Time().ymdhms') package manager ls\\\"\\ncode/scratch/keyrc/README.md:5:  npm -g i zeta-lang\\ncode/scratch/keyrc/README.md:8:  npm -g i keyrc && keyrc start\\n\\nnpm --cache-min=Infinity -g install .\\nnpm install --prefer-offline -g .\\n\\nnpm -g install .\\nnpm install -g .\\n\\nnpm install\\nnpm install .\\nnpm --cache-min=Infinity install --ignore-scripts\\n\\nnpm -g install 0x\\n\\nnpm -g uninstall zeta-lang\\n\\nnpm -v\\n\\nnpm -g ls\\nnpm -g ls --depth=0\\nnpm ls -g --depth=0\\n\\nnpm prefix\\nnpm prefix -g\\nnpm config get prefix\\nnpm root\\nnpm root -g\\n\\nnpm publish\\n\\nnpm install npm@latest\\nnpm upgrade npm\\n\\nnpm doctor\\n\\tneeds: net\\n\\n\\n\\n\\n\\n\\n```\\ndependencies:\\n\\tbrew cask install totalspaces; brew install ruby; gem install totalspaces2\\n  brew cask install hammerspoon\\n  npm -g i zeta-lang\\n  https://github.com/tekezo/Karabiner-Elements/\\ninstall:\\n  npm -g i keyrc && keyrc start\\n```\\n\\n* will overwrite hammerspoon settings and karabiner private.xml\\n\\n\\\\#todo clean up dependencies\\n\\n\\n\\n\\n\\n\\n\\n\\nnpm cache add <tarball file>\\nnpm cache add <folder>\\nnpm cache add <tarball url>\\nnpm cache add <name>@<version>\\n\\nnpm cache clean [<path>]\\naliases: npm cache clear, npm cache rm\\n\\n\\nsh`npm config get cache` = ~/.npm (takes way too long to execute, cache)\\n\\ncaching_thing = ι=> this_kind_of_cache\\nname = φ`~/.cache`\\nφ`…${name}_${simple_hash(caching_thing).slice(0,4)}`.φ`.meta`.json2 = {key:caching_thing,name}\\n\\ndict in fs by hash\\ntie hash to ... appropriate secret? what?\\nwhy\\ndatabase ... uniqueness ... separation ... uh\\n\\n\\n\\nget npm registry info\\nnpm view [<@scope>/]<name>[@<version>]\\n\\n\\n\\nhttps://docs.npmjs.com/files/package-locks\\n\\n\\nfriends\\n\\tfriend meat\\n\\tlocked machine interpretation\\ncode\\n\\tcode\\n\\tmetadata\\n\\t\\tmanifest\\n\\nreplace [init update install] with sync\\ninit: [code] -> [manifest]\\nadd: [code] -> [manifest]\\nrm: [code] -> [manifest]\\nupdate: [manifest] -> [locked machine interpretation]\\ninstall: [locked machine interpretation] -> [friend meat]\\n\\ndeveloper friends\\nfriends' feature flags\\n\"\n}")
+	} else if(! Tprim(ι) ) _(ι).forEach(Λ)})(r); return r })("{\n  \"type\": \"Buffer\",\n  \"utf8\": \"a better npm ontology?\\n\\ncode/scratch/ζ/index.ζ:153:\\t\\t\\tunicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').mapcat(ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )\\n\\nE.npm = λ(ι){ Tarr(ι) && (ι = ι[0]); APP ← '\\\\x1b[34m[npm]\\\\x1b[0m'\\n\\t[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`\\n\\tabs_name ← => name+'@'+version\\n\\tif (version){\\n\\t\\tcache ← φ`~/.npm/${name}/${version}`; final ← cache.φ`/node_modules/${name}`+(sub||'')\\n\\t\\ttry{ ↩ require(final) }catch(e){ if (!(e.code===\\\"MODULE_NOT_FOUND\\\")) throw e }\\n\\t\\tcache.BAD_exists() || shᵥ`cd ~; npm cache add ${abs_name()}`\\n\\t\\ta←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'}; (b=cache.φ`README`).ι = ''; shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`; a.ι = b.ι = ∅\\n\\t\\t↩ require(final) }\\n\\telse {\\n\\t\\tsfx`ack`\\n\\t\\tversion = shᵥ`npm show ${ι} version`+''\\n\\t\\tprocess.stderr.write(APP+' latest: '); process.stdout.write(ι.replace(/-/g,'_')+' ← npm`'+abs_name()+'`'); process.stderr.write('\\\\n')\\n\\t\\t} }\\n\\nhave npm`module` write to package.json?\\n\\nwhat is npm anyway\\nnpm has packages with names and semver-format versions\\n\\nnpm's database is \\nit's almost-but-not-quite monotonic; changes and deletions are rare but happen\\n\\npackages are supposed to be installed in node_modules\\nthis is fine for projects but dreadful for non-projects\\ni prefer to simply install each version of each package once on a system level, and intervene manually if it needs multiple copies\\n\\n\\nsingle_install\\n\\nnpm`builtin-modules@1.1.1` is a list of builtin modules\\n\\n\\n\\n\\n\\nwe have these on disk:\\nasync@2.1.4\\nbase-x@1.0.4\\nchokidar@1.7.0\\nicc@1.0.0\\nini@1.3.4\\nplist@2.1.0\\nrequire-new@1.1.0\\nrequire-uncached@1.0.3\\nrobotjs@0.4.5\\nspotify-web-api-node@2.3.2\\nsuncalc@1.7.0\\nunicode@0.6.1\\nxmlbuilder@8.2.2\\n\\nwe require these:\\nrequire('async')\\nrequire('body-parser')\\nrequire('buffer')\\nrequire('child_process')\\nrequire('color')\\nrequire('cookie-parser')\\nrequire('crypto')\\nrequire('easyimage')\\nrequire('express')\\nrequire('ffi')\\nrequire('fs')\\nrequire('jquery')\\nrequire('lame')\\nrequire('moment')\\nrequire('node-spotify')\\nrequire('numeric')\\nrequire('parsimmon')\\nrequire('path')\\nrequire('priorityqueuejs')\\nrequire('ref')\\nrequire('ref-struct')\\nrequire('set-input-source')\\nrequire('socket.io')\\nrequire('socket.io-client')\\nrequire('stream')\\nrequire('through2')\\nrequire('underscore')\\nrequire('urijs')\\nrequire('util')\\nrequire('wav')\\nrequire('zeta-lang')\\n\\n\\n\\n\\n\\ncode/declare/system maintenance:16:\\t(sh`brew leaves` sh`brew cask list` sh`npm -g ls --depth=0`) Q -> package/*\\ncode/projection/README:12:$ cd ~; git clone git@github.com:alice0meta/projection.git; cd ~/projection; npm i\\ncode/projection/run.sh:9:\\t[ -d node_modules ] || npm --cache-min=Infinity i\\ncode/projection/run.sh:15:\\tnpm update # zeta-lang\\ncode/projection/tech todos.txt:39:\\tnpm shrinkwrap\\ncode/scratch/daily.sh:22:{ echo '# brew leaves'; brew leaves; echo $'\\\\n# brew cask list'; brew cask list; echo $'\\\\n# npm -g ls'; npm -g ls --depth=0; } > \\\"ls/$(ζ 'Time().ymdhms') package manager ls\\\"\\ncode/scratch/keyrc/README.md:5:  npm -g i zeta-lang\\ncode/scratch/keyrc/README.md:8:  npm -g i keyrc && keyrc start\\n\\nnpm --cache-min=Infinity -g install .\\nnpm install --prefer-offline -g .\\n\\nnpm -g install .\\nnpm install -g .\\n\\nnpm install\\nnpm install .\\nnpm --cache-min=Infinity install --ignore-scripts\\n\\nnpm -g install 0x\\n\\nnpm -g uninstall zeta-lang\\n\\nnpm -v\\n\\nnpm -g ls\\nnpm -g ls --depth=0\\nnpm ls -g --depth=0\\n\\nnpm prefix\\nnpm prefix -g\\nnpm config get prefix\\nnpm root\\nnpm root -g\\n\\nnpm publish\\n\\nnpm install npm@latest\\nnpm upgrade npm\\n\\nnpm doctor\\n\\tneeds: net\\n\\n\\n\\n\\n\\n\\n```\\ndependencies:\\n\\tbrew cask install totalspaces; brew install ruby; gem install totalspaces2\\n  brew cask install hammerspoon\\n  npm -g i zeta-lang\\n  https://github.com/tekezo/Karabiner-Elements/\\ninstall:\\n  npm -g i keyrc && keyrc start\\n```\\n\\n* will overwrite hammerspoon settings and karabiner private.xml\\n\\n\\\\#todo clean up dependencies\\n\\n\\n\\n\\n\\n\\n\\n\\nnpm cache add <tarball file>\\nnpm cache add <folder>\\nnpm cache add <tarball url>\\nnpm cache add <name>@<version>\\n\\nnpm cache clean [<path>]\\naliases: npm cache clear, npm cache rm\\n\\n\\nsh`npm config get cache` = ~/.npm (takes way too long to execute, cache)\\n\\ncaching_thing = ι=> this_kind_of_cache\\nname = φ`~/.cache`\\nφ`…${name}_${simple_hash(caching_thing).slice(0,4)}`.φ`.meta`.json2 = {key:caching_thing,name}\\n\\ndict in fs by hash\\ntie hash to ... appropriate secret? what?\\nwhy\\ndatabase ... uniqueness ... separation ... uh\\n\\n\\n\\nget npm registry info\\nnpm view [<@scope>/]<name>[@<version>]\\n\\n\\n\\nhttps://docs.npmjs.com/files/package-locks\\n\\n\\nfriends\\n\\tfriend meat\\n\\tlocked machine interpretation\\ncode\\n\\tcode\\n\\tmetadata\\n\\t\\tmanifest\\n\\nreplace [init update install] with sync\\ninit: [code] -> [manifest]\\nadd: [code] -> [manifest]\\nrm: [code] -> [manifest]\\nupdate: [manifest] -> [locked machine interpretation]\\ninstall: [locked machine interpretation] -> [friend meat]\\n\\ndeveloper friends\\nfriends' feature flags\\n\"\n}")
 E.npm = ι=>{ Tarr(ι) && (ι = ι[0]); var APP = '\x1b[34m[npm]\x1b[0m'
 	var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	var abs_name = ()=> name+'@'+version
@@ -128,10 +129,10 @@ E.js_tokenize = code=>{
 	var tok = npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
 	return _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
-E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var anon_oenor; var anon_7cy2u; var anon_8jlo1; var anon_cbbhj; var anon_wg4h5; var anon_pxt5h; var anon_xq7qg; var anon_xzihh;
+E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var anon_oenor; var anon_7cy2u; var anon_8jlo1; var anon_cbbhj; var anon_wg4h5; var anon_pxt5h; var anon_xq7qg; var anon_xzihh; var anon_q3sot; var anon_52y2m;
 	var word_extra = re`♈-♓🔅🔆🔒‡⧫`
 	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓${word_extra}`
-	var ζ_parse = (function(){
+	var ζ_parse = E.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
 		var ident = P(re`(?![0-9])[${word}]+|@`)
 		var comment = re`(//.*|/\*[^]*?(\*/|$)|#[\s#].*)+`
@@ -176,6 +177,7 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 		.replace(/@/g,'this')
 		.replace(/∞/g,'Infinity')
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||!function(){throw Error('‽')}())+x )
+		.replace(anon_52y2m||(anon_52y2m= re`(^|[^\s\)${word}]\s*)=>`.g ),(ˣ,t)=> t+'()=>' )
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ var t = 't_'+random_id(9); return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
@@ -184,6 +186,7 @@ E.ζ_compile = lazy_fn(function(){ var anon_pmcr3; var anon_x818h; var anon_t4nz
 		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X)
 		.replace(/\{,\}/g,'new O1()')
 		.replace(/([{([]\s*),/g,'$1')
+		.replace(anon_q3sot||(anon_q3sot= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.‖) )
 	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.‖)) ↩; }; ↩ i }
@@ -204,6 +207,7 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 	})()
 
 //################################### prelude ###################################
+E.protos = function*(ι){ for(;!( ι===null || ι===undefined ); ι = Object.getPrototypeOf(ι)) yield ι }
 E["|>"] = ι=> (...f)=> f.reduce((ι,f)=> f(ι),ι)
 E.simple_hash_str = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
@@ -227,12 +231,12 @@ E.slot_persist = name=>{ var o = φ`/tmp/ζpersist_${name}`; return def({name},'
 // E.memoize = f=>{ cache ← new WeakMap(); ↩ _(ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r); ↩ r }) <- ({cache}) }
 
 E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
-	(anon_3lsx8||(anon_3lsx8= (function(){
+	(anon_3lsx8||(anon_3lsx8= (()=>{
 		var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ')["map…"](ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
 		return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 		})() ) )[ord(ι)]).X).join(''); var anon_3lsx8;
 
-var regex_parse = lazy_fn(function(){ // status: output format unrefined
+var regex_parse = lazy_fn(()=>{var t; // status: output format unrefined
 	var P = require('./parsimmon2.js')
 	var dehex = ι=> chr(parseInt(ι,16))
 	var ESCAPE = P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex), P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex), P(/u([0-9a-fA-F]{4})/,1).map(dehex), P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
@@ -244,17 +248,17 @@ var regex_parse = lazy_fn(function(){ // status: output format unrefined
 		, P`(?=${()=>OR_or_SEQ})`.T`lookahead`
 		, P`(?!${()=>OR_or_SEQ})`.T`nlookahead`
 		, P`(${()=>OR_or_SEQ})`.T`capture`
-		, P`[${[ /\^?/, (function(){ var t = ESCAPE.or(/[^\]]/); return P([ t.skip('-'), t ]).or(t) })().many() ]}]`.map(ι=> P.T(ι[0]? 'nset' : 'set', ι[1]))
+		, P`[${[ /\^?/, ( t= ESCAPE.or(/[^\]]/), P([ t.skip('-'), t ]).or(t) ).many() ]}]`.map(ι=> P.T(ι[0]? 'nset' : 'set', ι[1]))
 		)
 	var TIMES = P([ s1, P.alt('*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/,P.of())
-		.map(ι=> ι = !ι? ι : ι==='*'? [0,Infinity] : ι==='+'? [1,Infinity] : ι==='?'? [0,1] : (function(){ var [ˣ,a,two,b] = ι.match(/\{([0-9]+)(?:(,)([0-9]*))?\}/); return [a|0,b? b|0 : two? Infinity : a|0] })() )
+		.map(ι=> ι = !ι? ι : ι==='*'? [0,Infinity] : ι==='+'? [1,Infinity] : ι==='?'? [0,1] : (()=>{ var [ˣ,a,two,b] = ι.match(/\{([0-9]+)(?:(,)([0-9]*))?\}/); return [a|0,b? b|0 : two? Infinity : a|0] })() )
 		]).map(([ι,for_])=> !for_? ι : {T:'times', ι, for:for_} )
 	var s2 = P.alt( P('^').T`begin`, P('$').T`end`, TIMES )
 	var OR_or_SEQ = P.sep_by(s2.many().T`seq`, '|').map(ι=> ι["‖"] > 1? P.T('or',ι) : ι[0])
 	// t1 ← regex_parse(/^(foo)(?:bep){2,7}\baz(?:\\b.ar|[a-c-e()}][^\s]|b|baz(?=gremlin)(?!groblem)|)*/i)
 	return ι=>0?0: {ι:OR_or_SEQ.parse(ι.source), flags:ι.flags} })
 E.applescript = {
-	parse: lazy_fn(function(){
+	parse: lazy_fn(()=>{
 	  var P = require('./parsimmon2.js')
 	  var ws = ι=> ws_.then(ι).skip(ws_); var ws_ = P(/[ \t\n\r]*/)
 	  var value = P(()=> P.alt(false_,true_,number,object,array,string,raw) )
@@ -270,7 +274,7 @@ E.applescript = {
 	  return ι=> ι===''? undefined : ws(value).parse(ι) }),
 	print: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : Tarr(ι)? '{'+ι.map(applescript.print.X).join(',')+'}' : !function(){throw Error('‽')}(),
 	}
-// E.lenient_json_parse = (λ(){
+// E.lenient_json_parse = (=>{
 // 	P ← require('./parsimmon2.js')
 
 // 	whitespace ← P(/\s*/m)
@@ -279,13 +283,13 @@ E.applescript = {
 // 	comma_sep ← (parser)=> P.sepBy(parser, token(P(',')))
 // 	token ← p=> p.skip(whitespace)
 
-// 	l_null ← token(P('null')).map(()=> null)
-// 	l_t ← token(P('true')).map(()=> ✓)
-// 	l_f ← token(P('false')).map(()=> ✗)
+// 	l_null ← token(P('null')).map(=> null)
+// 	l_t ← token(P('true')).map(=> ✓)
+// 	l_f ← token(P('false')).map(=> ✗)
 // 	l_str ← token(P(/"((?:\\.|.)*?)"/, 1)).map(un_escape).desc('string')
 // 	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
 
-// 	json ← P.lazy(()=> whitespace.then(P.alt( object, array, l_str, l_num, l_null, l_t, l_f )) )
+// 	json ← P.lazy(=> whitespace.then(P.alt( object, array, l_str, l_num, l_null, l_t, l_f )) )
 // 	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
 // 	pair ← P.seq(l_str.skip(token(P(':'))), json)
 // 	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _.object(ι))
@@ -365,11 +369,27 @@ E.copy_deep = ι=>0?0
 		var r = new ι.constructor()
 		for(var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k) ) r[k] = copy_deep(ι[k])
 		return r })()
+E.seq = ι=>{ var t= Object.create(seq.prototype); t.ι = ι; return t }
+seq.prototype = {
+	next_ι:function(){return this.ι.next().value }
+	// ,map(){}
+	// ,'map…':λ(){}
+	// ,fold(){}
+	// ,repeat(){}
+	// ,filter(){}
+	// ,clone(){}
+	// ,pin(){}
+	// ,find_(){}
+	// ,slice(){}
+	// ,'‖':λ(){}
+	// ,some(){}
+	// ,every(){}
+	}
 assign_properties_in_E_informal({
 'Object.prototype._':{ writable:true, get(){return _(this)}, } // ! remove this
 ,'(Array|Set|Map).prototype._':{ get(){return _(this)} }
 
-,'(Array|Buffer|String).prototype.‖':{ get(){return this.length } }
+,'(Array|Buffer|String|Function).prototype.‖':{ get(){return this.length } }
 ,'(Set|Map).prototype.‖':{ get(){return this.size } }
 
 // 'Array.prototype.map'
@@ -414,7 +434,7 @@ assign_properties_in_E_informal({
 ,'Map.prototype.⁻¹declare_uniq':{get(){return new Map([...this.entries()].map(ι=>[ι[1],ι[0]])) }}
 ,'Map.prototype.⁻¹':{get(){return [...this.keys()].group(ι=> this.get(ι)) }}
 
-,'Array.prototype.search':function(f){ var r; if (this.some(function(ι,i,l){ r = f(ι,i,l); if (r!==undefined) return true })) return r }
+,'Array.prototype.find_':function(f){ var r; if (this.some(function(ι,i,o){var t; if( (t= f(ι,i,o))!==undefined ){ r = [i,ι,t]; return true } })) return r }
 ,'Array.prototype.find_index_deep':function(f){
 	for(var i=0;i<this["‖"];i++){ var ι = this[i]
 		if (Tarr(ι)){ var t = ι.find_index_deep(f); if (t) return [i,...t] }
@@ -425,20 +445,23 @@ assign_properties_in_E_informal({
 ,'Array.prototype.seq':{get(){ var θ = function*(){ for(;θ.i<θ.ι["‖"];) yield θ.ι[θ.i++] }(); _(θ) ['<-'] ({ ι:this, i:0, clone(){return _(this.ι.seq) ['<-'] (this) } }); return θ }}
 ,'Array.prototype.find_last_index':function(f){ for(var i=this["‖"]-1;i>=0;i--) if( f(this[i],i,this) ) return i }
 
+// ,'Set.prototype.@@iterator':Set.prototype.values
+// ,'Map.prototype.@@iterator':Map.prototype.entries
 ,'RegExp.prototype.@@iterator':function*(){yield* genex(regex_parse(this)) }
 ,'RegExp.prototype.exec_at':function(ι,i){ this.lastIndex = i; return this.exec(ι) }
 
-,'Promise.prototype.status':{writable:true, get(){ var [s,v] = b_util.getPromiseDetails(this); var r = [true,false][s]; if( r!==undefined ){ [this.status,this.ι] = [r,v]; return r } }}
+,'Promise.prototype.status':{writable:true, get(){ var [s,v] = b_util.getPromiseDetails(this); var r = [undefined,true,false][s]; if( r!==undefined ){ [this.status,this.ι] = [r,v]; return r } }}
 ,'Promise.prototype.ι':{writable:true, get(){ if( this.status!==undefined ) return this.ι }}
 
-,'stream.Readable.prototype.pin':function(){return Π(yes=>{ var t = []; this.resume().on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
+,'stream.Readable.prototype.pin':function(){return Π(yes=>{ var t = []; this.resume(); this.on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
+,'Buffer.prototype.pipe':function(to,opt){ var t = new stream.Duplex(); t.push(this); t.push(null); return t.pipe(to,opt) }
 })
 
 var TimerCons = function(a,b){this.a=a;this.b=b}; TimerCons.prototype = {clear:function(){this.a.clear();this.b.clear()}, ref:function(){this.a.ref();this.b.ref()}, unref:function(){this.a.unref();this.b.unref()}}
 E.Π = ι=>0?0
 	: !Tfun(ι)?( T.Error(ι)? Promise.reject(ι) : Promise.resolve(ι) )
 	: /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
-	: (function(){ // type union of new.Promise(nodeback) and Promise.resolve(object)
+	: (()=>{ // type union of new.Promise(nodeback) and Promise.resolve(object)
 		var type = '?'
 		var r = (...a)=>{ type==='?' &&( type = 'nodeback' ); return type==='object'? ι(...a) : Π((yes,no)=> ι(...a,(e,ι)=>{ e? no(e) : yes(ι) })) }
 		for(var name of ['then','catch'])
@@ -459,11 +482,11 @@ assign_properties_in_E_informal({
 	_(Object.getPrototypeOf( new Seq().entries() )) ['<-'] ({
 		map(f){return [...this].map(f) }
 		}) )
-var t; _(Object.getPrototypeOf( (t=setImmediate(function(){}), clearImmediate(t), t) )) ['<-'] ({
+var t; _(Object.getPrototypeOf( (t=setImmediate(()=>{}), clearImmediate(t), t) )) ['<-'] ({
 	clear(){ clearImmediate(this) }
 	,ref(){} ,unref(){}
 	})
-var t; _(Object.getPrototypeOf( (t=setTimeout(function(){},0), clearTimeout(t), t) )) ['<-'] ({
+var t; _(Object.getPrototypeOf( (t=setTimeout(()=>{},0), clearTimeout(t), t) )) ['<-'] ({
 	clear(){ this._repeat? clearInterval(this) : clearTimeout(this) }
 	})
 
@@ -471,7 +494,7 @@ E.walk = (ι,f,k,o)=>( Tprim(ι)||_(ι).forEach((ι,k,o)=> walk(ι,f,k,o)), ι!=
 E.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι), _(ι).forEach(ι=> walk_graph(ι,f,seen)), seen.pop(), ι!==undefined && ι!==null && f(ι), ι )
 E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι), seen.push(ι), _(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)), seen.pop(), fᵇ(ι), ι )
 E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)), f(ι,k,o) ) : ( ι = _(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (function(){ for (var k in ι) if (Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f); return f(ι) })()
+E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (()=>{ for (var k in ι) if (Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f); return f(ι) })()
 E.search_obj = (ι,f)=>{ var r=[]; walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)); return r }
 E.search_graph = (ι,f)=>{ var r=[]; walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)); return r }
 // the right name for walk is going to be along the lines of
@@ -495,12 +518,12 @@ assign_properties_in_E_informal({
 ,'Date.prototype.hms':     {get(){return fmt.call(this,'YYYY-MM-DDT'["‖"],'YYYY-MM-DDTHH:mm:ss'["‖"])}}
 })
 
-E.schema = (function(){
+E.schema = (()=>{
 	var sc_merge = function(a,b){var ak = _.keys(a); var bk = _.keys(b); bk["-"](ak).forEach(k=> a[k] = b[k]); ak["∩"](bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]); return a }
 	return ι=> T.boolean(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι["‖"]? [] : [ι.map(schema).fold(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
-new Property( E,'brightness' ).def(function(){
+new Property( E,'brightness' ).def(()=>{
 	var br = hsᵥ? {
 		get(){return Π( hsᵥ`hs.brightness.get()`/100 )},
 		set(ι){return Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
@@ -673,7 +696,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 	if (!focus) sfx`ack`
 
 	// windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
-	// apps_with_windows_in_current_space ← ()=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
+	// apps_with_windows_in_current_space ← => hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
 
 	//########################### go to specific chrome ###########################
 	// 	wnd ← 1
@@ -746,10 +769,10 @@ E.simple_template = function(ss,ιs,filter){ is_template([ss,...ιs]) || !functi
 	if( filter && !Tfun(filter) ){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	var filter_special = ι=> falsy(ι)? '' : ι+''
 	var ι = tmpl_flatten( ss.raw.map(ι=> ι.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>0?0:{raw:ι}) )
-	for(var i=0;i<ι["‖"]-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,function(){ ι[i+1] = filter_special(ι[i+1].raw); i++; return '' })
+	for(var i=0;i<ι["‖"]-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,()=>{ ι[i+1] = filter_special(ι[i+1].raw); i++; return '' })
 	filter && (ι = ι.map(function(ι){var t; return Tstr(ι)? ι : (t=filter(ι.raw), t===undefined? ι : t) }))
 	return ι}
-E.easy_template = (function(){
+E.easy_template = (()=>{
 	var read = (ss,ιs)=> tmpl_flatten(ss.raw,ιs.map(ι=>[ι]))
 	var show = function(ι){ var raw = ['']; var ιs = []; ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι), raw.push('')) ); return [{raw},...ιs] }
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
@@ -855,7 +878,7 @@ E.tsᵥ = function(ss,...ιs){
 	ι = 'require "totalspaces2"; TS = TotalSpaces2; '+ι
 	PORT = 34290
 	var R = ()=> JSON.parse(fs_ipc_emit(PORT,ι))[0]
-	var launch_serv = function(){
+	var launch_serv = ()=>{
 		(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || !function(){throw Error('‽')}()
 		var t = φ`/tmp/evalserv_${random_id(9)}.rb`; t.text = String.raw`#!/usr/bin/env ruby
 			require "socket"; require "json"
@@ -1064,6 +1087,7 @@ sb.encode = (()=>{
 		: ι===undefined? ''
 		: Tarr(ι)? ι.map(line).join('\n')
 		: line(ι) })()
+// EventEmitter.prototype.inspect
 
 E.cn = { log:(...a)=> console.log(
 	is_template(a)?
@@ -1109,6 +1133,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 	var super_ = this.completer; this.completer = function(line,cb){ line.trim()===''? cb(undefined,[]) : super_.call(this,line,cb) }
 	this.removeAllListeners('line').on('line',function(line){
 		this.context.rl = this
+		this.context.E = this.context
 		if( this.bufferedCommand ){ var ι = this.history; ι.reverse(); var t = ι.pop(); ι[-1] += '\n'+t; ι.reverse() }
 		var code = this.bufferedCommand+line
 		var {parse_error,error,v} = my_eval(code)

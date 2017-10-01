@@ -7,17 +7,17 @@ P ← require_new(φ`~/code/scratch/ζ/parsimmon2.ζ`)
 WS ← /\s*/
 
 op_ps ← {
-	'1 left':λ(ops_p,next_p){ r ← P(()=> P.seq_map(ops_p, r, (op,ι)=> R('op'+op,{ι})).or(next_p) ); ↩ r },
+	'1 left':λ(ops_p,next_p){ r ← P(=> P.seq_map(ops_p, r, (op,ι)=> R('op'+op,{ι})).or(next_p) ); ↩ r },
 	'1 right':(ops_p,next_p)=> P.seq_map( next_p, ops_p.many(), (x,r)=> r.fold((ι,op)=> R('op'+op,{ι}), x) ),
 	# binary left: 1-2-3 = (1-2)-3 ; binary right: 1^2^3 = 1^(2^3)
 	'2 left':(ops_p,next_p)=> P.seq_map( next_p, P.seq(ops_p,next_p).many(), (x,r)=> r.fold((a,[op,b])=> R('op'+op,{a, b}), x) ),
-	'2 right':λ(ops_p,next_p){ r ← P(()=> next_p.chain(a=> P.seq_map(ops_p, r, (op,b)=> R('op'+op,{a, b}) ).or(P.of(a)) ) ); ↩ r },
+	'2 right':λ(ops_p,next_p){ r ← P(=> next_p.chain(a=> P.seq_map(ops_p, r, (op,b)=> R('op'+op,{a, b}) ).or(P.of(a)) ) ); ↩ r },
 	'2 center':(ops_p,next_p)=> P.seq_map( next_p, P.seq(ops_p,next_p).many().map(ι=> _(ι).flatten(true)), (a,op_bs)=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) ),
 	}
 P_build_operators ← (unit,ops)=> ops.fold((x,ι)=> op_ps[ι[0]]( P.alt(…ι.slice(1).map(P.X)), x ), unit)
 
-parse ← (λ(){
-	expr_unit ← P(()=> P.alt(
+parse ← (=>{
+	expr_unit ← P(=> P.alt(
 		P('⧫').map(ι=> R('MISSING',{ι})),
 		P(/\d+(?:\.\d+)?/).map(ι=> R('number',{ι})),
 		P(/\/((\[[^\]]*\]|\\.|[^/\n])*)\//).map(ι=> R('regex',{ι})),
@@ -50,7 +50,7 @@ srcs ← [
 srcs.map(ι=> cn.log`parse(${ι}) = ${parse(ι)}`)
 # cn.log('testing recursion')
 # srcs.map(λ(ι){
-# 	ι = [ι]; q ← ()=> ι.push(Tstr(ι[-1])? parse(ι[-1]) : ast_to_S(ι[-1])); q(); q(); q()
+# 	ι = [ι]; q ← => ι.push(Tstr(ι[-1])? parse(ι[-1]) : ast_to_S(ι[-1])); q(); q(); q()
 # 	_.isEqual(ι[0],ι[2]) ||( cn.log`${ι[0]} ≠ ${ι[2]}`, ‽('fail02') )
 # 	_.isEqual(ι[1],ι[3]) ||( cn.log`${ι[1]} ≠ ${ι[3]}`, ‽('fail13') )
 # 	})

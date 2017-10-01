@@ -73,7 +73,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {,}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
-	appdef ← ι=> appdefs[ι] = |>(ι)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) )); appdefs ← {,}
+	appdef ← ι=> appdefs[ι] = |>(ι)(memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {,}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{

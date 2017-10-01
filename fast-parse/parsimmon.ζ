@@ -11,6 +11,7 @@ delete Object.prototype._
 # 	,match(ι){re←; ↩ Tstr(ι)? @.str.startsWith(ι,@.i) :( re = RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y') ,re.exec_at(@.str,@.i) ) }
 # 	}
 # [#Q _Stream.prototype.host #Q].def({ ,enumerable:false ,get(){↩ @.str.slice(i) }})
+# wow, (in_,i) vs { i,ι } is fucky - could call it (constants,backpropagate) vs { edit,new }
 
 #################################### Parser ####################################
 Parser ← (tag,ι)=> _(Object.create(P.prototype)) <- ({tag},ι)
@@ -22,8 +23,8 @@ P ← ι⇒
 	: T.RegExp(ι)? P._regex(ι)
 	: ‽('cant make parser from',ι)
 P.prototype = R(∅,{})
-# P.prototype.exec0 = λ(in_){ for(var t of @._(in_,0)) ↩ t.ι }
-P.prototype.exec = λ(in_){ for(var t of @.skip(/(?![^])/)._(in_,0)) ↩ t.ι }
+P.prototype.exec0 = λ(in_){ for(var t of @.exec(in_)) ↩ t }
+P.prototype.exec = λ*(in_){ for(var t of @._(in_,0)) yield t.ι }
 
 module.exports = P
 
@@ -38,7 +39,7 @@ P.not = ι=> Parser('not',{
 	// not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
 	_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩; yield { i, ι:∅ } },
 	})
-__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if (done) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
+__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if( done ) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
 // __seq ← λ* Λ(ps,ps_i,in_,i){
 // 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
 // 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }

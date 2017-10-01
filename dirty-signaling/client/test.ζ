@@ -15,7 +15,7 @@ server.emit('talk_to','7ctvbp999d')
 
 // socket.emit('chat message', 'now im here')
 
-// $('form').submit(λ(){
+// $('form').submit(=>{
 //   socket.emit('chat message', $('#m').val())
 //   $('#m').val('')
 //   ↩ ✗

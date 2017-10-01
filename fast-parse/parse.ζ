@@ -2,11 +2,11 @@
 exports←; exports || ( exports = global )
 P ← require('./parsimmon')
 
-;(λ(){
+;(=>{
 	{Rₐ:R} ← require('./record')
 	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,∅]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
 	walk_regex ← (ι,f)=> |>(ι)(λ Λ(ι){ if (ι && ι.tag){
-		clone ← _.once(()=>{ ι = _(R``) <- (ι) })
+		clone ← _.once(=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
 		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
 		ι = f(ι,{change})
@@ -14,8 +14,8 @@ P ← require('./parsimmon')
 
 	skip_e2rbm←; anon_w9lb3←;
 
-	Regex ← (λ(){
-		Regex ← ()=>Regex
+	Regex ← (=>{
+		Regex ← =>Regex
 		hex ← /[0-9a-fA-F]/u
 		Escape ← P([ '\\', P.alt([
 			P.alt([ re`x(${hex}{2})`, re`u\{(${hex}+)\}`, re`u(${hex}{4})` ]).map(ι=> chr(parseInt(ι[1],16))),
@@ -31,24 +31,24 @@ P ← require('./parsimmon')
 			P(/[1-9][0-9]*/).map(ι=> R`#backref ${ι|0}`),
 			/[^]/,
 			]), ]).map(ι=>ι[1])
-		Set_Escape ← P.alt([ P('\\b').map(()=>'\b'), Escape ])
+		Set_Escape ← P.alt([ P('\\b').map(=>'\b'), Escape ])
 		Unit ← P.alt([
 			Escape,
-			P('.').map(()=> $(/[^\n\r\u2028\u2029]/u)),
+			P('.').map(=> $(/[^\n\r\u2028\u2029]/u)),
 			P(['(?:',Regex,')']).map(ι=>ι[1]),
 			P(['(?!',Regex,')']).map(ι=>ι[1]).R`#not`,
 			P(['(?=',Regex,')']).map(ι=>ι[1]).R`#not`.R`#not`,
 			P(['(?<=',Regex,')']).map(ι=>ι[1]).R`#behind`,
 			P(['(?<!',Regex,')']).map(ι=>ι[1]).R`#behind`.R`#not`,
 			P(['(',Regex,')']).map(ι=>ι[1]).R`#capture`,
-			P(['[', /\^?/, (λ(){ t ← P.alt([ Set_Escape,/[^\]]/ ]); ↩ P.alt([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]), t ]).* })(), ']'])
+			P(['[', /\^?/, (=>{ t ← P.alt([ Set_Escape,/[^\]]/ ]); ↩ P.alt([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]), t ]).* })(), ']'])
 				.map(([ˣ,not,ι,ʸ])=>{ r ← R`#alt ${ι.map(ι=> Tarr(ι)? R`#alt_range ${ι}` : ι )}`; if (not) r = R`#seq ${[ R`#complement ${r}`, R`#any` ]}`; ↩ r }),
 			P(/[$^]/).R`#^$`,
 			/[^)]/,
 			])
 		Postfix ← P([ Unit, P([ P.alt([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]), P('?').?, ]).? ]).map(([ι,rep])=>{
 			if (!rep) ↩ ι
-			for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (λ(){ [ˣ,a,two,b] ← ι; ↩ [a|0,b? b|0 : two? ∞ : a|0] })()
+			for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (=>{ [ˣ,a,two,b] ← ι; ↩ [a|0,b? b|0 : two? ∞ : a|0] })()
 			↩ R({ ι, for:for_(rep[0]), greedy:!rep[1], }).+=`#repeat` })
 		Infix ← Postfix.*?.R`#seq`.sep_by('|').?.map(ι=> ι.‖===1? ι[0] : R`#alt ${ι}` )
 		Regex ← Infix
@@ -88,7 +88,7 @@ P ← require('./parsimmon')
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
 	_(exports) <- (t)
 
-	if_main_do(()=>{ [
+	if_main_do(=>{ [
 		/(?:(|))/u,
 		/(|)/u,
 

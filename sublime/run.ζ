@@ -7,13 +7,13 @@
 plist ← npm`plist@1.2.0`
 
 // ------------------------------- generic lib ------------------------------ //
-match_json_head ← ι=> _.range(ι.‖).search(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(()=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})
+match_json_head ← ι=> _.range(ι.‖).find_(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})[2]
 
 // ----------------------------------- lib ---------------------------------- //
 compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','␣':'space','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
 
 // -------------------------------------------------------------------------- //
-// main ← λ(){
+// main ← =>{
 // 	‽('φ todo')
 // 	from ← φ(__dirname).φ`Packages`
 // 	dest ← φ`~/Library/Application Support/Sublime Text 3/Packages`

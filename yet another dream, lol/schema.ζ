@@ -1,4 +1,4 @@
-/*#######################*/ global['try #1'] = _.once(()=>{ ######################
+/*#######################*/ global['try #1'] = _.once(=>{ ######################
 parse_bash(φ`~/.bashrc`.text).then(ι=> global.train = ι)
 
 schema2 = ι=>{ anon_7268v←;
@@ -7,7 +7,7 @@ schema2 = ι=>{ anon_7268v←;
 	# 	ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k])
 	# 	↩ a }
 
-	schemas ← (()=>{ # uniq by ≈.schema , index by .ι
+	schemas ← (=>{ # uniq by ≈.schema , index by .ι
 		as_schema ← ι=> _(ι).mapObject(ι⇒
 			: T.boolean(ι)? ✓
 			: Tstr(ι)? ''
@@ -24,7 +24,7 @@ schema2 = ι=>{ anon_7268v←;
 				sch_to_data.has(sch_k) || sch_to_data.set(sch_k,{ ι:schema, id:'#'+b36(fromUInt32BE([#Q (anon_7268v||( anon_7268v = [0] )).0 #Q].ι++)), })
 				}
 			,map: f=> […sch_to_data.values()].map(f)
-			# ,simplify: ()=>{
+			# ,simplify: =>{
 			# 	...
 			# 	}
 			,show(){
@@ -60,12 +60,12 @@ show(){↩ schemas(λ(){↩ for @.schema: (JSON_pretty(ι) @.as.node(ι).‖ @.a
 # simplify
 node -> schema ← for range: if ι.as.(node).‖ = 1 and ι.[* - T.prim]/and*.as.(node).‖ = 1: ι.[* - T.prim] ← *.as.schema
 
-;(async ()=>{
+;(async =>{
 	train ← await parse_bash(φ`~/.bashrc`.text)
 	sb.tab.push( schemas(λ(){↩ @(train).as.schema }) )
 	})()
 
-###################### */ global['try #2'] = _.once(()=>{ ######################
+###################### */ global['try #2'] = _.once(=>{ ######################
 global['support #1']()
 # compile pseudocode to js_lang
 
@@ -104,11 +104,11 @@ schema.≡.close_over!(ι=>{
 		? _({,}) <- ( ι, names.map(ι=> ι.as.schema) )
 		: ι } )
 
-;(async ()=>{
+;(async =>{
 	sb.tab.push( node(await parse_bash(φ`~/.bashrc`.text)).as.schema )
 	})()
 
-/*################*/ }); global['support #1'] = _.once(()=>{ ###################
+/*################*/ }); global['support #1'] = _.once(=>{ ###################
 and ← (a,b)=> a && b
 
 # missing:

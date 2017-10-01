@@ -15,7 +15,7 @@ APP ← '[φΔs]'
 log2 ← (…a)=> φ`/tmp/log_φΔs.txt`.text += [APP,…a].join(' ')+'\n'
 
 fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
-	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(λ(){ fsʷ.removeListener(fl,f) }); ↩ }
+	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(=> fsʷ.removeListener(fl,f) ); ↩ }
 	fsʷ._events[fl] || npm`chokidar@1.7.0`.watch(fl,{ ,ignoreInitial:✓ ,alwaysStat:✓ })
 		.on('error',λ(ι){ console.error('[fs_watch] wat '+ι) })
 		.on('all',λ(ev,ι,stat){ t ← {'addDir':'add','unlinkDir':'unlink'}; type ← t[ev]||ev; fsʷ.emit(fl, ι, {type, dir: !!t[ev], stat, time: type==='unlink'? new Date() : stat.ctime}) })
@@ -54,8 +54,8 @@ npm`chokidar@1.7.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 	})
 
 ########################### look at me cron no hands ###########################
-;(()=>{
+;(=>{
 	u ← 'nihilsupernum'; page ← `https://${u}.tumblr.com/`
-	t ← Δ_as(()=> GET_L(page), ι=> (ι+'').match(re`\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?`.g) .filter(ι=>{ ι=npm`urijs@1.18.12`(ι); ↩ ι.hostname()+'/'+ι.segment(0)===`${u}.tumblr.com/post` }) )
-	if( t ) notify(`Δ tumblr.${u}`).then(()=> go_to(page))
+	t ← Δ_as(=> GET_L(page), ι=> (ι+'').match(re`\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?`.g) .filter(ι=>{ ι=npm`urijs@1.18.12`(ι); ↩ ι.hostname()+'/'+ι.segment(0)===`${u}.tumblr.com/post` }) )
+	if( t ) notify(`Δ tumblr.${u}`).then(=> go_to(page))
 	}).every(1e3)

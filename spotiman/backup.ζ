@@ -8,15 +8,15 @@ APP ← '\x1b[34m[spotiman]\x1b[0m'
 spotify.setCredentials(φ`~/.auth/spotiman`.json)
 update_creds ← ι=>{ t ← spotify.getCredentials(); ι.access_token &&( t.accessToken = ι.access_token ); ι.refresh_token &&( t.refreshToken = ι.refresh_token ); spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
 
-say_progress ← (λ(){ i←0; ↩ ()=>{ i++; i%10===0 && cn.log(APP,'working @ page #'+i) } })()
+say_progress ← (=>{ i←0; ↩ =>{ i++; i%10===0 && cn.log(APP,'working @ page #'+i) } })()
 
 depaginate ← λ(f,cbₐ){ // see googleapis usage for a more up to date version of this function
 	r ← []; async.doWhilst(
 		cb=> f({offset:r.‖}).then(ι=>{ ι = ι.body; r.push(…ι.items); say_progress(); cb.P(∅,ι).in(0.1) /*baby the rate limit*/ }).done(),
 		ι=> r.‖ < ι.total,
-		()=> cbₐ(r) ) }
+		=> cbₐ(r) ) }
 
-get_my_tracks ← ()=>Π(yes=>{
+get_my_tracks ← =>Π(yes=>{
 	qₐ ← ι=> ι._.pick('name','uri')
 	tracks_r ← {,}
 	intern_track ← ι=> tracks_r[ι.uri] || (tracks_r[ι.uri] = _(qₐ(ι)) <- ({ album:qₐ(ι.album), artists:ι.artists.map(qₐ), tags:[] }))
@@ -27,7 +27,7 @@ get_my_tracks ← ()=>Π(yes=>{
 				depaginate(opt=> spotify.getPlaylistTracks(ι.owner.id,ι.id,opt), r=>{
 					pl ← ι; r.map(ι=> intern_track(ι.track).tags.push({name:pl.name, added_at:ι.added_at}) )
 					cb() })
-			},()=>{ yes(_(tracks_r).values()) }
+			},=>{ yes(_(tracks_r).values()) }
 			) }) }).done() })
 
 // ---------------------------------- main ---------------------------------- //
