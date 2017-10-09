@@ -84,6 +84,9 @@ E.def = (o,name,ι)=>{
 	return Object.defineProperty(o,name,ι) } // = ↩ o
 var lazy = (name,ι)=>0?0: { writable:true, get(){return this[name] = ι() } }
 
+E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var anon = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ anon.f = f; return anon } })() // prefix hook
+def(Object.prototype,'𐅭𐅋𐅮𐅜𐅋',{ enumerable:false ,value:function(...f){return f.reduce((ι,f)=> f(ι),this) } }) // postfix pipe
+
 //################################## requires ###################################
 ;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['lodash','lo'],['highland','h']
 	].map(([ι,n])=> def(E, n||ι, ()=> require(ι)) )
@@ -200,6 +203,10 @@ E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var
 			: ζ_compile_nonliteral(ι)
 			).join('') } })
 ζ_compile["⁻¹"] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, (ι,name,s,eq)=>0?0: {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
+
+// 𐅫𐅮𐅪𐅰𐅃(__name(x)).ι = 
+// E.__name = name=> ι=> def(ι,'name',{ value:name })
+
 E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def(new O1(),'ι',{ set(ι){ def(ι,'name',{ value:this.name }) } }) )))) ['<-'] ({name}); var anon_u5393;
 E.__err_format = (...a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
@@ -351,7 +358,8 @@ E.bench1 = f=>{ var hr = hrtime(); f() ;return Unit(hrtime(hr),'s') }
 E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) // ! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
 E.random_id = L=> L.map(()=> random(anon_clqkb||(anon_clqkb=[.../[0-9a-z]/]))).join(''); var anon_clqkb;
-random_id.braille = L=> L.map(()=> random(anon_8zw5b||(anon_8zw5b= [...re`[⠀-⣿]`] ))).join(''); var anon_8zw5b;
+random_id.braille = L=> L.map(()=> random(anon_8zw5b||(anon_8zw5b= [...re`[⠁-⣿]`] ))).join(''); var anon_8zw5b;
+random_id.greek = L=> L.map(()=> random(anon_j6d9d||(anon_j6d9d= [...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'] ))).join(''); var anon_j6d9d;
 
 E.ord = ι=> Tnum(ι)? ι : ι.codePointAt()
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
@@ -472,8 +480,8 @@ E.Π = ι=>0?0
 Π["&"] = ι=> Promise.all(ι)
 Π["|"] = ι=> Promise.race(ι)
 assign_properties_in_E_informal({
-'Function.prototype.P':function(...a1){ var ι=this; return function(...a2){return ι.apply(this, a1.concat(a2)) } }
-,'Function.prototype.X':{get(){ var ι=this; return function(a){return ι.call(this,a) } }}
+'Function.prototype.P':function(...a){return this.bind(undefined,...a) }
+,'Function.prototype.X':{get(){return ι=> this(ι) }}
 ,'Function.prototype.defer':function(){return setImmediate(this) }
 ,'Function.prototype.in':function(time){return setTimeout(this,max(0,time||0)*1e3) }
 ,'Function.prototype.every':function(time,opt){ var r = setInterval(this,max(0,time)*1e3) ;return !(opt&&opt.leading)? r : new TimerCons(this.in(0),r) }
