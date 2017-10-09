@@ -37,8 +37,6 @@ assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); [�
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 #################################### prelude ###################################
-E.O1 = _(λ(){}) <- ({ prototype:Object.freeze(Object.create(null)) })
-
 E.catch_union = f=>{ try{ r ← f(); bad ← T.Error(r); if (!bad) ↩ r }catch(e){ r ← e; T.Error(r) || ‽ ;↩ r }; bad && ‽ }
 E.catch_ι = f=>{ try{ r ← f(); bad ← r===∅; if (!bad) ↩ r }catch(e){}; bad && ‽ }
 E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ if ('__catchable' in e) ↩ e.__catchable; else throw e } }
@@ -185,7 +183,6 @@ E.ζ_compile = lazy_fn(=>{ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oen
 		.replace(/\[#Q/g,'new Property(') # Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
 		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X) # ! eventually, remove the thing with two underscores next to each other __
-		.replace(/\{,\}/g,'new O1()')
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(anon_q3sot||(anon_q3sot= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
 	# ζ_compile_nonliteral_tree ← ι=>{
@@ -204,7 +201,7 @@ E.ζ_compile = lazy_fn(=>{ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oen
 # 𐅫𐅮𐅪𐅰𐅃(__name(x)).ι = 
 # E.__name = name=> ι=> def(ι,'name',{ value:name })
 
-E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def({,},'ι',{ set(ι){ def(ι,'name',{ value:@.name }) } }) )))) <- ({name}); anon_u5393←;
+E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def({},'ι',{ set(ι){ def(ι,'name',{ value:@.name }) } }) )))) <- ({name}); anon_u5393←;
 E.__err_format = (…a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
 if( require.extensions && !require.extensions['.ζ'] )(=>{
@@ -217,7 +214,7 @@ E.protos = λ*(ι){ for(;!( ι===null || ι===undefined ); ι = Object.getProtot
 E.|> = ι=> (…f)=> f.reduce((ι,f)=> f(ι),ι)
 E.simple_hash_str = ι⇒
 	: Tfun(ι)? T(ι)+ι
-	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι; else{ r←{,}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;↩ r } })
+	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι; else{ r←{}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;↩ r } })
 E.fromUInt32BE = ι=>{ t ← Buffer.alloc(4); t.writeUIntBE(ι,0,4) ;↩ t }
 E.b36 = ι=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode(ι).replace(/^0+(?!$)/,'')
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
@@ -230,7 +227,7 @@ memo_frp ← (names,within,f)=>{
 	a ← Time().iso; ι ← f(); b ← Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = { ,names ,date:[a,b] ,ι } ;↩ ι }
 E.memoize_persist = f=>{
-	store ← φ`/tmp/ζpersist_${simple_hash(f)}`; store_ι ← store.json||{,}
+	store ← φ`/tmp/ζpersist_${simple_hash(f)}`; store_ι ← store.json||{}
 	↩ (…a)=>{ t ← new Property(store_ι,simple_hash(a)) ;↩ t.∃? t.ι : ( t.ι = f(…a), store.json = store_ι, store_ι = store.json, t.ι ) } }
 # frp will remove the last use(s) of slot_persist
 E.slot_persist = name=>{ o ← φ`/tmp/ζpersist_${name}` ;↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }}) }
@@ -345,7 +342,7 @@ genex ← λ Λ(ι){↩0,
 _(E) <- (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) <- ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E, '⍟':Math.log, })
 E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].‖)._.min(); ι = ι.map(ι=> ι.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
-E.bench = (f,opt={,})=>{ var {TH=0.4} = opt
+E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 	# ! really should include a confidence interval or smth
 	r←0; I←1; hr←hrtime(); R ← => Unit(hrtime(hr) / r,'s')
 	t←f(); r++
@@ -538,7 +535,7 @@ E.schema = (=>{
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
 	↩ br })
 
-E.os_daemon = (cmd,opt)=>{ cmd+=''; {once} ← opt||{,}
+E.os_daemon = (cmd,opt)=>{ cmd+=''; {once} ← opt||{}
 	job ← {
 		,[once?'RunAtLoad':'KeepAlive']:✓
 		,Label:`ζ.${φ(cmd).name}.${simple_hash(cmd).slice(0,8)}`
@@ -695,7 +692,7 @@ E.github_url = ι=>{
 	fm ← ι=> 'L'+(ι+1)
 	↩ github_remote_origin(file||'')+( _.isEqual(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
 E.go_to = (…a)=>{ # synonyms: go_to, open, search?
-	opt ← !Tprim(a[-1])? a.pop() : {,}
+	opt ← !Tprim(a[-1])? a.pop() : {}
 	type ← a.‖===1? ∅ : a.shift()
 	ι ← a[0]
 	{new:new_,focus,in_app,sb_view_file_name} ← _({new:✗, focus:✓, in_app:∅, sb_view_file_name:∅}) <- (opt)
@@ -790,7 +787,7 @@ E.easy_template = (=>{
 	↩ f=> λ(ss,…ιs){↩ f.call(@,read(ss,ιs),show) }
 	})()
 
-E.clipboard = def({,},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
+E.clipboard = def({},'ι',{ get(){↩ shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
 E.sb = λ self(){↩ self._call() } # let personal concepts use sb as callable
 [#Q sb.tab #Q].def({
 	get(){
@@ -844,7 +841,7 @@ E.shᵥ = λ(ss,…ιs){ code ← sh(ss,…ιs)
 	ι ← require('child_process').spawnSync(code,{shell:✓})
 	if_sh_err('shᵥ',code,ι)
 	↩ _(ι.stdout) <- ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a) ;↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
-_shₐ ← (ss,ιs,opt={,})=>{
+_shₐ ← (ss,ιs,opt={})=>{
 	if (ss.‖===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽; opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;↩ shₐ2(opt) }
 	else{ code ← sh(ss,…ιs)
 		# ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) <- (opt))
@@ -919,7 +916,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 [#Q E.φ #Q].def(=>{
 	ENC ← ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ.⁻¹ = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
-	φ.fd = {,}; φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(_(φ`/tmp/${random_id(20)}`) <- ({ι}) +'','r') })
+	φ.fd = {}; φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(_(φ`/tmp/${random_id(20)}`) <- ({ι}) +'','r') })
 
 	existsSync ← ι=> !T.Error(catch_union(=> fs.accessSync(ι)))
 	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if (e.code==='EEXIST'||e.code==='EISDIR') ↩; t ← path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι) } }
@@ -1106,7 +1103,7 @@ E.cn = { log:(…a)=> console.log(
 		easy_template(ι=>ι)(…a).map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι[0],{colors:✓})).join('') :
 		a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{colors:✓})).join(' ')
 		) }
-E.util_inspect_autodepth = λ(ι,opt={,}){ opt.L || (opt.L = 1e6); last←; for(i←1;;i++){ r ← util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) <- (opt)); if (r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last; last = r } }
+E.util_inspect_autodepth = λ(ι,opt={}){ opt.L || (opt.L = 1e6); last←; for(i←1;;i++){ r ← util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) <- (opt)); if (r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last; last = r } }
 
 E.‡_repl_start = => ζ_repl_start({
 	# i know how to make the good repl for ct. i want to, but im tired
@@ -1127,11 +1124,11 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 		try{ ↩ {v:t.runInThisContext()} }
 		catch(e){ e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') ) ;↩ {error:e} }
 		}
-	q ← (ι,opt={,})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
+	q ← (ι,opt={})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
 	promise_watch ← ι=>{ if(! ι.id ){
 		ι.id = b36(fromUInt32BE([#Q (anon_b5s81||( anon_b5s81 = [0] )).0 #Q].ι++))
 		hr ← hrtime(); ι.then(x=>{ x ← my_inspect(x); hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
-	my_inspect ← (ι,opt={,})⇒
+	my_inspect ← (ι,opt={})⇒
 		: ι===∅? ''
 		: T.Promise(ι)? 0?0
 			: ι.status? 'Π '+q(ι.ι,opt)
@@ -1175,7 +1172,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 ##################################### main #####################################
 sh_ify ← ι=>{t←; ↩ Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
-	: ι===∅? {,}
+	: ι===∅? {}
 	: Tstr(ι)? {out:ι}
 	: T.boolean(ι)? {code:ι?0:1}
 	: (t=catch_union(=> JSON.stringify(ι)), !T.Error(t))? {out:t}

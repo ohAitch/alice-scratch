@@ -148,7 +148,7 @@ unsafe_union ← (xs,ys)=>{
 	xL ← xs.‖
 	yL ← ys.‖
 	if (xL===0) ↩ ys; else if (yL===0) ↩ xs
-	r ← {,}
+	r ← {}
 	for (i ← 0; i < xL; i++) r[xs[i]] = ✓
 	for (i ← 0; i < yL; i++) r[ys[i]] = ✓
 	↩ _.keys(r).sort() }

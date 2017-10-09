@@ -18,7 +18,7 @@ depaginate ← λ(f,cbₐ){ // see googleapis usage for a more up to date versio
 
 get_my_tracks ← =>Π(yes=>{
 	qₐ ← ι=> ι._.pick('name','uri')
-	tracks_r ← {,}
+	tracks_r ← {}
 	intern_track ← ι=> tracks_r[ι.uri] || (tracks_r[ι.uri] = _(qₐ(ι)) <- ({ album:qₐ(ι.album), artists:ι.artists.map(qₐ), tags:[] }))
 	spotify.getMe().then(ι=>{
 		ι = ι.body

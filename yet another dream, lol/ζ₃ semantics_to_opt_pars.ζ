@@ -131,7 +131,7 @@ vmζ_parse ← code=>{
 				ι:ι.expression? ι.body : τι('seq',[ι.body,τι('js_data',∅)]) })
 		: ι.type==='BinaryExpression'? τ('builtin',{ f:ι.operator, a:[ι.left,ι.right] })
 		: ι.type==='BlockStatement'? τι('seq',ι.body)
-		: ι.type==='ReturnStatement'? τι('seq',[τι('set_result',ι.argument),τ('break_fn',{,})])
+		: ι.type==='ReturnStatement'? τι('seq',[τι('set_result',ι.argument),τ('break_fn',{})])
 		: ‽(ι) })
 	// -------------------------------------------------------------------------- //
 	opti_semantic ← ι=>{ // or simplify_or_enhance_semantics

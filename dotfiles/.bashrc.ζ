@@ -184,7 +184,7 @@ E.bookmarks = ι=>{
 # 	day_of_year ← ι=> ι.dayOfYear()-1
 # 	label_fmt ← ι=> ('...'+ι).slice(-3)
 
-# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {,}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
+# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
 
 # 	label_now ← => label_fmt(day_of_year(moment()))
 # 	starts ← data.starts.map(ι=> moment.utc(ι))

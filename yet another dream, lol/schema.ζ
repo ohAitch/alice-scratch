@@ -101,7 +101,7 @@ schema.≡.close_over!(ι=>{
 	# good skill!
 
 	↩ q_is⁻¹(ι) && names.map(ι=> q_is⁻¹)./(and)
-		? _({,}) <- ( ι, names.map(ι=> ι.as.schema) )
+		? _({}) <- ( ι, names.map(ι=> ι.as.schema) )
 		: ι } )
 
 ;(async =>{

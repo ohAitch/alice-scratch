@@ -37,8 +37,6 @@ var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι); 
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
 
 //################################### prelude ###################################
-E.O1 = _(function(){}) ['<-'] ({ prototype:Object.freeze(Object.create(null)) })
-
 E.catch_union = f=>{ try{ var r = f(); var bad = T.Error(r); if (!bad) return r }catch(e){ var r = e; T.Error(r) || !function(...a){throw Error(__err_format(...a))}('‽') ;return r }; bad && !function(...a){throw Error(__err_format(...a))}('‽') }
 E.catch_ι = f=>{ try{ var r = f(); var bad = r===undefined; if (!bad) return r }catch(e){}; bad && !function(...a){throw Error(__err_format(...a))}('‽') }
 E.catch_ = f=> function(){ try{ return f.apply(this,arguments) }catch(e){ if ('__catchable' in e) return e.__catchable; else throw e } }
@@ -84,8 +82,8 @@ E.def = (o,name,ι)=>{
 	return Object.defineProperty(o,name,ι) } // = ↩ o
 var lazy = (name,ι)=>0?0: { writable:true, get(){return this[name] = ι() } }
 
-E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var anon = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ anon.f = f; return anon } })() // prefix hook
-def(Object.prototype,'𐅭𐅋𐅮𐅜𐅋',{ enumerable:false ,value:function(...f){return f.reduce((ι,f)=> f(ι),this) } }) // postfix pipe
+/* prefix hook*/ E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var anon = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ anon.f = f; return anon } })()
+/*postfix pipe*/ def(Object.prototype,'𐅭𐅋𐅮𐅜𐅋',{ enumerable:false ,value:function(...f){return f.reduce((ι,f)=> f(ι),this) } })
 
 //################################## requires ###################################
 ;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['lodash','lo'],['highland','h']
@@ -188,7 +186,6 @@ E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var
 		.replace(/\[#Q/g,'new Property(') // Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
 		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X) // ! eventually, remove the thing with two underscores next to each other __
-		.replace(/\{,\}/g,'new O1()')
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(anon_q3sot||(anon_q3sot= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
 	// ζ_compile_nonliteral_tree ← ι=>{
@@ -207,7 +204,7 @@ E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var
 // 𐅫𐅮𐅪𐅰𐅃(__name(x)).ι = 
 // E.__name = name=> ι=> def(ι,'name',{ value:name })
 
-E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def(new O1(),'ι',{ set(ι){ def(ι,'name',{ value:this.name }) } }) )))) ['<-'] ({name}); var anon_u5393;
+E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def({},'ι',{ set(ι){ def(ι,'name',{ value:this.name }) } }) )))) ['<-'] ({name}); var anon_u5393;
 E.__err_format = (...a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
 if( require.extensions && !require.extensions['.ζ'] )(()=>{
@@ -220,7 +217,7 @@ E.protos = function*(ι){ for(;!( ι===null || ι===undefined ); ι = Object.get
 E["|>"] = ι=> (...f)=> f.reduce((ι,f)=> f(ι),ι)
 E.simple_hash_str = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
-	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r=new O1(); _(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;return r } })
+	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;return r } })
 E.fromUInt32BE = ι=>{ var t = Buffer.alloc(4); t.writeUIntBE(ι,0,4) ;return t }
 E.b36 = ι=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode(ι).replace(/^0+(?!$)/,'')
 E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
@@ -233,7 +230,7 @@ var memo_frp = (names,within,f)=>{
 	var a = Time().iso; var ι = f(); var b = Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
 E.memoize_persist = f=>{
-	var store = φ`/tmp/ζpersist_${simple_hash(f)}`; var store_ι = store.json||new O1()
+	var store = φ`/tmp/ζpersist_${simple_hash(f)}`; var store_ι = store.json||{}
 	return (...a)=>{ var t = new Property(store_ι,simple_hash(a)) ;return t["∃"]? t.ι : ( t.ι = f(...a), store.json = store_ι, store_ι = store.json, t.ι ) } }
 // frp will remove the last use(s) of slot_persist
 E.slot_persist = name=>{ var o = φ`/tmp/ζpersist_${name}` ;return def({name},'ι',{get(){return o.json },set(ι){ o.json = ι }}) }
@@ -348,7 +345,7 @@ var genex = function Λ(ι){return 0,
 _(E) ['<-'] (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan')); _(E) ['<-'] ({ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E, '⍟':Math.log, })
 E.multiline = function(ι){ ι = (ι+'').split('\n').slice(1,-1); var t = ι.map(ι=> ι.re`^\t*`[0]["‖"])._.min(); ι = ι.map(ι=> ι.slice(t)) ;return (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ var h; for(var hr=hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
-E.bench = (f,opt=new O1())=>{ var {TH=0.4} = opt
+E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 	// ! really should include a confidence interval or smth
 	var r=0; var I=1; var hr=hrtime(); var R = ()=> Unit(hrtime(hr) / r,'s')
 	var t=f(); r++
@@ -541,7 +538,7 @@ new Property( E,'brightness' ).def(()=>{
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
 	return br })
 
-E.os_daemon = (cmd,opt)=>{ cmd+=''; var {once} = opt||new O1()
+E.os_daemon = (cmd,opt)=>{ cmd+=''; var {once} = opt||{}
 	var job = {
 		[once?'RunAtLoad':'KeepAlive']:true
 		,Label:`ζ.${φ(cmd).name}.${simple_hash(cmd).slice(0,8)}`
@@ -698,7 +695,7 @@ E.github_url = ι=>{
 	var fm = ι=> 'L'+(ι+1)
 	return github_remote_origin(file||'')+( _.isEqual(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
 E.go_to = (...a)=>{ // synonyms: go_to, open, search?
-	var opt = !Tprim(a[-1])? a.pop() : new O1()
+	var opt = !Tprim(a[-1])? a.pop() : {}
 	var type = a["‖"]===1? undefined : a.shift()
 	var ι = a[0]
 	var {new:new_,focus,in_app,sb_view_file_name} = _({new:false, focus:true, in_app:undefined, sb_view_file_name:undefined}) ['<-'] (opt)
@@ -793,7 +790,7 @@ E.easy_template = (()=>{
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-E.clipboard = def(new O1(),'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
+E.clipboard = def({},'ι',{ get(){return shᵥ`pbpaste`+'' }, set(ι){ shₐ`${sb.encode(ι)} |`` pbcopy` }, })
 E.sb = function self(){return self._call() } // let personal concepts use sb as callable
 new Property( sb,'tab' ).def({
 	get(){
@@ -847,7 +844,7 @@ E.shᵥ = function(ss,...ιs){ var code = sh(ss,...ιs)
 	var ι = require('child_process').spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
 	return _(ι.stdout) ['<-'] ({ toString(...a){ var ι = Buffer.prototype.toString.call(this,...a) ;return a["‖"]? ι : ι.replace(/\n$/,'') } }) }
-var _shₐ = (ss,ιs,opt=new O1())=>{
+var _shₐ = (ss,ιs,opt={})=>{
 	if (ss["‖"]===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && !function(...a){throw Error(__err_format(...a))}('‽'); opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;return shₐ2(opt) }
 	else{ var code = sh(ss,...ιs)
 		// ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) <- (opt))
@@ -922,7 +919,7 @@ var json2_show = ι=> JSON_pretty(ι,function(ι){var t;
 new Property( E,'φ' ).def(()=>{
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ["⁻¹"] = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
-	φ.fd = new O1(); φ.fd.from = ι=> fs.createReadStream(undefined,{ fd:fs.openSync(_(φ`/tmp/${random_id(20)}`) ['<-'] ({ι}) +'','r') })
+	φ.fd = {}; φ.fd.from = ι=> fs.createReadStream(undefined,{ fd:fs.openSync(_(φ`/tmp/${random_id(20)}`) ['<-'] ({ι}) +'','r') })
 
 	var existsSync = ι=> !T.Error(catch_union(()=> fs.accessSync(ι)))
 	var mkdir_p = function Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if (e.code==='EEXIST'||e.code==='EISDIR') return ; var t = path.dirname(ι); if (e.code!=='ENOENT' || ι===t) throw e; Λ(t); fs.mkdirSync(ι) } }
@@ -1109,7 +1106,7 @@ E.cn = { log:(...a)=> console.log(
 		easy_template(ι=>ι)(...a).map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι[0],{colors:true})).join('') :
 		a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{colors:true})).join(' ')
 		) }
-E.util_inspect_autodepth = function(ι,opt=new O1()){ opt.L || (opt.L = 1e6); var last; for(var i=1;;i++){ var r = util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) ['<-'] (opt)); if (r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last; last = r } }
+E.util_inspect_autodepth = function(ι,opt={}){ opt.L || (opt.L = 1e6); var last; for(var i=1;;i++){ var r = util.inspect(ι,_({maxArrayLength:opt.L/3 |0, depth:i}) ['<-'] (opt)); if (r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last; last = r } }
 
 E._double_dagger__repl_start = ()=> ζ_repl_start({
 	// i know how to make the good repl for ct. i want to, but im tired
@@ -1130,11 +1127,11 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 		try{ return {v:t.runInThisContext()} }
 		catch(e){ e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') ) ;return {error:e} }
 		}
-	var q = (ι,opt=new O1())=> util_inspect_autodepth(ι,_(opt).pick('colors'))
+	var q = (ι,opt={})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
 	var promise_watch = ι=>{ if(! ι.id ){
 		ι.id = b36(fromUInt32BE(new Property( (anon_b5s81||( anon_b5s81 = [0] )),'0' ).ι++))
 		var hr = hrtime(); ι.then(x=>{ var x = my_inspect(x); hrtime(hr) < 5 && x["‖"] && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
-	var my_inspect = (ι,opt=new O1())=>0?0
+	var my_inspect = (ι,opt={})=>0?0
 		: ι===undefined? ''
 		: T.Promise(ι)? 0?0
 			: ι.status? 'Π '+q(ι.ι,opt)
@@ -1178,7 +1175,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 //#################################### main #####################################
 var sh_ify = ι=>{var t; return Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
-	: ι===undefined? new O1()
+	: ι===undefined? {}
 	: Tstr(ι)? {out:ι}
 	: T.boolean(ι)? {code:ι?0:1}
 	: (t=catch_union(()=> JSON.stringify(ι)), !T.Error(t))? {out:t}
