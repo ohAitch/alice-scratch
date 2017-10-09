@@ -182,32 +182,30 @@ class _2(sublime_plugin.EventListener):
 		if ι in ['day','now','anon']:
 			return (json.loads(ζ('t ← global[ι]; (Tarr(t)? t : [t]).map(r=> [ι,r])',ι)),sublime.INHIBIT_WORD_COMPLETIONS)
 
-################################# make divider #################################
-# i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change
-# and maybe if you hit the command again it should unmake the divider?
-# should probably handle indented dividers
-# if it's already an empty divider, know that, don't do the silly thing
-# maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
-
-e_table_ = {
-	'Packages/JavaScript/JavaScript.sublime-syntax': '#',
-	'Packages/Python/Python.sublime-syntax': '#',
-	'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
-	'Packages/Ruby/Ruby.sublime-syntax': '#',
-	'Packages/Lisp/Lisp.sublime-syntax': ';',
-	}
-s_table = {
-	'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],
-	'-': [r'^-+.*-+$',r'^-+\s*(.+?)\s*-+$','-',''],
-	# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
-	';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
-	}
-def data(view): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']
-
 class make_divider(sublime_plugin.TextCommand):
+	# i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change
+	# and maybe if you hit the command again it should unmake the divider?
+	# should probably handle indented dividers
+	# if it's already an empty divider, know that, don't do the silly thing
+	# maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
 	def run(self,edit,length):
+		e_table_ = {
+			'Packages/JavaScript/JavaScript.sublime-syntax': '#',
+			'Packages/Python/Python.sublime-syntax': '#',
+			'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
+			'Packages/Ruby/Ruby.sublime-syntax': '#',
+			'Packages/Lisp/Lisp.sublime-syntax': ';',
+			}
+		s_table = {
+			'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],
+			'-': [r'^-+.*-+$',r'^-+\s*(.+?)\s*-+$','-',''],
+			# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
+			';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
+			}
+		def data(): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']
+
 		view = self.view
-		test, match, fill, ends = data(view)
+		test, match, fill, ends = data()
 		for region in [ι for ι in view.sel()][::-1]:
 			line = view.line(region)
 			s = view.substr(line)
@@ -231,3 +229,25 @@ class make_divider(sublime_plugin.TextCommand):
 			if q: view.sel().subtract(region)
 			view.replace(edit,line,tabs+''.join(r))
 			if q: view.sel().add(sublime.Region(view.line(region).end()))
+
+def detect_syntax(view):
+	data = {
+		'ζ': 'Packages/JavaScript/JavaScript.sublime-syntax',
+		'python': 'Packages/Python/Python.sublime-syntax',
+		'bash': 'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax',
+		'.txt': 'Packages/Text/Plain text.sublime-syntax',
+		'.blog': 'Packages/Text/Plain text.sublime-syntax',
+		}
+	ι = None
+	t = re.match(r"#!\s*(\S+)\s*(\S+)?", view.substr(view.full_line(1)))
+	if t: a = t.group(1).split('/')[-1]; ι = t.group(2) if a == 'env' else a
+	else: ι = os.path.splitext(view.file_name())[1]
+	return data[ι] if ι in data else view.settings().get('syntax')
+def _3_t(view): t = detect_syntax(view); t == view.settings().get('syntax') or view.set_syntax_file(t)
+class _3(sublime_plugin.EventListener):
+	def on_load(self, view): _3_t(view)
+	def on_post_save(self, view): _3_t(view)
+class get_syntax(sublime_plugin.TextCommand):
+	def run(self,edit):
+		view = self.view
+		print('[fyi]','syntax:',view.settings().get('syntax'))

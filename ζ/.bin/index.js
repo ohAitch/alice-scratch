@@ -755,9 +755,9 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 			ι = φ('~/file/'+ι)
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;return }
 		if (in_app==='terminal'){
-			var here = hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
+			var here = hsᵥ`hs.json.encode(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))` // ... the behavior changed. fuck
 			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
-			var available = here["∩"](unbusy())[0]
+			var available = new Set([here])["∩"](unbusy())[0]
 			terminal_do_script( sh`cd ${ι}; …${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ) ;return }
 		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
 		}
