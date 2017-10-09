@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 
 #################################### prelude ###################################
-Δ_as ← (s,f)=>{t←;ι←; last ← slot_persist('watcher_'+simple_hash([s,f])); if(!( last.ι===(t=|>(ι=s())(f,simple_hash)) )){ last.ι = t; ↩ ι } }
+Δ_as ← (s,f)=>{t←;ι←; last ← slot_persist('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f,simple_hash)) )){ last.ι = t; ↩ ι } }
 
 ################################ log_fs_changes ################################
 APP ← '[φΔs]'

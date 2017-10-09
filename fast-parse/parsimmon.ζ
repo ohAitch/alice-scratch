@@ -105,7 +105,7 @@ P.build_op = (unit,op)=>{
 	_1R ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
 	_2L ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
 	_2R ← p=>{ r ← P(=> p.chain(a=> P.alt([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ); ↩ r }
-	↩ |>(unit)(_2L,_1L,_1R) }
+	↩ unit |> (_2L,_1L,_1R) }
 
 ################################ todo eventually ###############################
 # pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure

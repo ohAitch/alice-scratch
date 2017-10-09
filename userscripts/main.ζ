@@ -50,7 +50,7 @@ has_prop(window,'my') ||( window.my = =>{
 	})
 
 // -------------------------------------------------------------------------- //
-if( at_url('*github.com') || at_url('*githubusercontent.com') )
+if( ['*github.com','*githubusercontent.com'].some(at_url) )
 	css('pre, .tab-size { tab-size:2 !important; }')
 
 if( at_url('imgur.com') ){
@@ -58,7 +58,7 @@ if( at_url('imgur.com') ){
 	$('.sentence-sorting').remove()	
 	}
 
-if( at_url('*stackexchange.com') || at_url('*stackoverflow.com') || at_url('*serverfault.com') || at_url('*superuser.com') || at_url('*.askubuntu.com') ){
+if( ['*stackexchange.com','*stackoverflow.com','*serverfault.com','*superuser.com','*.askubuntu.com'].some(at_url) ){
 	$('#hot-network-questions li > a:not([href^="http://math."])'/*:not([href^="http://physics."])'*/).closest('li').remove()
 	$('#hot-network-questions li').removeClass('dno').removeClass('js-hidden')
 	$('#hot-network-questions > a').remove()

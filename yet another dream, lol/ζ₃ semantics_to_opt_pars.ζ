@@ -41,7 +41,7 @@ pt ← {
 		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
 		ty ← opt.stylize(@.type,'special')
-		if (_(@).keys()._.isEqual(['type','ι'])) r = ty+' '+util.inspect(@.ι,opt)
+		if(_.isEqual( _(@).keys(),['type','ι'] )) r = ty+' '+util.inspect(@.ι,opt)
 		else{
 			t ← _(_(@).pairs()._.object()).omit('type')
 			if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}

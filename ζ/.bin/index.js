@@ -82,7 +82,7 @@ E.def = (o,name,ι)=>{
 	return Object.defineProperty(o,name,ι) } // = ↩ o
 var lazy = (name,ι)=>0?0: { writable:true, get(){return this[name] = ι() } }
 
-/* prefix hook*/ E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var anon = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ anon.f = f; return anon } })()
+/* prefix hook*/ E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var 𐅭𐅩𐅝𐅋𐅩 = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f; return 𐅭𐅩𐅝𐅋𐅩 } })()
 /*postfix pipe*/ def(Object.prototype,'𐅭𐅋𐅮𐅜𐅋',{ enumerable:false ,value:function(...f){return f.reduce((ι,f)=> f(ι),this) } })
 
 //################################## requires ###################################
@@ -131,9 +131,9 @@ E.js_tokenize = code=>{
 	var tok = npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
 	return _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
-E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var anon_oenor; var anon_7cy2u; var anon_8jlo1; var anon_cbbhj; var anon_wg4h5; var anon_pxt5h; var anon_xq7qg; var anon_xzihh; var anon_q3sot; var anon_52y2m;
+E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦; var 𐅜𐅦𐅩𐅝𐅃; var 𐅂𐅂𐅃𐅝𐅦; var 𐅨𐅂𐅫𐅯𐅃; var 𐅩𐅫𐅃𐅬𐅃; var 𐅋𐅂𐅭𐅂𐅦; var 𐅜𐅯𐅩𐅪𐅃; var 𐅝𐅩𐅭𐅪𐅃; var 𐅭𐅭𐅃𐅪𐅃; var 𐅭𐅦𐅫𐅩𐅝;
 	var word_extra = re`♈-♓🔅🔆🔒‡⧫§`
-	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓${word_extra}`
+	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰${word_extra}`
 	var ζ_parse = E.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
 		var ident = P(re`(?![0-9])[${word}]+|@`)
@@ -158,36 +158,34 @@ E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var
 			var r = []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			return r } })()
 	var s_or = ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
-	var id_g = '|>'
-	var id_c ='filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
-	var id_d = [ '-0',id_g,id_c ].join(' ')
+	var id_c = 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
 	var ζ_compile_nonliteral = ι=> ι
 		.replace(/✓/g,'true')
 		.replace(/✗/g,'false')
 		.replace(/∅/g,'undefined')
-		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι=`) // an initial try; probably .name inference needs another form
+		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅫𐅮𐅪𐅰𐅃(__name(${ι})).ι=`) // an initial try; probably .name inference needs another form
+		.replace(/\|>/g,'.𐅭𐅋𐅮𐅜𐅋')
 		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` )
-		.replace(anon_x818h||(anon_x818h= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
+		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
-		.replace(anon_oenor||(anon_oenor= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
-		.replace(anon_t4nzb||(anon_t4nzb= re`\.(${s_or(id_d)})`.g ),(ˣ,ι)=> js`[${ι}]`)
-		.replace(anon_xzihh||(anon_xzihh= re`(${s_or(id_g)}(?!["']))`.g ),(ˣ,ι)=> js`global[${ι}]`)
-		.replace(anon_xq7qg||(anon_xq7qg= re`(${s_or(id_c)}):`.g ),(ˣ,ι)=> js`${ι}:`)
+		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
+		.replace(𐅜𐅦𐅩𐅝𐅃||(𐅜𐅦𐅩𐅝𐅃= re`\.(${s_or('-0 '+id_c)})`.g ),(ˣ,ι)=> js`[${ι}]`)
+		.replace(𐅝𐅩𐅭𐅪𐅃||(𐅝𐅩𐅭𐅪𐅃= re`(${s_or(id_c)}):`.g ),(ˣ,ι)=> js`${ι}:`)
 		.replace(/…/g,'...')
 		.replace(/\[(['"])map\.\.\.\1\]/g,'["map…"]') // ! this is going to be really hard to take out
 		.replace(/@/g,'this')
 		.replace(/∞/g,'Infinity')
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||!function(...a){throw Error(__err_format(...a))}('‽'))+x )
-		.replace(anon_52y2m||(anon_52y2m= re`(^|[^\s\)${word}]\s*)=>`.g ),(ˣ,t)=> t+'()=>' )
+		.replace(𐅭𐅦𐅫𐅩𐅝||(𐅭𐅦𐅫𐅩𐅝= re`(^|[^\s\)${word}]\s*)=>`.g ),(ˣ,t)=> t+'()=>' )
 		.replace(/↩ ?/g,'return ')
-		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
-		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ var t = 't_'+random_id(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
+		.replace(𐅩𐅫𐅃𐅬𐅃||(𐅩𐅫𐅃𐅬𐅃= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
+		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ var t = 't_'+random_id(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(/\[#Q/g,'new Property(') // Quote
-		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
-		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X) // ! eventually, remove the thing with two underscores next to each other __
+		.replace(𐅋𐅂𐅭𐅂𐅦||(𐅋𐅂𐅭𐅂𐅦= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
+		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`[${word_extra}]+`.g ), unicode_names.X) // ! eventually, remove the thing with two underscores next to each other __
 		.replace(/([{([]\s*),/g,'$1')
-		.replace(anon_q3sot||(anon_q3sot= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
+		.replace(𐅭𐅭𐅃𐅪𐅃||(𐅭𐅭𐅃𐅪𐅃= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.‖) )
 	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.‖)) ↩; } ;↩ i }
@@ -200,11 +198,7 @@ E.ζ_compile = lazy_fn(()=>{ var anon_pmcr3; var anon_x818h; var anon_t4nzb; var
 			: ζ_compile_nonliteral(ι)
 			).join('') } })
 ζ_compile["⁻¹"] = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, (ι,name,s,eq)=>0?0: {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
-
-// 𐅫𐅮𐅪𐅰𐅃(__name(x)).ι = 
-// E.__name = name=> ι=> def(ι,'name',{ value:name })
-
-E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def({},'ι',{ set(ι){ def(ι,'name',{ value:this.name }) } }) )))) ['<-'] ({name}); var anon_u5393;
+E.__name = name=> ι=> new Property( ι,'name' ).def({ value:name })
 E.__err_format = (...a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
 if( require.extensions && !require.extensions['.ζ'] )(()=>{
@@ -214,7 +208,6 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 
 //################################### prelude ###################################
 E.protos = function*(ι){ for(;!( ι===null || ι===undefined ); ι = Object.getPrototypeOf(ι)) yield ι }
-E["|>"] = ι=> (...f)=> f.reduce((ι,f)=> f(ι),ι)
 E.simple_hash_str = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι; else{ var r={}; _(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;return r } })
@@ -237,10 +230,10 @@ E.slot_persist = name=>{ var o = φ`/tmp/ζpersist_${name}` ;return def({name},'
 // E.memoize = f=>{ cache ← new WeakMap() ;↩ _(ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r) ;↩ r }) <- ({cache}) }
 
 E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
-	(anon_3lsx8||(anon_3lsx8= (()=>{
+	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (()=>{
 		var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ')["map…"](ι=> _(npm('unicode@0.6.1/category/'+ι)).values() )
 		return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16), '_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
-		})() ) )[ord(ι)]).X).join(''); var anon_3lsx8;
+		})() ) )[ord(ι)]).X).join(''); var 𐅩𐅩𐅩𐅝𐅋;
 
 var regex_parse = lazy_fn(()=>{var t; // status: output format unrefined
 	var P = require('./parsimmon2.js')
@@ -354,16 +347,16 @@ E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 E.bench1 = f=>{ var hr = hrtime(); f() ;return Unit(hrtime(hr),'s') }
 E.GET_L = (ι,within)=> memo_frp(['GET -L', ι+''], within, ()=> shᵥ`curl -sL ${ι}`) // ! some requests have short responses; will need more intelligent caching for those 'cause the filesystem can't take too much
 E.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _.sample(ι) }
-E.random_id = L=> L.map(()=> random(anon_clqkb||(anon_clqkb=[.../[0-9a-z]/]))).join(''); var anon_clqkb;
-random_id.braille = L=> L.map(()=> random(anon_8zw5b||(anon_8zw5b= [...re`[⠁-⣿]`] ))).join(''); var anon_8zw5b;
-random_id.greek = L=> L.map(()=> random(anon_j6d9d||(anon_j6d9d= [...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'] ))).join(''); var anon_j6d9d;
+E.random_id = L=> L.map(()=> random(𐅭𐅞𐅯𐅩𐅪||(𐅭𐅞𐅯𐅩𐅪= [.../[0-9a-z]/]))).join(''); var 𐅭𐅞𐅯𐅩𐅪;
+random_id.braille = L=> L.map(()=> random(𐅩𐅞𐅂𐅜𐅯||(𐅩𐅞𐅂𐅜𐅯= [...re`[⠁-⣿]`] ))).join(''); var 𐅩𐅞𐅂𐅜𐅯;
+random_id.greek = L=> L.map(()=> random(𐅋𐅃𐅃𐅰𐅰||(𐅋𐅃𐅃𐅰𐅰= [...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'] ))).join(''); var 𐅋𐅃𐅃𐅰𐅰;
 
 E.ord = ι=> Tnum(ι)? ι : ι.codePointAt()
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 process.stdio = [ process.stdin,process.stdout,process.stderr ]
-E._pisces__on_exits = f=> (anon_gjyfd||(anon_gjyfd= require('signal-exit') ))((i,sig)=>{
+E._pisces__on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) }); var anon_gjyfd;
+	f(i,sig) }); var 𐅰𐅞𐅜𐅯𐅨;
 E.pad_r = (ι,s)=> [ι,s.slice(ι["‖"])].fold(Tstr(ι)? (a,b)=> a+b : Tarr(ι)? (a,b)=> [...a,...b] : !function(...a){throw Error(__err_format(...a))}('‽'))
 
 var find_closest_ISU = (ιs,ι)=>{ for(var i=0;i<ιs["‖"];i++) if( ι <= ιs[i] ) return i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1 ;return ιs["‖"]-1 }
@@ -393,8 +386,7 @@ seq.prototype = {
 	// ,every(){}
 	}
 assign_properties_in_E_informal({
-'Object.prototype._':{ writable:true, get(){return _(this)}, } // ! remove this
-,'(Array|Set|Map).prototype._':{ get(){return _(this)} }
+'(Array|Set|Map).prototype._':{ get(){return _(this)} }
 
 ,'(Array|Buffer|String|Function).prototype.‖':{ get(){return this.length } }
 ,'(Set|Map).prototype.‖':{ get(){return this.size } }
@@ -555,9 +547,9 @@ E.if_main_do = f=>{ if( !module.parent ) f(...process.argv.slice(2)) }
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
 
-var json_socket = socket=>{ var anon_ffkit; var anon_dsm09; return {
-	to(ι){ var t; (anon_ffkit||(anon_ffkit=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(socket), t ) )).write(ι) }
-	,on(f){ (anon_dsm09||(anon_dsm09= socket.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
+var json_socket = socket=>{ var 𐅂𐅦𐅮𐅃𐅰; var 𐅮𐅰𐅮𐅂𐅂; return {
+	to(ι){ var t; (𐅂𐅦𐅮𐅃𐅰||(𐅂𐅦𐅮𐅃𐅰=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(socket), t ) )).write(ι) }
+	,on(f){ (𐅮𐅰𐅮𐅂𐅂||(𐅮𐅰𐅮𐅂𐅂= socket.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
 	} }
 var ipc_wait = f=>{var H; (H= new net.Server()).listen(0,'localhost').on('connection',socket=> json_socket(socket).on(_.once(ι=>{ socket.destroy(); H.close(); f(ι) })) ) ;return Π(yes=> H.on('listening',yes.P(H)) ) }
 E.notify = ι=>{ Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
@@ -639,7 +631,7 @@ E.nice_url = function(ι){var t; var Uri = npm`urijs@1.18.12`; var {sourcemap} =
 					u.filename().re`^ref=[\w_]+$` && u.filename('')
 					if (t=u.resource().re`^/(?:[\w-]+/)?(?:dp|gp)/(?:product/)?(\w+)/?$`) {ι.ι = 'http://amzn.com/'+t[1] ;return ι}
 				break; case 'fb.com': u.removeSearch(['fref','hc_location','_rdr','pnref'])
-				break; case 'google.com': if (u.segment()._.isEqual(['search'])){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); u.hasSearch('q') && u.removeSearch('oq') }
+				break; case 'google.com': if(_.isEqual( u.segment(),['search'] )){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); u.hasSearch('q') && u.removeSearch('oq') }
 				}; ι.ι = u+'' }
 		return ι}).map(ι=>ι.ι).join('')
 
@@ -682,6 +674,10 @@ var _low_brightness_symbol__high_brightness_symbol_ = go=>{ var ιs = [0,1,2.5,5
 E._low_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(-1)
 E._high_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(1)
 E.moon = ι=>{ ι||(ι=Time()); var moons = [...'🌑🌒🌓🌔🌕🌖🌗🌘'] ;return moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons["‖"] + 0.5) % moons["‖"])] }
+new Property( E,'anon' ).def({ get(){var t; return [t=random_id.greek(5),t+'←;'] }})
+new Property( E,'now' ).def({ get(){ var t = Time(); return [t.ymdhm,t.ymdhms,t.ymdhmss] }})
+new Property( E,'day' ).def({ get(){return Time().local.ymd }})
+
 E.github_url = ι=>{
 	var github_remote_origin = file=>{
 		var ι = φ(file).root('/')
@@ -737,7 +733,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 				var t = osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι); if (t)
 					{ var [window_,tab] = t; osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}`; osaₐ`chrome: activate` ;return } }
 			if (ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` // bug workaround
-			shᵥ`open …${in_app && sh`-b ${global["|>"](in_app)(memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			shᵥ`open …${in_app && sh`-b ${in_app .𐅭𐅋𐅮𐅜𐅋 (memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
 			}
 		if (focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
@@ -946,7 +942,7 @@ new Property( E,'φ' ).def(()=>{
 	var globmatch = (glob,ι)=> ι.re`^…${_(glob).map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`
 	new Property( φ,'cwd' ).def({get(){return new Φ(process.cwd()) }, set(ι){ var t = φ(ι+'')._ι; mkdir_p(t); process.chdir(t) }})
 
-	var normHs = function(ι){if (ι._.isEqual(['~'])) return [process.env.HOME]; Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;return ι}
+	var normHs = function(ι){ if(_.isEqual( ι,['~'] )) return [process.env.HOME]; Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;return ι }
 	function Φ(ι){this._ι = ι}; Φ.prototype = {
 		φ,
 		toString(){return this._ι },
@@ -959,7 +955,7 @@ new Property( E,'φ' ).def(()=>{
 		get is_dir(){return !!catch_ι(()=> fs.statSync(this._ι).isDirectory()) },
 		get name(){return path.basename(this._ι) },
 		BAD_exists(){return existsSync(this._ι) },
-		TMP_children(){return global["|>"](this._ι)(function Λ(ι){return φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t)["map…"](Λ) : [ι] }) },
+		TMP_children(){return this._ι .𐅭𐅋𐅮𐅜𐅋 (function Λ(ι){return φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t)["map…"](Λ) : [ι] }) },
 		TMP_parents(){ var r = [this.root('/')]; while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;return r.slice(1) },
 		root(x){switch(arguments.length){default: !function(...a){throw Error(__err_format(...a))}('‽')
 			case 0: return this._ι[0]==='/'? '/' : '.'
@@ -1118,7 +1114,7 @@ E._double_dagger__repl_start = ()=> ζ_repl_start({
 			: ι
 		lock===ι || cn.log('⛓  '+lock)
 		return ζ_compile(lock) }, })
-var anon_b5s81; var anon_7268v;
+var 𐅩𐅞𐅋𐅦𐅩;
 E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '}) ['<-'] (opt)
 	var my_eval = code=>{ // ! can be refactored further
 		var t = opt.compile(code)
@@ -1129,7 +1125,7 @@ E.ζ_repl_start = opt=>{ opt = _({compile:ζ_compile, prompt:'\x1b[30m\x1b[42mζ
 		}
 	var q = (ι,opt={})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
 	var promise_watch = ι=>{ if(! ι.id ){
-		ι.id = b36(fromUInt32BE(new Property( (anon_b5s81||( anon_b5s81 = [0] )),'0' ).ι++))
+		ι.id = b36(fromUInt32BE(new Property( (𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] )),'0' ).ι++))
 		var hr = hrtime(); ι.then(x=>{ var x = my_inspect(x); hrtime(hr) < 5 && x["‖"] && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
 	var my_inspect = (ι,opt={})=>0?0
 		: ι===undefined? ''

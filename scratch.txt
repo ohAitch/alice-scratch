@@ -69,7 +69,7 @@ $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] 
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
 -------------------------------- de-duplication --------------------------------
-φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.‖ > 1)
+φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)|>(_.values).map(ι=> _(ι).map(0)).filter(ι=> ι.‖ > 1)
 
 ------------------------------ python data science -----------------------------
 import matplotlib.pyplot as plt

@@ -3,6 +3,6 @@
 col ← λ(ι){↩ ι+' '.repeat(max(0,100-ι.‖))}
 
 t ← φ`~/file/.archive/spotify/*`.φs.sort()[-1].json.map(λ(ι){
-	↩ col(ι.artists._.map('name').join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+ι.tags._.map('name').map(ι=>','+ι).join(' ')
+	↩ col(ι.artists.map(ι=> ι.name).join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+ι.tags.map(ι=> ι.name).map(ι=>','+ι).join(' ')
 	}).join('\n')
 sb.tab.push(t)

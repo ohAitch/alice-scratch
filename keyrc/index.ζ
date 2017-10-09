@@ -73,7 +73,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
-	appdef ← ι=> appdefs[ι] = |>(ι)(memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
+	appdef ← ι=> appdefs[ι] = ι |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
@@ -103,16 +103,16 @@ show_private_xml ← λ(mappings){t←;
 				// ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
 				].map(compile_key_line) ),
 			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.λ(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.λ(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
-			…onces.map(ι=>M2( ι.if, [compile_mapping(ι._.omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
-			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […t._.omit('undefined')._.values(), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(ι=>ι.ι).reverse(), ι[0].if )),
+			…onces.map(ι=>M2( ι.if, [compile_mapping(_(ι).omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
+			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […_(t).omit('undefined')|>(_.values), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(ι=>ι.ι).reverse(), ι[0].if )),
 			],
-		vkopenurldef: shells._.map((name,ι)⇒ {name, url:{'@type':'shell', '#text':ι}}),
-		appdef: appdefs._.map((ι,k)⇒ {appname:k, equal:ι}),
+		vkopenurldef: _(shells).map((name,ι)⇒ {name, url:{'@type':'shell', '#text':ι}}),
+		appdef: _(appdefs).map((ι,k)⇒ {appname:k, equal:ι}),
 		}} }
 
 // -------------------------------------------------------------------------- //
 regen ← (opt={})=>{
-	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …(φ`~/.keyrc.json`.json||{})._.values()])
+	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …_(φ`~/.keyrc.json`.json||{}).values()])
 	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι // file:/~/Library/Application%20Support/Karabiner/private.xml
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
@@ -147,11 +147,11 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 	ι = ι.replace(/^[⌘^⇧⌥]*(?=.)/,ι=>(c=ι,''))
 	;[…c].∪([]).‖===c.‖ || ‽
 	if ((t=ι.re`^FnF([1-4])$`) && (t[1]==='1'||t[1]==='2'? c.‖ : ✓)){
-		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
+		c = _(c).map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'option'}[ι]+' down')
 		osaᵥ`system events: key code ${[∅,0x6b,0x71,0xa0,0x83][t[1]]} using {…${c.join(',')}}`
 		}
 	else {
-		c = c._.map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
+		c = _(c).map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
 		ι = text_keys.includes(ι)? ι : { '^':'control', F1:'f1', F2:'f2', F3:'f3', F4:'f4', F5:'f5', F6:'f6', F7:'f7', F8:'f8', F9:'f9', Fa:'f10', Fb:'f11', Fc:'f12', FnF1:'lights_mon_down', FnF2:'lights_mon_up', FnF5:'lights_kbd_down', FnF6:'lights_kbd_up', FnF7:'audio_prev', FnF8:'audio_pause', FnF9:'audio_next', FnFa:'audio_mute', FnFb:'audio_vol_down', FnFc:'audio_vol_up', '←':'left', '↑':'up', '→':'right', '↓':'down', '↩':'enter', '⇥':'tab', '⇧':'shift', '⌥':'alt', '⌘':'command', '⌫':'backspace', '⎋':'escape', '␣':'space', }[ι] || ‽
 		robot.keyTap(ι,c) } }
 

@@ -14,6 +14,7 @@
 
 # the clickable search results are currently implemented in a horrifying way, because we are not properly associating data across multiple contexts that make it hard to share data. with the right builtins, this is easily resolveable.
 
+#################################### prelude ###################################
 import sublime, sublime_plugin
 from sublime import Region
 import os, subprocess, re, urllib, json
@@ -29,7 +30,7 @@ def serialize(ι):
 	if isinstance(ι,sublime.View): return { "type":'sublime.View', "id":ι.id() }
 	else: return 'error_ls1w8idny'
 
-################################## munge_stuff #################################
+################################################################################
 URL = r'\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?'
 FIND_RESULT = r'^(?:code|consume|documents|history|notes|pix)/.{1,80}?:\d+:'
 
@@ -171,3 +172,62 @@ class zeta(sublime_plugin.WindowCommand):
 # 			""")
 # 		# if view can undergo ✨inline_build:
 # 		# 	do it
+
+class _2(sublime_plugin.EventListener):
+	# maybe this really should do that reverse generation (aka: parsing) we tried having it do
+	# like, knowing that `now` returns e.g. `2017-10-09T07:20Z` and thus `2017-10-09T07:20Z` can synonymize `now`
+	def on_query_completions(self, view, prefix, locations):
+		ι = prefix
+		if ι == 'c': return [[ι,'cn.log(']]
+		if ι in ['day','now','anon']:
+			return (json.loads(ζ('t ← global[ι]; (Tarr(t)? t : [t]).map(r=> [ι,r])',ι)),sublime.INHIBIT_WORD_COMPLETIONS)
+
+################################# make divider #################################
+# i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change
+# and maybe if you hit the command again it should unmake the divider?
+# should probably handle indented dividers
+# if it's already an empty divider, know that, don't do the silly thing
+# maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
+
+e_table_ = {
+	'Packages/JavaScript/JavaScript.sublime-syntax': '#',
+	'Packages/Python/Python.sublime-syntax': '#',
+	'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
+	'Packages/Ruby/Ruby.sublime-syntax': '#',
+	'Packages/Lisp/Lisp.sublime-syntax': ';',
+	}
+s_table = {
+	'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],
+	'-': [r'^-+.*-+$',r'^-+\s*(.+?)\s*-+$','-',''],
+	# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
+	';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
+	}
+def data(view): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']
+
+class make_divider(sublime_plugin.TextCommand):
+	def run(self,edit,length):
+		view = self.view
+		test, match, fill, ends = data(view)
+		for region in [ι for ι in view.sel()][::-1]:
+			line = view.line(region)
+			s = view.substr(line)
+			t = re.match(r'^(\t*)(.*)',s); tabs = t.group(1); s = t.group(2)
+			if re.match(test,s):
+				s = re.match(match,s).group(1)
+			else:
+				s = s.strip()
+			def len_a(ι): return sum([len(ι) for ι in ι])
+			if s == '':
+				r = [ends,'',ends[::-1]]
+				len_ = length - len(tabs)*2 - len_a(r)
+				r[1] = fill * len_
+			else:
+				r = [ends,'',' ',s,' ','',ends[::-1]]
+				len_ = length - len(tabs)*2 - len_a(r)
+				while len_ < 6: len_ += 10
+				r[1] = fill * ((len_+1)//2)
+				r[5] = fill * (len_//2)
+			q = region == line and region.empty()
+			if q: view.sel().subtract(region)
+			view.replace(edit,line,tabs+''.join(r))
+			if q: view.sel().add(sublime.Region(view.line(region).end()))

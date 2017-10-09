@@ -47,7 +47,7 @@ eval_in_worker ← (=>{
 procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
 	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode ||( ♓.exitCode = 1 ) )
 	{on,off} ← on_off(); on(♓,'uncaughtException',e=>{ err(e); ♓.exit() }); on(♓,'beforeExit',off)
-	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; [♓.stdin,♓.stdout,♓.stderr]._.zip(a.isTTY).map(([fd,t])=> fd.isTTY = t)
+	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; _.zip([♓.stdin,♓.stdout,♓.stderr],a.isTTY).map(([fd,t])=> fd.isTTY = t)
 	try{ _code }catch(e){ err(e) }
 	}+')()').replace('_code',code) )
 

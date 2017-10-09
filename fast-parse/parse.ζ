@@ -5,14 +5,14 @@ P ← require('./parsimmon')
 ;(=>{
 	{Rₐ:R} ← require('./record')
 	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,∅]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
-	walk_regex ← (ι,f)=> |>(ι)(λ Λ(ι){ if (ι && ι.tag){
+	walk_regex ← (ι,f)=> ι |> (λ Λ(ι){ if (ι && ι.tag){
 		clone ← _.once(=>{ ι = _(R``) <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
 		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
 		ι = f(ι,{change})
 		}; ↩ ι })
 
-	skip_e2rbm←; anon_w9lb3←;
+	skip_𐅰𐅦𐅝𐅦𐅰←; 𐅞𐅞𐅯𐅦𐅂←;
 
 	Regex ← (=>{
 		Regex ← =>Regex
@@ -64,7 +64,7 @@ P ← require('./parsimmon')
 		walk_regex(ι,ι=>{
 			if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 			})
-		# |>(ι)(λ Λ(ι){ if (ι && ι.tag){
+		# ι |> (λ Λ(ι){ if (ι && ι.tag){
 		# 	if (ι.ι) Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι)
 		# 	if( ι.≈`#^$` ) if( flags.re`m` ) ι.ι += 'm'
 		# 	}; ↩ ι })
@@ -77,12 +77,12 @@ P ← require('./parsimmon')
 				ι = change({ ι: ι.ι.map…(ι=> ι.tag && ι.≈`#seq`? ι.ι : [ι] ) }, _.isEqual)
 				if (ι.ι.‖===1) ↩ ι.ι[0]
 				}
-			if( !skip_e2rbm ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_e2rbm = ✓; r = $(r); skip_e2rbm = ✗; ↩ r } })
+			if( !skip_𐅰𐅦𐅝𐅦𐅰 ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_𐅰𐅦𐅝𐅦𐅰 = ✓; r = $(r); skip_𐅰𐅦𐅝𐅦𐅰 = ✗; ↩ r } })
 			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
 		↩ ι }
-	parse_normalize_regex_memoized ← ι=>{ t ← |>(ι)(anon_w9lb3||(anon_w9lb3= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+	parse_normalize_regex_memoized ← ι=>{ t ← ι |> (𐅞𐅞𐅯𐅦𐅂||(𐅞𐅞𐅯𐅦𐅂= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
 	$ ← parse_normalize_regex_memoized
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }

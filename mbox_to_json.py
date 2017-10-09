@@ -41,8 +41,8 @@ for i in xrange(sys.maxint):
 # mbox_to_json.py ~/file/archive/text\ logs/2015-11-27\ alice0meta\@gmail.com.mbox ~/Downloads/alice0meta@gmail.com
 
 # r ← []
-# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); if (ι['X-Gmail-Labels'] && ι['X-Gmail-Labels'].split(',').includes('Chat') && ι.From === 'Alice Monday <alice0meta@gmail.com>') r.push(ι.parts._.map('content').join('\n'))}
+# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); if (ι['X-Gmail-Labels'] && ι['X-Gmail-Labels'].split(',').includes('Chat') && ι.From === 'Alice Monday <alice0meta@gmail.com>') r.push(ι.parts.map(ι=> ι.content).join('\n'))}
 # sb.tab.push(r.join('\n'))
 
 # r ← []
-# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts._.map('content').filter(ι=> ι.re`</a>`).join(' '); t !== '' && r.push(t)}
+# for (ι of fs('.').findˢ('>')) {ι = JSON.parse(fs(ι).$); t ← ι.parts.map(ι=> ι.content).filter(ι=> ι.re`</a>`).join(' '); t !== '' && r.push(t)}
