@@ -88,10 +88,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 					}); ↩ _.once(=> r.map(ι=> ι()) ) }
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
-				std ← hook_stdouterr()
+				io ← hook_stdouterr()
 				r←; e←; (λ __special_es__u7h7zxgvi__(){ try{ global.code = ι; global.require = require; r = (0,eval)(ζ_compile(ι+'')) }catch(e_){ e = e_ } })()
 				↩ [
-					,… std().slice(1)
+					,… io().slice(1)
 					, sb.encode(r)
 					, e===∅? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
 					].join('')

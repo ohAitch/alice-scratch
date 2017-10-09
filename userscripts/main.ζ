@@ -115,12 +115,13 @@ if( at_url('*google.com') ){
 		}
 	}
 
-# if( at_url('*discordapp.com') ){
-# 	q0 ← => $('.user-name').map(λ(){ $(@).text().match(/^[‡◍]$/) ||( $(@).text()==='alice'? $(@).text('‡').css({color:'#5ac767'}) : $(@).text('◍').css({color:'#d54d47'}) ) })
-# 	q ← =>( q0(), token = q0.every(100) ); token←;
-# 	q(); on_seen_Δ(seen=> seen? q() : clearInterval(token))
-# 	}
-
+if( at_url('*discordapp.com') ){
+	q0 ← => location.pathname.match(/^\/channels\/@me\//) &&
+		$('.user-name').map(λ(){ $(@).text().match(/^[‡◍]$/) ||( $(@).text()==='alice'? $(@).text('‡').css({ backgroundColor:'#005322' ,color:'#1f8b4c' ,borderRadius:'4px' }) : $(@).text('◍').css({ backgroundColor:'#806028' ,color:'#bda06d' ,borderRadius:'4px' }) ) })
+	q ← =>( q0() ,token = q0.every(100) ); token←;
+	q(); on_seen_Δ(seen=> seen? q() : clearInterval(token))
+	# https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
+	}
 
 
 // @match       *://books.google.com/*

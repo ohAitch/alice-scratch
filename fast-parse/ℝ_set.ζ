@@ -32,7 +32,7 @@ def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 		: ι instanceof ℝ_interval? [ι]
 		: ι instanceof ℝ_set? ι.ι
 		: ‽(ι) }
-def(ℝ_set.prototype,'cover',{get(){↩ ℝ_interval( !@.ι.‖? [0,0] : [@.ι[0].a,@.ι[-1].b] ) }})
+[#Q ℝ_set.prototype.cover #Q].def({ get(){↩ ℝ_interval( !@.ι.‖? [0,0] : [@.ι[0].a,@.ι[-1].b] ) } })
 ℝ_set.prototype.∪! = λ(x){
 	ℝ_set(x).ι.forEach(ι=>{ start←;
 		Array.prototype.find_last_index = λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }

@@ -29,20 +29,22 @@ ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is 
 …(){ eval "$(cat)"; }
 _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag --ignore '*.min.*' --ignore 'package-lock.json' "$@"; &>/dev/null popd; } # for /
 /(){
-	if [[ $1 = -H ]]; then _ag ~/file "$2" ./notes{,/.archive{,/.sublime}}
-	elif [[ $1 = -h ]]; then _ag ~/file "$2" ./notes{,/.archive}
+	if man -- "$1" &> /tmp/man; then
+		cat /tmp/man | col -bfx
 	else
-		if man -- "$1" &> /tmp/man; then
-			cat /tmp/man | col -bfx
+		echo / "$1"; echo
+		if [[ $1 = -h2 ]]; then
+			_ag ~/file "$2" ./notes/.sublime
+		elif [[ $1 = -h1 ]]; then
+			_ag ~/file "$2" ./notes{,/.archive}
+		elif [[ $1 = -h0 ]]; then
+			_ag ~/file -- "$1" ~/.archive_*
 		else
 			rm -rf /tmp/sublime
 			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(ι=> ι.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
-			echo / "$1"; echo
 			_ag ~/file --ignore 'public/lib/' -- "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime
-			_ag ~/file -- "$1" ~/.archive_*
 			_ag ~/file --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff' -- "$1" notes
-		fi
-	fi | sb; }
+		fi; fi | sb; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
 sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb.tab.active.ι'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }
 open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }

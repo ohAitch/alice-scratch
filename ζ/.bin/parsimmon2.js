@@ -81,7 +81,7 @@ var P = (ι,...ιs)=>0?0
 	: Tstr(ι)? __match_string(ι)
 	: Tarr(ι)? P.seq(...ι)
 	: T.RegExp(ι)? __match(ι,ιs[0]||0)
-	: !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}('cant make parser from',ι)
+	: !function(...a){throw Error(__err_format(...a))}('cant make parser from',ι)
 var P2 = ι=> new Parser(ι)
 var Parser = function(a){ _(this) ['<-'] (a) }
 
@@ -109,10 +109,10 @@ var Parser = function(a){ _(this) ['<-'] (a) }
 // 		}
 // 	↩ seen.get(@) }
 
-Parser.prototype.parse = function(stream){ Tstr(stream) || !function(){throw Error('‽')}()
+Parser.prototype.parse = function(stream){ Tstr(stream) || !function(...a){throw Error(__err_format(...a))}('‽')
 	var p = this//.resolve()
 	G_opt.fast = true; var r = p.skip(eof)._(stream,0)
-	if (!r.status){ G_opt.fast = false; var r = p.skip(eof)._(stream,0); !!r.status && !function(){throw Error('‽')}(); !function(...a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
+	if (!r.status){ G_opt.fast = false; var r = p.skip(eof)._(stream,0); !!r.status && !function(...a){throw Error(__err_format(...a))}('‽'); !function(...a){throw Error(__err_format(...a))}({ index:make_line_col_index(stream, r.furthest), expected:r.expected, stream:stream.slice(0,1e3), }) }
 	return r.value }
 
 // make_win ← (index,value)⇒ { status:✓, index, value, }
@@ -121,13 +121,13 @@ var make_lose = (index,expected)=>0?0: { status:false, index:-1, value:undefined
 
 P.seq = (...ps)=> __seq(ps.map(P.X))
 
-var alt = P.alt = (...ps)=>{ ps = ps.map(P.X); ps["‖"] || !function(){throw Error('‽')}(); return __alt(ps) }
+var alt = P.alt = (...ps)=>{ ps = ps.map(P.X); ps["‖"] || !function(...a){throw Error(__err_format(...a))}('‽'); return __alt(ps) }
 
 Parser.prototype.many = function(){return this.times(0,Infinity) }
-Parser.prototype.times = function(min,max){ if (arguments.length < 2) max = min; Tnum(min) || !function(){throw Error('‽')}(); Tnum(max) || !function(){throw Error('‽')}(); return __times(this,min,max) }
+Parser.prototype.times = function(min,max){ if (arguments.length < 2) max = min; Tnum(min) || !function(...a){throw Error(__err_format(...a))}('‽'); Tnum(max) || !function(...a){throw Error(__err_format(...a))}('‽'); return __times(this,min,max) }
 
-Parser.prototype.map    = function(f){ Tfun(f) || !function(){throw Error('‽')}(); return __map(this,f) }
-Parser.prototype.map_js = function(f){ Tfun(f) || !function(){throw Error('‽')}(); return __map_js(this,f) }
+Parser.prototype.map    = function(f){ Tfun(f) || !function(...a){throw Error(__err_format(...a))}('‽'); return __map(this,f) }
+Parser.prototype.map_js = function(f){ Tfun(f) || !function(...a){throw Error(__err_format(...a))}('‽'); return __map_js(this,f) }
 Parser.prototype.skip = function(next){return P([this,next]).map(ι=> ι[0]) }
 
 var eof = P.eof = __eof()
@@ -161,7 +161,7 @@ P.format_error = (stream,error)=>{
 	if (i===stream["‖"]) return ', got the end of the stream'
 	return 'expected '+ex+' at line ' + index.line + ' column ' + index.column +  ', got ' + prefix + stream.slice(i,i+12) + suffix }
 
-var seq_map = P.seq_map = (...a)=>{ var f = a[-1]; a = a.slice(0,-1); Tfun(f) || !function(){throw Error('‽')}(); return P(a).map(ι=> f(...ι)) }
+var seq_map = P.seq_map = (...a)=>{ var f = a[-1]; a = a.slice(0,-1); Tfun(f) || !function(...a){throw Error(__err_format(...a))}('‽'); return P(a).map(ι=> f(...ι)) }
 
 //X // Allows to add custom primitive parsers
 //X P.custom = f=> p_wrap(f(make_win,make_lose))

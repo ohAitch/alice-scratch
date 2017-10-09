@@ -105,12 +105,12 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(=> Tstr(ι) &&( ι = JSON
 		sfx`ack`
 
 		build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
-		package ← !!( t=project.φ`package.json`.json, t && t.version )
+		package_ ← !!( t=project.φ`package.json`.json, t && t.version )
 		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
-		;(build || package || run) || ‽
+		;(build || package_ || run) || ‽
 
 		a ← => build && shₐ2({stdio:process.stdio})`cd ${project}; ${build}`
-		b ← =>{if( package ){
+		b ← =>{if( package_ ){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
 			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )

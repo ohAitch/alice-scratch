@@ -5,6 +5,7 @@
 # odd synonym: k, name(, id)(, i?)
 
 #################################### prelude ###################################
+'use strict'; require('module').wrapper[0] += `'use strict';` # enable strict mode everywhere
 _ ← require('underscore') # lodash is better than underscore except for _()
 _.mixin({ '<-':λ(…a){↩ @ .assign (…a) } })
 Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(k=> [k,ι[k]])
@@ -29,8 +30,8 @@ patched ← new Set([E_,global])
 E ← new Proxy({},{ # exports
 	# get(           self,k){  },
 	# getOwnPropertyDescriptor()
-	set(           self,k,ι){ […patched].forEach(o=> o[k] = ι ) },
-  defineProperty(self,k,ι){ […patched].forEach(o=> def(o,k,ι)); ↩ ✓ },
+	set(           self,k,ι){ […patched].forEach(o=> o[k] = ι ) ;↩ ✓ },
+  defineProperty(self,k,ι){ […patched].forEach(o=> def(o,k,ι) ) ;↩ ✓ },
 	})
 assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); […patched].forEach(o=> assign_properties_in(o,ι)) }
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
@@ -127,7 +128,7 @@ E.js_tokenize = code=>{
 	↩ _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(✓).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : ✗
 E.ζ_compile = lazy_fn(=>{ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oenor←; anon_7cy2u←; anon_8jlo1←; anon_cbbhj←; anon_wg4h5←; anon_pxt5h←; anon_xq7qg←; anon_xzihh←; anon_q3sot←; anon_52y2m←;
-	word_extra ← re`♈-♓🔅🔆🔒‡⧫`
+	word_extra ← re`♈-♓🔅🔆🔒‡⧫§`
 	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓${word_extra}`
 	ζ_parse ← E.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
@@ -153,34 +154,34 @@ E.ζ_compile = lazy_fn(=>{ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oen
 			r ← []; for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			↩ r } })()
 	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
-	id_g ← '|> §'
-	id_c ←'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃'
+	id_g ← '|>'
+	id_c ←'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
 	id_d ← [ '-0',id_g,id_c ].join(' ')
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(/✓/g,'true')
 		.replace(/✗/g,'false')
 		.replace(/∅/g,'undefined')
 		.replace(anon_wg4h5||(anon_wg4h5= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← __name(${ι}).ι=`) # an initial try; probably .name inference needs another form
-		.replace(/‽(?=(\()?)/g,(ˣ,callp)=> callp? `!λ(…a){throw Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))}` : `!λ(){throw Error('‽')}()` )
+		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` )
 		.replace(anon_x818h||(anon_x818h= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(anon_oenor||(anon_oenor= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
 		.replace(anon_t4nzb||(anon_t4nzb= re`\.(${s_or(id_d)})`.g ),(ˣ,ι)=> js`[${ι}]`)
 		.replace(anon_xzihh||(anon_xzihh= re`(${s_or(id_g)}(?!["']))`.g ),(ˣ,ι)=> js`global[${ι}]`)
 		.replace(anon_xq7qg||(anon_xq7qg= re`(${s_or(id_c)}):`.g ),(ˣ,ι)=> js`${ι}:`)
-		.replace(/↩ ?/g,'return ')
 		.replace(/…/g,'...')
 		.replace(/\[(['"])map\.\.\.\1\]/g,'["map…"]') # ! this is going to be really hard to take out
 		.replace(/@/g,'this')
 		.replace(/∞/g,'Infinity')
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0', '{':'0?0:', }[ι]||‽)+x )
 		.replace(anon_52y2m||(anon_52y2m= re`(^|[^\s\)${word}]\s*)=>`.g ),(ˣ,t)=> t+'()=>' )
+		.replace(/↩ ?/g,'return ')
 		.replace(anon_8jlo1||(anon_8jlo1= re`(…${'<-'.split(' ').map(ι=> re`${ι}`.source).join('|')})`.g ),(ˣ,ι)=> '['+util_inspect_autodepth(ι)+']')
 		.replace(anon_7cy2u||(anon_7cy2u= re`#swap ([${word}]+) ([${word}]+)`.g ),(ˣ,a,b)=>{ t ← 't_'+random_id(9); ↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a}; ${a} = ${b}; ${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(/\[#Q/g,'new Property(') # Quote
 		.replace(anon_cbbhj||(anon_cbbhj= re`\.(\s*)([${word}]+)(\s*)#Q\]`.g ), `,$1'$2'$3)`)
-		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X)
+		.replace(anon_pmcr3||(anon_pmcr3= re`[${word_extra}]+`.g ), unicode_names.X) # ! eventually, remove the thing with two underscores next to each other __
 		.replace(/\{,\}/g,'new O1()')
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(anon_q3sot||(anon_q3sot= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
@@ -197,9 +198,10 @@ E.ζ_compile = lazy_fn(=>{ anon_pmcr3←; anon_x818h←; anon_t4nzb←; anon_oen
 			).join('') } })
 ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, (ι,name,s,eq)⇒ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
 E.__name = name=> _(Object.create((anon_u5393 ||( anon_u5393 = def({,},'ι',{ set(ι){ def(ι,'name',{ value:@.name }) } }) )))) <- ({name}); anon_u5393←;
+E.__err_format = (…a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
 if( require.extensions && !require.extensions['.ζ'] )(=>{
-	require.extensions['.ζ'] = (module,ι)=>{ module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι) }
+	require.extensions['.ζ'] = (module,ι)=> module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι)
 	super_ ← require.extensions['.js']; require.extensions['.js'] = (module,ι)=>{ (path.extname(ι)==='' && fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
 	})()
 
@@ -368,7 +370,7 @@ E.copy_deep = ι⇒
 		↩ r })()
 E.seq = ι=>{ t← Object.create(seq.prototype); t.ι = ι; ↩ t }
 seq.prototype = {
-	,next_ι:λ(){↩ @.ι.next().value }
+	,next_ι:λ(){ t ← @.ι; if(! t.next ) t = t.@@iterator(); ↩ t.next().value }
 	# ,map(){}
 	# ,'map…':λ(){}
 	# ,fold(){}
@@ -425,7 +427,7 @@ assign_properties_in_E_informal({
 
 ,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
 ,'Set.prototype.pop':λ(){ t ← @[0]; @.delete(t); ↩ t }
-,'Set.prototype.0':{get(){↩ @.values().next().value }}
+,'Set.prototype.0':{get(){↩ seq(@).next_ι() }}
 ,'(Array|Set).prototype.-eq':λ(…a){ t ← _([…@]).groupBy(simple_hash_str); a.forEach(ι=> ι.forEach(ι=> delete t[simple_hash_str(ι)])); ↩ _(t).values()._.flatten(✓) }
 
 ,'Map.prototype.⁻¹declare_uniq':{get(){↩ new Map([…@.entries()].map(ι=>[ι[1],ι[0]])) }}
@@ -557,6 +559,11 @@ E.notify = ι=>{ Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : �
 			,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
 			):send()`
 		) ) }
+E.fn_wrap_lits = (eval_,f)=> code=> eval_('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
+
+E.normal_PDF = x=>{ μ ← 0; σ ← 1; v ← σ**2; ↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
+E.normal_CDF = x=>{ μ ← 0; σ ← 1; ↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
+E.invert_specific = f=> fx=>{ t ← 0; while (f(t) > fx) t+=0.01; ↩ t }
 
 ##################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')

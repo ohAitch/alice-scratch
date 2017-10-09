@@ -10,7 +10,7 @@ delete Object.prototype._
 # 	,h_slice(a,b){ q ← ι=> ι===∅? 0 : ι<0? (@.str.‖-i)+ι : ι; ↩ @.str.slice(q(a),q(b)) }
 # 	,match(ι){re←; ↩ Tstr(ι)? @.str.startsWith(ι,@.i) :( re = RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y') ,re.exec_at(@.str,@.i) ) }
 # 	}
-# [#Q _Stream.prototype.host #Q].def({ ,enumerable:false ,get(){↩ @.str.slice(i) }})
+# [#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})
 # wow, (in_,i) vs { i,ι } is fucky - could call it (constants,backpropagate) vs { edit,new }
 
 #################################### Parser ####################################
@@ -23,8 +23,8 @@ P ← ι⇒
 	: T.RegExp(ι)? P._regex(ι)
 	: ‽('cant make parser from',ι)
 P.prototype = R(∅,{})
-P.prototype.exec0 = λ(in_){ for(var t of @.exec(in_)) ↩ t }
 P.prototype.exec = λ*(in_){ for(var t of @._(in_,0)) yield t.ι }
+P.prototype.parse = λ(in_){↩ seq( @.skip(/$/).exec(in_) ).next_ι() }
 
 module.exports = P
 
@@ -96,6 +96,16 @@ def(P.prototype,'+?',{get(){↩ @.repeat([1,∞],✗) }})
 P.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
 P.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
 P.prototype.sep_by = λ(sep){↩ P([ @, P([sep,@]).map(ι=>ι[1]).* ]).map(([ι,ιs])=> [ι,…ιs]) }
+
+################################### build_op ###################################
+P.build_op = (unit,op)=>{
+	# binary left: 1-2-3 = (1-2)-3 ; binary right: 1^2^3 = 1^(2^3)
+	# '2 center':p=> P([ p, P.seq(op,p).*.map(ι=> _(ι).flatten(✓)) ]).map(([a,op_bs])=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) ),
+	_1L ← p=>{ r ← P(=> P.alt([ P([ op,r ]).map(([op,ι])=> [op,∅,ι]) ,p ])); ↩ r }
+	_1R ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
+	_2L ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
+	_2R ← p=>{ r ← P(=> p.chain(a=> P.alt([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ); ↩ r }
+	↩ |>(unit)(_2L,_1L,_1R) }
 
 ################################ todo eventually ###############################
 # pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure

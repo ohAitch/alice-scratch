@@ -55,7 +55,10 @@ npm`chokidar@1.7.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 
 ########################### look at me cron no hands ###########################
 ;(=>{
-	u ← 'nihilsupernum'; page ← `https://${u}.tumblr.com/`
-	t ← Δ_as(=> GET_L(page), ι=> (ι+'').match(re`\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?`.g) .filter(ι=>{ ι=npm`urijs@1.18.12`(ι); ↩ ι.hostname()+'/'+ι.segment(0)===`${u}.tumblr.com/post` }) )
+	# u ← 'crazyblogging'
+	# this will work fine for crazyblogging but Δ_as ... isnt reentrant. #fixme
+	u ← 'nihilsupernum'
+	page ← `https://${u}.tumblr.com/`
+	t ← Δ_as(=> GET_L(page), ι=> (ι+'').match(re`\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?`.g) .filter(ι=>{ ι=npm`urijs@1.18.12`(ι); ↩ ι.hostname()+'/'+ι.segment(0)===`${u}.tumblr.com/post` }) )
 	if( t ) notify(`Δ tumblr.${u}`).then(=> go_to(page))
 	}).every(1e3)
