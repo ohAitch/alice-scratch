@@ -20,7 +20,7 @@ Slot ←
 ################################### ζ sketch ###################################
 E.Property = ∪( ,§`obj × id -> place`
 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
-	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), _({ ,configurable:!🔒 ,enumerable:!hide }) <- (place) ).Just )
+	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
 	,∋( §`obj -> ⊂id` ,ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
 	,∪( §`obj × id -> place × 🔒 × hide` ,(obj,id,host)=>{ defineProperty(obj,id,host) } )
 	,∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
@@ -40,14 +40,16 @@ Set(…a) by ≈
 	Just
 stream
 
+fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
+
 § ← (=>{
 	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
-	Any ← =>Any; Any = |>(=>{
+	Any ← =>Any; Any = ‘lexical_env <| (=>{
 		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
 		# ↩ [ '.','⊂','×','+','->' ].fold(P.build_op,unit) }
 		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
-		)( fn_wrap_lits(ι=>eval(ι)(), ι=> String.raw`P(${ι}).skip(/\s*/)`) )
-	↩ ({raw:[ι]})=>{
+		) |> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
+	↩ ι=>{ι+=''
 		ι = Any.parse(ι)
 		Tarr(ι)
 		} })()
@@ -57,7 +59,7 @@ stream
 E.Property = type(§=>[
 	,§`obj × id -> place`
 	,§`-> 🔒 × hide`.∋(=> [✗,✓])
-	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), _({ ,configurable:!🔒 ,enumerable:!hide }) <- (place) ).Just )
+	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
 	,§`obj -> ⊂id`.∋(ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
 	,{'←': §`obj × id -> place × 🔒 × hide`.∋((obj,id,host)=> Object.defineProperty(obj,id,host)) }
 	# .∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
@@ -79,7 +81,6 @@ im kind of lost
 you think about it, i bet you have more clarity of mind
 
 ################################################################################
-
 id ⊂ string|symbol
 obj ⊂ object
 place
@@ -98,59 +99,57 @@ id ← ι=> Tstr(ι) || T.symbol(ι)
 obj ← ι=> !Tprim(ι)
 
 ################################################################################
-here is a list of things i want to do with Property and Slot
+# here is a list of things i want to do with Property and Slot
 
+# a.foo ← x
+# 	a.foo = x
+# a.foo ← x ✗enumerable
+# 	[#Q r.constructor #Q].def({ value:λ Proc(){} }) # for util.inspect
+# 	[#Q r._node #Q].def({ value:♓ })
+# 	[#Q r.kill #Q].def({ value:λ(){ ♓===process? process.exit() : process.kill(@.id,'SIGKILL') } })
+# 	[#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})
+# a.foo ← {getter:x} ✗enumerable | ✓enumerable
+# 	def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
+# 	↩ [#Q {}.ι #Q].def({ get /*,set(ι){ ‽ }*/ }).o
+# a.foo ← 5 🔒
+# 	new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ })
 
+# bind Property(t.opt) to Local(opt)
+# 	[#Q t.opt #Q].def({ ,get(){↩ opt} ,enumerable:✓ })
+# bind a.foo to [b.foo .bind(b)]
+# 	,send:[#Q ♓.send #Q].bind
+# bind a.foo to [b.foo .bind(b)] ✗enumerable
+# 	[#Q to.ref #Q].def({ value:[#Q from.ref #Q].bind })
+# bind a.foo to b?.bar
+# 	[#Q r.msg #Q].def({ get(){↩ p&&p.Node_Ipc } ,enumerable:✓ })
+# bind a.foo to b.bar
+# 	o ← φ`/tmp/ζpersist_${name}`; ↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }})
 
-a.foo ← x
-	a.foo = x
-a.foo ← x ✗enumerable
-	[#Q r.constructor #Q].def({ value:λ Proc(){} }) # for util.inspect
-	[#Q r._node #Q].def({ value:♓ })
-	[#Q r.kill #Q].def({ value:λ(){ ♓===process? process.exit() : process.kill(@.id,'SIGKILL') } })
-	[#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})
-a.foo ← {getter:x} ✗enumerable | ✓enumerable
-	def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
-	↩ [#Q {}.ι #Q].def({ get /*,set(ι){ ‽ }*/ }).o
-a.foo ← 5 🔒
-	new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ })
+# Property.watch ← stream of values of this
+# 	Property.prototype.watch = λ(f){ ι←; @.def({ ,get(){↩ ι } ,set(_ι){ f([ι,_ι]); ι = _ι } ,configurable:✗ }); f([ι]); ↩ @ }
+# 	[#Q global.see_chroot #Q].watch(ιs=> see_simple_object(ιs[-1]) )
+# use property
+# 	io = [#Q io.write #Q]; r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ =>{ io.ι = o; ↩ r.join('') }
+# 	# .ι is *such* a hack (for lvalues) - any ideas?
 
-bind Property(t.opt) to Local(opt)
-	[#Q t.opt #Q].def({ ,get(){↩ opt} ,enumerable:✓ })
-bind a.foo to [b.foo .bind(b)]
-	,send:[#Q ♓.send #Q].bind
-bind a.foo to [b.foo .bind(b)] ✗enumerable
-	[#Q to.ref #Q].def({ value:[#Q from.ref #Q].bind })
-bind a.foo to b?.bar
-	[#Q r.msg #Q].def({ get(){↩ p&&p.Node_Ipc } ,enumerable:✓ })
-bind a.foo to b.bar
-	o ← φ`/tmp/ζpersist_${name}`; ↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }})
+# set property to thunk
+# 	lazy ← (name,ι)⇒ { writable:✓, get(){↩ @[name] = ι() } }
+# 	def(E,'robot',lazy('robot',=> npm`robotjs@0.4.5` ))
+# 	[#Q E.brightness #Q].def(=>{ ... }) # equal to:
+# 	[#Q E.brightness #Q].def(lazy(=>{ ... }))
+# 	[#Q os_daemon.this #Q].def(=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w) )
+# set property to [similar to a thunk]
+# 	if( T.Promise(v) ) [#Q @.context.__ #Q].def({get(){↩ v.status? @.__ = v.ι : v }, writable:✓})
 
-Property.watch ← stream of values of this
-	Property.prototype.watch = λ(f){ ι←; @.def({ ,get(){↩ ι } ,set(_ι){ f([ι,_ι]); ι = _ι } ,configurable:✗ }); f([ι]); ↩ @ }
-	[#Q global.see_chroot #Q].watch(ιs=> see_simple_object(ιs[-1]) )
-use property
-	io = [#Q io.write #Q]; r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ =>{ io.ι = o; ↩ r.join('') }
-	# .ι is *such* a hack (for lvalues) - any ideas?
-
-set property to thunk
-	lazy ← (name,ι)⇒ { writable:✓, get(){↩ @[name] = ι() } }
-	def(E,'robot',lazy('robot',=> npm`robotjs@0.4.5` ))
-	[#Q E.brightness #Q].def(=>{ ... }) # equal to:
-	[#Q E.brightness #Q].def(lazy(=>{ ... }))
-	[#Q os_daemon.this #Q].def(=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w) )
-set property to [similar to a thunk]
-	if( T.Promise(v) ) [#Q @.context.__ #Q].def({get(){↩ v.status? @.__ = v.ι : v }, writable:✓})
-
-a.foo as Slot; .ι; .delete(). a.foo as Slot as Maybe |> delete
-	rm_com([#Q ι.Last #Q]); rm_com ← ι=> ι.ι && ι.ι.every(ι=> k_is(ι,'Text') && Tstr(ι.Text) ) && ι.delete()
-[set property w/o triggering setter] vs [delete property ,set property]
-	[#Q @.inspect #Q].def({ value:∅ })
-	[#Q r.name #Q].def({ value:a.name })
-quite a large mess, really
-	assign_properties_in ← (o,ι)=>{ Reflect_ownEntries(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
-	assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); […patched].forEach(o=> assign_properties_in(o,ι)) }
-	etc
+# a.foo as Slot; .ι; .delete(). a.foo as Slot as Maybe |> delete
+# 	rm_com([#Q ι.Last #Q]); rm_com ← ι=> ι.ι && ι.ι.every(ι=> k_is(ι,'Text') && Tstr(ι.Text) ) && ι.delete()
+# [set property w/o triggering setter] vs [delete property ,set property]
+# 	[#Q @.inspect #Q].def({ value:∅ })
+# 	[#Q r.name #Q].def({ value:a.name })
+# quite a large mess, really
+# 	assign_properties_in ← (o,ι)=>{ Reflect_ownEntries(Object.getOwnPropertyDescriptors(ι)).forEach(([k,{value:ι}])=> ι instanceof Descriptor? def(o,k,ι) : assign_properties_in(o[k] ||( o[k] = {} ),ι) ); ↩ o }
+# 	assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); […patched].forEach(o=> assign_properties_in(o,ι)) }
+# 	etc
 
 ################################## pseudocode ##################################
 
@@ -173,6 +172,22 @@ if i wanted to quote the things being passed to it, um
 # new Property(,'_')
 ‘foo
 new Slot('foo',{ ,get(){↩ foo } ,set(ι){ foo = ι } })
+
+################################## pseudocode ##################################
+i think these are the main things i want to do with Property:
+	default enumerable: this operation uses a Property? it.enumerable : ✓
+	default configurable: ✓
+	put value in Property:
+		Property set value
+	put Slot in Property
+		Property def Slot
+	set Property enumerable (DRY)
+	make value into Slot
+	make thunk into Slot
+	make [nullary function] into thunk
+	make Promise into Slot (??)
+	get Slot from Property
+	watch Slot (in Property)
 
 #################### Property.prototype.interpret = λ(){ι←; ####################
 # { ,🔒:d.configurable ,ι:{

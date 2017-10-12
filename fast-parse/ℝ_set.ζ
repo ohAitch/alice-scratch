@@ -55,7 +55,7 @@ def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 	↩ @ }
 ℝ_set.prototype.∩! = λ(x){↩ @.-!(ℝ_set(@.cover).-!(x)) }
 
-_('-∪∩').map(k=> ℝ_set.prototype[k] = λ(ι){↩ _(ℝ_set()) <- ({ι:_.clone(@.ι)}) [k+'!'](ι) } )
+_('-∪∩').map(k=> ℝ_set.prototype[k] = λ(ι){↩ ℝ_set() <- ({ι:_.clone(@.ι)}) [k+'!'](ι) } )
 ℝ_set.prototype.has = λ(ι){ i ← binary_search_num_by_low(@.ι,{a:ι},ι=>ι.a); ↩ 0<=i && i<@.ι.‖ && @.ι[i].a <= ι && ι < @.ι[i].b }
 
 module.exports = ℝ_set

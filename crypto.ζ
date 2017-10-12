@@ -103,7 +103,7 @@ cn.log(  texts.map(ι=>{ t ← _(ι).countBy(); k ← t[1]; n ← t[0]+t[1]; ↩
 
 # ok but i want to do this the full way
 
-fact ← _.memoize( ι=> ι===0? 1 : ι*fact(ι-1) )
+fact ← memoize_proc( ι=> ι===0? 1 : ι*fact(ι-1) )
 # p(010) given p0=0.6 p1=0.4
 0.144 # ( 0.6*0.6*0.4 )+' # '+code
 # p(k0=2,k1=1,n=3) given p0=0.6 p1=0.4

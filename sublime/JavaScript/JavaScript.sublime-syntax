@@ -6,7 +6,7 @@ file_extensions: [js,htc,ζ]
 first_line_match: ^#!/.*\b(node|js)$\n?
 scope: source.js
 variables:
-  identifier: '[_‡$‖♓§[:alpha:]][_‡$‖♓§[:alnum:]]*'
+  identifier: '[_‡$‖♓§𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰[:alpha:]][_‡$‖♓§𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰[:alnum:]]*'
   constant_identifier: '[[:upper:]][_$[:digit:][:upper:]]*\b'
   dollar_only_identifier: '\$(?![_$[:alnum:]])'
   dollar_identifier: '(\$)[_$[:alnum:]]+'

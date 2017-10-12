@@ -4,9 +4,9 @@ P ← require('./parsimmon')
 
 ;(=>{
 	{Rₐ:R} ← require('./record')
-	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,∅]; ss = _([…ss,'']) <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
+	P.prototype.R = λ(ss,…ιs){ ιs = […ιs,∅]; ss = […ss,''] <- ({raw:[…ss.raw,'']}); ↩ @.map(ι=>{ ιs[-1] = ι; ↩ R(ss,…ιs) }) }
 	walk_regex ← (ι,f)=> ι |> (λ Λ(ι){ if (ι && ι.tag){
-		clone ← _.once(=>{ ι = _(R``) <- (ι) })
+		clone ← _.once(=>{ ι = R`` <- (ι) })
 		change ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone(), ι[k] = a[k] ); ↩ ι }
 		if (ι.ι) ι = change({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
 		ι = f(ι,{change})
@@ -82,11 +82,11 @@ P ← require('./parsimmon')
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
 		↩ ι }
-	parse_normalize_regex_memoized ← ι=>{ t ← ι |> (𐅞𐅞𐅯𐅦𐅂||(𐅞𐅞𐅯𐅦𐅂= _.memoize(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ _(copy_deep(t)) <- ({tag:t.tag}) }
+	parse_normalize_regex_memoized ← ι=>{ t ← ι |> (𐅞𐅞𐅯𐅦𐅂||(𐅞𐅞𐅯𐅦𐅂= memoize_proc(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ copy_deep(t) <- ({tag:t.tag}) }
 	$ ← parse_normalize_regex_memoized
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
-	_(exports) <- (t)
+	exports <- (t)
 
 	if_main_do(=>{ [
 		/(?:(|))/u,

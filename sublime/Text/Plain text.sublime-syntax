@@ -10,12 +10,12 @@ contexts:
       captures: { 1: markup.underline.link, 2: markup.underline.link, 3: variable.quiet, 4: markup.underline.link, 5: markup.underline.link, 6: markup.underline.link.quiet, 7: markup.underline.link, 8: markup.underline.link.quiet, 9: markup.underline.link, 10: markup.underline.link.quiet, 11: markup.underline.link, 12: markup.underline.link.quiet, 13: markup.underline.link, 14: markup.underline.link.quiet, 15: markup.underline.link, 16: markup.underline.link.quiet, 17: markup.underline.link, 18: markup.underline.link.quiet, 19: markup.underline.link, 20: markup.underline.link.quiet, 21: markup.underline.link, 22: markup.underline.link.quiet, 23: markup.underline.link, 24: markup.underline.link.quiet, 25: markup.underline.link, 26: markup.underline.link, }
     - match: '(\d\d\d\d)(?:(-W)(\d\d)(?:(-)(\d))?|(-)(\d\d)(-)(\d\d)(?:([T/])(?:(\d\d)(?:(:)(\d\d)(?:(:)(\d\d)(?:(.)(\d\d\d))?)?)?|(\w+))?(Z)?)?)'
       captures: { 1: constant.date.numeral, 2: constant.date.punctuation, 3: constant.date.numeral, 4: constant.date.punctuation, 5: constant.date.numeral, 6: constant.date.punctuation, 7: constant.date.numeral, 8: constant.date.punctuation, 9: constant.date.numeral, 10: constant.date.punctuation, 11: constant.date.numeral, 12: constant.date.punctuation, 13: constant.date.numeral, 14: constant.date.punctuation, 15: constant.date.numeral, 16: constant.date.punctuation, 17: constant.date.numeral, 18: constant.date.numeral, 19: constant.date.punctuation, }
-    - match: '((?<=[\s\[]|^)#)([^\d\s\]][^\s\]]*|(?=\d))'
+    - match: '((?<=[\s\[]|^)#)([^\d\s\]#][^\s\]]*|(?=\d))'
       captures:
         1: markup.hashtag.hash
         2: markup.hashtag
-    - match: '(// |(?<!\S)#(?!\d))(.*)'
-      captures: { 1: punctuation.definition.comment, 2: comment }
+    - match: '(##+)|(// |(?<=^|\s)#(?!\d))(.*)'
+      captures: { 1: punctuation.definition.comment, 2: punctuation.definition.comment, 3: comment }
     - { scope: comment, match: '(?<=[\s"]|^)-{3,}(?=[\s"]|$)' }
     - { scope: markup.italic, match: '\b_\B[^_\n]+?\B_\b' }
     - { scope: markup.bold, match: '\B\*\b[^*\n]+?\b\*\B' }

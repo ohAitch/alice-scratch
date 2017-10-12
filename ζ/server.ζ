@@ -8,8 +8,8 @@ require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildPr
 
 ############################### as for a prelude ###############################
 on_off ← =>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=> ee.removeListener(m,f)); ons = [] } }}
-Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,_({}) <- (opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
-Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,_({}) <- (opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
+Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}<-(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
+Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}<-(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
 normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); ↩ ι }
 diff ← (a,b)=>{r←; ↩0?0
 	: [a,b].every(T.Set)?
@@ -29,7 +29,7 @@ eval_in_worker ← (=>{
 	♓_on_exits(=> […busy,…free].map(ι=> ι.kill()) ) # ! WET
 	make ← =>{ r ← eval_in_new_worker('('+λ(){ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
-		wait ← => ♓_once_eval(ι=>{ try{ (0,eval)(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
+		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
 		wait()
 		♓.on('beforeExit',i=>{ ♓.send([['exit_',i],['unbusy']]); ♓.exitCode = 0; wait() })
 		♓_on_exits(i=>{ ♓.send([['exit_',i]]) })
@@ -44,12 +44,12 @@ eval_in_worker ← (=>{
 			free.‖ || free.add(make())    }))
 		♓ ← free.pop(); busy.add(♓); ♓.send([['eval',code]]); ↩ ♓ }
 	})()
-procify ← (a,code)=> ζ_compile( ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
+procify ← (a,code)=> ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
 	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode ||( ♓.exitCode = 1 ) )
 	{on,off} ← on_off(); on(♓,'uncaughtException',e=>{ err(e); ♓.exit() }); on(♓,'beforeExit',off)
 	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; _.zip([♓.stdin,♓.stdout,♓.stderr],a.isTTY).map(([fd,t])=> fd.isTTY = t)
 	try{ _code }catch(e){ err(e) }
-	}+')()').replace('_code',code) )
+	}+')()').replace('_code',code)
 
 ################################################################################
 if_main_do(=>{

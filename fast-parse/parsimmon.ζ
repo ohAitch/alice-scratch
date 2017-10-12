@@ -1,5 +1,4 @@
 #!/usr/bin/env ζ
-delete Object.prototype._
 {Rᵢ:R} ← require_new(__dirname+'/record')
 # ℝ_set ← require_new(__dirname+'/ℝ_set')
 
@@ -14,7 +13,7 @@ delete Object.prototype._
 # wow, (in_,i) vs { i,ι } is fucky - could call it (constants,backpropagate) vs { edit,new }
 
 #################################### Parser ####################################
-Parser ← (tag,ι)=> _(Object.create(P.prototype)) <- ({tag},ι)
+Parser ← (tag,ι)=> Object.create(P.prototype) <- ({tag},ι)
 P ← ι⇒
 	: P.prototype.isPrototypeOf(ι)? ι
 	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
@@ -86,7 +85,7 @@ P._graph_thunk = f=> Parser('graph_thunk',{
 	})
 
 ################################ composite types ###############################
-P.prototype.map = λ(f){↩ @.chain( _(λ self(ι,etc){↩ P.return(self.f(ι,etc)) }) <- ({f}) ) }
+P.prototype.map = λ(f){↩ @.chain( λ self(ι,etc){↩ P.return(self.f(ι,etc)) } <- ({f}) ) }
 def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
 def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
 def(P.prototype,'+',{get(){↩ @.repeat([1,∞]) }})

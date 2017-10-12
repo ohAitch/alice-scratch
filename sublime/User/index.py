@@ -90,13 +90,8 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
 				io ← hook_stdouterr()
-				r←; e←; (λ __special_es__u7h7zxgvi__(){ try{ global.code = ι; global.require = require; r = (0,eval)(ζ_compile(ι+'')) }catch(e_){ e = e_ } })()
-				↩ [
-					,… io().slice(1)
-					, sb.encode(r)
-					, e===∅? '' : typeof(e.stack)==='string'? e.stack.replace(/(?:\\n    at eval.*)?\\n    at eval.*\\n    at evalζ.*\\n    at __special_es__u7h7zxgvi__[^]*/,'\\n    at <eval>') : '<error> '+e
-					].join('')
-					}) """,E(ι)))
+				r←; e←; try{ global.code = ι; global.require = require; r = ζ_eval(ι+'') }catch(e_){ e = e_ }
+				↩ [ ,…io().slice(1) ,sb.encode(r) ,e===∅? '' : e.stack ].join('') }) """,E(ι)))
 		for i in range(len(sel))[::-1]:
 			view.replace(edit, sel[i], r[i])
 

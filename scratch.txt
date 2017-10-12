@@ -221,7 +221,7 @@ http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f(_({ pageToken:ι.nextPageToken }) <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
@@ -327,7 +327,7 @@ i'd really like earbud metadata
 ------------------------ global-invariant type detection -----------------------
 E.__global = (=>{
 	anon_e4jlu ← ι=> catch_ι(=> ι.toString.constructor('return this')() )
-	id ← Symbol.for('⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙')
+	id ← Symbol.for`⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙`
 	↩ ι=>{t←;G←; if( Tprim(ι) ) ↩; if(t= ι[id] ) ↩ t; if(!(G= anon_e4jlu(ι) )) ↩; new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ }); ↩ ι[id] } })()
 Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
 ι=> __global(ι) && ι instanceof __global(ι)[T]     super mega slow
@@ -358,5 +358,36 @@ E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshorten
 sudo lsof -PiTCP -sTCP:LISTEN
 
 ------------------------------------- with -------------------------------------
-with_ ← (eval_,o,f)=> (eval_( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') ))(o)
-;(=>{ bar ← 5; ↩ with_(ι=>eval(ι),{ baz:3 },=> baz+bar) })()
+with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
+;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env <| (=> baz+bar)) })()
+
+############################ node:: analog to npm:: ############################
+# node::call === Function.prototype.call.un_this
+global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
+	global.node = {}
+	;['assert','async_hooks','buffer','child_process','cluster','console','constants','crypto','dgram','dns','domain','events','fs','http','https','inspector','module','net','os','path','process','punycode','querystring','readline','repl','stream','string_decoder','timers','tls','tty','url','util','v8','vm','zlib'].map(ι=> node[ι] = require(ι))
+
+	deref ← ι=> ι.reduce((o,id)=>o[id],global)
+	locs ← (=>{ ιs ← []; id ← new Set(); v_to_id ← new WeakMap(); ENC ← JSON.stringify; ↩ { ,ιs(){↩ ιs} ,check(ι){
+		v ← Object.getOwnPropertyDescriptor(deref(ι.slice(0,-1)),ι[ι.length-1]).value
+		if(!( id.has(ENC(ι)) || Tprim(v) || v_to_id.has(v) )){ ;ιs.push(ι) ;id.add(ENC(ι)) ;v_to_id.set(v,ENC(ι)) }
+		} } })()
+	locs.check(['global'])
+
+	search1 ← => locs.ιs().forEach(loc=> Object.getOwnPropertyNames(deref(loc)).forEach(id=> locs.check([…loc,id]) ) )
+	do{ t ← locs.ιs().length; search1() }while( t!==locs.ιs().length )
+	console.log(JSON.stringify(locs.ιs()))
+	}})(${Tprim})`}`+'') )()
+
+t ← _( global_net._.groupBy(ι=>ι[-1]) ).mapObject(ι=> ι.map(ι=> ι.join('.')))
+[done,todo] ← _( _(t).values().sort() ).partition(ι=> ι.‖===1)
+done = done.map(ι=> ι[0])
+todo = todo._.sortBy(ι=> ι.‖)
+;[code,…done,…todo]
+
+------------------- this is silly and i shd probably toss it -------------------
+enc_id ← (=>{
+	safe ← memoize_proc(ι=> catch_ι(=> (0,eval)(`'use strict'; var ${ι} = 0; 1`)))
+	ESC_ ← ι=> […Buffer.from(ι).toString('hex')].map(ι=> […'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'][parseInt(ι,16)]).join('')
+	ESC ← ι=> (/^[♈-♓🔅🔆🔒‡⧫§]$/u.test(ι)? unicode_names : ESC_)(ι)
+	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : ESC(ι) ).join('') ) })()

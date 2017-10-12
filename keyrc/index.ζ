@@ -39,7 +39,7 @@ parse_boards ← λ(ι){
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
 	ι = ι.map…(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })
 	↩ ι.map(ι=> M(…ι)) }
-keycodes ← _(parse_boards([multiline`
+keycodes ← parse_boards([multiline`
 	┌──────────────────────────────┐
 	│ 357A78637660616264656D676F00 │
 	│ 321213141517161A1C191D1B1833 │
@@ -48,7 +48,7 @@ keycodes ← _(parse_boards([multiline`
 	│  38 060708090B2D2E2B2F2C 3C  │
 	│ 3F3B3A37   31   363D7B7E7D7C │
 	└──────────────────────────────┘
-	`]).map(ι=> [ι.trigger,ι.output])._.object())
+	`]).map(ι=> [ι.trigger,ι.output])._.object()
 	<- ({FnF1:'03°',FnF2:'02°',FnF3:'a0',FnF4:'83',FnF5:'16°',FnF6:'15°',FnF7:'14°',FnF8:'10°',FnF9:'13°',FnFa:'07°',FnFb:'01°',FnFc:'00°'})
 system ← parse_boards([multiline`
 	┌──────────────────────────────┐ ┌────────────── ⇧ ─────────────┐

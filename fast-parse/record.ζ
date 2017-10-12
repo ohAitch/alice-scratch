@@ -10,11 +10,11 @@ Tagged.prototype.+= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` 
 Tagged.prototype.-= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.delete(ι.replace(/^#/,'')); ↩ @ }
 // Tagged.prototype.<- = 
 Rₐ ← (…a)=>{t←;
-	if (is_template(a)){ r ← new Tagged(); easy_template(ι=>ι)(…a).map…(ι=> Tstr(ι)? ι.trim().split(' ') : [{ι:ι[0]}]).forEach(ι=> Tstr(ι)? r.+=([ι]) : _(r) <- (ι) ); ↩ r }
+	if (is_template(a)){ r ← new Tagged(); easy_template(ι=>ι)(…a).map…(ι=> Tstr(ι)? ι.trim().split(' ') : [{ι:ι[0]}]).forEach(ι=> Tstr(ι)? r.+=([ι]) : r <- (ι) ); ↩ r }
 	a.‖===1 || ‽; ι ← a[0]
 	if (ι instanceof Tagged) ↩ ι
 	if (Tprim(ι)) ↩ R`${ι}`
-	if ((t=Object.getPrototypeOf(ι))===null || t===Object.prototype) ↩ _(new Tagged()) <- (ι)
+	if ((t=Object.getPrototypeOf(ι))===null || t===Object.prototype) ↩ new Tagged() <- (ι)
 	‽ }
 // ι = {ι:6}
 // R`#foo #bar ${ι}`
@@ -27,7 +27,7 @@ Rₐ ← (…a)=>{t←;
 
 Rᵢ ← (tag,ι)=>{ if (!ι){ ι = tag; tag = ∅ }
 	if (tag) ι.tag = tag
-	ι.inspect || _(ι) <- ({ inspect:Tagged.prototype.inspect })
+	ι.inspect || ι <- ({ inspect:Tagged.prototype.inspect })
 	↩ ι }
 
 module.exports = {Rₐ,Rᵢ}
