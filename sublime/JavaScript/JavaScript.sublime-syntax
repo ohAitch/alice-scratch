@@ -507,7 +507,7 @@ contexts:
     - match: \b(in|of|typeof|void)\b
       scope: keyword.operator.js
       push: after-operator
-    - match: '\.?(&|&&|\||\|\||‖|\b(and|or)\b)'
+    - match: '\.?(&|&&|\||\|\||[‖]|\b(and|or)\b)'
       scope: keyword.operator.logical.js
       push: after-operator
     - match: '=(?![=>])|←'

@@ -82,7 +82,7 @@ E.def = (o,name,ι)=>{
 var lazy = (name,ι)=>0?0: { writable:true, get(){return this[name] = ι() } }
 
 //###################################### ? ######################################
-// prefix hook . does not require parens around the right side, but can't modify the argument
+// prefix hook . does not require parens around the right side, but must return the argument
 E.𐅫𐅮𐅪𐅰𐅃 = (()=>{ var 𐅭𐅩𐅝𐅋𐅩 = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } }); return f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f; return 𐅭𐅩𐅝𐅋𐅩 } })()
 
 E.γ = global
@@ -97,6 +97,10 @@ postfix.ιs = []
 postfix`|>`.ι = (ι,f)=> f(ι)
 postfix`<|`.ι = (f,ι)=> f(ι)
 postfix`<-`.ι = Object.assign
+postfix`…←`.ι = Object.assign
+
+// obj_hash ← ι=> [ ,[(a,b)=>a===b,[…protos(ι)][1]] ,[_.isEqual,ps(ι)] ,…(Tfun(ι)? [[(a,b)=>a===b,Function.prototype.toString.call(ι)]] : []) ]
+// postfix`#obj=`.ι = (a,b)=> [a,b].map(obj_hash) |> (ι=> _.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
 
 //################################## requires ###################################
 ;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_'],['lodash','lo'],['highland','h']
@@ -144,7 +148,7 @@ E.js_tokenize = code=>{
 	return _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
 E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦; var 𐅜𐅦𐅩𐅝𐅃; var 𐅂𐅂𐅃𐅝𐅦; var 𐅨𐅂𐅫𐅯𐅃; var 𐅋𐅂𐅭𐅂𐅦; var 𐅜𐅯𐅩𐅪𐅃; var 𐅝𐅩𐅭𐅪𐅃; var 𐅭𐅭𐅃𐅪𐅃; var 𐅭𐅦𐅫𐅩𐅝; var 𐅦𐅞𐅃𐅝𐅪;
-	var word_extra = re`♈-♓🔅🔆🔒‡⧫§`
+	var word_extra = re`♈-♓🔅🔆🔒‡⧫§▣`
 	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰${word_extra}`
 	var ζ_parse = E.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
@@ -177,6 +181,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		.replace(/✗/g,'false')
 		.replace(/∅/g,'undefined')
 		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅫𐅮𐅪𐅰𐅃(__name(${ι})).ι=`) // an initial try; probably .name inference needs another form
+		.replace(/‘lexical_env/g,`𐅫𐅮𐅪𐅰𐅃(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
 		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` )
 		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
@@ -199,7 +204,6 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`[${word_extra}]+`.g ), unicode_names.X) // ! eventually, remove the thing with two underscores next to each other __
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(𐅭𐅭𐅃𐅪𐅃||(𐅭𐅭𐅃𐅪𐅃= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι}; return ${ι}`)
-		.replace(/‘lexical_env/g,()=> ζ_compile_nonliteral(`(ι=>ι<-({ eval_in_lexical_env:ι=>eval(ι) }))`))
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(ι=>ι.‖) )
 	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0}; dir ← ι[i] in at? 1 : -1; for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++; ι[i]===b && at[a]-- }; if( _(at).every(ι=>ι===0) ) break; i += dir; if (!(0<=i&&i<ι.‖)) ↩; } ;↩ i }
@@ -468,8 +472,8 @@ assign_properties_in_E_informal({
 ,'RegExp.prototype.@@iterator':function*(){yield* genex(regex_parse(this)) }
 ,'RegExp.prototype.exec_at':function(ι,i){ this.lastIndex = i ;return this.exec(ι) }
 
-,'Promise.prototype.status':{writable:true, get(){ var [s,v] = b_util.getPromiseDetails(this); var r = [undefined,true,false][s]; if( r!==undefined ){ [this.status,this.ι] = [r,v] ;return r } }}
-,'Promise.prototype.ι':{writable:true, get(){ if( this.status!==undefined ) return this.ι }}
+,'Promise.prototype.status':{ writable:true ,get(){ var [s,v] = b_util.getPromiseDetails(this); var r = [undefined,true,false][s]; if( r!==undefined ){ [this.status,this.ι] = [r,v] ;return r } }}
+,'Promise.prototype.ι':{ writable:true ,get(){ if( this.status!==undefined ) return this.ι }}
 
 ,'stream.Readable.prototype.pin':function(){return Π(yes=>{ var t = []; this.resume(); this.on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
 ,'Buffer.prototype.pipe':function(to,opt){ var t = new stream.Duplex(); t.push(this); t.push(null) ;return t.pipe(to,opt) }
@@ -1096,6 +1100,7 @@ E.do_end_undefined_thing = ι=> ι.replace(/;\s*$/,'; ∅')
 //################################### ζ.user ####################################
 sb._call = ()=> sb.tab.active.ι
 E.p = function(ι){ var t = clipboard ;return arguments.length===0? t.ι :( t.ι = ι ) }
+E.ps = Object.getOwnPropertyDescriptors
 
 //################################### ζ infra ###################################
 ;(γ["<-"])(util.inspect.styles,{null:'grey',quote:'bold'})

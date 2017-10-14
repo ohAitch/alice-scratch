@@ -359,7 +359,7 @@ sudo lsof -PiTCP -sTCP:LISTEN
 
 ------------------------------------- with -------------------------------------
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
-;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env <| (=> baz+bar)) })()
+;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
 
 ############################ node:: analog to npm:: ############################
 # node::call === Function.prototype.call.un_this

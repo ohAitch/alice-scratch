@@ -44,59 +44,59 @@ fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(�
 
 § ← (=>{
 	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
-	Any ← =>Any; Any = ‘lexical_env <| (=>{
+	Any ← =>Any; Any = ‘lexical_env=>{
 		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
 		# ↩ [ '.','⊂','×','+','->' ].fold(P.build_op,unit) }
 		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
-		) |> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
+		|> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
 	↩ ι=>{ι+=''
 		ι = Any.parse(ι)
 		Tarr(ι)
 		} })()
 
-################################################################################
+# ################################################################################
 
-E.Property = type(§=>[
-	,§`obj × id -> place`
-	,§`-> 🔒 × hide`.∋(=> [✗,✓])
-	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
-	,§`obj -> ⊂id`.∋(ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
-	,{'←': §`obj × id -> place × 🔒 × hide`.∋((obj,id,host)=> Object.defineProperty(obj,id,host)) }
-	# .∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
-	])
-E.Slot = type(§=>[
-	,§`[ι -> 🔒] + [get × set]`
-	,§`-> Property.host`.∋(['|',(ι,🔒)⇒{ ,value:ι ,writable:🔒 },(get,set)⇒{ ,get ,set }])
-	,{ Δs(){ ‡ } }
-	])
-# E.Slot ← ∪( ,+( ,§`ι -> 🔒` ,§`get × set` )
-	# ,∋( §`-> Property.host` ,(ι,🔒)⇒{ ,value:ι ,writable:🔒 } ,(get,set)⇒{ ,get ,set } )
-	,{ watch(){ ι ← stream(); t ← @.set; @.set = x=>{ t(x); ι.send(x) }; ↩ ι } }
-	# )
+# E.Property = type(§=>[
+# 	,§`obj × id -> place`
+# 	,§`-> 🔒 × hide`.∋(=> [✗,✓])
+# 	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
+# 	,§`obj -> ⊂id`.∋(ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
+# 	,{'←': §`obj × id -> place × 🔒 × hide`.∋((obj,id,host)=> Object.defineProperty(obj,id,host)) }
+# 	# .∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
+# 	])
+# E.Slot = type(§=>[
+# 	,§`[ι -> 🔒] + [get × set]`
+# 	,§`-> Property.host`.∋(['|',(ι,🔒)⇒{ ,value:ι ,writable:🔒 },(get,set)⇒{ ,get ,set }])
+# 	,{ Δs(){ ‡ } }
+# 	])
+# # E.Slot ← ∪( ,+( ,§`ι -> 🔒` ,§`get × set` )
+# 	# ,∋( §`-> Property.host` ,(ι,🔒)⇒{ ,value:ι ,writable:🔒 } ,(get,set)⇒{ ,get ,set } )
+# 	,{ watch(){ ι ← stream(); t ← @.set; @.set = x=>{ t(x); ι.send(x) }; ↩ ι } }
+# 	# )
 
 
-it is above the it now because of it, so going it should be down to the prime of the object relationships, unto, for, going through because of it will go on to in the net
+# it is above the it now because of it, so going it should be down to the prime of the object relationships, unto, for, going through because of it will go on to in the net
 
-im kind of lost
-you think about it, i bet you have more clarity of mind
+# im kind of lost
+# you think about it, i bet you have more clarity of mind
 
-################################################################################
-id ⊂ string|symbol
-obj ⊂ object
-place
-🔒 ⊂ boolean
-hide ⊂ boolean
-host
-
-ι ⊂ object
-get ⊂ @ -> ι
-set ⊂ @,ι ->
-# Slot ⊂ [ι -> 🔒] + [get × set]
-
-i am quite lost
-
-id ← ι=> Tstr(ι) || T.symbol(ι)
-obj ← ι=> !Tprim(ι)
+# # ################################################################################
+# # id ⊂ string|symbol
+# # obj ⊂ object
+# # place
+# # 🔒 ⊂ boolean
+# # hide ⊂ boolean
+# # host
+# 
+# # ι ⊂ object
+# # get ⊂ @ -> ι
+# # set ⊂ @,ι ->
+# # # Slot ⊂ [ι -> 🔒] + [get × set]
+# 
+# # i am quite lost
+# 
+# # id ← ι=> Tstr(ι) || T.symbol(ι)
+# # obj ← ι=> !Tprim(ι)
 
 ################################################################################
 # here is a list of things i want to do with Property and Slot
@@ -152,78 +152,65 @@ obj ← ι=> !Tprim(ι)
 # 	etc
 
 ################################## pseudocode ##################################
-
-# so what about those Local Slot s?
-# theyre reachable whenever any function below them is reachable, or during execution
-# functionally equivalent to Proc Slots because - in either case, they stop being reachable when you cant reach them
-# whereas Global Slots are ,um
-# scoped to the global, for sure
-
-@.context‘._
-@.context‘.’_
-new Property(@.context,'_')
-
-im noticing that this just quotes the Property; it doesn't quote any of the things being passed to it
-um
-that's why the quote operator is around the .?
-if i wanted to quote the things being passed to it, um
-# ‘@.context._
-# ‘[ new Slot('@'...).ι ]
-# new Property(,'_')
-‘foo
-new Slot('foo',{ ,get(){↩ foo } ,set(ι){ foo = ι } })
-
-################################## pseudocode ##################################
-i think these are the main things i want to do with Property:
+i think these are the main things i want to do_ with Property:
 	default enumerable: this operation uses a Property? it.enumerable : ✓
 	default configurable: ✓
-	put value in Property:
-		Property set value
+	put value in Property
+		# Property set value
+		a.foo ← 5
 	put Slot in Property
-		Property def Slot
+		# Property def Slot
+		a‘.foo <- (bar)
+		a‘.['foo'] <- (bar)
 	set Property enumerable (DRY)
-	make value into Slot
-	make thunk into Slot
+		a‘.foo <-({enumerable:✗}) .ι← 5
+	make value into thunk
+		ι=> =>ι
 	make [nullary function] into thunk
+		_.once
+	make thunk into Slot
+		ι⇒ { get:ι }
 	make Promise into Slot (??)
+		ι⇒ { get:(=>ι.ι)<-({ι}) }
 	get Slot from Property
+		a‘.foo .lens
 	watch Slot (in Property)
+		a‘.foo .Δ
+
+	a‘.foo .🔒
+	a‘.foo .🔒 = ✓
+
+##################################### code #####################################
+E.▣ = ι=> (=>ι) <- ({▣:✓,ι})
 
 #################### Property.prototype.interpret = λ(){ι←; ####################
-# { ,🔒:d.configurable ,ι:{
-# 	,enumerable:d.enumerable
-# 	,place:0?0
-# 		: 'value' in d?( ι= { ι:d.value } ,d.writable? t : { ,🔒:✓ ,ι } )
-# 		: 
-# 	} }
-# wrong
 
-# can patch Object.defineProperty, Object.defineProperties, Reflect.defineProperty ??
-d ← => Object.getOwnPropertyDescriptor(@.o,@.name) || { ,configurable:✓ ,enumerable:✗ ,writable:✓ ,value:∅ }
-t ← {}
-[#Q t.🔒 #Q].def({
-	,get(){↩ d().configurable }
-	,set(ι){ ι===✗ && Object.defineProperty(@.o,@.name,{ configurable:ι }) }
-	})
-[#Q t.enumerable #Q].def({
-	,get(){↩ d().enumerable }
-	,set(ι){ Object.defineProperty(@.o,@.name,{ enumerable:ι }) }
-	})
-[#Q t.ι #Q].def({
-	,get(){
-		d_ ← d()
-		if( 'value' in d_ )
-			↩ d_.writable?
-				{ ,ι:d_.value ,get(){↩ @.ι } ,set(ι){ @.ι = ι } }
-			: { ,ι:d_.value ,get(){↩ @.ι } ,set(ι){ ‽ } }
-		else
-			↩ { ,get:d_.get ,set:d_.set }
-		}
-	,set(ι){
-		ι.get || ‽('todo')
-		Object.defineProperty(@.o,@.name,{ ,get:ι.get ,set:ι.set })
-		}
-	})
+# # can patch Object.defineProperty, Object.defineProperties, Reflect.defineProperty ??
+# d ← => Object.getOwnPropertyDescriptor(@.o,@.name) || { ,configurable:✓ ,enumerable:✗ ,writable:✓ ,value:∅ }
+# t ← {}
+# [#Q t.🔒 #Q].def({
+# 	,get(){↩ d().configurable }
+# 	,set(ι){ ι===✗ && Object.defineProperty(@.o,@.name,{ configurable:ι }) }
+# 	})
+# [#Q t.enumerable #Q].def({
+# 	,get(){↩ d().enumerable }
+# 	,set(ι){ Object.defineProperty(@.o,@.name,{ enumerable:ι }) }
+# 	})
+# [#Q t.ι #Q].def({
+# 	,get(){
+# 		d_ ← d()
+# 		if( 'value' in d_ )
+# 			↩ d_.writable?
+# 				{ ,ι:d_.value ,get(){↩ @.ι } ,set(ι){ @.ι = ι } }
+# 			: { ,ι:d_.value ,get(){↩ @.ι } ,set(ι){ ‽ } }
+# 		else
+# 			↩ { ,get:d_.get ,set:d_.set }
+# 		}
+# 	,set(ι){
+# 		ι.get || ‽('todo')
+# 		Object.defineProperty(@.o,@.name,{ ,get:ι.get ,set:ι.set })
+# 		}
+# 	})
 
 what is im/mutability really? when is it relevant?
 usually when we are looking at things we are not looking at their mutability. that is only one of the interesting things about things.
