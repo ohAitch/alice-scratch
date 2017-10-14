@@ -6,7 +6,7 @@
 __lazy ← ι=> P2({
 	type:'lazy',
 	ι,
-	_(stream,i){ t ← @.ι(); delete @.type; delete @.ι; delete @._; @ <- (t); ↩ @._(stream,i) },
+	_(stream,i){ t ← @.ι(); delete @.type; delete @.ι; delete @._; @ …← (t); ↩ @._(stream,i) },
 	})
 __match_string ← ι=> P2({
 	type:'match_string',
@@ -83,7 +83,7 @@ P ← (ι,…ιs)⇒
 	: T.RegExp(ι)? __match(ι,ιs[0]||0)
 	: ‽('cant make parser from',ι)
 P2 ← ι=> new Parser(ι)
-Parser ← λ(a){ @ <- (a) }
+Parser ← λ(a){ @ …← (a) }
 
 // resolve ← p=>{
 // 	t ← search_graph(p,ι=> ι instanceof Parser)

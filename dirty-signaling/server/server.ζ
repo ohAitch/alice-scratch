@@ -1,6 +1,6 @@
 #################################### prelude ###################################
-patcher ← o=>{ seen ← new WeakSet(); ↩ ι=>{ p ← Object.getPrototypeOf(ι); if( seen.has(p) ) ↩; seen.add(p); p <- (o) } }
-# patch_Socket ← ι=> Object.getPrototypeOf(ι) <- ({
+patcher ← o=>{ seen ← new WeakSet(); ↩ ι=>{ p ← Object.getPrototypeOf(ι); if( seen.has(p) ) ↩; seen.add(p); p …← (o) } }
+# patch_Socket ← ι=> Object.getPrototypeOf(ι) …← ({
 patch_Socket ← patcher({
 	,inspect(d,opt){↩ opt.stylize('<socket>','special') }
 	})

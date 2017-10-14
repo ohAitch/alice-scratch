@@ -221,7 +221,7 @@ http://developer.chrome.com/extensions/windows
 
 // -------------------------------- databases ------------------------------- //
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } <- (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
@@ -340,7 +340,7 @@ Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
 	# https://github.com/rschmukler/agenda
 	# robust to setTimeout taking extra time
 	# ! not robust to the process failing ! should use redis or something instead !
-	# ! wth is up with the { hrtime() <-> time } comparison
+	# ! wth is up with the { hrtime() …←> time } comparison
 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
 	P←; ensure ← =>{if (P) ↩; P = ✓; (λ Λ(){t←;
 		qu.size() === 0? (P = ✗) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/

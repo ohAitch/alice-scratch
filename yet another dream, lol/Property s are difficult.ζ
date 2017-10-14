@@ -20,7 +20,7 @@ Slot ←
 ################################### ζ sketch ###################################
 E.Property = ∪( ,§`obj × id -> place`
 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
-	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
+	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
 	,∋( §`obj -> ⊂id` ,ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
 	,∪( §`obj × id -> place × 🔒 × hide` ,(obj,id,host)=>{ defineProperty(obj,id,host) } )
 	,∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
@@ -59,7 +59,7 @@ fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(�
 # E.Property = type(§=>[
 # 	,§`obj × id -> place`
 # 	,§`-> 🔒 × hide`.∋(=> [✗,✓])
-# 	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } <- (place) ).Just )
+# 	,§`-> host`.∋((obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
 # 	,§`obj -> ⊂id`.∋(ι=> |>(ι)(Object.getOwnPropertyDescriptors,Reflect.ownKeys) )
 # 	,{'←': §`obj × id -> place × 🔒 × hide`.∋((obj,id,host)=> Object.defineProperty(obj,id,host)) }
 # 	# .∪( §`obj × ι⊂[id -> place × 🔒 × hide]` ,(obj,ι)=>{ defineProperties( obj, |>(as(ι,§`id -> host`))(ι=> as(ι,§`Object`) ) ) } )
@@ -160,10 +160,10 @@ i think these are the main things i want to do_ with Property:
 		a.foo ← 5
 	put Slot in Property
 		# Property def Slot
-		a‘.foo <- (bar)
-		a‘.['foo'] <- (bar)
+		a‘.foo …← (bar)
+		a‘.['foo'] …← (bar)
 	set Property enumerable (DRY)
-		a‘.foo <-({enumerable:✗}) .ι← 5
+		a‘.foo …←({enumerable:✗}) .ι← 5
 	make value into thunk
 		ι=> =>ι
 	make [nullary function] into thunk
@@ -171,7 +171,7 @@ i think these are the main things i want to do_ with Property:
 	make thunk into Slot
 		ι⇒ { get:ι }
 	make Promise into Slot (??)
-		ι⇒ { get:(=>ι.ι)<-({ι}) }
+		ι⇒ { get:(=>ι.ι)…←({ι}) }
 	get Slot from Property
 		a‘.foo .lens
 	watch Slot (in Property)
@@ -181,7 +181,7 @@ i think these are the main things i want to do_ with Property:
 	a‘.foo .🔒 = ✓
 
 ##################################### code #####################################
-E.▣ = ι=> (=>ι) <- ({▣:✓,ι})
+E.▣ = ι=> (=>ι) …← ({▣:✓,ι})
 
 #################### Property.prototype.interpret = λ(){ι←; ####################
 

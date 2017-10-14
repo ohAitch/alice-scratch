@@ -53,7 +53,7 @@ node ← js.object
 schema
 	using ≡ ← simple_hash_str
 	using [node -> schema]⁻¹
-schema <-> name : name = `#${[schema age index] as base 36}`
+schema …←> name : name = `#${[schema age index] as base 36}`
 
 show(){↩ schemas(λ(){↩ for @.schema: (JSON_pretty(ι) @.as.node(ι).‖ @.as.name(ι)).join(' ') }) },
 
@@ -82,7 +82,7 @@ node.->.schema = λ(ι){↩ _(ι).mapObject(ι⇒
 	: Tstr(ι)? ''
 	: Tnum(ι)? 0
 	: @(ι).as.name ) },
-schema.<->.name = λ(ι){↩ `#${age(ι).index∈(age(@)).as.base(36)}` }
+schema.…←>.name = λ(ι){↩ `#${age(ι).index∈(age(@)).as.base(36)}` }
 
 # simplify
 # the way that all these concepts interlock is. fucky.
@@ -101,7 +101,7 @@ schema.≡.close_over!(ι=>{
 	# good skill!
 
 	↩ q_is⁻¹(ι) && names.map(ι=> q_is⁻¹)./(and)
-		? _({}) <- ( ι, names.map(ι=> ι.as.schema) )
+		? _({}) …← ( ι, names.map(ι=> ι.as.schema) )
 		: ι } )
 
 ;(async =>{
@@ -131,7 +131,7 @@ Type
 		})
 		.->
 			.⁻¹
-		.<->
+		.…←>
 Any
 	[Any]:
 .‖

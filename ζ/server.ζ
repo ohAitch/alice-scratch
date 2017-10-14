@@ -8,8 +8,8 @@ require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildPr
 
 ############################### as for a prelude ###############################
 on_off ← =>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=> ee.removeListener(m,f)); ons = [] } }}
-Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}<-(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
-Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}<-(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
+Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
+Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
 normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); ↩ ι }
 diff ← (a,b)=>{r←; ↩0?0
 	: [a,b].every(T.Set)?
