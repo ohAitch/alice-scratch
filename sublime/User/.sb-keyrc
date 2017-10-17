@@ -119,3 +119,27 @@
 ⌥]   cmd.insert_snippet({ "contents":"→" })
 ⌥`   cmd.insert_snippet({ "contents":"≈" })
 ⌥↩   cmd.insert_snippet({ "contents":"↩" })
+
+# shavian key bindings:
+# a 𐑩𐑳 au
+# b 𐑧𐑱 eea
+# c 𐑗𐑡 ch j
+# d 𐑑𐑛 td
+# e 𐑦𐑰 ii
+# f 𐑓𐑝 fv
+# h 𐑙𐑣 nh
+# i 𐑨𐑲 aeai
+# j 𐑖𐑠 ss
+# k 𐑒𐑜 kg
+# l 𐑤𐑮 lr
+# m 𐑥𐑯 mn
+# o 𐑪𐑴 oo
+# p 𐑐𐑚 pb
+# q 𐑬𐑶 auoi
+# s 𐑕𐑟 sz
+# t 𐑔𐑞 th th
+# u 𐑫𐑵 oooo
+# w 𐑭𐑷 aaw
+# y 𐑘𐑢 yw
+# remaining: gnrvxz
+# i would really like to bind capslock to this

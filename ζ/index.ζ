@@ -2,7 +2,7 @@
 
 # hey, if you're gonna break this, keep a previous stable version ready this time. weve spent entirely too much time rescuing our configurations.
 
-# odd synonym: k, name(, id)(, i?)
+# odd synonym: k, name(, id)(, i?), 𐑯𐑱𐑥
 
 #################################### prelude ###################################
 'use strict'; require('module').wrapper[0] += `'use strict';` # enable strict mode everywhere
@@ -30,7 +30,7 @@ E ← new Proxy({},{ # exports
 	# get(           self,k){  },
 	# getOwnPropertyDescriptor()
 	set(           self,k,ι){ […patched].forEach(o=> o[k] = ι ) ;↩ ✓ },
-  defineProperty(self,k,ι){ […patched].forEach(o=> def(o,k,ι) ) ;↩ ✓ },
+	defineProperty(self,k,ι){ […patched].forEach(o=> def(o,k,ι) ) ;↩ ✓ },
 	})
 assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι); […patched].forEach(o=> assign_properties_in(o,ι)) }
 module.exports = to=>{ patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching'), cn.log(Error('<stack>').stack), patched.add(to), assign_properties_in(to,E_) ) }
@@ -82,7 +82,7 @@ E.def = (o,name,ι)=>{
 lazy ← (name,ι)⇒ { writable:✓, get(){↩ @[name] = ι() } }
 
 ####################################### ? ######################################
-# prefix hook . does not require parens around the right side, but must return the argument
+# prefix hook . does not require parens around the right side, but can only do side effects
 E.𐅫𐅮𐅪𐅰𐅃 = (=>{ 𐅭𐅩𐅝𐅋𐅩 ← def({ f:∅ },'ι',{ set(ι){ @.f(ι) } }); ↩ f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f; ↩ 𐅭𐅩𐅝𐅋𐅩 } })()
 
 E.γ = global
@@ -112,6 +112,35 @@ def(E,'require_new',lazy('require_new',=>{ t ← npm`require-uncached@1.0.3` ;�
 _.mixin({ isEqual:lo.isEqual })
 
 #################################### ζ infra ###################################
+########## Property ##########
+# still a somewhat limited view, but should help
+E.Property2 = λ(o,_id){ ;this.o = o ;this._id = _id }
+def(Property2.prototype,'ι',{ ,get(){↩ @.o[@._id] } ,set(ι){ @.o[@._id] = ι } })
+def(Property2.prototype,'∃',{ ,get(){↩ Object.prototype.hasOwnProperty.call(@.o,@._id) } ,set(ι){ !ι? delete @.o[@._id] : @.∃ ||( @.ι = ∅ ) } })
+def(Property2.prototype,'host',{ ,get(){↩ Object.getOwnPropertyDescriptor(@.o,@._id) } ,set(ι){ Object.defineProperty(@.o,@._id,ι) } }) # not a real setter. funky!
+def(Property2.prototype,'enumerable',{ ,get(){↩ @.host.enumerable } ,set(ι){ @.∃ = ✓; @.host = {enumerable:ι} } })
+def(Property2.prototype,'🔒',{ ,get(){↩ !@.host.configurable } ,set(ι){ @.∃ = ✓; @.host = {configurable:!ι} } })
+def(Property2.prototype,'value',{ ,get(){↩ @.host.value } ,set(ι){ @.∃ = ✓; @.host = {value:ι} } })
+def(Property2.prototype,'get',{
+	,set(ι){ @.∃ = ✓; @.host = {get:ι} }
+	# ,get(){ h ← @.host; ↩ h && 'get' in h? h.get : => @.host.value }
+	})
+def(Property2.prototype,'set',{
+	,set(ι){ @.∃ = ✓; @.host = {set:ι} }
+	# ,get(){ h ← @.host; ↩ h && 'get' in h? h.set : (ι=> @.host = {value:ι}) }
+	})
+E.𐅯𐅭𐅝𐅨𐅮 = new Proxy({},{get(ˣ,id){↩ new Property2(𐅋𐅨𐅦𐅨𐅭,id) }}); γ.𐅋𐅨𐅦𐅨𐅭 = ∅
+
+Property2.prototype.map! = λ(f){ @.ι = f(@.ι,@._id,@.o) ;↩ @ }
+Property2.prototype.Δ = λ(f){
+	ι←; @ …← ({ ,get(){↩ ι } ,set(_ι){ f(_ι); ι = _ι } ,🔒:✓ })
+	↩ @ }
+def(Property2.prototype,'fbind',{get(){↩ @.ι.bind(@.o) }})
+Property2.prototype.bind = λ(ι){ ι instanceof Property2 || ‽
+	@.host = { ,get(){↩ ι.get.call(@) } ,set(ι){↩ ι.set.call(@,ι) } ,enumerable:ι.enumerable }
+	↩ @ }
+
+# original flavor
 E.Property = λ(o,name){ ;this.o = o ;this.name = name }
 def(Property.prototype,'ι',{ get(){↩ @.o[@.name] }, set(ι){ @.o[@.name] = ι } })
 Property.prototype.def = λ(ι){ def(@.o,@.name,ι) ;↩ @ }
@@ -119,10 +148,9 @@ Property.prototype.delete = λ(){ delete @.o[@.name] ;↩ @ }
 Property.prototype.map! = λ(f){ @.ι = f(@.ι,@.name,@.o) ;↩ @ }
 def(Property.prototype,'bind',{get(){↩ @.o[@.name].bind(@.o) }})
 def(Property.prototype,'∃',{get(){↩ @.name in @.o }})
-# Property.prototype‘.bind …← { ,get(){↩ @.o[@.name].bind(@.o) } }
-# ‘. = Property
 
-lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # ! slotify and then detect and merge slots
+##############################
+lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # takes a thunk which returns a function. acts like said returned function, always.
 
 ;[#persist_here ~/code/declare/npm]
 E.npm = ι=>{ Tarr(ι) && (ι = ι[0]); APP ← '\x1b[34m[npm]\x1b[0m'
@@ -143,7 +171,7 @@ E.js_tokenize = code=>{
 	tok ← npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:✓}).tokens
 	↩ _.zip( tok.map(ι=> code.slice(ι.start,ι.end)), tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(✓).filter(ι=>ι) }
 E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : ✗
-E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; 𐅜𐅦𐅩𐅝𐅃←; 𐅂𐅂𐅃𐅝𐅦←; 𐅨𐅂𐅫𐅯𐅃←; 𐅋𐅂𐅭𐅂𐅦←; 𐅜𐅯𐅩𐅪𐅃←; 𐅝𐅩𐅭𐅪𐅃←; 𐅭𐅭𐅃𐅪𐅃←; 𐅭𐅦𐅫𐅩𐅝←; 𐅦𐅞𐅃𐅝𐅪←;
+E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; 𐅜𐅦𐅩𐅝𐅃←; 𐅂𐅂𐅃𐅝𐅦←; 𐅨𐅂𐅫𐅯𐅃←; 𐅋𐅂𐅭𐅂𐅦←; 𐅜𐅯𐅩𐅪𐅃←; 𐅝𐅩𐅭𐅪𐅃←; 𐅭𐅭𐅃𐅪𐅃←; 𐅭𐅦𐅫𐅩𐅝←; 𐅦𐅞𐅃𐅝𐅪←; 𐅦𐅪𐅭𐅯𐅭←;
 	word_extra ← re`♈-♓🔅🔆🔒‡⧫§▣`
 	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰${word_extra}`
 	ζ_parse ← E.ζ_parse = (=>{
@@ -172,6 +200,8 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
 	id_c ← 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
 	ζ_compile_nonliteral ← ι=> ι
+		.replace(𐅦𐅪𐅭𐅯𐅭||(𐅦𐅪𐅭𐅯𐅭= re`‘\.([${word}]+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property2(ι,${ι}))` )
+		.replace(/‘(?=\[)/g, `|> (o=>( 𐅋𐅨𐅦𐅨𐅭 = o, 𐅯𐅭𐅝𐅨𐅮 ))` )
 		.replace(𐅦𐅞𐅃𐅝𐅪||(𐅦𐅞𐅃𐅝𐅪= re`(?:…${postfix.ιs.map(ι=> re`${ι}`.source).join('|')})(?=\s*([(:])?)`.g ),(id,right)⇒ { ,∅:js`γ[${id}]` ,'(':js`[γ[${id}]]` ,':':js`${id}` }[right] )
 		.replace(/✓/g,'true')
 		.replace(/✗/g,'false')
@@ -213,7 +243,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 			: ζ_compile_nonliteral(ι)
 			).join('') }) })
 ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g, (ι,name,s,eq)⇒ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
-E.__name = name=> ι=> [#Q ι.name #Q].def({ value:name })
+E.__name = name=> ι=> ι‘.name .value= name
 E.__err_format = (…a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
 
 if( require.extensions && !require.extensions['.ζ'] )(=>{
@@ -355,7 +385,7 @@ genex ← λ Λ(ι){↩0,
 			[ι] ):
 		‽(ι) }
 
-E …← (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ln:Math.log, π:Math.PI, τ:Math.PI*2, e:Math.E, '⍟':Math.log, })
+E …← (_(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
 E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1); t ← ι.map(ι=> ι.re`^\t*`[0].‖)._.min(); ι = ι.map(ι=> ι.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
 E.sleep = ι=>{ h←; for(hr←hrtime(); (h=hrtime(hr)) < ι; ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
@@ -405,6 +435,11 @@ seq.prototype = {
 	# ,some(){}
 	# ,every(){}
 	}
+# (λ*(){ yield 5 })().next()
+# Object.getOwnPropertyDescriptors([…protos(λ*(){}())][2])
+# […protos(new Set())].map(Object.getOwnPropertyDescriptors)
+# […protos(new Set().@@iterator())].map(Object.getOwnPropertyDescriptors)
+# https://www.npmjs.com/package/wu does a lot of this too but i dont think i want it
 assign_properties_in_E_informal({
 ,'(Array|Set|Map).prototype._':{ get(){↩ _(@)} }
 
@@ -475,6 +510,7 @@ assign_properties_in_E_informal({
 ,'stream.Readable.prototype.pin':λ(){↩ Π(yes=>{ t ← []; @.resume(); @.on('data',ι=> t.push(ι) ).on('end',=> yes(Buffer.concat(t)) ) })}
 ,'Buffer.prototype.pipe':λ(to,opt){ t ← new stream.Duplex(); t.push(@); t.push(null) ;↩ t.pipe(to,opt) }
 })
+Promise.prototype‘.thunk …← ({ get(){↩ λ f(){↩ f.ι.ι } …← ({ι:@}) } })
 
 TimerCons ← λ(a,b){@.a=a;@.b=b}; TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
 E.Π = ι⇒
@@ -542,13 +578,13 @@ E.schema = (=>{
 	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
-[#Q E.brightness #Q].def(=>{
+E‘.brightness …← ({ get:_.once(=>{
 	br ← hsᵥ? {
 		get(){↩Π( hsᵥ`hs.brightness.get()`/100 )},
 		set(ι){↩Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
 		} : npm`brightness@3.0.0`
 	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
-	↩ br })
+	↩ br }) })
 
 E.os_daemon = (cmd,opt)=>{ cmd+=''; {once} ← opt||{}
 	job ← {
@@ -816,7 +852,7 @@ E.sb = λ self(){↩ self._call() } # let ζ.user use sb as callable
 			set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
 			}) )
 		[#Q r.push #Q].def({ enumerable:✗, value:
-			λ(ι){ shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f`; @.‖ = 0; (=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
+			λ(ι){ shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f`; @.length = 0; (=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
 			})
 		↩ r },
 	})
@@ -932,6 +968,7 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 	↩ ι})
 
 [#Q E.φ #Q].def(=>{
+	# https://www.npmjs.com/package/glob-to-regexp
 	ENC ← ι=> ι.re`/`? ι.replace(/[\/%]/g, encodeURIComponent.X) : ι
 	φ.⁻¹ = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi, decodeURIComponent.X) : ι
 	φ.fd = {}; φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(φ`/tmp/${random_id(20)}` …← ({ι}) +'','r') })
@@ -1082,8 +1119,8 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 
 ############################## api interpretation ##############################
 memSc ← memoize_tick(ι=> new vm.Script(`'use strict';undefined;`+ι) )
-ζ_verify_syntax ← ι=>{ ι = ζ_compile(ι); try{ memSc(ι) }catch(e){ if( e instanceof SyntaxError ) ↩ e } }
-E.ζ_eval = ι=>{ ι = ζ_compile(ι); ↩ memSc.cache[ι]? memSc(ι).runInThisContext() : (0,eval)(`'use strict';undefined;`+ι) }
+ζ_verify_syntax ← ι=>{ ι = ζ_compile(ι) ;try{ memSc(ι) }catch(e){ if( e instanceof SyntaxError ) ↩ e } }
+E.ζ_eval = ι=>{ ι = ζ_compile(ι) ;↩ memSc.cache[ι]? memSc(ι).runInThisContext() : (0,eval)(`'use strict';undefined;`+ι) }
 
 E.returnfix_compile = (=>{↩ ι=>{t←; ↩ bad(ι) && !bad(t='(=>{'+ι+'})()')? t : ι }
 	λ bad(ι){t←; ↩ (t= ζ_verify_syntax(ι)) && t.message==='Illegal return statement' }
@@ -1169,8 +1206,9 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 		@.context.rl = @
 		@.context.E = @.context
 		if( @.bufferedCommand ){ ι ← @.history; ι.reverse(); t ← ι.pop(); ι[-1] += '\n'+t; ι.reverse() }
-		code ← @.bufferedCommand+line; code2 ← opt.compile(code)
-		if( ζ_verify_syntax(code2) ){ @.bufferedCommand = code+'\n' ;@.outputStream.write('    ') ;↩ }
+		code ← @.bufferedCommand+line
+		code = opt.compile(code) # ! hacks are fun
+		if( ζ_verify_syntax(code) ){ @.bufferedCommand = code+'\n' ;@.outputStream.write('    ') ;↩ }
 		try{ v ← ζ_eval(code) }catch(e){ error ← e }
 		@.bufferedCommand = ''
 		if( code ){
@@ -1179,7 +1217,8 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 			}
 		if( error ) @._domain.emit('error', error.err || error)
 		else{
-			if( T.Promise(v) ) [#Q @.context.__ #Q].def({get(){↩ v.status? @.__ = v.ι : v }, writable:✓})
+			# if( T.Promise(v) ) [#Q @.context.__ #Q].def({get(){↩ v.status? @.__ = v.ι : v }, writable:✓})
+			if( T.Promise(v) ) @.context‘.__ …← ({ get:v.thunk })
 			else if( v!==∅ ) @.context.__ = v
 			try{ t ← my_inspect(v,{colors:@.useColors}) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
 			@.outputStream.write(t && t+'\n') }
@@ -1215,40 +1254,3 @@ E.ζ_main = ({a})=>{ι←;
 if_main_do((…a)=>ζ_main({a}))
 # inject as .bashrc
 # 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `
-
-############################# remaining work for φ #############################
-# https://www.npmjs.com/package/glob-to-regexp
-/*
-formats include
-	image               
-	pixels              
-	png                 .png
-	jpg                 .jpg
-	plist               /^<\?xml / && /<\/plist>\s*$/           read: npm::plist.parse(it)     show: npm::plist.build(it)
-	xml                 .xml || /^<\?xml /
-	base64              .64
-	pixels (grey)       
-	stdin               fd:0
-	FIFO                fd:0...
-	:executable         ,/^#!/ | try{fs.accessSync(ι,fs.X_OK) ;↩ ✓} catch(e){↩ ✗}
-	directory relative
-	directory absolute
-formats are Really stream formats
-the formats are complicated to interact with, because
-* GET POST PUT have really tangly apis for all sorts of efficiency concerns
-* DELETE especially, we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help)
-
-# paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
-
-# we need to be careful with non-atomic transactions
-# we need to think about how this interacts with concurrency
-# we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
-# 	“like, it should be caching urls all the time.”
-
-######################## things i need ** globbing to do #######################
-scratch/scratch.txt:107:φ`**`.map(ι=> [ι+'',ι.get()])._.groupBy(1)._.values().map(ι=> ι._.map(0)).filter(ι=> ι.‖ > 1)
-scratch/sublime/index.ζ:60:	φ(arg.in).φ`**`.filter(ι=> !ι.dir()).map(λ(ι){ι+=''; t←; ι = ι.slice(arg.in.‖).replace(/^\//,'')
-scratch/sublime/index.ζ:66:	out ← φ(arg.out).φ`**`.filter(λ(ι){ι+='' ;↩ roots.some(λ(r){↩ ι.indexOf(r) === 0})}).filter(ι=> !ι.dir()).map(ι=> ι+'')
-*/
-
-# i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 

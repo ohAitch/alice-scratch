@@ -1,4 +1,4 @@
------------------------------------- git ops -----------------------------------
+---------------------------- operations on git repos ---------------------------
 ------------ merge -----------
 to_path=~/code/scratch
 from='lang-alpha'
@@ -39,7 +39,7 @@ split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_bra
 	}
 
 ------------------------------ this is pretty cute -----------------------------
-//! color names randomly in ansi 12359abc
+# ! color names randomly in ansi 12359abc
 gen2fn ← f=>{ t ← f(); ↩ => t.next().value }
 # gen2fn ← f=> [#Q seq(f()).next_ι #Q].bind
 namegen ← gen2fn(λ*(){
@@ -64,7 +64,7 @@ keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
 	↩ {code: t[0] || ord(key), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] = arguments }
-	// [key,…ns] ← key.split(/(?=\.\w)/); ns = ns.join('')
+	# [key,…ns] ← key.split(/(?=\.\w)/); ns = ns.join('')
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
@@ -98,7 +98,7 @@ sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
 braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )); ↩ ι} // 115,46
+	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )); ↩ ι} # 115,46
 	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
 		r ← Buffer.from(ι)
 		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
@@ -111,9 +111,9 @@ life ← λ(ι){
 		for(x←0;x<X;x+=X-1) for(y←1;y<Y-1;y++) {
 			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
-		// for(y←0;y<Y;y++) for(x←0;x<X;x++) {
-		// 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
-		// 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
+		# for(y←0;y<Y;y++) for(x←0;x<X;x++) {
+		# 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
+		# 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
 		↩ {X,Y,ι:r} } }
 ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
@@ -147,69 +147,9 @@ bench(=> cn.log(
 
 ------------------------------ real clipboard api ------------------------------
 osaᵥ`set x to clipboard info; the clipboard as (item 1 of item 2 of x)`
+probably hammerspoon is better
 
------------------------ coding things that should be easy ----------------------
-find in story :on: fimfiction
-
-try out on http://www.fimfiction.net/story/317740/32/silver-glows-journal/january-26-humanity-i-love-you
-
-------------------------------
-find in (:on: fimfiction.net/story/${id}/ this page):
-	(get http://www.fimfiction.net/api/story.php?story=${id} ).story.chapters
-		:map: Page { .link, data: $`#chapter_container` or (get http://www.fimfiction.net/download_chapter.php?chapter=${.id} @ birth: .date_modified)
-
-------------------------------
-fimfiction ←
-	Story{id}
-		on: Page fimfiction.net/story/${.id}
-		api: get http://www.fimfiction.net/api/story.php?story=${.id} .story
-		modified: .api.date_modified
-		chapters: .api.chapters * Chapter{this,ι}
-	Chapter{story,ι}
-		on: Page ι.link
-		api: get http://www.fimfiction.net/download_chapter.php?chapter=${.id}
-		modified: ι.date_modified
-		data: .on.$`#chapter_container` or .api
-
-UI find_in fimfiction.Story = .chapters
-
------------------------ coding things that should be easy ----------------------
-redirect m.wikipedia.org to wikipedia.org
-
-------------------------------
-:on: m.wikipedia.org : go_to s/$ι/wikipedia.org
-
------------------------ coding things that should be easy ----------------------
-when a song is played, list it
-when spotify is up, show the list, with a button to clear it
-
-------------------------------
-spotify_song ← poll osaᵥ`spotify: {artist,album,name} of current track`
-
-@spotify: show overlay box
-	list spotify_song since last_clear
-	button “clear”: last_clear ← now
-		bind ⎋
-
-------------------------------
-duration_instrument ← f=>=>{ t ← hrtime(); ι ← f(); ↩ [hrtime(t),ι] }
-stream ← ()⇒ {
-	ι: [],
-	push(time,ι){ @.ι.push({time,ι}) },
-	slice(a,b){↩ @.ι.filter(ι=> (!a || a < ι.time) && (!b || ι.time < b) ).map(ι=>ι.ι) },
-	last(){↩ @.ι[-1]&&@.ι[-1].ι }
-	}
-poll ← f=>{
-	r ← stream()
-	q ← =>{ [dur,ι] ← duration_instrument(f)(); r.slice().some(t=> _.isEqual(t,ι)) || r.push(Time().i,ι); q.in(min(max( 0.1, dur*10 ), 3 )) }; q.in()
-	↩ r }
-
-spotify_song ← poll(=> osaᵥ`spotify: {artist,album,name} of current track` )
-
------------------------ coding things that should be easy ----------------------
-wait for beep then if it was win send keyboard input
-
------- neat chrome apis ------
+------------------------------- neat chrome apis -------------------------------
 http://developer.chrome.com/extensions/accessibilityFeatures
 http://developer.chrome.com/extensions/debugger
 http://developer.chrome.com/extensions/devtools_inspectedWindow
@@ -219,7 +159,7 @@ http://developer.chrome.com/extensions/extension
 http://developer.chrome.com/extensions/tabs
 http://developer.chrome.com/extensions/windows
 
-// -------------------------------- databases ------------------------------- //
+----------------------------------- databases ----------------------------------
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
 google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
@@ -232,8 +172,8 @@ youtube ← {
 		},
 	}
 
-// rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
-// rwby_dl W9wyWgvyp0s 's3e01 Round One'
+# rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
+# rwby_dl W9wyWgvyp0s 's3e01 Round One'
 
 rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then(ι=>
 	ι.map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ).Π&
@@ -248,7 +188,7 @@ really why dont you have sublime's command autocomplete yet
 [ …fi`/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands`.ι, …φ`~/Library/Application Support/Sublime Text 3/Packages/User/Default.sublime-commands`.json ]
 
 def(E,'fi',=>{
-	// do the right thing by hardcoding it for each input you want to give it :/ hm
+	# do the right thing by hardcoding it for each input you want to give it :/ hm
 	λ fi(ss,…ιs){
 		is_template([ss,…ιs]) || ‽
 		ι ← '/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands'
@@ -258,7 +198,7 @@ def(E,'fi',=>{
 		get ← =>{
 			shᵥ`rm -rf /tmp/mbq3p; mkdir /tmp/mbq3p; unzip ${zip} -d /tmp/mbq3p/Default`
 			t ← φ`/tmp/mbq3p/Default/${sub}`.text
-			// this json needs lenient parsing (sigh)
+			# this json needs lenient parsing (sigh)
 			t = t.replace(/,(?=\s*\])/g,'')
 			↩ JSON.parse(t) }
 		↩ [#Q {}.ι #Q].def({ get /*,set(ι){ ‽ }*/ }).o
@@ -285,41 +225,6 @@ PKG_CONFIG_PATH=/usr/local/opt/libxml2/lib/pkgconfig
 make
 make install
 # multiply vcgt by x^(γ/1.6) , use iccFromXml iccToXml
-
---------------- 2017-05-11 misc code things i'd like to have done --------------
-touch bar api
-BTT might help with customizing touch bar
-powerkey might help with customizing touch bar https://github.com/pkamb/PowerKey/issues/39 , https://github.com/pkamb/PowerKey/pull/54 
-
-pressed ;' on 5/(30*365) in discord
-
-do the battery brightness changing thing in software, for more goodness
-do the battery prediction thing in software, for more goodness
-
-nosleep because music
-nosleep because ssh
-nosleep because wifi
-
-quit [ preview, activity monitor ] if no windows
-
-make discord bot to manage voice but not text channels
-
-spotify, if mouse is near&below position bar, move it up to position bar
-
-encode
-	give me a fast algorithm for Math.log, which is fast and pure
-		(except the fast algorithm *is* Math.log, in this case)
-		this has been called superoptimization
-
-improve book interface over dropbox
-#easy if you feel like it
-
-at 3:55 tell Ramana where I am. I expect to be at purple kow at 2:45
-
-i shouldn't have to go through the filesystem to send files from web
-
---------------- 2017-06-15 misc code things i'd like to have done --------------
-i'd really like earbud metadata
 
 -------------------------- i dont know what this does --------------------------
 ;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(✓) ) # sad fix
@@ -354,12 +259,35 @@ convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 
+---- remaining work for φ ----
+formats include
+	image               
+	pixels              
+	png                 .png
+	jpg                 .jpg
+	plist               /^<\?xml / && /<\/plist>\s*$/           read: npm::plist.parse(it)     show: npm::plist.build(it)
+	xml                 .xml || /^<\?xml /
+	base64              .64
+	pixels (grey)       
+	stdin               fd:0
+	FIFO                fd:0...
+	:executable         ,/^#!/ | try{fs.accessSync(ι,fs.X_OK) ;↩ ✓} catch(e){↩ ✗}
+	directory relative
+	directory absolute
+formats are Really stream formats
+the formats are complicated to interact with, because
+* GET POST PUT have really tangly apis for all sorts of efficiency concerns
+* DELETE especially, we want to make some distinctions to make sure we don’t fuck things up accidentally (although trash could help)
+
+# paths can have extensions, which are often meaningful. (basename/filename, ext/suffix. path.basename,dirname,extname)
+
+# we need to be careful with non-atomic transactions
+# we need to think about how this interacts with concurrency
+# we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
+# 	“like, it should be caching urls all the time.”
+
 ---------------------------- which ports are in use ----------------------------
 sudo lsof -PiTCP -sTCP:LISTEN
-
-------------------------------------- with -------------------------------------
-with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
-;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
 
 ############################ node:: analog to npm:: ############################
 # node::call === Function.prototype.call.un_this
@@ -391,3 +319,29 @@ enc_id ← (=>{
 	ESC_ ← ι=> […Buffer.from(ι).toString('hex')].map(ι=> […'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'][parseInt(ι,16)]).join('')
 	ESC ← ι=> (/^[♈-♓🔅🔆🔒‡⧫§]$/u.test(ι)? unicode_names : ESC_)(ι)
 	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : ESC(ι) ).join('') ) })()
+
+####################### a simple infix operator language #######################
+# for:
+# E.Property = ∪( ,§`obj × id -> place`
+# 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
+# 	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
+
+fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
+
+§ ← (=>{
+	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
+	Any ← =>Any; Any = ‘lexical_env=>{
+		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
+		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
+		|> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
+	↩ ι=>{ι+=''
+		ι = Any.parse(ι)
+		Tarr(ι)
+		} })()
+
+------------------------------------- with -------------------------------------
+with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
+;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
+
+--------------------------------------------------------------------------------
+i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 

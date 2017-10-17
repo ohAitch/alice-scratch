@@ -204,9 +204,10 @@ E.kp = E.keypresses = =>{
 	}
 E.keypresses.cant_pool = ✓
 
-E.regex_set = =>{
-	# Π(ι)
-	process.stdin.pin().then(ι=>{ ι = (ι+'').replace(/\n$/,'')
+E.regex_set = ι=>{
+	Π(ι)
+	# process.stdin.pin()
+	.then(ι=>{ ι = (ι+'').replace(/\n$/,'')
 		t←[]; […[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
 		x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
