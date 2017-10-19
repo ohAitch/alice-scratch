@@ -1,4 +1,4 @@
-// -------------------------- builtins & copying ζ -------------------------- //
+############################# builtins & copying ζ #############################
 E ← {}
 _ ← require('underscore')
 $ ← require('jquery')
@@ -20,24 +20,24 @@ css ← ι=>{ t ← document.createElement('style'); t.innerHTML = ι; document.
 mk_script ← ι=>{ t ← document.createElement('script'); Object.assign(t,ι); document.getElementsByTagName('head')[0].appendChild(t) }
 
 # util_inspect_autodepth(    at_url\('.*?'\)    .map(ι=> [ι,RegExp('^'+ι.replace(/\./g,'\\.').replace(/\*/g,'.*')+'$')])._.object())
-at_urls ← { ,'*github.com':/^.*github\.com$/ ,'*githubusercontent.com':/^.*githubusercontent\.com$/ ,'imgur.com':/^imgur\.com$/ ,'*stackexchange.com':/^.*stackexchange\.com$/ ,'*stackoverflow.com':/^.*stackoverflow\.com$/ ,'*serverfault.com':/^.*serverfault\.com$/ ,'*superuser.com':/^.*superuser\.com$/ ,'*.askubuntu.com':/^.*\.askubuntu\.com$/ ,'stackexchange.com':/^stackexchange\.com$/ ,'math.stackexchange.com':/^math\.stackexchange\.com$/ ,'stats.stackexchange.com':/^stats\.stackexchange\.com$/ ,'*asoftmurmur.com':/^.*asoftmurmur\.com$/ ,'*wordpress.com':/^.*wordpress\.com$/ ,'hangouts.google.com':/^hangouts\.google\.com$/ ,'*google.com':/^.*google\.com$/ ,'*discordapp.com':/^.*discordapp\.com$/ }
+at_urls ← { ,'*github.com':/^.*github\.com$/ ,'*githubusercontent.com':/^.*githubusercontent\.com$/ ,'imgur.com':/^imgur\.com$/ ,'*stackexchange.com':/^.*stackexchange\.com$/ ,'*stackoverflow.com':/^.*stackoverflow\.com$/ ,'*serverfault.com':/^.*serverfault\.com$/ ,'*superuser.com':/^.*superuser\.com$/ ,'*.askubuntu.com':/^.*\.askubuntu\.com$/ ,'stackexchange.com':/^stackexchange\.com$/ ,'math.stackexchange.com':/^math\.stackexchange\.com$/ ,'stats.stackexchange.com':/^stats\.stackexchange\.com$/ ,'*asoftmurmur.com':/^.*asoftmurmur\.com$/ ,'*wordpress.com':/^.*wordpress\.com$/ ,'hangouts.google.com':/^hangouts\.google\.com$/ ,'*google.com':/^.*google\.com$/ ,'*discordapp.com':/^.*discordapp\.com$/ ,'gzgreg.github.io':/^gzgreg\.github\.io$/ }
 at_url ← ι=> location.hostname.match(at_urls[ι])
 
 on_seen_Δ ← f=> document.addEventListener('visibilitychange',=> f(!document.hidden))
 
-// -------------------------------------------------------------------------- //
+################################################################################
 get_viaudeo ← =>{
 	vs ← document.getElementsByTagName('video'); as ← document.getElementsByTagName('audio')
 	if (vs.length + as.length === 0) console.warn('no (vi|au)dios')
 	if (!(vs.length === 1 || (vs.length === 0 && as.length === 1))) console.warn('too many (vi|au)dios: '+vs.length+', '+as.length)
 	↩ vs[0] || as[0] }
 has_prop(window,'rate') || def(window,'rate',{ get(){↩ get_viaudeo().playbackRate }, set(ι){ get_viaudeo().playbackRate = ι }, })
-// rate_el ← =>{
-// 	vs ← $`video`; as ← $`audio`; bs ← […vs,…as]
-// 	if bs ≈ []: warn('no (vi|au)dios')
-// 	(vs≈[*]  |  vs≈[] & as≈[*]) | warn('too many (vi|au)dios: '+vs.L+', '+as.L)
-// 	↩ bs[0].prop`playbackRate` }
-// def(window,'rate') || def(window,'rate', => rate_el().ι, ι isa 0 => rate_el().ι = ι)
+# rate_el ← =>{
+# 	vs ← $`video`; as ← $`audio`; bs ← […vs,…as]
+# 	if bs ≈ []: warn('no (vi|au)dios')
+# 	(vs≈[*]  |  vs≈[] & as≈[*]) | warn('too many (vi|au)dios: '+vs.L+', '+as.L)
+# 	↩ bs[0].prop`playbackRate` }
+# def(window,'rate') || def(window,'rate', => rate_el().ι, ι isa 0 => rate_el().ι = ι)
 
 when_at ← [ 'scholtek.com','xkcd.com','egscomics.com','strongfemaleprotagonist.com','smbc-comics.com','kongregate.com', ]
 host2 ← location.host.split('.').slice(-2).join('.')
@@ -49,7 +49,7 @@ has_prop(window,'my') ||( window.my = =>{
 	global.$ = $
 	})
 
-// -------------------------------------------------------------------------- //
+################################################################################
 if( ['*github.com','*githubusercontent.com'].some(at_url) )
 	css('pre, .tab-size { tab-size:2 !important; }')
 
@@ -101,14 +101,14 @@ if( at_url('hangouts.google.com') ){
 if( at_url('*google.com') ){
 	$in ← $('input[title="Search"]')
 	if( $('#searchform').length && $in.length ){
-		// todo: the svg thing should extend off the left side farther than it does
+		# todo: the svg thing should extend off the left side farther than it does
 		$('body').append($('<svg xmlns="http://www.w3.org/2000/svg" style="z-index:5000; position:absolute; top:74px; height:30px; width:9px;"><polygon points="0,0 0,9 9,9"></polygon><polygon points="0,9 9,9 9,21 0,21"></polygon><polygon points="0,30 0,21 9,21"></polygon></svg>'))
 		update ← ι=>{
 			t ← ι
 				.replace(/\B∈se\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
 				.replace(/\B∈yc\b/i,'site:news.ycombinator.com')
 				.replace(/\B∈git\b/i,'site:github.com')
-				// .replace(/\B∈/i,'site:')
+				# .replace(/\B∈/i,'site:')
 				.replace(/((?!-).)\bdl\b/i,'$1'+'-inurl:htm -inurl:html intitle:”index of”')
 			t===ι || $in.val(t).submit() }
 		input ← ''; (=>{t←; input === (t=$in.val()) || update(input = t)}).every(0.05)
@@ -123,117 +123,120 @@ if( at_url('*discordapp.com') ){
 	# https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
 	}
 
+if( at_url('gzgreg.github.io') ){
+	$('#navbar ,#header ,#bottom ,[aria-labelledby="ui-id-5"]').remove()
+	}
 
-// @match       *://books.google.com/*
+# @match       *://books.google.com/*
 
-// var my_encode = ι=> ι.replace(/[^A-Za-z0-9 ]/g,'_')
-// var pad0 = ι=> ('0000'+ι).slice(-4)
-// var dict_or = (ι,k)=> (k in ι? ι[k] : k)
+# var my_encode = ι=> ι.replace(/[^A-Za-z0-9 ]/g,'_')
+# var pad0 = ι=> ('0000'+ι).slice(-4)
+# var dict_or = (ι,k)=> (k in ι? ι[k] : k)
 
-// var persist_o = name=> {
-// 	localStorage.getItem(name) === null && localStorage.setItem(name,'{}')
-// 	var o = JSON.parse(localStorage.getItem(name))
-// 	return function(k,ι){return arguments.length === 1? o[k] : (o[k] = ι, localStorage.setItem(name, JSON.stringify(o)), ι)} }
-// var img_to_data = ι=> {
-// 	var t = document.createElement('canvas')
-// 	t.width = ι.width; t.height = ι.height
-// 	t.getContext('2d').drawImage(ι,0,0)
-// 	return t.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/,'') }
-// var dl_data = (ι,name)=> {
-// 	var t = document.createElement('a')
-// 	t.href = 'data:application/octet-stream,'+ι
-// 	t.target = '_blank'
-// 	t.download = name
-// 	t.click()
-// 	}
+# var persist_o = name=> {
+# 	localStorage.getItem(name) === null && localStorage.setItem(name,'{}')
+# 	var o = JSON.parse(localStorage.getItem(name))
+# 	return function(k,ι){return arguments.length === 1? o[k] : (o[k] = ι, localStorage.setItem(name, JSON.stringify(o)), ι)} }
+# var img_to_data = ι=> {
+# 	var t = document.createElement('canvas')
+# 	t.width = ι.width; t.height = ι.height
+# 	t.getContext('2d').drawImage(ι,0,0)
+# 	return t.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/,'') }
+# var dl_data = (ι,name)=> {
+# 	var t = document.createElement('a')
+# 	t.href = 'data:application/octet-stream,'+ι
+# 	t.target = '_blank'
+# 	t.download = name
+# 	t.click()
+# 	}
 
-// // localStorage.removeItem('book_dl__dl_cache')
-// var dl_cache = persist_o('book_dl__dl_cache')
+# localStorage.removeItem('book_dl__dl_cache')
+# var dl_cache = persist_o('book_dl__dl_cache')
 
-// setTimeout(=>{
+# setTimeout(=>{
 
-// var title = $('.gb-volume-title').text().trim() || location.href
-// setInterval(catch_(=>{
-// 	$('.pageImageDisplay img').toArray().map(ι=> {
-// 		ι.complete || return_()
-// 		var h = $(ι).attr('src') || return_()
-// 		h === '/googlebooks/restricted_logo.gif' && return_()
-// 		var t = h.match(/pg=([A-Z]{2})(\d+)/);
-// 		var pg = t? dict_or({'PA':'','PP':'.f','PR':'.p'},t[1])+pad0(t[2]) : my_encode(h)
-// 		var t = my_encode(title)+' - '+pg+'.png.64'; dl_cache(t) || (dl_cache(t,1), dl_data(img_to_data(ι), t))
-// 		})
-// 	}), 0.05*1e3)
+# var title = $('.gb-volume-title').text().trim() || location.href
+# setInterval(catch_(=>{
+# 	$('.pageImageDisplay img').toArray().map(ι=> {
+# 		ι.complete || return_()
+# 		var h = $(ι).attr('src') || return_()
+# 		h === '/googlebooks/restricted_logo.gif' && return_()
+# 		var t = h.match(/pg=([A-Z]{2})(\d+)/);
+# 		var pg = t? dict_or({'PA':'','PP':'.f','PR':'.p'},t[1])+pad0(t[2]) : my_encode(h)
+# 		var t = my_encode(title)+' - '+pg+'.png.64'; dl_cache(t) || (dl_cache(t,1), dl_data(img_to_data(ι), t))
+# 		})
+# 	}), 0.05*1e3)
 
-// },1*1e3)
+# },1*1e3)
 
-// --------------------------------- .bashrc -------------------------------- //
-// dl_fix(){ f ~/Downloads; f ~/pg; ζ '
-// 	fs ← require("fs")
-// 	from ← process.env.HOME+"/Downloads"
-// 	out ← process.env.HOME+"/pg"
-// 	fix ← ι=> ι
-// 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
-// 	fs.readdirSync(from).filter(ι=> ι.re`\.64$`).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer.from(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
-// 	;'; }
+#################################### .bashrc ###################################
+# dl_fix(){ f ~/Downloads; f ~/pg; ζ '
+# 	fs ← require("fs")
+# 	from ← process.env.HOME+"/Downloads"
+# 	out ← process.env.HOME+"/pg"
+# 	fix ← ι=> ι
+# 		.replace(/^Impro_ Improvisation and the Theatre -/,"Impro -")
+# 	fs.readdirSync(from).filter(ι=> ι.re`\.64$`).map(λ(ι){fs.writeFileSync(out+"/"+fix(ι).replace(/\.64$/,""), Buffer.from(fs.readFileSync(from+"/"+ι)+"","base64")); fs.unlinkSync(from+"/"+ι)})
+# 	;'; }
 
 
-// @match       *://*.facebook.com/*
+# @match       *://*.facebook.com/*
 # @require jquery
 
-// window.$ = $
+# window.$ = $
 
-// if ($('#pagelet_timeline_medley_friends').length) {
+# if ($('#pagelet_timeline_medley_friends').length) {
 
-// var load_friends = cb=> {(function load_friends(){
-// 	if( $('.FriendButton').length < ($('[data-tab-key="friends"] ._gs6').text()|0) ){
-// 		window.scrollBy(0,1e9)
-// 		var t = $('.FriendButton').length; (function Λ(){if ($('.FriendButton').length !== t) load_friends(); else setTimeout(Λ,0.01*1e3)})()
-// 		} else cb&&cb() })() }
+# var load_friends = cb=> {(function load_friends(){
+# 	if( $('.FriendButton').length < ($('[data-tab-key="friends"] ._gs6').text()|0) ){
+# 		window.scrollBy(0,1e9)
+# 		var t = $('.FriendButton').length; (function Λ(){if ($('.FriendButton').length !== t) load_friends(); else setTimeout(Λ,0.01*1e3)})()
+# 		} else cb&&cb() })() }
 
-// $('body').append('<button id="load_friends" style="z-index:1000; position:fixed; top:3px; left:22px;">load all</button>')
-// $('body').append('<button id="compact" style="z-index:1000; position:fixed; top:23px; left:13px;">compactify</button>')
-// $('#load_friends').click(load_friends)
-// $('#compact').click( =>{
-// 	$('#pagelet_sidebar, #pagelet_dock').remove()
-// 	load_friends( =>{
-// 		$('u:contains("Acquaintance")').closest('li').remove()
+# $('body').append('<button id="load_friends" style="z-index:1000; position:fixed; top:3px; left:22px;">load all</button>')
+# $('body').append('<button id="compact" style="z-index:1000; position:fixed; top:23px; left:13px;">compactify</button>')
+# $('#load_friends').click(load_friends)
+# $('#compact').click( =>{
+# 	$('#pagelet_sidebar, #pagelet_dock').remove()
+# 	load_friends( =>{
+# 		$('u:contains("Acquaintance")').closest('li').remove()
 
-// 		$('#pagelet_timeline_medley_friends ~').remove()
-// 		$('#pagelet_timeline_medley_friends').css('width','1425px').css('margin-left','-120px')
-// 		$('#pagelet_timeline_medley_friends li').css('width','176px')
-// 		$('.FriendButton').parent().parent().parent().remove()
+# 		$('#pagelet_timeline_medley_friends ~').remove()
+# 		$('#pagelet_timeline_medley_friends').css('width','1425px').css('margin-left','-120px')
+# 		$('#pagelet_timeline_medley_friends li').css('width','176px')
+# 		$('.FriendButton').parent().parent().parent().remove()
 		
-// 		var t = $('.uiList[data-pnref="friends"]'); t.toArray().slice(1).map(ι=> $(ι).find('>').toArray().map(ι=> $(ι).detach().appendTo(t.eq(0))))
+# 		var t = $('.uiList[data-pnref="friends"]'); t.toArray().slice(1).map(ι=> $(ι).find('>').toArray().map(ι=> $(ι).detach().appendTo(t.eq(0))))
 
-// 		window.scrollBy(0,-1e9)
-// 		}) })
+# 		window.scrollBy(0,-1e9)
+# 		}) })
 
-// }
+# }
 
 
-// @match       *://*.facebook.com/*
+# @match       *://*.facebook.com/*
 # @require jquery
 
-// if (!location.pathname.match(/^\/messages\//)){
+# if (!location.pathname.match(/^\/messages\//)){
 
-// // t ← '323232c0'.match(/../g).map(ι=>parseInt(ι,16)); 'rgba('+[…t.slice(0,3),t[3]/255].join(',')+')'
-// text = `
-// ⁘ music is important, see if you can divert some
-// facebook time into music sorting time
+# # t ← '323232c0'.match(/../g).map(ι=>parseInt(ι,16)); 'rgba('+[…t.slice(0,3),t[3]/255].join(',')+')'
+# text = `
+# ⁘ music is important, see if you can divert some
+# facebook time into music sorting time
 
-// ‡ i notice that music sorting feels like
-// {i Shouldnt be doing this, its a waste of time}
-// and facebook feels like
-// {i am making solid connection to the social}
-// `
-// $('body').append(`<div style='z-index:1000; position:fixed; display:flex; justify-content:center; align-items:center; top:20%; bottom:20%; left:20%; right:20%;  background-color:rgba(50,50,50,0.7529411764705882); color:#d5d5cf; font-family:"Avenir Next"; font-size:28px; border-radius:15px;'>${text.trim().replace(/\n/g,'<br>')}</div>`)
+# ‡ i notice that music sorting feels like
+# {i Shouldnt be doing this, its a waste of time}
+# and facebook feels like
+# {i am making solid connection to the social}
+# `
+# $('body').append(`<div style='z-index:1000; position:fixed; display:flex; justify-content:center; align-items:center; top:20%; bottom:20%; left:20%; right:20%;  background-color:rgba(50,50,50,0.7529411764705882); color:#d5d5cf; font-family:"Avenir Next"; font-size:28px; border-radius:15px;'>${text.trim().replace(/\n/g,'<br>')}</div>`)
 
-// }
+# }
 
 
-// @match       http*://*.soundcloud.com/*
+# @match       http*://*.soundcloud.com/*
 # @require jquery
 
-// var t = setInterval(function(){
-// 	if (!$('.heroPlayButton-pause').length && $('.playControl.playing').length) {$('.playControl').click(); clearInterval(t)}
-// 	}, 0.1*1e3)
+# var t = setInterval(function(){
+# 	if (!$('.heroPlayButton-pause').length && $('.playControl.playing').length) {$('.playControl').click(); clearInterval(t)}
+# 	}, 0.1*1e3)
