@@ -23,7 +23,7 @@ start(hs.pathwatcher.new(__filename, function(files)
 ------------ clock -----------
 time_bar = hs.menubar.new():priority(hs.menubar.priorities['system']) -- :setClickCallback(function() Z(nil,'shᵥ`open /System/Library/PreferencePanes/DateAndTime.prefPane`') end)
 ds = {'𐑕𐑩𐑯','𐑥𐑵𐑯','𐑑𐑧𐑮','𐑢𐑴𐑛𐑧𐑯','𐑔𐑷𐑮','𐑓𐑮𐑦𐑜','𐑕𐑨𐑑'}
-function update_time() local now = os.time(); time_bar:setTitle(ds[os.date('%w')+1]..' '..os.date('-%m-%d %H:%M',now):lower()..'⁝'..os.date('!%H:%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(...)(...)','%1 %2 %3')) end
+function update_time() local now = os.time(); time_bar:setTitle(ds[os.date('%w')+1]..' '..os.date('-%m-%d %H%M',now):lower()..'⁝'..os.date('!%H%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(...)(...)','%1 %2 %3')) end
 tb_timer = nil
 loop = function() update_time(); tb_timer = hs.timer.doAfter(60 - os.time()%60,loop) end; loop()
 start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_time() end end))

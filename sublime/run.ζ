@@ -1,18 +1,18 @@
 #!/usr/bin/env ζ
-// translate sane stuff into weird sublime formats and put it in the sublime places
-// then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
+# translate sane stuff into weird sublime formats and put it in the sublime places
+# then, delete files in the sublime places that we didn't write to (except for specialized exceptions)
 
-// action type: BUILD then RELEASE. should be: START service which watches for changes & {BUILD then RELEASE}s
+# action type: BUILD then RELEASE. should be: START service which watches for changes & {BUILD then RELEASE}s
 
 plist ← npm`plist@1.2.0`
 
-// ------------------------------- generic lib ------------------------------ //
+################################## generic lib #################################
 match_json_head ← ι=> _.range(ι.‖).find_(i=>{ i>1e3 && ‽('inefficient'); ↩ catch_ι(=> [JSON.parse(ι.slice(0,i+1)),ι.slice(i+1)] )})[2]
 
-// ----------------------------------- lib ---------------------------------- //
+###################################### lib #####################################
 compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','⇧':'shift','↩':'enter','←':'left','→':'right','␣':'space','⌫':'backspace','↓':'down','↑':'up','⇥':'tab'}[ι] || ι).join('+')
 
-// -------------------------------------------------------------------------- //
+################################################################################
 // main ← =>{
 // 	‽('φ todo')
 // 	from ← φ(__dirname).φ`Packages`
@@ -35,7 +35,7 @@ compile_keys ← ι=> […ι].map(ι⇒ {'⌘':'super','⌥':'alt','^':'ctrl','�
 colors_to_tmTheme ← λ(from,to){
 	t ← φ(from).text.replace(/#[\s#].*/g,'').replace(/\n\n+/g,'\n')
 	t = t.re`^([^{]*)([^]*)`
-	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(ι=> ι.match(/([\w# [\]]+) → ([\w,]+)/)).map…(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
+	defs ← t[1].match(/([\w# [\]]+) → ([\w,]+)/g).map(.match(/([\w# [\]]+) → ([\w,]+)/)).map…(ι=> ι[2].split(',').map(name=> [name,ι[1]]))
 	t = t[2]
 	defs.forEach(ι=> t = t.replace(re`\$…${ι[0]}(\w*)`.g, (ˣ,t)=> ι[1].replace(/(?= |$)/,t)))
 	t = t.re`^\s*(\{[^]+?\})([^]*)`
@@ -48,7 +48,7 @@ colors_to_tmTheme ← λ(from,to){
 
 sb_keyrc_to_sublime_keymap ← λ(from,to){
 	t ← φ(from).text.replace(/#[\s#].*/g,'').replace(/\n\n+/g,'\n')
-	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(ι=> ι.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
+	r ← t.match(/^(\S+) +cmd.(\w+)\((.*)/gm).map(.match(/^(\S+) +cmd.(\w+)\((.*)/)).map(λ(ι){
 		k ← compile_keys(ι[1])
 		cm ← ι[2]
 		t ← ι[3]; [a,t] ← t.re`^\)`? [∅,t] : match_json_head(t); a||(a={}); t = t.replace(/^\) */,'')
@@ -58,13 +58,9 @@ sb_keyrc_to_sublime_keymap ← λ(from,to){
 		})
 	φ(to).json = r }
 
-if_main_do((…a)=>{
-	switch( a[0]||'' ){default: ‽
-		// break; case '': main()
-		break; case '':
-			shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages; :`
-			P ← __dirname+'/User/'
-			colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
-			sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
-		// break; case 'to': to(a[1], a[2]||a[1])
-		} })
+if_main_do(=>{
+	shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages; :`
+	P ← __dirname+'/User/'
+	colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
+	sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
+	})

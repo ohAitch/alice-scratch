@@ -40,8 +40,8 @@ E.ps2 = =>{
 	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← _(ιs).map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
 	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
-	CMD ← ι=> ι.slice(h.search('COMMAND'))
-	ETIME ← ι=> ι.slice(h.search('PID')+'PID'.‖ + 1, h.search('ELAPSED')+'ELAPSED'.‖)
+	CMD ← .slice(h.search('COMMAND'))
+	ETIME ← .slice(h.search('PID')+'PID'.‖ + 1, h.search('ELAPSED')+'ELAPSED'.‖)
 	r ← h+'\n'+r
 		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool|iBooks|Preview|Path Finder|CIJScannerRegister|Image Capture Extension|Audacity|Karabiner|LaunchControl).app/`)
@@ -60,10 +60,10 @@ E.diff = (base,edit)=>{
 		t = t.split('\n')
 		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
 		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
-		t = iG.map(ι=> ι.map(i=> [t[i],i]))
+		t = iG.map(.map(i=> [t[i],i]))
 		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
 		process.exitCode = t.‖ ?1:0
-		↩ t.map(ι=> ι.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
+		↩ t.map(.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
 			.join('\n')+'\n')
 			.join('\x1b[90m'+'-'.repeat(30)+'\x1b[0m'+'\n')
 	} }
@@ -80,7 +80,7 @@ E['‡'].cant_pool = ✓
 E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
-	a.filter(ι=> ι.re`\.jpg$`).map(ι=>{
+	a.filter(.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
 		# cn.log('got',ι,t&&t[1])
 		if (!t) ↩
@@ -104,9 +104,9 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(=> Tstr(ι) &&( ι = JSON
 		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
 		sfx`ack`
 
-		build ← fs.readdirSync(project+'').find(ι=> ι.re`^build\.`)
+		build ← fs.readdirSync(project+'').find(.re`^build\.`)
 		package_ ← !!( t=project.φ`package.json`.json, t && t.version )
-		run ← fs.readdirSync(project+'').find(ι=> ι.re`^run\.`)
+		run ← fs.readdirSync(project+'').find(.re`^run\.`)
 		;(build || package_ || run) || ‽
 
 		a ← => build && shₐ2({stdio:process.stdio})`cd ${project}; ${build}`
@@ -154,7 +154,7 @@ E.ct = E.chrome_tabs = λ(i){
 	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.‖], url:[(title+' ').‖,(title+' '+url).‖]}; ↩ nice_url(t)}
 	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
 	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
-	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(ι=> ι.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb.tab.push(t) }
+	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb.tab.push(t) }
 	}
 
 E.bookmarks = ι=>{
@@ -170,7 +170,7 @@ E.bookmarks = ι=>{
 		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
 	chrome_bookmarks ← ι=>{
 		ι = φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children
-		my_walk_a ← ι=> ι.map(ι=> my_walk(ι))
+		my_walk_a ← .map(ι=> my_walk(ι))
 		my_walk ← ι=> ι.children? {name:ι.name, ιs:my_walk_a(ι.children)} : ι.url? {name:ι.name, ι:ι.url} : {name:'', ι:JSON.stringify(ι)}
 		↩ my_walk_a(ι) }
 	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
@@ -181,7 +181,7 @@ E.bookmarks = ι=>{
 # E.push = ι=>{
 # 	moment ← npm`moment@2.14.1`
 
-# 	day_of_year ← ι=> ι.dayOfYear()-1
+# 	day_of_year ← .dayOfYear()-1
 # 	label_fmt ← ι=> ('...'+ι).slice(-3)
 
 # 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
@@ -195,7 +195,7 @@ E.bookmarks = ι=>{
 # 	color_now ← ι=> '\x1b[43m'+ι+'\x1b[0m'
 # 	starts_f ← starts.map(ι=> ι.format('YYYY')+'-'+label_fmt(day_of_year(ι)))
 # 	↩ '5×5 pushups: '+starts_f[0]+'::->'+' ; '+'many knee pushups: '+starts_f[1]+'::->'+'\n'+
-# 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(ι=> ι.join(' ')).join('\n') }).join('\n')+'\n' }
+# 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(.join(' ')).join('\n') }).join('\n')+'\n' }
 
 E.kp = E.keypresses = =>{
 	diy_stdin ← f=>{ process.stdin.setRawMode(✓); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }

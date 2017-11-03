@@ -69,7 +69,7 @@ $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] 
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
 -------------------------------- de-duplication --------------------------------
-φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)|>(_.values).map(ι=> _(ι).map(0)).filter(ι=> ι.‖ > 1)
+φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)|>(_.values).map(ι=> _(ι).map(0)).filter(.‖ > 1)
 
 ------------------------------ python data science -----------------------------
 import matplotlib.pyplot as plt
@@ -123,7 +123,7 @@ to_binary_LE ← ι=> […ι].map(ι=> ('00000000'+ι.toString(2)).slice(-8).spl
 q ← ι=>{ t ← Buffer(8); t.writeDoubleLE(ι,0); t = to_binary_LE(t); ↩ t.slice(0,52)+' '+t.slice(52,52+11)+' '+t[-1]+' = '+ι }
 
 ----------------------------------- entities -----------------------------------
-entities_encode ← ι=> ι.replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
+entities_encode ← .replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
 entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
 
 ------------------------ fun with fraction approximation -----------------------
@@ -165,7 +165,7 @@ google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.ite
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
-		Π(google_youtube.videos.list)({ auth:yt_auth, part, id, }).then(ι=> ι.items[0] )
+		Π(google_youtube.videos.list)({ ,auth:yt_auth ,part ,id }).then(.items[0] )
 		},
 	playlist:{ from:({id,part='contentDetails,id,snippet,status'})=>
 		google_depaginate( Π(google_youtube.playlistItems.list),{ auth:yt_auth, part, playlistId:id, } )
@@ -175,9 +175,7 @@ youtube ← {
 # rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
 # rwby_dl W9wyWgvyp0s 's3e01 Round One'
 
-rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then(ι=>
-	ι.map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ).Π&
-	)
+rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then( .map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ).Π& )
 
 rHjUHnG7WOQ should be obviously type(youtube url)
 youtube.video.from({ id:'rHjUHnG7WOQ' })
@@ -295,7 +293,7 @@ global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
 	global.node = {}
 	;['assert','async_hooks','buffer','child_process','cluster','console','constants','crypto','dgram','dns','domain','events','fs','http','https','inspector','module','net','os','path','process','punycode','querystring','readline','repl','stream','string_decoder','timers','tls','tty','url','util','v8','vm','zlib'].map(ι=> node[ι] = require(ι))
 
-	deref ← ι=> ι.reduce((o,id)=>o[id],global)
+	deref ← .reduce((o,id)=>o[id],global)
 	locs ← (=>{ ιs ← []; id ← new Set(); v_to_id ← new WeakMap(); ENC ← JSON.stringify; ↩ { ,ιs(){↩ ιs} ,check(ι){
 		v ← Object.getOwnPropertyDescriptor(deref(ι.slice(0,-1)),ι[ι.length-1]).value
 		if(!( id.has(ENC(ι)) || Tprim(v) || v_to_id.has(v) )){ ;ιs.push(ι) ;id.add(ENC(ι)) ;v_to_id.set(v,ENC(ι)) }
@@ -307,10 +305,10 @@ global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
 	console.log(JSON.stringify(locs.ιs()))
 	}})(${Tprim})`}`+'') )()
 
-t ← _( global_net._.groupBy(ι=>ι[-1]) ).mapObject(ι=> ι.map(ι=> ι.join('.')))
-[done,todo] ← _( _(t).values().sort() ).partition(ι=> ι.‖===1)
+t ← _( global_net._.groupBy(ι=>ι[-1]) ).mapObject(.map(.join('.')))
+[done,todo] ← _( _(t).values().sort() ).partition(.‖===1)
 done = done.map(ι=> ι[0])
-todo = todo._.sortBy(ι=> ι.‖)
+todo = todo._.sortBy(.‖)
 ;[code,…done,…todo]
 
 ------------------- this is silly and i shd probably toss it -------------------

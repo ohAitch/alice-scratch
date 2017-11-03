@@ -95,7 +95,7 @@ var Parser = function(a){ this [γ['…←']] (a) }
 // 	switch( @.type ){
 // 		default: ;
 // 		break; case 'lazy': Tfun(@.ι) &&( @.ι = @.ι(), @.ι.resolve(seen) )
-// 		break; case 'seq': case 'alt': @.ps.map(ι=> ι.resolve(seen))
+// 		break; case 'seq': case 'alt': @.ps.map(.resolve(seen))
 // 		break; case 'times': case 'map': case 'map_js': case 'chain': @.p.resolve(seen)
 // 		}
 // 	↩ seen.get(@) }
@@ -104,7 +104,7 @@ var Parser = function(a){ this [γ['…←']] (a) }
 // 	switch( @.type ){
 // 		default:;
 // 		break; case 'lazy': seen.set(@,@.ι); @.ι = @.ι.optimize(seen); seen.set(@,@.ι)
-// 		break; case 'seq': case 'alt': @.ps = @.ps.map(ι=> ι.optimize(seen))
+// 		break; case 'seq': case 'alt': @.ps = @.ps.map(.optimize(seen))
 // 		break; case 'times': case 'map': case 'map_js': case 'chain': @.p = @.p.optimize(seen)
 // 		}
 // 	↩ seen.get(@) }

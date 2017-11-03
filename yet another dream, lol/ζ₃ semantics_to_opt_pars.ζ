@@ -98,7 +98,7 @@ vmζ_parse ← code=>{
 		if (ι.type==='VariableDeclaration') ι.kind==='var' || ‽(ι)
 		if (ι.type==='VariableDeclarator') ι.id.type==='name' || ‽(ι)
 		if (ι.type==='MemberExpression') (!ι.computed || ι.property.type==='name') || ‽(ι)
-		if (ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression') ( ι.generator===✗ && ι.async===✗ && ι.params.every(ι=> ι.type==='name') ) || ‽(ι)
+		if (ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression') ( ι.generator===✗ && ι.async===✗ && ι.params.every(.type==='name') ) || ‽(ι)
 		if (ι.type==='BinaryExpression') _(['+','*']).contains(ι.operator) || ‽(ι)
 		if (ι.type==='ObjectProperty') ι.method===✗ || ‽(ι)
 		// ----------------------- simplify babylon's ast ----------------------- //
@@ -125,7 +125,7 @@ vmζ_parse ← code=>{
 		: ι.type==='ArrowFunctionExpression'||ι.type==='FunctionExpression'?
 			τ('function',{
 				name:ι.id,
-				params:[ ι.type==='ArrowFunctionExpression'? ∅ : 'this', …ι.params.map(ι=>ι.ι) ],
+				params:[ ι.type==='ArrowFunctionExpression'? ∅ : 'this', …ι.params.map(.ι) ],
 				ι:ι.expression? ι.body : τι('seq',[ι.body,τι('js_data',∅)]) })
 		: ι.type==='BinaryExpression'? τ('builtin',{ f:ι.operator, a:[ι.left,ι.right] })
 		: ι.type==='BlockStatement'? τι('seq',ι.body)
@@ -137,7 +137,7 @@ vmζ_parse ← code=>{
 			// seq[seq[]] -> seq[]
 			ι.ι = ι.ι.map…(ι=> ι.type==='seq'? ι.ι : [ι])
 			// break; foo() -> warning
-			i ← ι.ι.findIndex(ι=> ι.type==='break_fn')
+			i ← ι.ι.findIndex(.type==='break_fn')
 			dead ← i===-1? [] : ι.ι.splice(i+1,∞)
 			if (dead.some(interesting)) cn.log('[warning]','you have interesting dead code',dead)
 			// seq[ι] -> ι

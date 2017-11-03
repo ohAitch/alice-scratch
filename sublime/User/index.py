@@ -90,8 +90,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			global.i = 0
 			JSON.parse(ι).map(ι=>{
 				io ← hook_stdouterr()
-				r←; e←; try{ global.code = ι; global.require = require; r = ζ_eval(ι+'') }catch(e_){ e = e_ }
-				↩ [ ,…io().slice(1) ,sb.encode(r) ,e===∅? '' : e.stack ].join('') }) """,E(ι)))
+				r←; e←; try{ global.code = ι; global.require = require; r = ζ_eval(ι) }catch(e_){ e = e_ }
+				r ← [ ,…io().slice(1) ,sb.encode(r) ,e===∅? '' : e.stack ].join('')
+				↩ (r===''? ι : ι.includes(chr(0xa))? ι.replace(re`${chr(0xa)}?$`,chr(0xa)) : '') + r
+				}) """,E(ι)))
 		for i in range(len(sel))[::-1]:
 			view.replace(edit, sel[i], r[i])
 
@@ -197,7 +199,7 @@ class make_divider(sublime_plugin.TextCommand):
 			# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
 			';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
 			}
-		def data(): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '-']
+		def data(): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '#']
 
 		view = self.view
 		test, match, fill, ends = data()

@@ -1,4 +1,4 @@
-# ---------------------- custom names for existing commands ----------------------
+###################### custom names for existing commands ######################
 ⌘t     cmd.new_file()
 ^t     cmd.clone_file()
 ⌘n     cmd.new_window()
@@ -21,7 +21,7 @@
 ⌘⌥→    cmd.bh_key({ "lines":true, "plugin":{ "type":["__all__"], "command":"bh_modules.bracketselect", "args":{"select":"right"} } })
 ^m     cmd.toggle_minimap()
 
-# ------------------------------------- find -------------------------------------
+##################################### find #####################################
 ⌘f     cmd.show_panel({ "panel":"replace", "reverse":false })
 ⌘↩     cmd.find_all({ "close_panel":true }) @ [ {"key":"panel", "operand":"find"}, {"key":"panel_has_focus"} ]
 ⌘↩     cmd.find_all({ "close_panel":true }) @ [ {"key":"panel", "operand":"replace"}, {"key":"panel_has_focus"} ]
@@ -29,7 +29,7 @@
 ⌘↩     cmd.find_all_under() @ [ {"key":"panel", "operator":"not_equal", "operand":"replace"} ]
 ⌘m     cmd.find_under_expand()
 
-# -------------------------------- custom commands -------------------------------
+################################ custom commands ###############################
 # /↩  ] ⌘⇧⌥^↩
 # ⌘⇧⌥^↩
 ⌘⌥↩    cmd.open_context({ "type":"link" })
@@ -47,7 +47,7 @@
 # @sublime_text  ⌘/. ] ⌘⇧⌥^m
 # ⌘⇧⌥^m  cmd.toggle_comment_2({ "style":"//X " })
 
-# ------------------------- temporary .keyrc replacement -------------------------
+######################### temporary .keyrc replacement #########################
 # ⌘o   cmd.zeta2({ "x":" hsᵥ`hs.alert(${    sb.tab.active.ι.slice(0,10)    })` " })
 ^d   cmd.zeta({ "x":"go_to('app','discord')" })
 ^s   cmd.zeta({ "x":"go_to('app','spotify')" })
@@ -133,13 +133,13 @@
 # k 𐑒𐑜 kg
 # l 𐑤𐑮 lr
 # m 𐑥𐑯 mn
-# o 𐑪𐑴 oo
+# o 𐑪𐑴 oo [north america: 𐑪 = 𐑭]
 # p 𐑐𐑚 pb
 # q 𐑬𐑶 auoi
 # s 𐑕𐑟 sz
 # t 𐑔𐑞 th th
 # u 𐑫𐑵 oooo
-# w 𐑭𐑷 aaw
+# w 𐑭𐑷 aaw [north america: 𐑪 = 𐑭]
 # y 𐑘𐑢 yw
 # remaining: gnrvxz
 # i would really like to bind capslock to this

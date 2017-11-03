@@ -13,7 +13,7 @@ _alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`mess
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
-transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(ι=> ι.join('')).join('\n')
+transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(.join('')).join('\n')
 
 macros ← {}
 parse_boards0 ← ι=>
@@ -33,7 +33,7 @@ builtin_keys ← parse_boards0(multiline`
 	`)[0].keys._.flatten(✓)
 parse_boards ← λ(ι){
 	ι ← ι.map…(parse_boards0)
-	ι.filter(ι=> ι.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
+	ι.filter(.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
 	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(✓) })
 	ι.forEach(λ(ι){ ι.keys = ι.keys.map(ι=> Object.hasOwnProperty(macros,ι)? macros[ι] : ι) })
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
@@ -58,7 +58,7 @@ system ← parse_boards([multiline`
 	│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
 	└──────────────────────────────┘ └──────────────────────────────┘
 	`])
-text_keys ← […system.map(ι=>ι.trigger).filter(ι=> ι[0]!=='⇧'), ' ']
+text_keys ← […system.map(.trigger).filter(ι=> ι[0]!=='⇧'), ' ']
 macros['X'] = '; sfx`nack`'
 
 parse_key_line ← ι=>{ t ← ι.match(/^\s*(@\w+)?\s*(\S+)\s+([^]*\S)/); ↩ M(t[2],t[3],t[1]) }
@@ -67,7 +67,7 @@ parse_keyrc ← λ(src){
 		(src+'\n').replace(/\n{2,}/g,'\n')
 		.replace(/(?:^|\n)#.*/g,'')
 		.replace(/(?:^|\n)(?![│┌└])(.+)/g,(ˣ,ι)=>{ tₐ.push(parse_key_line(ι)); ↩ ''})
-		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(ι=> ι.replace(/\n$/,'') )
+		.match(/(┌.+┐)\n((?:│.+│\n)+)(└.+┘)\n/g).map(.replace(/\n$/,'') )
 		)
 	↩ […tₐ, …tₑ].-eq(system) }
 show_private_xml ← λ(mappings){t←;
@@ -104,7 +104,7 @@ show_private_xml ← λ(mappings){t←;
 				].map(compile_key_line) ),
 			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.λ(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.λ(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(_(ι).omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
-			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […_(t).omit('undefined')|>(_.values), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(ι=>ι.ι).reverse(), ι[0].if )),
+			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […_(t).omit('undefined')|>(_.values), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(.ι).reverse(), ι[0].if )),
 			],
 		vkopenurldef: _(shells).map((name,ι)⇒ {name, url:{'@type':'shell', '#text':ι}}),
 		appdef: _(appdefs).map((ι,k)⇒ {appname:k, equal:ι}),
@@ -116,7 +116,7 @@ regen ← (opt={})=>{
 	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι // file:/~/Library/Application%20Support/Karabiner/private.xml
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
-		ι.root.item.map(ι=> ι.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
+		ι.root.item.map(.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
 		// if( φ`/Applications/PowerKey.app`.BAD_exists() ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 

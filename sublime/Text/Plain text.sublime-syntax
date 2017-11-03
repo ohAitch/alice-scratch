@@ -18,6 +18,7 @@ contexts:
       captures: { 1: punctuation.definition.comment, 2: punctuation.definition.comment, 3: comment }
     - { scope: comment, match: '(?<=[\s"]|^)-{3,}(?=[\s"]|$)' }
     - { scope: markup.italic, match: '\b_\B[^_\n]+?\B_\b' }
+    - { scope: markup.bold, match: '\B\*\*\b[^*\n]+?\b\*\*\B' }
     - { scope: markup.bold, match: '\B\*\b[^*\n]+?\b\*\B' }
     - { scope: string, match: '["“”]|\\.' }
     - { scope: punctuation.text, match: '[!$&+,\-.:;=?@`\\|/↯…≪≫‽⁺⁻₊×∀∃∄₋~←→↔≡⇒∈∉≠✓✗¬≔*↑↓≈%<>≤≥≉±ι÷√∪∩⁘⊂⊃⊄⊅¦⧗∋∌⌈⌊‖⍟⋯‼·⌕⚓¶∅▣]' }
@@ -29,4 +30,4 @@ contexts:
     - { scope: punctuation.definition.group, match: '[()\[\]{}‹›⟨⟩]' }
     - { scope: constant.numeric, match: '[\d₀-₉⁰¹²³⁴-⁹∞]' }
     - { scope: variable.quiet, match: '(?!\b_\b)_' }
-    - { scope: entity, match: '[┌─┐│└┘┴┤┬├┼]|[⌥⌘⇧][RL]|[⎋⌫⇥⇪↩⇧^⌥⌘]|F[1-9a-cn]' }
+    - { scope: entity, match: '[┌─┐│└┘┴┤┬├┼⎋⌫⇥⇪↩⇧^⌥⌘]' }

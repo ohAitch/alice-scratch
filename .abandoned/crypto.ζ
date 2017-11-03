@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 crypto ← require('crypto')
 
-Buffer.prototype.toArray = λ(){↩ Array.prototype.slice.call(@)}
+Buffer.prototype.toArray = λ(){↩ […@]}
 Buffer.prototype.bits = λ(){↩ @.toArray().mapcat(ι => 8..map(i => (ι & 1<<i) >> i))}
 Buffer.prototype.str = λ(){↩ @.toString('binary')}
 Buffer.prototype.clone = λ(){↩ Buffer.concat([@, Buffer(0)])}
@@ -18,7 +18,7 @@ base64.read = λ(str){↩ Buffer(str,'base64')}
 base64.show = λ(buf){↩ buf.toString('base64')}
 
 xor ← λ(a,b){
-	ia ← Buffer.isBuffer(a); ib ← Buffer.isBuffer(b)
+	ia ← T.Buffer(a); ib ← T.Buffer(b)
 	if (!ia && !ib) ↩ a ^ b
 	if (!ia && ib) {t ← a; a = b; b = t}
 	if (ib && b.length > a.length) {t ← a; a = b; b = t}
@@ -39,6 +39,7 @@ p_english ← (λ(){
 	↩ λ(buf){↩ buf.toArray().map(english_frequency).reduce(add) / buf.length} })()
 hamming ← λ(a,b){↩ _.zip(a.bits(),b.bits()).filter(λ(v){↩ v[0] !== v[1]}).length}
 
+################### ‡ 2017-10-27 i only care about the below ###################
 encrypt_aes_128_ecb ← λ(buf,key){buf.length % key.length === 0 || ‽; t ← crypto.createCipheriv('aes-128-ecb',key,'').setAutoPadding(false); ↩ Buffer.concat([t.update(buf),t.final()])}
 endecrypt_aes_128_ctr ← λ(buf,key,nonce){↩ xor(buf, Buffer.concat((ceil(buf.length/key.length)).map(λ(i){t←; ↩ encrypt_aes_128_ecb(Buffer.concat([nonce,(t=Buffer(key.length-nonce.length).fill(0),t.writeUIntLE(i,0,6),t)]),key)})).slice(0,buf.length))}
 

@@ -14,7 +14,7 @@ def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 ℝ_interval.prototype.∩ = λ(b){ a ← @; ↩ ℝ_interval(max(a.a,b.a),min(a.b,b.b)) }
 # ℝ_interval.prototype.∩s = λ(b){↩ !!@.∩(b).‖ }
 ℝ_interval.touches = (a,b)=>{ if (!(a.a <= b.a)) #swap a b; ↩ b.b >= a.a && a.b >= b.a }
-ℝ_interval.cover = (…a)=> ℝ_interval(min(…a.map(ι=>ι.a)),max(…a.map(ι=>ι.b)))
+ℝ_interval.cover = (…a)=> ℝ_interval(min(…a.map(.a)),max(…a.map(.b)))
 // cn.log([ [[1,2],[3,4]],[[1,3],[2,4]],[[1,2],[1,4]],[[1,4],[2,4]],[[1,2],[2,4]], ].map(ι=>{ ι = ι.map(ι=> ℝ_interval(…ι)); ↩ [ι,!!ι[0].∩(ι[1]).‖,!!ι[1].∩(ι[0]).‖] }))
 
 // ‡ can it ℝ_set be an array?
@@ -48,15 +48,15 @@ def(ℝ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
 ℝ_set.prototype.-! = λ(x){
 	if( @.ι.‖===0 ) ↩ @
 	if( @.ι.‖===1 ){
-		@.ι = [ @.ι[0].a, …ℝ_set(x).ι.filter(ι=> @.ι[0].a < ι.b && ι.a < @.ι[0].b ).map…(ι=>[ι.a,ι.b]), @.ι[0].b ].chunk(2).map(ι=> ℝ_interval(…ι)).filter(ι=> ι.‖)
-		// decompose ← ι=> ι.ι.map…(ι=>[ {on:1,i:ι.a}, {off:1,i:ι.b} ]) […decompose(@),…decompose(x)]
+		@.ι = [ @.ι[0].a, …ℝ_set(x).ι.filter(ι=> @.ι[0].a < ι.b && ι.a < @.ι[0].b ).map…(ι=>[ι.a,ι.b]), @.ι[0].b ].chunk(2).map(ι=> ℝ_interval(…ι)).filter(.‖)
+		// decompose ← .ι.map…(ι=>[ {on:1,i:ι.a}, {off:1,i:ι.b} ]) […decompose(@),…decompose(x)]
 		↩ @ }
 	@.ι = ℝ_set(@.cover).-!(ℝ_set(@.cover).-!(@).∪!(x)).ι
 	↩ @ }
 ℝ_set.prototype.∩! = λ(x){↩ @.-!(ℝ_set(@.cover).-!(x)) }
 
 _('-∪∩').map(k=> ℝ_set.prototype[k] = λ(ι){↩ ℝ_set() …← ({ι:_.clone(@.ι)}) [k+'!'](ι) } )
-ℝ_set.prototype.has = λ(ι){ i ← binary_search_num_by_low(@.ι,{a:ι},ι=>ι.a); ↩ 0<=i && i<@.ι.‖ && @.ι[i].a <= ι && ι < @.ι[i].b }
+ℝ_set.prototype.has = λ(ι){ i ← binary_search_num_by_low(@.ι,{a:ι},.a); ↩ 0<=i && i<@.ι.‖ && @.ι[i].a <= ι && ι < @.ι[i].b }
 
 module.exports = ℝ_set
 

@@ -74,7 +74,7 @@ Type('node',{
 	})
 Type('schema',{
 	,'≡':simple_hash_str
-	# ,representative(){ _(@).max(ι=> ι.precedence) }
+	# ,representative(){ _(@).max(.precedence) }
 	,show(){↩ [ JSON_pretty(@), @.as('(node)').‖, @.as.name, ].join(' ') }
 	})
 node.->.schema = λ(ι){↩ _(ι).mapObject(ι⇒
@@ -92,8 +92,8 @@ schema.…←>.name = λ(ι){↩ `#${age(ι).index∈(age(@)).as.base(36)}` }
 schema.≡.close_over!(ι=>{
 
 
-	q_is⁻¹ ← ι=> ι.as('(node)').‖===1
-	names ← ι.filter(ι=> ι.is.name)
+	q_is⁻¹ ← .as('(node)').‖===1
+	names ← ι.filter(.is.name)
 
 	# should be:
 	# if your children names are contained by only one schema:
@@ -101,7 +101,7 @@ schema.≡.close_over!(ι=>{
 	# good skill!
 
 	↩ q_is⁻¹(ι) && names.map(ι=> q_is⁻¹)./(and)
-		? _({}) …← ( ι, names.map(ι=> ι.as.schema) )
+		? _({}) …← ( ι, names.map(.as.schema) )
 		: ι } )
 
 ;(async =>{

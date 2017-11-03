@@ -34,14 +34,14 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag --ignore '*.min.*' --igno
 	else
 		echo / "$1"; echo
 		if [[ $1 = -h2 ]]; then
-			_ag ~/file "$2" ./notes/.sublime
+			_ag ~/file -- "$2" ./notes/.archive/.sublime
 		elif [[ $1 = -h1 ]]; then
-			_ag ~/file "$2" ./notes{,/.archive}
+			_ag ~/file -- "$2" ./notes{,/.archive}
 		elif [[ $1 = -h0 ]]; then
-			_ag ~/file -- "$1" ~/.archive_*
+			_ag ~/file -- "$2" ~/.archive_*
 		else
 			rm -rf /tmp/sublime
-			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(ι=> ι.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
+			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
 			_ag ~/file --ignore 'public/lib/' -- "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime
 			_ag ~/file --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff' -- "$1" notes
 		fi; fi | sb; }

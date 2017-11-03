@@ -10,46 +10,48 @@ require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildPr
 on_off ← =>{ ons ← []; ↩{ on(ee,m,f){ ee.on(m,f); ons.push([ee,m,f]) }, off(){ ons.map(([ee,m,f])=> ee.removeListener(m,f)); ons = [] } }}
 Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
 Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
+# vs ,you know
+# : Set { 'Type', 'Value' }
+# : new Set([ 'Type', 'Value' ])
 normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); ↩ ι }
 diff ← (a,b)=>{r←; ↩0?0
 	: [a,b].every(T.Set)?
 		# [a,b] *.count zip **|0 *-
-		( r = normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(ι=> ι.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), [#Q r.name #Q].def({ value:a.name }), r )
+		( r = normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), [#Q r.name #Q].def({ value:a.name }), r )
 	: ‽ }
 Δ ← (…a)=>{ f ← a.pop()
 	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
 	f()
-	↩ _.zip(start,a).map(a=> diff(…a)).filter(ι=> ι.‖).map(ι⇒ { Δ:ι }) }
+	↩ _.zip(start,a).map(a=> diff(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 
 ###################################### lib #####################################
 # eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; t ← as_module(code); ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
-eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; ↩ require('child_process').spawn(process.execPath,[…process.execArgv,'-e',code],{ stdio:[…['pipe'].repeat(3),'ipc'] }) }
+eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; ↩ require('child_process').spawn(process.execPath,[…process.execArgv,'-e',code],{ stdio:[…['pipe'].repeat(3),'ipc'] }) |> (ι=>{ ♓_on_exits(=>ι.kill()) /*memory leak*/ ;↩ ι }) }
 eval_in_worker ← (=>{
 	🏷busy ← new Set(); 🏷free ← new Set()
-	♓_on_exits(=> […busy,…free].map(ι=> ι.kill()) ) # ! WET
-	make ← =>{ r ← eval_in_new_worker('('+λ(){ ♓ ← process
+	make ← =>{ r ← eval_in_new_worker('('+(=>{ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
 		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
 		wait()
 		♓.on('beforeExit',i=>{ ♓.send([['exit_',i],['unbusy']]); ♓.exitCode = 0; wait() })
 		♓_on_exits(i=>{ ♓.send([['exit_',i]]) })
-		}+')()')
+		})+')()')
 		r.on('message',λ(ι){ ι.map(ι=> @.emit(…ι) ) })
 		r.on('unbusy',λ(){ busy.delete(@); free.add(@) })
 		↩ r }
-	;(=>{ t ← free.pop(); free.map(ι=> ι.kill()); free = new Set(); t && free.add(t) }).every(10*60)
+	;(=>{ t ← free.pop(); free.map(.kill()); free = new Set(); t && free.add(t) }).every(10*60)
 	↩ code=>{
 		log2(Δ(busy,free,=>{ # cleanup
-			;[busy,free].forEach(ι=> ι.filter!(ι=> ι.connected))
+			;[busy,free].forEach(.filter!(.connected))
 			free.‖ || free.add(make())    }))
 		♓ ← free.pop(); busy.add(♓); ♓.send([['eval',code]]); ↩ ♓ }
 	})()
-procify ← (a,code)=> ('a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+λ Λ(){ ♓ ← process
+procify ← (a,code)=> 'a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+((=>{ ♓ ← process
 	err ← e=>( ♓.stderr.write((e.stack||e)+'\n'), ♓.exitCode ||( ♓.exitCode = 1 ) )
 	{on,off} ← on_off(); on(♓,'uncaughtException',e=>{ err(e); ♓.exit() }); on(♓,'beforeExit',off)
 	♓.argv = [♓.argv[0],…a.argv]; φ.cwd = a.cwd; ♓.env = a.env; _.zip([♓.stdin,♓.stdout,♓.stderr],a.isTTY).map(([fd,t])=> fd.isTTY = t)
-	try{ _code }catch(e){ err(e) }
-	}+')()').replace('_code',code)
+	try{ 𐅮𐅪𐅮𐅯𐅰 }catch(e){ err(e) }
+	})+'').replace('𐅮𐅪𐅮𐅯𐅰',code)+')()'
 
 ################################################################################
 if_main_do(=>{
@@ -57,7 +59,7 @@ if_main_do(=>{
 	♓_on_exits(=>{ log('server exiting'); shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ` })
 	# pretty sure there's a race condition in [ln -sf] and [#!/usr/bin/env node] which causes problems with ζλ calls right after a server.ζ reboot. the fix is getting ipc_shell to fallback itself
 	new net.Server()
-		.listen(+φ(__dirname).φ`PORT`.text.re`\d+`[0],'localhost',on_ready)
+		.listen(2113,'localhost',on_ready)
 		.on('connection',socket=>{t←;
 			worker←; ended←;
 			c_send ← (type,ι)=>{ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); socket.write(Buffer.concat([a,b,c])) }

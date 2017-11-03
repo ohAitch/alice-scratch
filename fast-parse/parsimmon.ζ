@@ -16,7 +16,7 @@
 Parser ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
 P ← ι⇒
 	: P.prototype.isPrototypeOf(ι)? ι
-	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(ι=> ι.join(''))
+	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(.join(''))
 	: Tfun(ι)? P._graph_thunk(ι)
 	: Tarr(ι)? P._seq(ι)
 	: T.RegExp(ι)? P._regex(ι)
