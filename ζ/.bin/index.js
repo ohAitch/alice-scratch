@@ -247,15 +247,14 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 
 //################################### prelude ###################################
 E.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
-E.simple_hash_str = ι=>0?0
+var buf36 = lazy_fn(()=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode)
+E.simple_flesh = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;return r } })
-E.fromUInt32BE = ι=>{ var t = Buffer.alloc(4) ;t.writeUIntBE(ι,0,4) ;return t }
-E.b36 = ι=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode(ι).replace(/^0+(?!$)/,'')
-E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
+E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4` )).hash64(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> buf36(ι).slice(-12)) ;var 𐅜𐅪𐅫𐅪𐅃; // best hash is murmurhash.v3.128
 
 var memo_frp = (names,within,f)=>{
-	var dir = φ`~/.memo_frp/${names}`
+	var dir = φ`~/file/.cache/memo_frp/${names}`
 	if( within ){
 		try{ var t = fs.readdirSync(dir+'') }catch(e){ if (!(e.code==='ENOENT')) throw e ;var t = [] }
 		var now = Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
@@ -404,7 +403,6 @@ E._pisces__on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require(
 	f(i,sig) }); var 𐅰𐅞𐅜𐅯𐅨;
 E.pad_r = (ι,s)=> [ι,s.slice(ι["‖"])].fold(Tstr(ι)? (a,b)=> a+b : Tarr(ι)? (a,b)=> [...a,...b] : !function(...a){throw Error(__err_format(...a))}('‽'))
 
-var find_closest_ISU = (ιs,ι)=>{ for(var i=0;i<ιs["‖"];i++) if( ι <= ιs[i] ) return i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1 ;return ιs["‖"]-1 }
 var cartesian_str =(𐅭𐅞)=>𐅭𐅞.reduce((a,b)=>{ var r = []; a.forEach(a=> b.forEach(b=> r.push(a+b))) ;return r } ,[''])
 E.copy_deep = ι=>0?0
 	: Tprim(ι)? ι
@@ -478,7 +476,7 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.filter!':function(f){ this.forEach((ι,i)=> f(ι,i,this) || this.delete(i)) }
 ,'Set.prototype.pop':function(){ var t = this[0]; this.delete(t) ;return t }
 ,'Set.prototype.0':{get(){return seq(this).next_ι() }}
-,'(Array|Set).prototype.-eq':function(...a){ var t = _([...this]).groupBy(simple_hash_str) ;a.forEach((𐅭𐅞)=>𐅭𐅞.forEach(ι=> delete t[simple_hash_str(ι)])) ;return _(t).values()._.flatten(true) }
+,'(Array|Set).prototype.-eq':function(...a){ var t = _([...this]).groupBy(simple_flesh) ;a.forEach((𐅭𐅞)=>𐅭𐅞.forEach(ι=> delete t[simple_flesh(ι)])) ;return _(t).values()._.flatten(true) }
 
 ,'Map.prototype.⁻¹declare_uniq':{get(){return new Map([...this.entries()].map(ι=>[ι[1],ι[0]])) }}
 ,'Map.prototype.⁻¹':{get(){return [...this.keys()].group(ι=> this.get(ι)) }}
@@ -575,22 +573,14 @@ E.schema = (()=>{
 	return ι=> T.boolean(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι["‖"]? [] : [ι.map(schema).fold(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
-E[γ["|>"]] (ι=> new Property2(ι,"brightness")) [γ['…←']] ({ get:_.once(()=>{
-	// br ← hsᵥ? {
-	// 	get(){↩Π( hsᵥ`hs.brightness.get()`/100 )},
-	// 	set(ι){↩Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
-	// 	} :
-	var br = npm`brightness@3.0.0`
-	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(()=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
-	return br }) })
-
 E.os_daemon = (cmd,opt)=>{ cmd+=''; var {once} = opt||{}
+	var cmd_h = simple_hash(cmd)
 	var job = {
 		[once?'RunAtLoad':'KeepAlive']:true
-		,Label:`ζ.${φ(cmd).name}.${simple_hash(cmd).slice(0,8)}`
+		,Label:`ζ.${φ(cmd).name}.${cmd_h}`
 		,ProgramArguments:['sh','-c',sh`export anon_tns7w=${cmd}; PATH="/usr/local/bin:$PATH"; ${cmd}`]
-		,StandardOutPath  :φ`~/Library/Caches/ζ.logic/${simple_hash(cmd)}.out`.ensure_dir()+''
-		,StandardErrorPath:φ`~/Library/Caches/ζ.logic/${simple_hash(cmd)}.err`.ensure_dir()+''
+		,StandardOutPath  :φ`~/Library/Caches/ζ.logic/${cmd_h}.out`.ensure_dir()+''
+		,StandardErrorPath:φ`~/Library/Caches/ζ.logic/${cmd_h}.err`.ensure_dir()+''
 		}
 	var job_path = φ`~/Library/LaunchAgents/${job.Label}.plist`; job_path.BAD_exists() ||( job_path.ι = job ); _.isEqual( job_path.plist, job ) || !function(...a){throw Error(__err_format(...a))}('‽')
 	return { cmd ,job_path ,restart(){ var t = this.job_path; shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}` } } }
@@ -601,29 +591,28 @@ E.if_main_do = f=>{ if( !module.parent ) f(...process.argv.slice(2)) }
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
 
-E.normal_PDF = x=>{ var μ = 0; var σ = 1; var v = σ**2 ;return 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
-E.normal_CDF = x=>{ var μ = 0; var σ = 1 ;return (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
-E.invert_specific = f=> fx=>{ var t = 0; while (f(t) > fx) t+=0.01 ;return t }
+E.normal_PDF = x=>{ var μ = 0 ;var σ = 1 ;var v = σ**2 ;return 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
+E.normal_CDF = x=>{ var μ = 0 ;var σ = 1 ;return (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
+E.invert_specific = f=> fι=>{ var ι = 0 ;while( f(ι) > fι ) ι += 0.01 ;return ι }
+
+
 
 //#################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
-E.sfx = function(ss,...ιs){ var ι = ss[0]
+E.sfx = (ss,...ιs)=>{ var ι = ss[0]
 	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if (ι==='done' && osaᵥ`get volume settings`['output muted']){ var br = brightness; br.get().then(old=>{ br.set(0); (()=> br.set(old)).in(0.2) }) }
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ var br = npm`brightness@3.0.0` ;br.get()[γ["|>"]](t=>{ br.set(0) ;(()=> br.set(t)).in(0.2) }) }
 	}
-var _low_brightness_symbol__high_brightness_symbol_ = go=>{ var ιs = [0,1,2.5,5.5,10,16].map(ι=>ι/16) ;return brightness.get().then(br=> brightness.set_overlay( ιs[min(max( 0, find_closest_ISU(ιs,br) + go ), ιs["‖"]-1 )] )) }
-E._low_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(-1)
-E._high_brightness_symbol_ = ()=> _low_brightness_symbol__high_brightness_symbol_(1)
-// [#Q E.anon #Q].def({ ,get(){t←; ↩ [t=random_id.greek(5),t+'←;'] }})
-new Property( E,'anon' ).def({ get(){return random_id.greek(5) }})
-new Property( E,'now' ).def({ get(){ var t = Time(); return [t.ymdhm,t.ymdhms,t.ymdhmss] }})
-new Property( E,'day' ).def({ get(){return Time().local.ymd }})
+// [#Q E.anon #Q].def({get:=>{t←; ↩ [t=random_id.greek(5),t+'←;'] }})
+new Property( E,'anon' ).def({get:()=> random_id.greek(5) })
+new Property( E,'now' ).def({get:()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }})
+new Property( E,'day' ).def({get:()=> Time().local.ymd })
 
 E.github_url = ι=>{
 	var github_remote_origin = file=>{
 		var ι = φ(file).root('/')
-		var root = ι; while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+		var root = ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
 		if( root+''==='/' ) throw Error() [γ['…←']] ({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/')["‖"])
 		var name = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
@@ -1048,7 +1037,7 @@ E._double_dagger__repl_start = ()=> ζ_repl_start({
 E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '} [γ['…←']] (opt)
 	var q = (ι,opt={})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
 	var promise_watch = ι=>{ if(! ι.id ){
-		ι.id = b36(fromUInt32BE(new Property( (𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] )),'0' ).ι++))
+		ι.id = (new Property( (𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] )),'0' ).ι++).toString(36)
 		var hr = hrtime(); ι.then(x=>{ var x = my_inspect(x); hrtime(hr) < 5 && x["‖"] && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
 	var my_inspect = (ι,opt={})=>0?0
 		: ι===undefined? ''

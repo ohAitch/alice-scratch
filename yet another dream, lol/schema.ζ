@@ -19,9 +19,9 @@ schema2 = ι=>{ 𐅪𐅞𐅂𐅂𐅜←;
 			,get_ι: ι=> sch_to_data.get(ι_to_sch.get(ι))
 			,add_ι: ι=>{
 				schema ← as_schema(ι)
-				sch_k ← simple_hash_str(schema)
+				sch_k ← simple_flesh(schema)
 				ι_to_sch.set(ι,sch_k)
-				sch_to_data.has(sch_k) || sch_to_data.set(sch_k,{ ι:schema, id:'#'+b36(fromUInt32BE([#Q (𐅪𐅞𐅂𐅂𐅜||(𐅪𐅞𐅂𐅂𐅜= [0] )).0 #Q].ι++)), })
+				sch_to_data.has(sch_k) || sch_to_data.set(sch_k,{ ι:schema, id:'#'+([#Q (𐅪𐅞𐅂𐅂𐅜||(𐅪𐅞𐅂𐅂𐅜= [0] )).0 #Q].ι++).toString(36), })
 				}
 			,map: f=> […sch_to_data.values()].map(f)
 			# ,simplify: =>{
@@ -51,7 +51,7 @@ node ← js.object
 		: Tnum(ι)? 0
 		: @.as.name(ι) )
 schema
-	using ≡ ← simple_hash_str
+	using ≡ ← simple_flesh
 	using [node -> schema]⁻¹
 schema …←> name : name = `#${[schema age index] as base 36}`
 
@@ -73,7 +73,7 @@ Type('node',{
 	,'∈':Object
 	})
 Type('schema',{
-	,'≡':simple_hash_str
+	,'≡':simple_flesh
 	# ,representative(){ _(@).max(.precedence) }
 	,show(){↩ [ JSON_pretty(@), @.as('(node)').‖, @.as.name, ].join(' ') }
 	})

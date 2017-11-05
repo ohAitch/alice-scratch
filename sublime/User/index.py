@@ -87,10 +87,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 					io = [#Q io.write #Q]
 					r ← []; o ← io.ι; io.ι = ι=> r.push(ι); ↩ =>{ io.ι = o; ↩ r.join('') }
 					}); ↩ _.once(=> r.map(ι=> ι()) ) }
-			global.i = 0
+			γ.i = 0
 			JSON.parse(ι).map(ι=>{
 				io ← hook_stdouterr()
-				r←; e←; try{ global.code = ι; global.require = require; r = ζ_eval(ι) }catch(e_){ e = e_ }
+				r←; e←; try{ γ.code = ι; γ.require = require; r = ζ_eval(ι) }catch(e_){ e = e_ }
 				r ← [ ,…io().slice(1) ,sb.encode(r) ,e===∅? '' : e.stack ].join('')
 				↩ (r===''? ι : ι.includes(chr(0xa))? ι.replace(re`${chr(0xa)}?$`,chr(0xa)) : '') + r
 				}) """,E(ι)))
@@ -177,7 +177,7 @@ class _2(sublime_plugin.EventListener):
 		ι = prefix
 		if ι == 'c': return [[ι,'cn.log(']]
 		if ι in ['day','now','anon']:
-			return (json.loads(ζ('t ← global[ι]; (Tarr(t)? t : [t]).map(r=> [ι,r])',ι)),sublime.INHIBIT_WORD_COMPLETIONS)
+			return (json.loads(ζ('t ← γ[ι]; (Tarr(t)? t : [t]).map(r=> [ι,r])',ι)),sublime.INHIBIT_WORD_COMPLETIONS)
 
 class make_divider(sublime_plugin.TextCommand):
 	# i wanna styles of different boldness, like, ===== is bolder than -----, and i wanna switch between them iff i hit the divider key and the length doesn't change

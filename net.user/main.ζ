@@ -1,4 +1,4 @@
-# this breaks https://venmo.com/ , huh
+if( location.host==='venmo.com' ) throw Error('ignore me') # this was breaking venmo
 
 ############################# builtins & copying ζ #############################
 E ← {}

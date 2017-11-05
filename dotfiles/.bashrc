@@ -7,7 +7,7 @@ eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
 	φpostrun ← "/tmp/postrun_"+random_id(9)
 	↩ name+sh`(){
 		ζ ${ι.cant_pool && "--fresh"} ${js` [process.env.?,process.env.$,…a] = a
-			global.postrun = ι=> φ(${φpostrun}).text = ι
+			γ.postrun = ι=> φ(${φpostrun}).text = ι
 			require_new(φ("~/.bashrc.ζ"))[${name}](…a)
 			`} $? $$ "$@"; E=$?
 		[ -e ${φpostrun} ] && { eval -- "$(cat ${φpostrun})"; E=$?; rm ${φpostrun}; }
@@ -23,6 +23,7 @@ eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
 export PROMPT_COMMAND='__prompt $? "$(history 1)" || PROMPT_COMMAND=pwd'; export PS1=$'\[\e[90m\]>\[\e[0m\] '
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
+unset HISTFILE
 l(){ ls -AG "$@"; }
 f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; } # ported to ‡; remove
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9

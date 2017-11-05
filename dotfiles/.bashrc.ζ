@@ -8,7 +8,7 @@ E['·'] = =>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = ∅ }
 E.__prompt = (E,history_1)=>{t←; E ← E |0
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
-	fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
+	cmd && fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
 	# ideal:
 	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
@@ -127,11 +127,11 @@ E.run_project.cant_pool = ✓
 
 ############################ single-purpose commands ###########################
 E.d = (a='.')=>{
+	# would be neat if this was .Trash aware
 	sum ← 0
 	q ← (ι,fl)=> cn.log( (' '.repeat(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
 	fs.readdirSync(a).map(fl=>{
-		if (φ(fl).is_dir){
-			# should probably use hook_stdouterr
+		if( φ(fl).is_dir ){
 			o ← process.stderr.write; process.stderr.write = =>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
 			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
 		else b ← φ(fl).‖
