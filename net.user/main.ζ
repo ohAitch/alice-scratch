@@ -12,7 +12,8 @@ def ← (o,name,ι)=>{
 		'set' in ι || (ι.set = λ(ι){ def(@,name,{value:ι, enumerable:✓}) })
 	Object.defineProperty(o,name,ι); ↩ o }
 Tfun ← E.Tfun = ι=> typeof ι === 'function'
-Function.prototype.every = λ(time,opt){ r ← setInterval(@,max(0,time)*1e3); /*↩ !(opt&&opt.leading)? r : new TimerCons(@.in(0),r)*/ }
+Function.prototype.every = λ(ι){↩ setInterval(@,max(0,ι)*1e3) }
+Function.prototype.every_leading = λ(ι){ setTimeout(@,0) ;↩ @.every(ι) }
 max ← Math.max; min ← Math.min
 
 #################################### prelude ###################################
@@ -26,6 +27,8 @@ at_urls ← { ,'*github.com':/^.*github\.com$/ ,'*githubusercontent.com':/^.*git
 at_url ← ι=> location.hostname.match(at_urls[ι])
 
 on_seen_Δ ← f=> document.addEventListener('visibilitychange',=> f(!document.hidden))
+on_seen_Δ_leading ← f=>{ setTimeout(=>f(✓),0) ;on_seen_Δ(f) }
+on_seen_Δ_leading_every ← f=>{ var 𐅫𐅬𐅃𐅬𐅰 ;on_seen_Δ_leading(seen=> seen? 𐅫𐅬𐅃𐅬𐅰 = f() : clearInterval(𐅫𐅬𐅃𐅬𐅰) ) }
 
 ################################################################################
 get_viaudeo ← =>{
@@ -119,11 +122,19 @@ if( at_url('*google.com') ){
 	}
 
 if( at_url('*discordapp.com') ){
-	q0 ← => location.pathname.match(/^\/channels\/@me\//) &&
-		$('.user-name').map(λ(){ $(@).text().match(/^[‡◍]$/) ||( $(@).text()==='alice'? $(@).text('‡').css({ backgroundColor:'#005322' ,color:'#1f8b4c' ,borderRadius:'4px' }) : $(@).text('◍').css({ backgroundColor:'#806028' ,color:'#bda06d' ,borderRadius:'4px' }) ) })
-	q ← =>( q0() ,token = q0.every(100) ); token←;
-	q(); on_seen_Δ(seen=> seen? q() : clearInterval(token))
 	# https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
+	on_seen_Δ_leading_every(=> (=>{
+		location.pathname.match(/^\/channels\/@me\//) &&
+			$('.user-name').map(λ(){ $(@).text().match(/^[‡◍]$/) ||( $(@).text()==='alice'? $(@).text('‡').css({ backgroundColor:'#005322' ,color:'#1f8b4c' ,borderRadius:'4px' }) : $(@).text('◍').css({ backgroundColor:'#806028' ,color:'#bda06d' ,borderRadius:'4px' }) ) })
+		}).every_leading(100))
+	# on_seen_Δ_leading_every(=> (=>{
+	# 	# only act when the user is not typing?
+	# 	ι ← $($('textarea').toArray().filter(x=> ($(x).attr('class')||'').includes('textAreaEnabled'))[0])
+	# 	a ← ι.val()
+	# 	b ← a.replace(/(.)ck|(?!lmk)(.)(?! k )(.)k(?=(?!n).)/g,'$1$2$3𐑒')
+	# 	# b ← a.replace(/z/g,'𐑟')
+	# 	a===b || ι.val(b)
+	# 	}).every_leading(1))
 	}
 
 # @match       *://books.google.com/*

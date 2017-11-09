@@ -1,11 +1,15 @@
-###################################### ui ######################################
+### https://github.com/ggreer/the_silver_searcher needs these ascii characters to see this file ###############################################################################################################################################################################################################################
+
+#################################### ui glue ###################################
 ⧫. notify ==>{
 	# ‡ a mess containing infra ‡
-	json_socket ← socket=>{ 𐅂𐅦𐅮𐅃𐅰←; 𐅮𐅰𐅮𐅂𐅂←; ↩ {
+	json_socket ← socket=>{ 𐅂𐅦𐅮𐅃𐅰←; 𐅮𐅰𐅮𐅂𐅂←; ↩ {
 		,to(ι){ t←; (𐅂𐅦𐅮𐅃𐅰||(𐅂𐅦𐅮𐅃𐅰=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(socket), t ) )).write(ι) }
 		,on(f){ (𐅮𐅰𐅮𐅂𐅂||(𐅮𐅰𐅮𐅂𐅂= socket.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
 		} }
 	ipc_wait ← f=>{H←; (H= new net.Server()).listen(0,'localhost').on('connection',socket=> json_socket(socket).on(_.once(ι=>{ socket.destroy(); H.close(); f(ι) })) ) ;↩ Π(yes=> H.on('listening',yes.P(H)) ) }
+
+	# ‡ with the double promise from ipc_wait this should not work at all ‡
 
 	↩ ι=>{ Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
 		↩ Π(yes=> ipc_wait(yes).then(H=>
@@ -14,6 +18,8 @@
 				,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
 				):send()`
 			) ) } }
+
+⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
 
 ################################### data glue ##################################
 ⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _.values(ι)[0].revisions[0]['*'] )
@@ -151,3 +157,32 @@
 	# https://www.google.com/search?q=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2&oq=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2
 
 	↩ ι }
+
+################################### new tools ##################################
+⧫. lock ==>{
+	locks ← {}
+	♓_on_exits(=> _.keys(locks).map(lock.un.⚓) )
+	toφ ← id=> φ`/tmp/lock_${id}`+''
+	lock ← (id,wait,cb)=>{
+		if( wait < 0 ) ‽('could not acquire lock within wait time')
+		if( wait <= 0 )
+		fs.open(toφ(id),'wx',(e,fd)=>{
+			if( e && e.code==='EEXIST' ){
+				if( wait <= 0 ) cb(e)
+				else{ w ← min(wait,0.1) ;wait -= w ;(=> lock(id,wait,cb)).in(w) } }
+			else if( e ) throw e
+			else{ locks[id] = ✓ ;fs.close(fd,cb) }
+			}) }
+	lock.⚓ = (id)=>{ fd ← fs.openSync(toφ(id),'wx') ;locks[id] = ✓ ;try{ fs.closeSync(fd) }catch (e){} }
+	lock.un = (id,cb)=>{ delete locks[id] ;fs.unlink(toφ(id),cb) }
+	lock.un.⚓ = (id)=>{ try{ fs.unlinkSync(toφ(id)) }catch (e){} ;delete locks[id] }
+	lock.∃ = (id,cb)=>{ fs.open(toφ(id),'r',(e,fd)=> e? e.code==='ENOENT'? cb(∅,✗) : cb(e) : fs.close(fd,e=> cb(e,✓)) ) }
+	lock.∃.⚓ = (id)=>{
+		try{ fd ← fs.openSync(toφ(id),'r') }catch (e){ if( e.code==='ENOENT' ) ↩ ✗ ;throw e }
+		try{ fs.closeSync(fd) }catch(e){}
+		↩ ✓ }
+	↩ lock }
+
+# make this be promises i guess
+# and make wait an opt again i guess
+# also trash the sync

@@ -83,12 +83,12 @@ P ← require('./parsimmon')
 			↩ ι })
 		↩ ι }
 	parse_normalize_regex_memoized ← ι=>{ t ← ι |> (𐅞𐅞𐅯𐅦𐅂||(𐅞𐅞𐅯𐅦𐅂= memoize_proc(ι=> normalize_to_axioms_regex(parse_regex(ι)) ) )); ↩ copy_deep(t) …← ({tag:t.tag}) }
-	$ ← parse_normalize_regex_memoized
+	$ ← parse_normalize_regex_memoized
 
 	t ← { Regex,parse_regex,normalize_to_axioms_regex }
 	exports …← (t)
 
-	if_main_do(=>{ [
+	module.if_main_do(=>{ [
 		/(?:(|))/u,
 		/(|)/u,
 

@@ -6,7 +6,7 @@
 # _Stream.prototype = {
 # 	,‖:λ(){↩ @.str.‖-i }
 # 	,slice(i){↩ _Stream(@.str,@.i+i) }
-# 	,h_slice(a,b){ q ← ι=> ι===∅? 0 : ι<0? (@.str.‖-i)+ι : ι; ↩ @.str.slice(q(a),q(b)) }
+# 	,h_slice(a,b){ q ← ι=> ι===∅? 0 : ι<0? (@.str.‖-i)+ι : ι; ↩ @.str.slice(q(a),q(b)) }
 # 	,match(ι){re←; ↩ Tstr(ι)? @.str.startsWith(ι,@.i) :( re = RegExp(ι.source,ι.flags.replace(/[^imu]/g,'')+'y') ,re.exec_at(@.str,@.i) ) }
 # 	}
 # [#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})

@@ -247,15 +247,14 @@ if( require.extensions && !require.extensions['.ζ'] )(=>{
 
 #################################### prelude ###################################
 E.protos = λ*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
-E.simple_hash_str = ι⇒
+buf36 ← lazy_fn(=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode)
+E.simple_flesh = ι⇒
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (k,ι)=>{ if (Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_(ι).keys().sort().forEach(k=> r[k]=ι[k]) ;↩ r } })
-E.fromUInt32BE = ι=>{ t ← Buffer.alloc(4) ;t.writeUIntBE(ι,0,4) ;↩ t }
-E.b36 = ι=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode(ι).replace(/^0+(?!$)/,'')
-E.simple_hash = ι=> b36( require('crypto').createHash('sha256').update(simple_hash_str(ι)).digest() )
+E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4` )).hash64(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> buf36(ι).slice(-12)) ;𐅜𐅪𐅫𐅪𐅃←; # best hash is murmurhash.v3.128
 
 memo_frp ← (names,within,f)=>{
-	dir ← φ`~/.memo_frp/${names}`
+	dir ← φ`~/file/.cache/memo_frp/${names}`
 	if( within ){
 		try{ t ← fs.readdirSync(dir+'') }catch(e){ if (!(e.code==='ENOENT')) throw e ;t ← [] }
 		now ← Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
@@ -265,14 +264,14 @@ memo_frp ← (names,within,f)=>{
 E.memoize_persist = f=>{
 	store ← φ`/tmp/ζpersist_${simple_hash(f)}` ;store_ι ← store.json||{}
 	↩ (…a)=>{ t ← new Property(store_ι,simple_hash(a)) ;↩ t.∃? t.ι : ( t.ι = f(…a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
-E.memoize_proc = f=>{ cache ← Object.create(null) ;↩ (ι=>{ t ← ι+'' ;↩ t in cache? cache[t] :( cache[t] = f(ι) ) }) …← ({cache}) }
+E.memoize_proc = f=>{ cache ← Object.create(null) ;↩ (ι=>{ t ← ι+'' ;↩ t in cache? cache[t] :( cache[t] = f(ι) ) }) …← ({cache}) }
 # resource management is a thing & i havent thought about it enough
 # WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 # this does
 E.memoize_tick = f=>{ f = memoize_proc(f); cache ← f.cache; ↩ (ι=>{ t ← ι+''; process.nextTick(=> delete cache[t]); ↩ f(ι) }) …← ({cache}) }
 # E.memoize = f=>{ cache ← new WeakMap() ;↩ ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r) ;↩ r } …← ({cache}) }
-# frp will remove the last use(s) of slot_persist
-E.slot_persist = name=>{ o ← φ`/tmp/ζpersist_${name}` ;↩ def({name},'ι',{get(){↩ o.json },set(ι){ o.json = ι }}) }
+# ? frp will remove the last use(s) of slot_persist
+E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι}`‘.json
 
 E.unicode_names = ι=> […ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (=>{
@@ -404,7 +403,6 @@ E.♓_on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require('sign
 	f(i,sig) }); 𐅰𐅞𐅜𐅯𐅨←;
 E.pad_r = (ι,s)=> [ι,s.slice(ι.‖)].fold(Tstr(ι)? (a,b)=> a+b : Tarr(ι)? (a,b)=> […a,…b] : ‽)
 
-find_closest_ISU ← (ιs,ι)=>{ for(i←0;i<ιs.‖;i++) if( ι <= ιs[i] ) ↩ i===0? i : abs(ιs[i]-ι) < abs(ιs[i-1]-ι)? i : i-1 ;↩ ιs.‖-1 }
 cartesian_str ← .reduce((a,b)=>{ r ← []; a.forEach(a=> b.forEach(b=> r.push(a+b))) ;↩ r } ,[''])
 E.copy_deep = ι⇒
 	: Tprim(ι)? ι
@@ -416,7 +414,7 @@ E.copy_deep = ι⇒
 		↩ r })()
 E.seq = ι=>{ t← Object.create(seq.prototype); t.ι = ι ;↩ t }
 seq.prototype = {
-	,next_ι:λ(){ t ← @.ι; if(! t.next ) t = t.@@iterator() ;↩ t.next().value }
+	,next_ι:λ(){ t ← @.ι; if(! t.next ) t = t.@@iterator() ;↩ t.next().value }
 	# ,map(){}
 	# ,'map…':λ(){}
 	# ,fold(){}
@@ -459,9 +457,9 @@ assign_properties_in_E_informal({
 ,'Set.prototype.join':λ(ι){↩ […@].join(ι) }
 
 ,'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map(); for (var t of @) r.set(t, (r.has(t)? r.get(t) : 0)+1 ) ;↩ r }
-,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι); r ← new Map(); for (var t of @){ t2 ← f(t); r.set(t2, (r.get(t2)||new Set()).∪([t])) } ;↩ r }
+,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι); r ← new Map(); for (var t of @){ t2 ← f(t); r.set(t2, (r.get(t2)||new Set()).∪([t])) } ;↩ r }
 
-,'Map.prototype.zip':λ(…a){ a.unshift(@); r ← new Map(); a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].repeat(a.‖); t[i] = ι; r.set(k,t) })) ;↩ r }
+,'Map.prototype.zip':λ(…a){ a.unshift(@); r ← new Map(); a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].repeat(a.‖); t[i] = ι; r.set(k,t) })) ;↩ r }
 
 ,'(Array|Buffer|String).prototype.chunk':λ(L){↩ _.range(0,@.‖,L).map(i=> @.slice(i,i+L)) }
 ,'(Array|Buffer|String).prototype.windows':λ(L){↩ (@.‖-L+1).map(i=> @.slice(i,i+L)) }
@@ -478,7 +476,7 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
 ,'Set.prototype.pop':λ(){ t ← @[0]; @.delete(t) ;↩ t }
 ,'Set.prototype.0':{get(){↩ seq(@).next_ι() }}
-,'(Array|Set).prototype.-eq':λ(…a){ t ← _([…@]).groupBy(simple_hash_str) ;a.forEach(.forEach(ι=> delete t[simple_hash_str(ι)])) ;↩ _(t).values()._.flatten(✓) }
+,'(Array|Set).prototype.-eq':λ(…a){ t ← _([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _(t).values()._.flatten(✓) }
 
 ,'Map.prototype.⁻¹declare_uniq':{get(){↩ new Map([…@.entries()].map(ι=>[ι[1],ι[0]])) }}
 ,'Map.prototype.⁻¹':{get(){↩ […@.keys()].group(ι=> @.get(ι)) }}
@@ -500,10 +498,10 @@ assign_properties_in_E_informal({
 
 ,'Promise.prototype.status':{ ,writable:✓ ,get(){get←;
 	if(get= b_util&&b_util.getPromiseDetails ){ [r,ι] ← get(@); r = [∅,✓,✗][r]; if( r!==∅ ){ [@.status,@.ι] = [r,ι] ;↩ r } }
-	else{ t ← r=> ι=>{ [@.status,@.ι] = [r,ι] ;↩ @.status } ;@.then(t(✓),t(✗)) ;t(∅)(∅) ;↩ @.status } }}
+	else{ t ← r=> ι=>{ [@.status,@.ι] = [r,ι] ;↩ @.status } ;@.then(t(✓),t(✗)) ;t(∅)(∅) ;↩ @.status } }}
 ,'Promise.prototype.ι':{ ,writable:✓ ,get(){ if( @.status!==∅ ) ↩ @.ι }}
 ,'stream.Readable.prototype.pin':λ(){↩ Π(yes=>{ t ← []; @.resume(); @.on('data',ι=> t.push(ι) ).on('end',=> yes(Buffer.concat(t)) ) })}
-,'Buffer.prototype.pipe':λ(to,opt){ t ← new stream.Duplex(); t.push(@); t.push(null) ;↩ t.pipe(to,opt) }
+,'Buffer.prototype.pipe':λ(to,opt){ t ← new stream.Duplex(); t.push(@); t.push(null) ;↩ t.pipe(to,opt) }
 })
 Promise.prototype‘.thunk …← ({ get(){↩ λ f(){↩ f.ι.ι } …← ({ι:@}) } })
 Promise.prototype[|>] = (ι,f)=> ι.status? f(ι.ι) : ι.then(f)
@@ -575,59 +573,68 @@ E.schema = (=>{
 	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
-E‘.brightness …← ({ get:_.once(=>{
-	# br ← hsᵥ? {
-	# 	get(){↩Π( hsᵥ`hs.brightness.get()`/100 )},
-	# 	set(ι){↩Π( hsᵥ`hs.brightness.set(${ι*100|0})` )},
-	# 	} :
-	br ← npm`brightness@3.0.0`
-	br.set_overlay = ι=> br.set(ι > 0.5? (ι===1? 1 : ι-1/64) : (ι===0? 0 : ι+1/64)).then(=> robot_key_tap('⇧⌥FnF'+(ι > 0.5? 2 : 1)) )
-	↩ br }) })
-
-E.os_daemon = (cmd,opt)=>{ cmd+=''; {once} ← opt||{}
+E.cmd_log_loc = cmd=>{
+	id ← φ(cmd).name+'.'+simple_hash(cmd) ;↩ { ,id
+		,out:φ`~/Library/Caches/ζ.logic/${id}.out`.ensure_dir()+''
+		,err:φ`~/Library/Caches/ζ.logic/${id}.err`.ensure_dir()+''
+		} }
+E.os_daemon = (cmd,opt)=>{ cmd+=''; {once} ← opt||{}
+	t ← cmd_log_loc(cmd)
 	job ← {
 		,[once?'RunAtLoad':'KeepAlive']:✓
-		,Label:`ζ.${φ(cmd).name}.${simple_hash(cmd).slice(0,8)}`
+		,Label:`Z.${t.id}`
 		,ProgramArguments:['sh','-c',sh`export anon_tns7w=${cmd}; PATH="/usr/local/bin:$PATH"; ${cmd}`]
-		,StandardOutPath  :φ`~/Library/Caches/ζ.logic/${simple_hash(cmd)}.out`.ensure_dir()+''
-		,StandardErrorPath:φ`~/Library/Caches/ζ.logic/${simple_hash(cmd)}.err`.ensure_dir()+''
+		,StandardOutPath  :t.out
+		,StandardErrorPath:t.err
 		}
-	job_path ← φ`~/Library/LaunchAgents/${job.Label}.plist`; job_path.BAD_exists() ||( job_path.ι = job ); _.isEqual( job_path.plist, job ) || ‽
-	↩ { ,cmd ,job_path ,restart(){ t ← @.job_path; shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}` } } }
+	job_path ← φ`~/Library/LaunchAgents/${job.Label}.plist`; job_path.BAD_exists() ||( job_path.ι = job ); _.isEqual( job_path.plist, job ) || ‽
+	↩ { ,cmd ,job_path ,restart(){ t ← @.job_path; shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}` } } }
 [#Q os_daemon.this #Q].def(=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w) )
 
-E.if_main_do = f=>{ if( !module.parent ) f(…process.argv.slice(2)) }
+module.__proto__.if_main_do = λ(f){ !@.parent && f(…process.argv.slice(2)) }
 
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(…a)
 
-E.normal_PDF = x=>{ μ ← 0; σ ← 1; v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
-E.normal_CDF = x=>{ μ ← 0; σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
-E.invert_specific = f=> fx=>{ t ← 0; while (f(t) > fx) t+=0.01 ;↩ t }
+E.normal_PDF = x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
+E.normal_CDF = x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
+E.invert_specific = f=> fι=>{ ι ← 0 ;while( f(ι) > fι ) ι += 0.01 ;↩ ι }
+
+normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); ↩ ι }
+diff_Set ← (a,b)=>{r←; ↩0?0
+	: [a,b].every(T.Set)?
+		# [a,b] *.count zip **|0 *-
+		( r = normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), [#Q r.name #Q].def({ value:a.name }), r )
+	: ‽ }
+E.Δ_Sets = (…a)=>{ f ← a.pop()
+	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
+	f()
+	↩ _.zip(start,a).map(a=> diff_Set(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
+
+named_pipe ← ι=>{ ms ← process.platform==='win32' ;↩ { ,id:(ms?'//./pipe/':'/tmp/pipe_')+φ`${ι+''}` ,reset(){!ms &&( φ(@.id).ι = ∅ ) ;↩@} } }
+E.simple_connect = id=> Π((yes,no)=>{ to ← new net.Socket().on('connect',=>yes(to)).on('error',no).connect(named_pipe(id).id).unref() })
+E.simple_listen = (id,f)=> new net.Server().listen(named_pipe(id).reset().id).on('connection',f)
 
 ##################################### .ζrc #####################################
-process.env.PATH = ['./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
+process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
 
-E.sfx = λ(ss,…ιs){ ι ← ss[0]
+E.sfx = (ss,…ιs)=>{ ι ← ss[0]
 	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if (ι==='done' && osaᵥ`get volume settings`['output muted']){ br ← brightness; br.get().then(old=>{ br.set(0); (=> br.set(old)).in(0.2) }) }
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get()|>(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
 	}
-🔅🔆 ← go=>{ ιs ← [0,1,2.5,5.5,10,16].map(ι=>ι/16) ;↩ brightness.get().then(br=> brightness.set_overlay( ιs[min(max( 0, find_closest_ISU(ιs,br) + go ), ιs.‖-1 )] )) }
-E.🔅 = => 🔅🔆(-1)
-E.🔆 = => 🔅🔆(1)
-# [#Q E.anon #Q].def({ ,get(){t←; ↩ [t=random_id.greek(5),t+'←;'] }})
-[#Q E.anon #Q].def({ ,get(){↩ random_id.greek(5) }})
-[#Q E.now #Q].def({ ,get(){ t ← Time(); ↩ [t.ymdhm,t.ymdhms,t.ymdhmss] }})
-[#Q E.day #Q].def({ ,get(){↩ Time().local.ymd }})
+# [#Q E.anon #Q].def({get:=>{t←; ↩ [t=random_id.greek(5),t+'←;'] }})
+[#Q E.anon #Q].def({get:=> random_id.greek(5) })
+[#Q E.now #Q].def({get:=>{ t ← Time() ;↩ [t.ymdhm,t.ymdhms,t.ymdhmss] }})
+[#Q E.day #Q].def({get:=> Time().local.ymd })
 
 E.github_url = ι=>{
 	github_remote_origin ← file=>{
 		ι ← φ(file).root('/')
-		root ← ι; while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+		root ← ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
 		if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/').‖)
 		name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
-		commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root}; git rev-parse HEAD`+''
+		commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root}; git rev-parse HEAD`+''
 		↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
 	[file,h] ← sbᵥ`view = deserialize(${ι}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
 	fm ← ι=> 'L'+(ι+1)
@@ -976,9 +983,10 @@ json2_show ← ι=> JSON_pretty(ι,λ(ι){t←;
 	↩ φ })
 
 ############################## api interpretation ##############################
-memSc ← memoize_tick(ι=> new vm.Script(`'use strict';undefined;`+ι) )
-ζ_verify_syntax ← ι=>{ ι = ζ_compile(ι) ;try{ memSc(ι) }catch(e){ if( e instanceof SyntaxError ) ↩ e } }
-E.ζ_eval = ι=>{ ι = ζ_compile(ι) ;↩ memSc.cache[ι]? memSc(ι).runInThisContext() : (0,eval)(`'use strict';undefined;`+ι) }
+comp2 ← ι=> `'use strict';undefined;\n`+ζ_compile(ι)
+mem_sc ← memoize_tick(ι=> new vm.Script(ι) )
+ζ_verify_syntax ← ι=>{ ι = comp2(ι) ;try{ mem_sc(ι) }catch(e){ if( e instanceof SyntaxError ) ↩ e } }
+E.ζ_eval = ι=>{ ι = comp2(ι) ;↩ mem_sc.cache[ι]? mem_sc(ι).runInThisContext() : (0,eval)(ι) }
 
 E.returnfix_compile = (=>{↩ ι=>{t←; ↩ bad(ι) && !bad(t='(=>{'+ι+'})()')? t : ι }
 	λ bad(ι){t←; ↩ (t= ζ_verify_syntax(ι)) && t.message==='Illegal return statement' }
@@ -992,7 +1000,7 @@ E.do_end_undefined_thing = .replace(/;\s*$/,'; ∅')
 #################################### ζ.user ####################################
 sb._call = => sb.tab.active.ι
 E.p = λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
-E.ps = Object.getOwnPropertyDescriptors
+E.ps = Object.getOwnPropertyDescriptors
 
 E‘.require_see .get= => require_new(φ`~/code/declare/see.ζ`+"")
 
@@ -1048,7 +1056,7 @@ E.‡_repl_start = => ζ_repl_start({
 E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0m '} …← (opt)
 	q ← (ι,opt={})=> util_inspect_autodepth(ι,_(opt).pick('colors'))
 	promise_watch ← ι=>{ if(! ι.id ){
-		ι.id = b36(fromUInt32BE([#Q (𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] )).0 #Q].ι++))
+		ι.id = ([#Q (𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] )).0 #Q].ι++).toString(36)
 		hr ← hrtime(); ι.then(x=>{ x ← my_inspect(x); hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
 	my_inspect ← (ι,opt={})⇒
 		: ι===∅? ''
@@ -1069,7 +1077,7 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 		code ← @.bufferedCommand+line
 		code = opt.compile(code) # ! hacks are fun
 		if( ζ_verify_syntax(code) ){ @.bufferedCommand = code+'\n' ;@.outputStream.write('    ') ;↩ }
-		try{ v ← ζ_eval(code) }catch(e){ error ← e }
+		try{ v ← ζ_eval(code) }catch(e){ error ← e }
 		@.bufferedCommand = ''
 		if( code ){
 			φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
@@ -1093,6 +1101,9 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 	↩ @
 	}) }; 𐅩𐅞𐅋𐅦𐅩←;
 
+#################################### prelude ###################################
+require(φ`~/code/declare/module.ζ`+'').patch(E)
+
 ##################################### main #####################################
 sh_ify ← ι=>{t←; ↩ Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
@@ -1111,6 +1122,6 @@ E.ζ_main = ({a})=>{ι←;
 			.then(ι=>{ ι.out && process.stdout.write(ι.out); ι.code &&( process.exitCode = ι.code ) })
 		}
 	}
-if_main_do((…a)=>ζ_main({a}))
+module.if_main_do((…a)=>ζ_main({a}))
 # inject as .bashrc
 # 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `

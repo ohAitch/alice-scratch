@@ -44,7 +44,7 @@ E.ps2 = =>{
 	ETIME ← .slice(h.search('PID')+'PID'.‖ + 1, h.search('ELAPSED')+'ELAPSED'.‖)
 	r ← h+'\n'+r
 		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
-		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(GitHub Desktop|Google Chrome|Steam|Spotify|BetterTouchTool|iBooks|Preview|Path Finder|CIJScannerRegister|Image Capture Extension|Audacity|Karabiner|LaunchControl).app/`)
+		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(Adobe Crash Reporter|Adobe Desktop Service|AdobeCRDaemon|AdobeIPCBroker|Android File Transfer Agent|Arq|Arq Agent|Audacity|BetterTouchTool|CCXProcess|CIJScannerRegister|Core Sync|Creative Cloud|GitHub Desktop|Google Chrome|iBooks|Image Capture Extension|Karabiner|Keybase|LastPass|LaunchControl|NoSleep|Path Finder|Preview|RescueTime|SlimBatteryMonitor|Spotify|Steam|TotalSpaces2|TotalSpacesCrashWatcher).app/`)
 		._.sortBy(ETIME).reverse()
 		.join('\n')+'\n'
 	cn.log(r) }

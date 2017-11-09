@@ -37,7 +37,7 @@ main ← ι=>{
 	}
 
 APP ← '\x1b[34m[im_autowhite]\x1b[0m'
-if_main_do((…a)=>{
+module.if_main_do((…a)=>{
 	if (a.‖===1) main(a[0])
 	else a.forEach((ι,i,l)=>{
 		shᵥexit`[ -f ${ι} ]` &&( cn.log(APP,'['+(i+1)+'/'+l.‖+']',ι), main(ι) )

@@ -29,12 +29,13 @@
 
 ########### prelude ##########
 nk ← npm`numeric@1.2.6`
-buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
+buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
 bits ← ι=>{ if( Tarr(ι) ) ↩ ι ;ι = buffer(ι) ;↩ […ι].map…(ι=> 8..map(i=> (ι & 1<<i) >>i)) }
 Ox ← ι=>{ι+='' ;↩ Buffer.from(ι,'hex') }
 Ob ← ι=>{ι+='' ;↩ […ι].map(ι=> ι==='0'?0:1) }
 b8 ← ι=> Buffer.from([ι])
 xor_repeat ← (a,b)=>{ ;if( b.‖ > a.‖ ) #swap a b ;r ← Buffer.alloc(a.‖) ;for( i←0;i<r.‖;i++ ) r[i] = a[i] b^ b[i % b.‖] ;↩ r }
+norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
 norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
 mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
 
@@ -57,7 +58,3 @@ find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ ← ι=>
 	↩ mean([ norm1(αβ.map(=>1)) ,…ι.map(ι=> αβ.map(α=> α===ι?1:0) ) ]) }
 t ← texts.map(.chunk(4).map(ι=> parseInt(ι.join(''),2) )).map(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
 # t.map(.map((ι,i)=> '▁▂▃▄▅▆▇█▁▂▃▄▅▆▇█'[i].repeat(round(173*ι)) ).join('') ).join('\n')
-i want to See 4b
-how can i code that see.ζ visualization?
-obvs bar graph
-‡ this is something worth Seeing :) ‡

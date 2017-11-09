@@ -24,7 +24,6 @@ contexts:
     - { scope: punctuation.text, match: '[!$&+,\-.:;=?@`\\|/↯…≪≫‽⁺⁻₊×∀∃∄₋~←→↔≡⇒∈∉≠✓✗¬≔*↑↓≈%<>≤≥≉±ι÷√∪∩⁘⊂⊃⊄⊅¦⧗∋∌⌈⌊‖⍟⋯‼·⌕⚓¶∅▣]' }
     - { scope: punctuation.text, match: '\b(vs)\b' }
     - { scope: punctuation.text.alert, match: '\b(?<![|])[X](?=\b|[₀-₉⁰¹²³⁴-⁹])(?!\|)' }
-    - { scope: punctuation.text.heart, match: '<3(?!>)' }
     - { scope: punctuation.text.me, match: '‡' }
     - { scope: punctuation.text.them, match: '◍' }
     - { scope: punctuation.definition.group, match: '[()\[\]{}‹›⟨⟩]' }

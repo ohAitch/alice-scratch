@@ -34,7 +34,7 @@ start(hs.distributednotifications.new(function(name,object,data)
 	if name == 'com.spotify.client.PlaybackStateChanged' then
 		Z(nil,'t ← '..hs.json.encode(data)..[[;
 			delete Number.prototype.inspect
-			out ← ι=>{ φ`~/file/spotify.txt`.text += util_inspect_autodepth(ι)+'\n' }
+			out ← ι=> fs.appendFileSync(φ`~/file/.archive/spotify2.txt`+'',util_inspect_autodepth(ι)+'\n')
 			out({ ,time:Time().i ,track:{ ,id:t['Track ID'] ,'play‖':t['Play Count'] } ,at:t['Playback Position'] ,action:t['Player State'].toLowerCase()/*∈['stopped','playing','paused']*/ })
 			[id,spotify_volume] ← osaᵥ`spotify: { id of current track, sound volume }`; t ← osaᵥ`get volume settings`; out({ ,time:Time().i ,track:{ ,id } ,spotify_volume ,volume:t['output volume'] ,muted:t['output muted'] })
 			]]) end

@@ -264,14 +264,14 @@ var memo_frp = (names,within,f)=>{
 E.memoize_persist = f=>{
 	var store = φ`/tmp/ζpersist_${simple_hash(f)}` ;var store_ι = store.json||{}
 	return (...a)=>{ var t = new Property(store_ι,simple_hash(a)) ;return t["∃"]? t.ι : ( t.ι = f(...a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
-E.memoize_proc = f=>{ var cache = Object.create(null) ;return (ι=>{ var t = ι+'' ;return t in cache? cache[t] :( cache[t] = f(ι) ) }) [γ['…←']] ({cache}) }
+E.memoize_proc = f=>{ var cache = Object.create(null) ;return (ι=>{ var t = ι+'' ;return t in cache? cache[t] :( cache[t] = f(ι) ) }) [γ['…←']] ({cache}) }
 // resource management is a thing & i havent thought about it enough
 // WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 // this does
 E.memoize_tick = f=>{ f = memoize_proc(f); var cache = f.cache; return (ι=>{ var t = ι+''; process.nextTick(()=> delete cache[t]); return f(ι) }) [γ['…←']] ({cache}) }
 // E.memoize = f=>{ cache ← new WeakMap() ;↩ ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r) ;↩ r } …← ({cache}) }
-// frp will remove the last use(s) of slot_persist
-E.slot_persist = name=>{ var o = φ`/tmp/ζpersist_${name}` ;return def({name},'ι',{get(){return o.json },set(ι){ o.json = ι }}) }
+// ? frp will remove the last use(s) of slot_persist
+E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι}`[γ["|>"]] (ι=> new Property2(ι,"json"))
 
 E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (()=>{
@@ -414,7 +414,7 @@ E.copy_deep = ι=>0?0
 		return r })()
 E.seq = ι=>{ var t= Object.create(seq.prototype); t.ι = ι ;return t }
 seq.prototype = {
-	next_ι:function(){ var t = this.ι; if(! t.next ) t = t[Symbol.iterator]() ;return t.next().value }
+	next_ι:function(){ var t = this.ι; if(! t.next ) t = t[Symbol.iterator]() ;return t.next().value }
 	// ,map(){}
 	// ,'map…':λ(){}
 	// ,fold(){}
@@ -457,9 +457,9 @@ assign_properties_in_E_informal({
 ,'Set.prototype.join':function(ι){return [...this].join(ι) }
 
 ,'(Array|Buffer|String|Set).prototype.count':function(){ var r = new Map(); for (var t of this) r.set(t, (r.has(t)? r.get(t) : 0)+1 ) ;return r }
-,'(Array|Buffer|String|Set).prototype.group':function(f){ f||(f = ι=>ι); var r = new Map(); for (var t of this){ var t2 = f(t); r.set(t2, (r.get(t2)||new Set())["∪"]([t])) } ;return r }
+,'(Array|Buffer|String|Set).prototype.group':function(f){ f||(f = ι=>ι); var r = new Map(); for (var t of this){ var t2 = f(t); r.set(t2, (r.get(t2)||new Set())["∪"]([t])) } ;return r }
 
-,'Map.prototype.zip':function(...a){ a.unshift(this); var r = new Map(); a.forEach((ι,i)=> ι.forEach((ι,k)=>{ var t = r.get(k) || [undefined].repeat(a["‖"]); t[i] = ι; r.set(k,t) })) ;return r }
+,'Map.prototype.zip':function(...a){ a.unshift(this); var r = new Map(); a.forEach((ι,i)=> ι.forEach((ι,k)=>{ var t = r.get(k) || [undefined].repeat(a["‖"]); t[i] = ι; r.set(k,t) })) ;return r }
 
 ,'(Array|Buffer|String).prototype.chunk':function(L){return _.range(0,this["‖"],L).map(i=> this.slice(i,i+L)) }
 ,'(Array|Buffer|String).prototype.windows':function(L){return (this["‖"]-L+1).map(i=> this.slice(i,i+L)) }
@@ -498,10 +498,10 @@ assign_properties_in_E_informal({
 
 ,'Promise.prototype.status':{ writable:true ,get(){var get;
 	if(get= b_util&&b_util.getPromiseDetails ){ var [r,ι] = get(this); r = [undefined,true,false][r]; if( r!==undefined ){ [this.status,this.ι] = [r,ι] ;return r } }
-	else{ var t = r=> ι=>{ [this.status,this.ι] = [r,ι] ;return this.status } ;this.then(t(true),t(false)) ;t(undefined)(undefined) ;return this.status } }}
+	else{ var t = r=> ι=>{ [this.status,this.ι] = [r,ι] ;return this.status } ;this.then(t(true),t(false)) ;t(undefined)(undefined) ;return this.status } }}
 ,'Promise.prototype.ι':{ writable:true ,get(){ if( this.status!==undefined ) return this.ι }}
 ,'stream.Readable.prototype.pin':function(){return Π(yes=>{ var t = []; this.resume(); this.on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
-,'Buffer.prototype.pipe':function(to,opt){ var t = new stream.Duplex(); t.push(this); t.push(null) ;return t.pipe(to,opt) }
+,'Buffer.prototype.pipe':function(to,opt){ var t = new stream.Duplex(); t.push(this); t.push(null) ;return t.pipe(to,opt) }
 })
 Promise.prototype[γ["|>"]] (ι=> new Property2(ι,"thunk")) [γ['…←']] ({ get(){return function f(){return f.ι.ι } [γ['…←']] ({ι:this}) } })
 Promise.prototype[γ["|>"]] = (ι,f)=> ι.status? f(ι.ι) : ι.then(f)
@@ -573,20 +573,25 @@ E.schema = (()=>{
 	return ι=> T.boolean(ι)? true : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι["‖"]? [] : [ι.map(schema).fold(sc_merge)] : _.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
-E.os_daemon = (cmd,opt)=>{ cmd+=''; var {once} = opt||{}
-	var cmd_h = simple_hash(cmd)
+E.cmd_log_loc = cmd=>{
+	var id = φ(cmd).name+'.'+simple_hash(cmd) ;return { id
+		,out:φ`~/Library/Caches/ζ.logic/${id}.out`.ensure_dir()+''
+		,err:φ`~/Library/Caches/ζ.logic/${id}.err`.ensure_dir()+''
+		} }
+E.os_daemon = (cmd,opt)=>{ cmd+=''; var {once} = opt||{}
+	var t = cmd_log_loc(cmd)
 	var job = {
 		[once?'RunAtLoad':'KeepAlive']:true
-		,Label:`ζ.${φ(cmd).name}.${cmd_h}`
+		,Label:`Z.${t.id}`
 		,ProgramArguments:['sh','-c',sh`export anon_tns7w=${cmd}; PATH="/usr/local/bin:$PATH"; ${cmd}`]
-		,StandardOutPath  :φ`~/Library/Caches/ζ.logic/${cmd_h}.out`.ensure_dir()+''
-		,StandardErrorPath:φ`~/Library/Caches/ζ.logic/${cmd_h}.err`.ensure_dir()+''
+		,StandardOutPath  :t.out
+		,StandardErrorPath:t.err
 		}
-	var job_path = φ`~/Library/LaunchAgents/${job.Label}.plist`; job_path.BAD_exists() ||( job_path.ι = job ); _.isEqual( job_path.plist, job ) || !function(...a){throw Error(__err_format(...a))}('‽')
-	return { cmd ,job_path ,restart(){ var t = this.job_path; shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}` } } }
+	var job_path = φ`~/Library/LaunchAgents/${job.Label}.plist`; job_path.BAD_exists() ||( job_path.ι = job ); _.isEqual( job_path.plist, job ) || !function(...a){throw Error(__err_format(...a))}('‽')
+	return { cmd ,job_path ,restart(){ var t = this.job_path; shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}` } } }
 new Property( os_daemon,'this' ).def(()=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w) )
 
-E.if_main_do = f=>{ if( !module.parent ) f(...process.argv.slice(2)) }
+module.__proto__.if_main_do = function(f){ !this.parent && f(...process.argv.slice(2)) }
 
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
 E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
@@ -595,7 +600,20 @@ E.normal_PDF = x=>{ var μ = 0 ;var σ = 1 ;var v = σ**2 ;return 1/sqrt(v*τ)*e
 E.normal_CDF = x=>{ var μ = 0 ;var σ = 1 ;return (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
 E.invert_specific = f=> fι=>{ var ι = 0 ;while( f(ι) > fι ) ι += 0.01 ;return ι }
 
+var normalize_count = ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)); return ι }
+var diff_Set = (a,b)=>{var r; return 0?0
+	: [a,b].every(T.Set)?
+		// [a,b] *.count zip **|0 *-
+		( r = normalize_count(new Map(Map.prototype.zip.call(...[b,a].map((𐅭𐅞)=>𐅭𐅞.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), new Property( r,'name' ).def({ value:a.name }), r )
+	: !function(...a){throw Error(__err_format(...a))}('‽') }
+E.Δ_Sets = (...a)=>{ var f = a.pop()
+	var start = a.map(ι=> T.Set(ι)? new Set(ι) : !function(...a){throw Error(__err_format(...a))}('‽'))
+	f()
+	return _.zip(start,a).map(a=> diff_Set(...a)).filter((𐅭𐅞)=>𐅭𐅞["‖"]).map(ι=>0?0: { Δ:ι }) }
 
+var named_pipe = ι=>{ var ms = process.platform==='win32' ;return { id:(ms?'//./pipe/':'/tmp/pipe_')+φ`${ι+''}` ,reset(){!ms &&( φ(this.id).ι = undefined ) ;return this} } }
+E.simple_connect = id=> Π((yes,no)=>{ var to = new net.Socket().on('connect',()=>yes(to)).on('error',no).connect(named_pipe(id).id).unref() })
+E.simple_listen = (id,f)=> new net.Server().listen(named_pipe(id).reset().id).on('connection',f)
 
 //#################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
@@ -606,7 +624,7 @@ E.sfx = (ss,...ιs)=>{ var ι = ss[0]
 	}
 // [#Q E.anon #Q].def({get:=>{t←; ↩ [t=random_id.greek(5),t+'←;'] }})
 new Property( E,'anon' ).def({get:()=> random_id.greek(5) })
-new Property( E,'now' ).def({get:()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }})
+new Property( E,'now' ).def({get:()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }})
 new Property( E,'day' ).def({get:()=> Time().local.ymd })
 
 E.github_url = ι=>{
@@ -616,7 +634,7 @@ E.github_url = ι=>{
 		if( root+''==='/' ) throw Error() [γ['…←']] ({ human:'did not find github remote origin for '+(file||'<anon>') })
 		ι = (ι+'').slice((root+'/')["‖"])
 		var name = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
-		var commit = /*jet[*/ catch_ι(()=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root}; git rev-parse HEAD`+''
+		var commit = /*jet[*/ catch_ι(()=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root}; git rev-parse HEAD`+''
 		return encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
 	var [file,h] = sbᵥ`view = deserialize(${ι}); s = view.sel(); [ view.file_name(), [view.rowcol(ι) for ι in [s[0].begin(), s[-1].end()]] ]`
 	var fm = ι=> 'L'+(ι+1)
@@ -965,9 +983,10 @@ new Property( E,'φ' ).def(()=>{
 	return φ })
 
 //############################# api interpretation ##############################
-var memSc = memoize_tick(ι=> new vm.Script(`'use strict';undefined;`+ι) )
-var ζ_verify_syntax = ι=>{ ι = ζ_compile(ι) ;try{ memSc(ι) }catch(e){ if( e instanceof SyntaxError ) return e } }
-E.ζ_eval = ι=>{ ι = ζ_compile(ι) ;return memSc.cache[ι]? memSc(ι).runInThisContext() : (0,eval)(`'use strict';undefined;`+ι) }
+var comp2 = ι=> `'use strict';undefined;\n`+ζ_compile(ι)
+var mem_sc = memoize_tick(ι=> new vm.Script(ι) )
+var ζ_verify_syntax = ι=>{ ι = comp2(ι) ;try{ mem_sc(ι) }catch(e){ if( e instanceof SyntaxError ) return e } }
+E.ζ_eval = ι=>{ ι = comp2(ι) ;return mem_sc.cache[ι]? mem_sc(ι).runInThisContext() : (0,eval)(ι) }
 
 E.returnfix_compile = (()=>{return ι=>{var t; return bad(ι) && !bad(t='(=>{'+ι+'})()')? t : ι }
 	function bad(ι){var t; return (t= ζ_verify_syntax(ι)) && t.message==='Illegal return statement' }
@@ -981,7 +1000,7 @@ E.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,'; ∅')
 //################################### ζ.user ####################################
 sb._call = ()=> sb.tab.active.ι
 E.p = function(ι){ var t = clipboard ;return arguments.length===0? t.ι :( t.ι = ι ) }
-E.ps = Object.getOwnPropertyDescriptors
+E.ps = Object.getOwnPropertyDescriptors
 
 E[γ["|>"]] (ι=> new Property2(ι,"require_see")) .get= ()=> require_new(φ`~/code/declare/see.ζ`+"")
 
@@ -1058,7 +1077,7 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 		var code = this.bufferedCommand+line
 		code = opt.compile(code) // ! hacks are fun
 		if( ζ_verify_syntax(code) ){ this.bufferedCommand = code+'\n' ;this.outputStream.write('    ') ;return }
-		try{ var v = ζ_eval(code) }catch(e){ var error = e }
+		try{ var v = ζ_eval(code) }catch(e){ var error = e }
 		this.bufferedCommand = ''
 		if( code ){
 			φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({time:Time(), code}) + '\n'
@@ -1082,6 +1101,9 @@ E.ζ_repl_start = opt=>{ opt = {compile:ι=>ι, prompt:'\x1b[30m\x1b[42mζ\x1b[0
 	return this
 	}) }; var 𐅩𐅞𐅋𐅦𐅩;
 
+//################################### prelude ###################################
+require(φ`~/code/declare/module.ζ`+'').patch(E)
+
 //#################################### main #####################################
 var sh_ify = ι=>{var t; return Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
@@ -1100,6 +1122,6 @@ E.ζ_main = ({a})=>{var ι;
 			.then(ι=>{ ι.out && process.stdout.write(ι.out); ι.code &&( process.exitCode = ι.code ) })
 		}
 	}
-if_main_do((...a)=>ζ_main({a}))
+module.if_main_do((...a)=>ζ_main({a}))
 // inject as .bashrc
 // 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } `

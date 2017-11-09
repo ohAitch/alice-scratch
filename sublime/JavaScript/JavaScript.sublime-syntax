@@ -618,6 +618,8 @@ contexts:
       scope: variable.language.this.js
     - match: '@@(?:{{identifier}})*'
       scope: variable.language.Symbol.js
+    - { scope: punctuation.text.me, match: '‡' }
+    - { scope: punctuation.text.them, match: '◍' }
 
   constants:
     - match: \b(true|false)\b|✓|✗

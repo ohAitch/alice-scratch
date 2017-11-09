@@ -58,7 +58,7 @@ sb_keyrc_to_sublime_keymap ← λ(from,to){
 		})
 	φ(to).json = r }
 
-if_main_do(=>{
+module.if_main_do(=>{
 	shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages; :`
 	P ← __dirname+'/User/'
 	colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')

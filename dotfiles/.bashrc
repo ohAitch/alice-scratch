@@ -44,7 +44,7 @@ _ag(){ local v="$1"; shift; &>/dev/null pushd "$v"; ag --ignore '*.min.*' --igno
 			rm -rf /tmp/sublime
 			ζ ' φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι }) ;'
 			_ag ~/file --ignore 'public/lib/' -- "$1" code{,/scratch{/dotfiles/{.keyrc,.bashrc{,.ζ}},/sublime/User/.sb-keyrc}} /tmp/sublime
-			_ag ~/file --ignore '#abandoned' --ignore '#auto' --ignore '#old stuff' -- "$1" notes
+			_ag ~/file -- "$1" notes
 		fi; fi | sb; }
 p(){ if [ -p /dev/fd/0 ]; then pbcopy; else pbpaste; fi; }
 sb(){ if [ -p /dev/fd/0 ]; then open -a 'Sublime Text.app' -f; else if [[ $# = 0 ]]; then ζ 'sb.tab.active.ι'; else /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl "$@"; fi; fi; }

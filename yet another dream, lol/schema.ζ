@@ -93,7 +93,7 @@ schema.≡.close_over!(ι=>{
 
 
 	q_is⁻¹ ← .as('(node)').‖===1
-	names ← ι.filter(.is.name)
+	names ← ι.filter(.is.name)
 
 	# should be:
 	# if your children names are contained by only one schema:
