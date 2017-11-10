@@ -3,14 +3,14 @@ spotify ← new (npm`spotify-web-api-node@2.5.0`)()
 async ← npm`async@2.1.4`
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
-// -------------------------------------------------------------------------- //
+################################################################################
 # link spotify.credentials with ~/.auth/spotiman
 spotify.setCredentials(φ`~/.auth/spotiman`.json)
 update_creds ← ι=>{ t ← spotify.getCredentials() ;ι.access_token &&( t.accessToken = ι.access_token ) ;ι.refresh_token &&( t.refreshToken = ι.refresh_token ) ;spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
 
 say_progress ← (=>{ i←0 ;↩ =>{ i++ ;i%10===0 && cn.log(APP,'working @ page #'+i) } })()
 
-depaginate ← λ(f,cbₐ){ // see googleapis usage for a more up to date version of this function
+depaginate ← λ(f,cbₐ){ # see googleapis usage for a more up to date version of this function
 	r ← [] ;async.doWhilst(
 		cb=> f({offset:r.‖}).then(ι=>{ ι = ι.body ;r.push(…ι.items) ;say_progress() ;cb.P(∅,ι).in(0.1) /*baby the rate limit*/ }),
 		ι=> r.‖ < ι.total,
@@ -30,7 +30,7 @@ get_my_tracks ← =>Π(yes=>{
 			},=>{ yes(_(tracks_r).values()) }
 			) }) }) })
 
-// ---------------------------------- main ---------------------------------- //
+##################################### main #####################################
 module.if_main_do((…a)=>{
 	switch(a[0]||''){default:‽
 		break ;case 'auth': 
@@ -43,6 +43,6 @@ module.if_main_do((…a)=>{
 				})
 		} })
 
-// process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;throw e })
+# process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;throw e })
 
-// doesn't include any of the data about who owned the tags, aaa
+# doesn't include any of the data about who owned the tags, aaa
