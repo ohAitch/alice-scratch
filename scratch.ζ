@@ -160,29 +160,19 @@
 
 ################################### new tools ##################################
 ⧫. lock ==>{
+	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
 	locks ← {}
 	♓_on_exits(=> _.keys(locks).map(lock.un.⚓) )
-	toφ ← id=> φ`/tmp/lock_${id}`+''
-	lock ← (id,wait,cb)=>{
-		if( wait < 0 ) ‽('could not acquire lock within wait time')
-		if( wait <= 0 )
-		fs.open(toφ(id),'wx',(e,fd)=>{
-			if( e && e.code==='EEXIST' ){
-				if( wait <= 0 ) cb(e)
-				else{ w ← min(wait,0.1) ;wait -= w ;(=> lock(id,wait,cb)).in(w) } }
-			else if( e ) throw e
-			else{ locks[id] = ✓ ;fs.close(fd,cb) }
-			}) }
-	lock.⚓ = (id)=>{ fd ← fs.openSync(toφ(id),'wx') ;locks[id] = ✓ ;try{ fs.closeSync(fd) }catch (e){} }
-	lock.un = (id,cb)=>{ delete locks[id] ;fs.unlink(toφ(id),cb) }
-	lock.un.⚓ = (id)=>{ try{ fs.unlinkSync(toφ(id)) }catch (e){} ;delete locks[id] }
-	lock.∃ = (id,cb)=>{ fs.open(toφ(id),'r',(e,fd)=> e? e.code==='ENOENT'? cb(∅,✗) : cb(e) : fs.close(fd,e=> cb(e,✓)) ) }
-	lock.∃.⚓ = (id)=>{
-		try{ fd ← fs.openSync(toφ(id),'r') }catch (e){ if( e.code==='ENOENT' ) ↩ ✗ ;throw e }
-		try{ fs.closeSync(fd) }catch(e){}
-		↩ ✓ }
+	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
+	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx')
+		.then(fd=>{ locks[id] = ✓ ;↩ fs_close(fd) })
+		.catch(e=>{ opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
+			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
+			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
+			})
+	lock.un = id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
+	lock.un.⚓ = id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch (e){} ;delete locks[id] }
+	lock.∃ = id=> fs_open(𐅨𐅯(id),'r')
+		.then(fd=>{ fs.close(fd) ;↩ ✓ })
+		.catch(e=> e.code==='ENOENT'? ✗ : Π(e))
 	↩ lock }
-
-# make this be promises i guess
-# and make wait an opt again i guess
-# also trash the sync
