@@ -27,3 +27,6 @@ think about that and figure out what we want to do with this
 rename to metaspotify?
 
 split playlist by is_✓
+
+##### 2017-11 more recent ####
+spotify '1 heap'.add(heap.tracks.filter(saved))

@@ -77,6 +77,7 @@ youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 # cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2"; }
 # ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
 alias http-server='http-server -c-1'
+alias Zcache='cd ~/Library/Caches/ζ.logic/'
 
 ############################## aborted experiments #############################
 # alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'

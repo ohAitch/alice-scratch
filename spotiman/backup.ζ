@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ
 spotify ← new (npm`spotify-web-api-node@2.5.0`)()
-async ← npm`async@2.1.4`
+async ← npm`async@2.6.0`
 APP ← '\x1b[34m[spotiman]\x1b[0m'
 
 ################################################################################
@@ -10,25 +10,25 @@ update_creds ← ι=>{ t ← spotify.getCredentials() ;ι.access_token &&( t.acc
 
 say_progress ← (=>{ i←0 ;↩ =>{ i++ ;i%10===0 && cn.log(APP,'working @ page #'+i) } })()
 
-depaginate ← λ(f,cbₐ){ # see googleapis usage for a more up to date version of this function
+depaginate ← (f,cbₐ)=>{ # see googleapis usage for a more up to date version of this function
 	r ← [] ;async.doWhilst(
-		cb=> f({offset:r.‖}).then(ι=>{ ι = ι.body ;r.push(…ι.items) ;say_progress() ;cb.P(∅,ι).in(0.1) /*baby the rate limit*/ }),
-		ι=> r.‖ < ι.total,
-		=> cbₐ(r) ) }
+		,cb=> f({offset:r.‖}).then(ι=>{ r.push(…ι.items) ;say_progress() ;cb.P(∅,ι).in(0.1) /*baby the rate limit*/ })
+		,ι=> r.‖ < ι.total
+		,=> cbₐ(r) ) }
 
 get_my_tracks ← =>Π(yes=>{
-	qₐ ← ι=> _(ι).pick('name','uri')
+	𐅂𐅰 ← ι=> _(ι).pick('name','uri')
 	tracks_r ← {}
-	intern_track ← ι=> tracks_r[ι.uri] || (tracks_r[ι.uri] = qₐ(ι) …← ({ album:qₐ(ι.album), artists:ι.artists.map(qₐ), tags:[] }))
-	spotify.getMe().then(ι=>{
-		ι = ι.body
-		depaginate(opt=> spotify.getUserPlaylists(ι.id,opt), r=>{
-			async.eachSeries(r, λ(ι,cb){
-				depaginate(opt=> spotify.getPlaylistTracks(ι.owner.id,ι.id,opt), r=>{
+	intern_track ← ι=> tracks_r[ι.uri] ||( tracks_r[ι.uri] = 𐅂𐅰(ι) …← ({ ,album:𐅂𐅰(ι.album) ,artists:ι.artists.map(𐅂𐅰) ,tags:[] }) )
+	spotify.getMe().then(.body).then(ι=>
+		depaginate(opt=> spotify.getUserPlaylists(ι.id,opt).then(.body), r=>{
+			async.eachSeries(r, (ι,cb)=>{
+				depaginate(opt=> spotify.getPlaylistTracks(ι.owner.id,ι.id,opt).then(.body), r=>{
 					pl ← ι ;r.map(ι=> intern_track(ι.track).tags.push({name:pl.name, added_at:ι.added_at}) )
 					cb() })
 			},=>{ yes(_(tracks_r).values()) }
-			) }) }) })
+			) }) )
+	})
 
 ##################################### main #####################################
 module.if_main_do((…a)=>{
@@ -36,11 +36,11 @@ module.if_main_do((…a)=>{
 		break ;case 'auth': 
 			go_to( spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify']) )
 		break ;case 'auth2':
-			spotify.authorizationCodeGrant(a[1]).then(ι=>{ ι = ι.body ;update_creds(ι) ;cn.log(APP,'auth done') })
+			spotify.authorizationCodeGrant(a[1]).then(.body).then(update_creds)
+			.then(=> cn.log(APP,'auth done') )
 		break ;case '':
-			spotify.refreshAccessToken().then(ι=>{ ι = ι.body ;update_creds(ι)
-				get_my_tracks().then(ι=>{ φ`~/file/.archive/spotify/${Time().ymdhms}.json`.ι = ι ;cn.log(APP,'backup done') })
-				})
+			spotify.refreshAccessToken().then(.body).then(update_creds)
+			.then(get_my_tracks).then(ι=>{ φ`~/file/.archive/spotify/${Time().ymdhms}.json`.ι = ι ;cn.log(APP,'backup done') })
 		} })
 
 # process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;throw e })

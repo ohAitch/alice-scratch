@@ -1,23 +1,24 @@
-### https://github.com/ggreer/the_silver_searcher needs these ascii characters to see this file ###############################################################################################################################################################################################################################
+### https://github.com/ggreer/the_silver_searcher needs these ascii characters to see this file ###############################################################################################################################################################################################################################################################################################################
 
 #################################### ui glue ###################################
 ⧫. notify ==>{
-	# ‡ a mess containing infra ‡
-	json_socket ← socket=>{ 𐅂𐅦𐅮𐅃𐅰←; 𐅮𐅰𐅮𐅂𐅂←; ↩ {
-		,to(ι){ t←; (𐅂𐅦𐅮𐅃𐅰||(𐅂𐅦𐅮𐅃𐅰=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(socket), t ) )).write(ι) }
-		,on(f){ (𐅮𐅰𐅮𐅂𐅂||(𐅮𐅰𐅮𐅂𐅂= socket.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
+	# infrastruk mess
+	json_𐑕𐑩𐑒𐑧𐑑 ← (𐑕𐑩𐑒𐑧𐑑)=>{ 𐅂𐅦𐅮𐅃𐅰←; 𐅮𐅰𐅮𐅂𐅂←; ↩ {
+		,to(ι){ t←; (𐅂𐅦𐅮𐅃𐅰||(𐅂𐅦𐅮𐅃𐅰=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(𐑕𐑩𐑒𐑧𐑑), t ) )).write(ι) }
+		,on(f){ (𐅮𐅰𐅮𐅂𐅂||(𐅮𐅰𐅮𐅂𐅂= 𐑕𐑩𐑒𐑧𐑑.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
 		} }
-	ipc_wait ← f=>{H←; (H= new net.Server()).listen(0,'localhost').on('connection',socket=> json_socket(socket).on(_.once(ι=>{ socket.destroy(); H.close(); f(ι) })) ) ;↩ Π(yes=> H.on('listening',yes.P(H)) ) }
-
-	# ‡ with the double promise from ipc_wait this should not work at all ‡
+	ipc_wait ← =>{
+		H ← new net.Server().listen(0,'localhost')
+		r ← Π(yes=> H.on('connection',𐑕𐑩𐑒𐑧𐑑=> json_𐑕𐑩𐑒𐑧𐑑(𐑕𐑩𐑒𐑧𐑑).on(_.once(ι=>{ 𐑕𐑩𐑒𐑧𐑑.destroy() ;H.close() ;yes(ι) })) ))
+		↩ [H,r] }
 
 	↩ ι=>{ Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
-		↩ Π(yes=> ipc_wait(yes).then(H=>
-			hsᵥ`hs.notify.new(
-				function(x) x:withdraw(); hs.socket.new():connect('localhost',${H.address().port}):write(hs.json.encode({ at=x:actualDeliveryDate() })..'\n') end
-				,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
-				):send()`
-			) ) } }
+		[H,r] ← ipc_wait()
+		H.Π('listening').then(=> hsᵥ`hs.notify.new(
+			function(x) x:withdraw() ;hs.socket.new():connect('localhost',${H.address().port}):write(hs.json.encode({ at=x:actualDeliveryDate() })..'\n') end
+			,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
+			):send()` )
+		↩ a } }
 
 ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
 
@@ -26,22 +27,22 @@
 
 ################################# service glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
-	ENC ← ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : ‽; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	ENC ← ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : ‽ ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	# t ← shᵥ`hs -c ${ι}`
 	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
 	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
-	t ← (t+'').split('\n')[-1]; r ← catch_ι(=> JSON.parse(t)[0]) ;↩ r!==∅?r: t }
+	t ← (t+'').split('\n')[-1] ;r ← catch_ι(=> JSON.parse(t)[0]) ;↩ r!==∅?r: t }
 
 ⧫. tsᵥ ==> (ss,…ιs)=>{
-	ENC ← JSON.stringify; ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	ι = 'require "totalspaces2"; TS = TotalSpaces2; '+ι
+	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	ι = 'require "totalspaces2" ;TS = TotalSpaces2 ;'+ι
 	PORT = 34290
 	R ← => JSON.parse(fs_ipc_emit(PORT,ι))[0]
 	launch_serv ← =>{
 		;(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
 		t ← φ`/tmp/evalserv_${random_id(9)}.rb`
 		t.text = String.raw`#!/usr/bin/env ruby
-			require "socket"; require "json"
+			require "socket" ;require "json"
 			server = TCPServer.new("localhost",${PORT})
 			loop do
 			  t = server.accept
@@ -56,9 +57,9 @@
 	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;sleep(0.1) ;↩ R() } }
 
 ############################ user's art or something ###########################
-⧫. moon ==> ι=>{ ι||(ι=Time()); moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;↩ moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.‖ + 0.5) % moons.‖)] }
+⧫. moon ==> ι=>{ ι||(ι=Time()) ;moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;↩ moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.‖ + 0.5) % moons.‖)] }
 
-⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12`; {sourcemap} ← ι; ι=ι+''
+⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''
 	# very nice google maps urls
 	# if url ≈ google.com/maps/
 	# fetch short url:
@@ -69,13 +70,13 @@
 	# 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
 	# 	return t
 	# 	$('.modal-container').click()
-	# wait-check: if not $`${ι}:checked`; ι.click(); wait for $`${ι}:checked`
-	# wait-click: wait for ι.‖; ι.click()
+	# wait-check: if not $`${ι}:checked` ;ι.click() ;wait for $`${ι}:checked`
+	# wait-click: wait for ι.‖ ;ι.click()
 	# decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
 
 	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' # ! bad hack
 
-	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){ [a,b] ← t.split(/  +/g); ι = ι.replace(RegExp(a),b) })
+	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){ [a,b] ← t.split(/  +/g) ;ι = ι.replace(RegExp(a),b) })
 	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
 	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {type:'text', ι}), (ι.match(URL)||[]).map(ι⇒ {type:'url', ι}))._.flatten(✓).filter(ι=> !(ι === ∅ || (ι.type === 'text' && ι.ι === '')))
 
@@ -117,13 +118,13 @@
 		if (ι.type === 'url') {
 			u ← Uri(ι.ι)
 			switch (u.domain()) { default: ↩ ι
-				break; case 'amazon.com':
+				break ;case 'amazon.com':
 					u.removeSearch(['sa-no-redirect','keywords','qid','ie','s','sr','tag','linkCode','camp','creative','creativeASIN'])
 					u.filename().re`^ref=[\w_]+$` && u.filename('')
 					if (t=u.resource().re`^/(?:[\w-]+/)?(?:dp|gp)/(?:product/)?(\w+)/?$`) {ι.ι = 'http://amzn.com/'+t[1] ;↩ ι}
-				break; case 'fb.com': u.removeSearch(['fref','hc_location','_rdr','pnref'])
-				break; case 'google.com': if(_.isEqual( u.segment(),['search'] )){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']); u.hasSearch('q') && u.removeSearch('oq') }
-				}; ι.ι = u+'' }
+				break ;case 'fb.com': u.removeSearch(['fref','hc_location','_rdr','pnref'])
+				break ;case 'google.com': if(_.isEqual( u.segment(),['search'] )){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']) ;u.hasSearch('q') && u.removeSearch('oq') }
+				} ;ι.ι = u+'' }
 		↩ ι}).map(.ι).join('')
 
 	apply_regexes(λ(){/*
