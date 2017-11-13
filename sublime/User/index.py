@@ -187,17 +187,18 @@ class make_divider(sublime_plugin.TextCommand):
 	# maybe work by trimming divider-matchables on both sides first, instead of trying to match an entire possible-divider?
 	def run(self,edit,length):
 		e_table_ = {
-			'Packages/JavaScript/JavaScript.sublime-syntax': '#',
-			'Packages/Python/Python.sublime-syntax': '#',
-			'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
-			'Packages/Ruby/Ruby.sublime-syntax': '#',
-			'Packages/Lisp/Lisp.sublime-syntax': ';',
+			# 'Packages/JavaScript/JavaScript.sublime-syntax': '#',
+			# 'Packages/Python/Python.sublime-syntax': '#',
+			# 'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax': '#',
+			# 'Packages/Ruby/Ruby.sublime-syntax': '#',
+			# 'Packages/Lisp/Lisp.sublime-syntax': ';',
+			'Packages/Lua/Lua.sublime-syntax': '-',
 			}
 		s_table = {
 			'#': [r'^#+.*#+$',r'^#+\s*(.+?)\s*#+$','#',''],
 			'-': [r'^-+.*-+$',r'^-+\s*(.+?)\s*-+$','-',''],
 			# '/': [r'^// ?-+.*-+ ?//$',r'^// ?-+(?://)? *(.+?) *(?://)?-+ ?//$','-','// '],
-			';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
+			# ';': [r'^; ?-+.*-+ ?;$',r'^; ?-+;? *(.+?) *;?-+ ?;$','-','; ']
 			}
 		def data(): ι = view.settings().get('syntax'); return s_table[e_table_[ι] if ι in e_table_ else '#']
 
@@ -233,10 +234,9 @@ def detect_syntax(view):
 		'python': 'Packages/Python/Python.sublime-syntax',
 		'bash': 'Packages/ShellScript/Shell-Unix-Generic.sublime-syntax',
 		'.txt': 'Packages/Text/Plain text.sublime-syntax',
-		'.blog': 'Packages/Text/Plain text.sublime-syntax',
 		}
 	ι = None
-	t = re.match(r"#!\s*(\S+)\s*(\S+)?", view.substr(view.full_line(1)))
+	t = re.match(r"#!\s*(\S+)\s*(\S+)?" ,view.substr(view.full_line(1)))
 	if t: a = t.group(1).split('/')[-1]; ι = t.group(2) if a == 'env' else a
 	else: ι = os.path.splitext(view.file_name())[1]
 	return data[ι] if ι in data else view.settings().get('syntax')

@@ -7,6 +7,7 @@ function start(x) table.insert(persists,x:start()) end; persists = {}
 function Z(cb,...) start(hs.task.new('/usr/local/bin/ζλ',cb,{...})) end
 function s_start(x,a) return string.sub(x,1,string.len(a)) == a end
 function some_flip(f,x) for _,x in pairs(x) do if f(x) then return true end end end
+function simple_send_json(address,port,x) local H = hs.socket.new() ;H:connect(address,port):write(hs.json.encode(x)..'\n' ,function() H:disconnect() end) end
 
 --------------------------------------------------------------------------------
 hs.autoLaunch(true)
@@ -58,6 +59,8 @@ start(hs.distributednotifications.new(function(name,object,data)
 		,'com.apple.appstore'
 		,'com.apple.backup'
 		,'com.apple.bookmarks'
+		,'com.apple.Bluetooth'
+		,'com.apple.bluetooth.status'
 		,'com.apple.calendar'
 		,'com.apple.carbon.core.DirectoryNotification'
 		,'com.apple.Carbon.TISNotifyEnabledNonKeyboardInputSourcesChanged'
@@ -100,6 +103,9 @@ start(hs.distributednotifications.new(function(name,object,data)
 
 		,'BetterTouchToolInstanceStarted'
 		,'BTTReadyNotification'
+		,'kKBFUSEMount'
+		,'SUSoftwareUpdateDaemonStarted'
+		,'Loaded Kext Notification'
 		,'com.adobe.accc'
 		,'com.binaryage.dismissedGrid'
 		,'com.hegenberg.BetterTouchTool.isStillAlive'

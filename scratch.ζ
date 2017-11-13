@@ -1,24 +1,17 @@
 ### https://github.com/ggreer/the_silver_searcher needs these ascii characters to see this file ###############################################################################################################################################################################################################################################################################################################
 
 #################################### ui glue ###################################
-⧫. notify ==>{
-	# infrastruk mess
-	json_𐑕𐑩𐑒𐑧𐑑 ← (𐑕𐑩𐑒𐑧𐑑)=>{ 𐅂𐅦𐅮𐅃𐅰←; 𐅮𐅰𐅮𐅂𐅂←; ↩ {
-		,to(ι){ t←; (𐅂𐅦𐅮𐅃𐅰||(𐅂𐅦𐅮𐅃𐅰=( t= npm`ndjson@1.5.0`.stringify(), t.pipe(𐑕𐑩𐑒𐑧𐑑), t ) )).write(ι) }
-		,on(f){ (𐅮𐅰𐅮𐅂𐅂||(𐅮𐅰𐅮𐅂𐅂= 𐑕𐑩𐑒𐑧𐑑.pipe(npm`ndjson@1.5.0`.parse()) )).on('data',f) }
-		} }
-	ipc_wait ← =>{
-		H ← new net.Server().listen(0,'localhost')
-		r ← Π(yes=> H.on('connection',𐑕𐑩𐑒𐑧𐑑=> json_𐑕𐑩𐑒𐑧𐑑(𐑕𐑩𐑒𐑧𐑑).on(_.once(ι=>{ 𐑕𐑩𐑒𐑧𐑑.destroy() ;H.close() ;yes(ι) })) ))
-		↩ [H,r] }
-
-	↩ ι=>{ Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
-		[H,r] ← ipc_wait()
-		H.Π('listening').then(=> hsᵥ`hs.notify.new(
-			function(x) x:withdraw() ;hs.socket.new():connect('localhost',${H.address().port}):write(hs.json.encode({ at=x:actualDeliveryDate() })..'\n') end
+⧫. notify ==> ι=>{
+	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
+	net1 ;↩ device_listen().then(H=>{
+		at ← H.address()
+		r ← H.just_first_json()
+		# …${[at.address,at.port]}
+		hsᵥ`hs.notify.new(
+			function(x) x:withdraw() ;simple_send_json(${at.address},${at.port},{ at=x:actualDeliveryDate() }) end
 			,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
-			):send()` )
-		↩ a } }
+			):send()`
+		↩ r }) }
 
 ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
 
@@ -27,7 +20,14 @@
 
 ################################# service glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
-	ENC ← ι=> Tstr(ι) || Tnum(ι)? JSON.stringify(ι) : ‽ ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	ENC ← ι⇒
+		: Tstr(ι)||Tnum(ι)? JSON.stringify(ι)
+		: Tarr(ι)? '{'+ι.map(ENC).join(',')+'}'
+		: '{'+_u(ι).map((ι,i)=>'['+ENC(i)+']='+ENC(ι)).join(',')+'}'
+	# unpack
+	# ι ← simple_template(ss,ιs,ENC).join('')
+	ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	# ,ι=> Tarr(ι)? ι.map(ENC).join(',') : falsy(ι)? '' : ι+''
 	# t ← shᵥ`hs -c ${ι}`
 	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
 	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
@@ -177,3 +177,13 @@
 		.then(fd=>{ fs.close(fd) ;↩ ✓ })
 		.catch(e=> e.code==='ENOENT'? ✗ : Π(e))
 	↩ lock }
+
+⧫. stream4 ==>{ E ← {}
+	E.send_json = memoize_weak(s=>{ t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .fbind })
+	E.as_json = memoize_weak(s=>{ ;t ← npm`split2@2.2.0`(ι=>{ try{↩ JSON.parse(ι) }catch(e){ @.emit('error',e) } }) ;s.pipe(t) ;↩ t.P`data` })
+	↩ E }
+
+⧫. net1 ==>{
+	γ.device_listen = =>{ r ← new net.Server().listen(0,'localhost') ;↩ r.Π`listening`.then(=> r) }
+	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
+	}

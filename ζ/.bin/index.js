@@ -40,8 +40,8 @@ E.return_ = ι=>{ throw {__catchable:ι} }
 
 E.T = ι=>{var t;
 	if( (t= typeof ι)!=='object' ) return t ;if( ι===null ) return 'null'
-	if( (t= Object.getPrototypeOf(ι))===Object.prototype || t===null ) return 'object'
-	for (t of is_l) if( t[1](ι) ) return t[0]
+	if( Object.getPrototypeOf(ι)===Object.prototype ) return 'object'
+	for( t of is_l ) if( t[1](ι) ) return t[0]
 	return 'object' }
 var b_util = catch_ι(()=> process.binding('util') )
 var is_l = [
@@ -53,13 +53,13 @@ var is_l = [
 	]
 // would like to be using ∈ instead
 Object.assign(T,_u(is_l).object(),{
-	symbol: ι=> typeof ι === 'symbol'
-	,boolean: ι=> typeof ι === 'boolean'
-	,string: ι=> typeof ι === 'string'
-	,number: ι=> typeof ι === 'number'
-	,function: ι=> typeof ι === 'function'
-	,primitive: ι=>{ switch(typeof(ι)){case 'undefined': case 'boolean': case 'number': case 'string': case 'symbol': return true ;case 'object': return ι===null ;default: return false} }
-	,boxed: ι=>{ if (ι===null || typeof ι!=='object') return false ;var t = Object.getPrototypeOf(ι) ;t = t.constructor&&t.constructor.name ;return (t==='Boolean'||t==='String'||t==='Number') && /^\[object (Boolean|String|Number)\]$/.test(Object.prototype.toString.call(ι)) }
+	symbol: ι=> typeof ι==='symbol'
+	,boolean: ι=> typeof ι==='boolean'
+	,string: ι=> typeof ι==='string'
+	,number: ι=> typeof ι==='number'
+	,function: ι=> typeof ι==='function'
+	,primitive: ι=>{ switch(typeof ι){ case'undefined': case'boolean': case'number': case'string': case'symbol': return true ;case'object': return ι===null ;default: return false } }
+	,boxed: ι=>{ if( ι===null || typeof ι!=='object' ) return false ;var t = Object.getPrototypeOf(ι) ;t = t.constructor&&t.constructor.name ;return ( t==='Boolean'||t==='String'||t==='Number' ) && /^\[object (Boolean|String|Number)\]$/.test(Object.prototype.toString.call(ι)) }
 	,ℤ: Number.isInteger
 	,'-0': ι=> ι===0 && 1/ι < 0
 	,NaN: Number.isNaN
@@ -151,20 +151,10 @@ def(Property.prototype,'∃',{get(){return this.name in this.o }})
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } // takes a thunk which returns a function. acts like said returned function, always.
 // so Bad
 
-// ;[#p ersist_here ~/code/declare/npm]
-E.npm = ι=>{ι+='' ;var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
-	// in theory, log whenever somebody uses an outdated lib
-	var abs_name = ()=> name+'@'+version
-	if(! version ){ sfx`ack` ;version = shᵥ`npm show ${ι} version`+'' ;return 'npm`'+abs_name()+'`' ;return }
-	var cache = φ`~/.npm/${name}/${version}` ;var final = cache.φ`/node_modules/${name}`+(sub||'')
-	try{ return require(final) }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
-	cache.BAD_exists() || shᵥ`cd ~ ;npm cache add ${abs_name()}`
-	var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = undefined
-	return require(final) }
-E.js_tokenize = code=>{
-	var tok = npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:true}).tokens
-	return _u.zip( tok.map(ι=> code.slice(ι.start,ι.end)) ,tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(true).filter(ι=>ι) }
-E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : false
+// E.js_tokenize = code=>{
+// 	tok ← npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:✓}).tokens
+// 	↩ _u.zip( tok.map(ι=> code.slice(ι.start,ι.end)) ,tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(✓).filter(ι=>ι) }
+// E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : ✗
 E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦; var 𐅜𐅦𐅩𐅝𐅃; var 𐅂𐅂𐅃𐅝𐅦; var 𐅨𐅂𐅫𐅯𐅃; var 𐅋𐅂𐅭𐅂𐅦; var 𐅜𐅯𐅩𐅪𐅃; var 𐅝𐅩𐅭𐅪𐅃; var 𐅭𐅭𐅃𐅪𐅃; var 𐅭𐅦𐅫𐅩𐅝; var 𐅦𐅞𐅃𐅝𐅪; var 𐅦𐅪𐅭𐅯𐅭;
 	var word_extra = re`♈-♓🔅🔆🔒‡⧫§▣`
 	var word = re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿${word_extra}∞`
@@ -266,13 +256,25 @@ E.memoize_persist = f=>{
 	var store = φ`/tmp/ζpersist_${simple_hash(f)}` ;var store_ι = store.json||{}
 	return (...a)=>{ var t = new Property(store_ι,simple_hash(a)) ;return t["∃"]? t.ι : ( t.ι = f(...a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
 E.memoize_proc = f=>{ var cache = Object.create(null) ;return (ι=>{ var t = ι+'' ;return t in cache? cache[t] :( cache[t] = f(ι) ) }) [γ['…←']] ({cache}) }
+E.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι) ) return cache.get(ι); Tprim(ι) && !function(...a){throw Error(__err_format(...a))}('‽'); var r = f(ι); cache.set(ι,r) ;return r }) [γ['…←']] ({cache}) }
 // resource management is a thing & i havent thought about it enough
 // WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 // this does
 E.memoize_tick = f=>{ f = memoize_proc(f); var cache = f.cache; return (ι=>{ var t = ι+''; process.nextTick(()=> delete cache[t]); return f(ι) }) [γ['…←']] ({cache}) }
-// E.memoize = f=>{ cache ← new WeakMap() ;↩ ι=>{ if( cache.has(ι) ) ↩ cache.get(ι); Tprim(ι) && ‽; r ← f(ι); cache.set(ι,r) ;↩ r } …← ({cache}) }
 // ? frp will remove the last use(s) of slot_persist
 E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι}`[γ["|>"]] (ι=> new Property2(ι,"json"))
+
+// ;[#p ersist_here ~/code/declare/npm]
+var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
+	// in theory, log whenever somebody uses an outdated lib
+	var abs_name = ()=> name+'@'+version
+	if(! version ){ sfx`ack` ;version = shᵥ`npm show ${ι} version`+'' ;return 'npm`'+abs_name()+'`' ;return }
+	var cache = φ`~/.npm/${name}/${version}` ;var final = cache.φ`/node_modules/${name}`+(sub||'')
+	try{ return require(final) }catch(e){ if (!(e.code==="MODULE_NOT_FOUND")) throw e }
+	cache.BAD_exists() || shᵥ`cd ~ ;npm cache add ${abs_name()}`
+	var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = undefined
+	return require(final) }
+E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;var 𐅪𐅰 = memoize_proc(_npm) // such a hack. takes 300ns because of the template string +='' hack; 80ns without
 
 E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (()=>{
@@ -505,8 +507,11 @@ assign_properties_in_E_informal({
 ,'Promise.prototype.ι':{ writable:true ,get(){ if( this.status!==undefined ) return this.ι }}
 ,'stream.Readable.prototype.pin':function(){return Π(yes=>{ var t = []; this.resume(); this.on('data',ι=> t.push(ι) ).on('end',()=> yes(Buffer.concat(t)) ) })}
 ,'Buffer.prototype.pipe':function(to,opt){ var t = new stream.Duplex(); t.push(this); t.push(null) ;return t.pipe(to,opt) }
-,'EventEmitter.prototype.Π':function(id){return Π(yes=> this.once(id,yes)) }
+,'EventEmitter.prototype.P':function(id){id+='' ;return Object.create(𐅯𐅜𐅝𐅃𐅋) [γ['…←']] ({host:this,id}) }
+,'EventEmitter.prototype.Π':function(id){return this.P(id).Π }
 })
+var 𐅯𐅜𐅝𐅃𐅋 = { emit(...a){return this.host.emit(this.id,...a) } ,on(f){ this.host.on(this.id,f) ;return this } }
+𐅯𐅜𐅝𐅃𐅋[γ["|>"]] (ι=> new Property2(ι,"Π")) [γ['…←']] ({ get(){return Π(yes=> this.host.once(this.id,yes)) } })
 Promise.prototype[γ["|>"]] (ι=> new Property2(ι,"thunk")) [γ['…←']] ({ get(){return function f(){return f.ι.ι } [γ['…←']] ({ι:this}) } })
 Promise.prototype[γ["|>"]] = (ι,f)=> ι.status? f(ι.ι) : ι.then(f)
 
@@ -616,6 +621,9 @@ E.Δ_Sets = (...a)=>{ var f = a.pop()
 	f()
 	return _u.zip(start,a).map(a=> diff_Set(...a)).filter((𐅭𐅞)=>𐅭𐅞["‖"]).map(ι=>0?0: { Δ:ι }) }
 
+E.falsy = ι=> ι===undefined||ι===null||ι===false
+E.orundefined = (a,b)=> a!==undefined? a : b
+
 //#################################### .ζrc #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
@@ -722,17 +730,16 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 // s is interned, so use it as a memoization key for things
 E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
 var tmpl_flatten = (raw2,ιs2)=> _u.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
-E.simple_template = function(ss,ιs,filter){ is_template([ss,...ιs]) || !function(...a){throw Error(__err_format(...a))}('‽')
-	var falsy = ι=> ι===undefined||ι===null||ι===false
-	if( filter && !Tfun(filter) ){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
-	var filter_special = ι=> falsy(ι)? '' : ι+''
+E.simple_template = (ss,ιs,filter,filter_special)=>{ is_template([ss,...ιs]) || !function(...a){throw Error(__err_format(...a))}('‽')
+	if( Tarr(filter) ){ var [root,join] = filter; filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
+	filter_special||(filter_special= ι=> falsy(ι)? '' : ι+'' )
 	var ι = tmpl_flatten( ss.raw.map((𐅭𐅞)=>𐅭𐅞.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>0?0:{raw:ι}) )
 	for(var i=0;i<ι["‖"]-1;i++) if (Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,()=>{ ι[i+1] = filter_special(ι[i+1].raw); i++ ;return '' })
-	filter && (ι = ι.map(function(ι){var t; return Tstr(ι)? ι : (t=filter(ι.raw), t===undefined? ι : t) }))
-	return ι}
+	filter &&( ι = ι.map(ι=> Tstr(ι)? ι : orundefined(filter(ι.raw),ι) ) )
+	return ι }
 E.easy_template = (()=>{
 	var read = (ss,ιs)=> tmpl_flatten(ss.raw,ιs.map(ι=>[ι]))
-	var show = function(ι){ var raw = ['']; var ιs = []; ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι), raw.push('')) ) ;return [{raw},...ιs] }
+	var show = ι=>{ var raw = ['']; var ιs = []; ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι), raw.push('')) ) ;return [{raw},...ιs] }
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
@@ -754,7 +761,7 @@ new Property( sb,'tab' ).def({
 
 var fs_ipc_emit = (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;return shᵥ`curl -s -X PUT localhost:${port}`+'' }
 
-E.sbᵥ = function(ss,...ιs){
+E.sbᵥ = (ss,...ιs)=>{
 	var ENC = JSON.stringify; var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	var t = JSON.parse(fs_ipc_emit(34289,ι)); t===null &&( t = undefined ) ;return t }
 E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
@@ -763,7 +770,7 @@ E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
 // 	tab
 // 	view
 
-E.re = function(ss,...ιs){
+E.re = (ss,...ιs)=>{
 	// would like to embed regex in [] and have that be ok; ie re`[${/[a-z]/}]` = /[a-z]/
 	var ι = simple_template(ss,ιs,[(...a)=>re(...a).source,''])
 	var ENC = ι=> T.RegExp(ι)? ( ι.flags.replace(/[gy]/g,'')==='u' || !function(...a){throw Error(__err_format(...a))}('‽'), ι.source ) : (ι+'').replace(/([.*+?^${}()\[\]|\\])/g, '\\$1')
@@ -778,14 +785,14 @@ assign_properties_in_E_informal({
 'String.prototype.re':{get(){return (ss,...ιs)=> this.match(re(ss,...ιs))}},
 })
 
-E.js = E.py = function(ss,...ιs){ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.js = E.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
-E.sh = function(ss,...ιs){ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
 var ellipsify = ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.slice(100)["‖"]?'…':'')
 
 var if_sh_err = (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+', stderr:'+ellipsify(ι.stderr+'')) [γ['…←']] (_u(ι).pick('status','stdout','stderr')) }
-E.shᵥ = function(ss,...ιs){ var code = sh(ss,...ιs)
+E.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
 	// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	var ι = require('child_process').spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
@@ -796,21 +803,21 @@ var _shₐ = (ss,ιs,opt={})=>{
 		// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
 		// ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
 		var ι = require('child_process').spawn(code,{shell:true} [γ['…←']] (_u(opt).pick('stdio','detached')))
-			.on('exit',function(status){ if_sh_err('shₐ',code,{status} [γ['…←']] (ι)) })
+			.on('exit',status=>{ if_sh_err('shₐ',code,{status} [γ['…←']] (ι)) })
 		return ι } }
 E.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
 
-E.osa = function(ss,...ιs){var t;
+E.osa = (ss,...ιs)=>{var t;
 	var ι = simple_template(ss,ιs)
 	// ! this is such a mess
 	if (Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)){ ι[0] = ι[0].slice(t[0]["‖"]); ι = [osa`tell app ${t[1]};`, ...ι, '; end tell'] }
 	if (!Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0]["‖"]); ι = [osa`tell app ${ι.shift().raw};`, ...ι, '; end tell'] }
 	return ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
-E.osaᵥ = function(ss,...ιs){ var ι = osa(ss,...ιs) ;return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
-E.osaₐ = function(ss,...ιs){ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
+E.osaᵥ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
+E.osaₐ = (ss,...ιs)=>{ var ι = osa(ss,...ιs); shₐ`osascript -ss -e ${ι}` }
 
-E.terminal_do_script = function(a,b){ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` } // ~/.bashrc.ζ :: E['·']
+E.terminal_do_script = (a,b)=>{ φ`/tmp/__·`.ι = a; osaᵥ`terminal: do script "·" …${b}` } // ~/.bashrc.ζ :: E['·']
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 // E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
@@ -829,7 +836,7 @@ var json2_read = ι=>{ var r = JSON.parse(ι); (function Λ(ι,k,o){if( ι.type=
 	var t = 'data' in ι || 'utf8' in ι? Buffer.from(ι.data||ι.utf8) : 'base64' in ι? Buffer.from(ι.base64,'base64') : !function(...a){throw Error(__err_format(...a))}('‽')
 	if( o===undefined ) r = t; else o[k] = t
 	} else if(! Tprim(ι) ) _u(ι).forEach(Λ)})(r) ;return r }
-var json2_show = ι=> JSON_pretty(ι,function(ι){var t;
+var json2_show = ι=> JSON_pretty(ι,ι=>{var t;
 	if (Buffer.isBuffer(ι)) return ι.equals(Buffer.from(t=ι+''))? {type:'Buffer', utf8:t} : {type:'Buffer', base64:ι.toString('base64')}
 	return ι})
 
