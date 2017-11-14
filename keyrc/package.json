@@ -12,6 +12,7 @@
     "unicode-hex-input-fix": "^1.0.0"
   },
   "bin": {
-    "keyrc": "./index.ζ"
-  }
+    "keyrc": "./it.ζ"
+  },
+  "main":"it.ζ"
 }

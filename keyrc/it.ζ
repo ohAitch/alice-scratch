@@ -121,7 +121,7 @@ regen ← (opt={})=>{
 		} }
 
 // ---------------------------------- main ---------------------------------- //
-# i think this was being affected by the index.ζ.if_main_do bug and is now okay
+# i think this was being affected by the ζ.if_main_do bug and is now okay
 // module.if_main_do((…a)=>{
 // switch( a[0] ){
 // 	default:

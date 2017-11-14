@@ -24,7 +24,7 @@ def View_from(ι): return\
 	'error_qrk5rx38s'
 	#! ought to cache the lookup
 def edit(view,code): View_from(view).run_command("tc_eval",{'ι':code}); return tce_r
-def serialize(ι): #! COPIED from index ! and then edited ! so dirty
+def serialize(ι): #! COPIED from ζ ! and then edited ! so dirty
 	if ι is None: return ι
 	if isinstance(ι,sublime.View): return { "type":'sublime.View', "id":ι.id() }
 	else: return 'error_ls1w8idny'

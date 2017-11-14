@@ -262,7 +262,7 @@ E.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι)
 // this does
 E.memoize_tick = f=>{ f = memoize_proc(f) ;var cache = f.cache ;return (ι=>{ var t = ι+'' ;process.nextTick(()=> delete cache[t]) ;return f(ι) }) [γ['…←']] ({cache}) }
 // ? frp will remove the last use(s) of slot_persist
-E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι}`[γ["|>"]] (ι=> new Property2(ι,"json"))
+E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property2(ι,"json"))
 
 // ;[#p ersist_here ~/code/declare/npm]
 var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -603,8 +603,8 @@ new Property( os_daemon,'this' ).def(()=> process.env.anon_tns7w && os_daemon(pr
 
 module.__proto__.if_main_do = function(f){ !this.parent && f(...process.argv.slice(2)) }
 
-E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/index.ζ`).robot_key_tap(ι)
-E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/index.ζ`).KEY_once(...a)
+E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/it.ζ`).robot_key_tap(ι)
+E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/it.ζ`).KEY_once(...a)
 
 E.normal_PDF = x=>{ var μ = 0 ;var σ = 1 ;var v = σ**2 ;return 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
 E.normal_CDF = x=>{ var μ = 0 ;var σ = 1 ;return (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
@@ -705,7 +705,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 	else if( type==='path'){ ( !new_ && focus )||!function(...a){throw Error(__err_format(...a))}('‽')
 		// ! i think this might be a pretty badly designed type
 		new_ = true
-		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(...a){throw Error(__err_format(...a))}('‽') // ! duplication with sublime/User/index.py:FIND_RESULT
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || !function(...a){throw Error(__err_format(...a))}('‽') // ! duplication with sublime/User/it.py:FIND_RESULT
 			// in_app = 'sublime text'
 			var [ˣ,ι,line] = ι.re`^(.+):(\d+):$`
 			ι = φ('~/file/'+ι)
@@ -724,7 +724,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 // existing semistandard usage is in
 // 	im_autowhite
 // 	scratch.txt
-// 	ζ/index.ζ
+// 	ζ/it.ζ
 // s is interned, so use it as a memoization key for things
 E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
 var tmpl_flatten = (raw2,ιs2)=> _u.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
