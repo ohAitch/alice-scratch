@@ -4,14 +4,13 @@
 ⧫. notify ==> ι=>{
 	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
 	net1 ;↩ device_listen().then(H=>{
-		at ← H.address()
-		r ← H.just_first_json()
-		# …${[at.address,at.port]}
-		hsᵥ`hs.notify.new(
-			function(x) x:withdraw() ;simple_send_json(${at.address},${at.port},{ at=x:actualDeliveryDate() }) end
-			,{ title=${ι[0]}, informativeText=${ι[1]||''}, otherButtonTitle='\u{2063}', actionButtonTitle='\u{2063}', }
-			):send()`
-		↩ r }) }
+	at ← H.address()|>(ι=>[,ι.address,ι.port])
+	r ← H.just_first_json()
+	hsᵥ`hs.notify.new(
+		function(x) x:withdraw() ;simple_send_json(${at},{ at=x:actualDeliveryDate() }) end
+		,{ title=${ι[0]} ,informativeText=${or∅(ι[1],'')} ,otherButtonTitle='\u{2063}' ,actionButtonTitle='\u{2063}' }
+		):send()`
+	↩ r }) }
 
 ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
 
@@ -24,10 +23,7 @@
 		: Tstr(ι)||Tnum(ι)? JSON.stringify(ι)
 		: Tarr(ι)? '{'+ι.map(ENC).join(',')+'}'
 		: '{'+_u(ι).map((ι,i)=>'['+ENC(i)+']='+ENC(ι)).join(',')+'}'
-	# unpack
-	# ι ← simple_template(ss,ιs,ENC).join('')
-	ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	# ,ι=> Tarr(ι)? ι.map(ENC).join(',') : falsy(ι)? '' : ι+''
+	ι ← simple_template(ss,ιs,ENC).join('')
 	# t ← shᵥ`hs -c ${ι}`
 	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
 	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
@@ -78,7 +74,7 @@
 
 	apply_regexes ← regs=> multiline(regs).split(/\n/g).map(λ(t){ [a,b] ← t.split(/  +/g) ;ι = ι.replace(RegExp(a),b) })
 	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
-	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {type:'text', ι}), (ι.match(URL)||[]).map(ι⇒ {type:'url', ι}))._.flatten(✓).filter(ι=> !(ι === ∅ || (ι.type === 'text' && ι.ι === '')))
+	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {,type:'text',ι}) ,(ι.match(URL)||[]).map(ι⇒ {,type:'url',ι}))._.flatten(✓).filter(ι=> !(ι === ∅ || (ι.type === 'text' && ι.ι === '')))
 
 	# ι = parse_alicetext(ι).map(λ(ι){t←; ι.type==='url' && (t=Uri(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+'') ;↩ ι})._.map('ι').join('')
 
@@ -184,6 +180,6 @@
 	↩ E }
 
 ⧫. net1 ==>{
-	γ.device_listen = =>{ r ← new net.Server().listen(0,'localhost') ;↩ r.Π`listening`.then(=> r) }
+	γ.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
 	}

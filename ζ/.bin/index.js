@@ -728,9 +728,9 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 // s is interned, so use it as a memoization key for things
 E.is_template = ([ss,...ιs])=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
 var tmpl_flatten = (raw2,ιs2)=> _u.zip(raw2,ιs2)._.flatten(true).slice(0,-1).filter(ι=> ι!=='')
-E.simple_template = (ss,ιs,filter,filter_special)=>{ is_template([ss,...ιs]) || !function(...a){throw Error(__err_format(...a))}('‽')
+E.simple_template = (ss,ιs,filter)=>{ is_template([ss,...ιs]) || !function(...a){throw Error(__err_format(...a))}('‽')
 	if( Tarr(filter) ){ var [root,join] = filter ;filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
-	filter_special||(filter_special= ι=> falsy(ι)? '' : ι+'' )
+	var filter_special = ι=> falsy(ι)? '' : ι+''
 	var ι = tmpl_flatten( ss.raw.map((𐅭𐅞)=>𐅭𐅞.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι=>0?0:{raw:ι}) )
 	for(var i=0;i<ι["‖"]-1;i++) if( Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,()=>{ ι[i+1] = filter_special(ι[i+1].raw) ;i++ ;return '' })
 	filter &&( ι = ι.map(ι=> Tstr(ι)? ι : orundefined(filter(ι.raw),ι) ) )

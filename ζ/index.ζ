@@ -262,7 +262,7 @@ E.memoize_weak = f=>{ cache ← new WeakMap() ;↩ (ι=>{ if( cache.has(ι) ) �
 # this does
 E.memoize_tick = f=>{ f = memoize_proc(f) ;cache ← f.cache ;↩ (ι=>{ t ← ι+'' ;process.nextTick(=> delete cache[t]) ;↩ f(ι) }) …← ({cache}) }
 # ? frp will remove the last use(s) of slot_persist
-E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι}`‘.json
+E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`‘.json
 
 # ;[#p ersist_here ~/code/declare/npm]
 _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -728,9 +728,9 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 # s is interned, so use it as a memoization key for things
 E.is_template = ([ss,…ιs])=> ss && Tarr(ss.raw) && ss.raw.‖-1 === ιs.‖
 tmpl_flatten ← (raw2,ιs2)=> _u.zip(raw2,ιs2)._.flatten(✓).slice(0,-1).filter(ι=> ι!=='')
-E.simple_template = (ss,ιs,filter,filter_special)=>{ is_template([ss,…ιs]) || ‽
+E.simple_template = (ss,ιs,filter)=>{ is_template([ss,…ιs]) || ‽
 	if( Tarr(filter) ){ [root,join] ← filter ;filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : ∅ }
-	filter_special||(filter_special= ι=> falsy(ι)? '' : ι+'' )
+	filter_special ← ι=> falsy(ι)? '' : ι+''
 	ι ← tmpl_flatten( ss.raw.map(.replace(/\\(?=\$\{|`)/g,'')), ιs.map(ι⇒{raw:ι}) )
 	for(i←0;i<ι.‖-1;i++) if( Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,=>{ ι[i+1] = filter_special(ι[i+1].raw) ;i++ ;↩ '' })
 	filter &&( ι = ι.map(ι=> Tstr(ι)? ι : or∅(filter(ι.raw),ι) ) )

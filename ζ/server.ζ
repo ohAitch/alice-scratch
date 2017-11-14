@@ -1,4 +1,7 @@
 #!/usr/bin/env ζ
+################# SHAMEFUL COPY file:/~/code/scratch/scratch.ζ #################
+device_listen ← (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
+
 ###################################### log #####################################
 # APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
 log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text + [Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' ')+'\n'
@@ -18,16 +21,15 @@ require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildPr
 eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code; ↩ require('child_process').spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].repeat(3),'ipc'] }) |> (ι=>{ ♓_on_exits(=>ι.kill()) /*memory leak*/ ;↩ ι }) }
 eval_in_worker ← (=>{
 	🏷busy ← new Set(); 🏷free ← new Set()
-	make ← =>{ r ← eval_in_new_worker('('+(=>{ ♓ ← process
+	make ← => eval_in_new_worker('('+(=>{ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
 		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `${Time()} shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
 		wait()
 		♓.on('beforeExit',i=>{ ♓.send([['exit_',i],['unbusy']]); ♓.exitCode = 0; wait() })
 		♓_on_exits(i=>{ ♓.send([['exit_',i]]) })
 		})+')()')
-		r.on('message',λ(ι){ ι.map(ι=> @.emit(…ι) ) })
-		r.on('unbusy',λ(){ busy.delete(@); free.add(@) })
-		↩ r }
+		.on('message',λ(ι){ ι.map(ι=> @.emit(…ι) ) })
+		.on('unbusy',λ(){ busy.delete(@); free.add(@) })
 	;(=>{ t ← free.pop(); free.map(.kill()); free = new Set(); t && free.add(t) }).every(10*60)
 	↩ code=>{
 		log2(Δ_Sets(busy,free,=>{ # cleanup
@@ -46,36 +48,36 @@ procify ← (a,code)=> 'a ← '+JSON.stringify(a)+'; on_off ← '+on_off+'; ('+(
 module.if_main_do(=>{
 	on_ready ← =>{ log('server ready'  ); shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
 	♓_on_exits(=>{ log('server exiting'); shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ` })
-	# pretty sure there's a race condition in [ln -sf] and [#!/usr/bin/env node] which causes problems with ζλ calls right after a server.ζ reboot. the fix is getting ipc_shell to fallback itself
-	new net.Server()
-		.listen(2113,'localhost',on_ready)
-		.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{t←;
-			worker←; ended←;
-			c_send ← (type,ι)=>{ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); 𐑕𐑩𐑒𐑧𐑑.write(Buffer.concat([a,b,c])) }
-			𐑕𐑩𐑒𐑧𐑑.on('end',t=_u.once(=>{ !ended && worker && worker.kill('SIGKILL'); ended = ✓ })).on('error',t)
-			𐑕𐑩𐑒𐑧𐑑.on('data',catch_(ι=>{
-				if (buf){ ι = Buffer.concat([buf,ι]); buf = ∅ }
-				i←0; get ← n=> i+n <= ι.‖ ||( buf = ι.slice(i), return_() )
-				while(i<ι.‖){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
-				})); buf←;
-			a ← {argv:[], cwd:'', env:{}, isTTY:[,,,,]}
-			on_msg ← ι=>{switch(ι.type){default: ‽
-				break; case 'A': a.argv.push(ι.ι+'')
-				break; case 'E': [ˣ,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
-				break; case 'D': a.cwd = ι.ι+''
-				break; case 'R':
-					if( a.argv[1]==='TEST' ){ c_send('X',5+''); ended = ✓; ↩ }
-					worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
-					{on,off} ← on_off()
-					;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
-					on(worker,'exit_',i=>{ c_send('X',i+''); ended = ✓; off() })
-					# c_send('S')
-				break; case 'H': # not sure what this is for
-				break; case '0': # c_send('S'); worker.stdio[0].write(ι.ι)
-				break; case '.': # worker.stdio[0].end()
-				}}
-			})
+	H ← device_listen(2113)
+	H.then(.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{t←;
+		worker←; ended←;
+		c_send ← (type,ι)=>{ if (ended) ↩; a ← Buffer(4); b ← Buffer(type); c ← Buffer(ι||''); a.writeInt32BE(c.‖,0); 𐑕𐑩𐑒𐑧𐑑.write(Buffer.concat([a,b,c])) }
+		𐑕𐑩𐑒𐑧𐑑.on('end',t=_u.once(=>{ !ended && worker && worker.kill('SIGKILL'); ended = ✓ })).on('error',t)
+		𐑕𐑩𐑒𐑧𐑑.on('data',catch_(ι=>{
+			if (buf){ ι = Buffer.concat([buf,ι]); buf = ∅ }
+			i←0; get ← n=> i+n <= ι.‖ ||( buf = ι.slice(i), return_() )
+			while(i<ι.‖){ get(5); L ← ι.readInt32BE(i); type ← chr(ι[i+4]); get(5+L); on_msg({type, ι:ι.slice(i+=5,i+=L)})}
+			})); buf←;
+		a ← {argv:[], cwd:'', env:{}, isTTY:[,,,,]}
+		on_msg ← ι=>{switch(ι.type){default: ‽
+			break; case 'A': a.argv.push(ι.ι+'')
+			break; case 'E': [ˣ,k,v] ← (ι.ι+'').re`^([^=]*)=(.*)`; k.re`^NAILGUN_TTY_\d$`?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
+			break; case 'D': a.cwd = ι.ι+''
+			break; case 'R':
+				if( a.argv[1]==='TEST' ){ c_send('X',5+''); ended = ✓; ↩ }
+				worker = eval_in_worker(procify(a,'ζ_main({a:process.argv.slice(2)})'))
+				{on,off} ← on_off()
+				;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
+				on(worker,'exit_',i=>{ c_send('X',i+''); ended = ✓; off() })
+				# c_send('S')
+			break; case 'H': # not sure what this is for
+			break; case '0': # c_send('S'); worker.stdio[0].write(ι.ι)
+			break; case '.': # worker.stdio[0].end()
+			}}
+		}))
+	H.then(on_ready)
 	})
+
 # old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
 # new issue: ignores stdin because it's complicated on the node side
 # (old code: fs.fstatSync(0).isFIFO()? read_stdin(t) : t() )
@@ -87,5 +89,6 @@ module.if_main_do(=>{
 # * fast
 # if we go to sleep and the server’s down, then we’ll be waiting, which is why we need server management tools.
 
-# ! the right way to solve this: have ipc_shell fallback to calling index.js if it can't connect to the server
+# pretty sure there's a race condition in [ln -sf] and [#!/usr/bin/env node] which causes problems with ζλ calls right after a server.ζ reboot. the fix is getting ipc_shell to fallback itself
+# that should supercede this:
 # ! todo: server.ζ set to keep_alive by index.js at first ζpool call, not on package installation; via factoring out action {REQUIRE_PACKAGE and START} to actions REQUIRE_PACKAGE and START
