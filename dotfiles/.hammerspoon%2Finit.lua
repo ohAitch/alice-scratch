@@ -7,7 +7,8 @@ function start(x) table.insert(persists,x:start()) end; persists = {}
 function Z(cb,...) start(hs.task.new('/usr/local/bin/ζλ',cb,{...})) end
 function s_start(x,a) return string.sub(x,1,string.len(a)) == a end
 function some_flip(f,x) for _,x in pairs(x) do if f(x) then return true end end end
-function simple_send_json(address,x) local H = hs.socket.new() ;H:connect(table.unpack(address)):write(hs.json.encode(x)..'\n' ,function() H:disconnect() end) end
+json = hs.json.encode
+function simple_send(address,x) local H = hs.socket.new() ;H:connect(table.unpack(address)):write(json(x)..'\n' ,function() H:disconnect() end) end
 
 --------------------------------------------------------------------------------
 hs.autoLaunch(true)

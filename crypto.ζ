@@ -58,3 +58,8 @@ find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ ← ι=>
 	↩ mean([ norm1(αβ.map(=>1)) ,…ι.map(ι=> αβ.map(α=> α===ι?1:0) ) ]) }
 t ← texts.map(.chunk(4).map(ι=> parseInt(ι.join(''),2) )).map(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
 # t.map(.map((ι,i)=> '▁▂▃▄▅▆▇█▁▂▃▄▅▆▇█'[i].repeat(round(173*ι)) ).join('') ).join('\n')
+
+# i want to See 4b
+# how can i code that see.ζ visualization?
+# obvs bar graph
+# ‡ this is something worth Seeing :) ‡

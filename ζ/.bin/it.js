@@ -95,6 +95,7 @@ E.postfix = new Proxy(t,{set(ˣ,id,ι,self){var t; id+='' ;𐅯𐅬𐅫𐅋𐅃.
 
 postfix['|>'] = (ι,f)=> f(ι)
 postfix['<|'] = (f,ι)=> f(ι)
+postfix['!>'] = (ι,f)=>( f(ι) ,ι )
 postfix['…←'] = Object.assign
 // obj_hash ← ι=> [ ,[(a,b)=>a===b,[…protos(ι)][1]] ,[_l.isEqual,ps(ι)] ,…(Tfun(ι)? [[(a,b)=>a===b,Function.prototype.toString.call(ι)]] : []) ]
 // postfix['#obj='] = (a,b)=> [a,b].map(obj_hash) |> (ι=> _u.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
@@ -105,7 +106,6 @@ postfix['…←'] = Object.assign
 E._ = _u
 var path = require('path')
 var fs = require('fs')
-def(E,'robot',lazy('robot',()=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',()=>{ var t = npm`require-uncached@1.0.3` ;return ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 _u.mixin({ isEqual:_l.isEqual })
 
@@ -182,7 +182,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 			var r = [] ;for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			return r } })()
 	var s_or = ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
-	var id_c = 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
+	var id_c = 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += ? * + - & | ∃ ∋'
 	var ζ_compile_nonliteral = ι=> ι
 		.replace(/([=←:(,]) *(?!\.\.\.)\./g,(ˣ,ι)=> ι+'(𐅭𐅞)=>𐅭𐅞.' )
 		.replace(𐅦𐅪𐅭𐅯𐅭||(𐅦𐅪𐅭𐅯𐅭= re`‘\.([${word}]+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property2(ι,${ι}))` )
@@ -242,7 +242,7 @@ var buf36 = lazy_fn(()=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode)
 E.simple_flesh = ι=>0?0
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (i,ι)=>{ if( Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_u.keys(ι)().sort().forEach(i=> r[i]=ι[i]) ;return r } })
-E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4` )).hash64(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> buf36(ι).slice(-12)) ;var 𐅜𐅪𐅫𐅪𐅃; // best hash is murmurhash.v3.128
+E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> buf36(ι).slice(-12)) ;var 𐅜𐅪𐅫𐅪𐅃; // best hash is murmurhash.v3.128
 
 var memo_frp = (names,within,f)=>{
 	var dir = φ`~/file/.cache/memo_frp/${names}`
@@ -261,8 +261,10 @@ E.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι)
 // WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 // this does
 E.memoize_tick = f=>{ f = memoize_proc(f) ;var cache = f.cache ;return (ι=>{ var t = ι+'' ;process.nextTick(()=> delete cache[t]) ;return f(ι) }) [γ['…←']] ({cache}) }
-// ? frp will remove the last use(s) of slot_persist
-E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property2(ι,"json"))
+// ? frp will remove the last use(s) of @device
+E.thisdevice = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property2(ι,"json"))
+E.thisproc = ι=> 𐅜𐅩𐅭𐅦𐅰[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[ι+''] ;var 𐅜𐅩𐅭𐅦𐅰 = {}
+E.slot_persist = thisdevice
 
 // ;[#p ersist_here ~/code/declare/npm]
 var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -383,8 +385,6 @@ var genex = function Λ(ι){return 0,
 		!function(...a){throw Error(__err_format(...a))}(ι) }
 
 E [γ['…←']] (_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-E.multiline = function(ι){ ι = (ι+'').split('\n').slice(1,-1) ;var t = ι.map((𐅭𐅞)=>𐅭𐅞.re`^\t*`[0]["‖"])._.min() ;ι = ι.map((𐅭𐅞)=>𐅭𐅞.slice(t)) ;return (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
-E.sleep = ι=>{ var h; for(var hr=hrtime() ;(h=hrtime(hr)) < ι ;ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 	// ! really should include a confidence interval or smth
 	var r=0 ;var I=1 ;var hr=hrtime() ;var R = ()=> Unit(hrtime(hr) / r,'s')
@@ -492,8 +492,6 @@ assign_properties_in_E_informal({
 		if( Tarr(ι)){ var t = ι.find_index_deep(f) ;if( t) return [i,...t] }
 		else{ if( f(ι) )return [i] }
 		} }
-,'Array.prototype.Π&':{get(){return Π["&"](this) }}
-,'Array.prototype.Π|':{get(){return Π["|"](this) }}
 ,'Array.prototype.seq':{get(){ var θ = function*(){ for(;θ.i<θ.ι["‖"];) yield θ.ι[θ.i++] }() ;θ [γ['…←']] ({ ι:this, i:0, clone(){return this.ι.seq [γ['…←']] (this) } }) ;return θ }}
 ,'Array.prototype.find_last_index':function(f){ for(var i=this["‖"]-1;i>=0;i--) if( f(this[i],i,this) ) return i }
 // ,'Set.prototype.@@iterator':Set.prototype.values
@@ -516,17 +514,6 @@ Promise.prototype[γ["|>"]] (ι=> new Property2(ι,"thunk")) [γ['…←']] ({ g
 Promise.prototype[γ["|>"]] = (ι,f)=> ι.status? f(ι.ι) : ι.then(f)
 
 var TimerCons = function(a,b){this.a=a;this.b=b} ;TimerCons.prototype = {clear:function(){this.a.clear();this.b.clear()}, ref:function(){this.a.ref();this.b.ref()}, unref:function(){this.a.unref();this.b.unref()}}
-E.Π = ι=>0?0
-	: !Tfun(ι)?( T.Error(ι)? Promise.reject(ι) : Promise.resolve(ι) )
-	: /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
-	: (()=>{ // type union of new.Promise(nodeback) and Promise.resolve(object)
-		var type = '?'
-		var r = (...a)=>{ type==='?' &&( type = 'nodeback' ) ;return type==='object'? ι(...a) : Π((yes,no)=> ι(...a,(e,ι)=>{ e? no(e) : yes(ι) })) }
-		for(var name of ['then','catch'])
-			r[name] = (...a)=>{ type==='?' &&( type = 'object', ι = Promise.resolve(ι) ) ;return ι[name](...a) }
-		return r })()
-Π["&"] = ι=> Promise.all(ι)
-Π["|"] = ι=> Promise.race(ι)
 assign_properties_in_E_informal({
 'Function.prototype.P':function(...a){return this.bind(undefined,...a) }
 ,'Function.prototype.X':{get(){return ι=> this(ι) }}
@@ -611,7 +598,7 @@ E.normal_CDF = x=>{ var μ = 0 ;var σ = 1 ;return (1 + npm`math-erf@1.0.0`( (x-
 E.invert_specific = f=> fι=>{ var ι = 0 ;while( f(ι) > fι ) ι += 0.01 ;return ι }
 
 var normalize_count = ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)) ;return ι }
-var diff_Set = (a,b)=>{var r; return 0?0
+E.diff_Set = (a,b)=>{var r; return 0?0
 	: [a,b].every(T.Set)?
 		// [a,b] *.count zip **|0 *-
 		( r = normalize_count(new Map(Map.prototype.zip.call(...[b,a].map((𐅭𐅞)=>𐅭𐅞.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), new Property( r,'name' ).def({ value:a.name }), r )
@@ -661,8 +648,8 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 
 	focus || sfx`ack`
 
-	// windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
-	// apps_with_windows_in_current_space ← => hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
+	// windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))`
+	// apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end))`
 
 	//########################### go to specific chrome ###########################
 	// this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
@@ -711,7 +698,7 @@ E.go_to = (...a)=>{ // synonyms: go_to, open, search?
 			ι = φ('~/file/'+ι)
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;return }
 		if( in_app==='terminal'){
-			var here = hsᵥ`hs.json.encode(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))` // ... the behavior changed. fuck
+			var here = hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))` // ... the behavior changed. fuck
 			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
 			var available = new Set([here])["∩"](unbusy())[0]
 			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;return }
@@ -757,7 +744,7 @@ new Property( sb,'tab' ).def({
 		return r },
 	})
 
-var fs_ipc_emit = (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;return shᵥ`curl -s -X PUT localhost:${port}`+'' }
+var fs_ipc_emit = (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;return shᵥ`curl -s -X PUT localhost:${port}`+'' } // net.Socket
 
 E.sbᵥ = (ss,...ιs)=>{
 	var ENC = JSON.stringify ;var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
@@ -1113,7 +1100,9 @@ E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
 require(φ`~/code/declare/module.ζ`+'').patch(E)
 
 //#################################### main #####################################
-var sh_ify = ι=>{var t; return Π( 0?0
+var sh_ify = ι=>{var t;
+	var Π = ι=> Promise.resolve(ι) // COPY
+	return Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
 	: ι===undefined? {}
 	: Tstr(ι)? {out:ι}

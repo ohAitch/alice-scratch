@@ -165,17 +165,17 @@ google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.ite
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
-		Π(google_youtube.videos.list)({ ,auth:yt_auth ,part ,id }).then(.items[0] )
+		?Π?(google_youtube.videos.list)({ ,auth:yt_auth ,part ,id }).then(.items[0] )
 		},
 	playlist:{ from:({id,part='contentDetails,id,snippet,status'})=>
-		google_depaginate( Π(google_youtube.playlistItems.list),{ auth:yt_auth, part, playlistId:id, } )
+		google_depaginate( ?Π?(google_youtube.playlistItems.list),{ auth:yt_auth, part, playlistId:id, } )
 		},
 	}
 
 # rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
 # rwby_dl W9wyWgvyp0s 's3e01 Round One'
 
-rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then( .map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ).Π& )
+rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then( .map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ) |>(Promise.all) )
 
 rHjUHnG7WOQ should be obviously type(youtube url)
 youtube.video.from({ id:'rHjUHnG7WOQ' })
@@ -343,3 +343,11 @@ with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').rep
 
 --------------------------------------------------------------------------------
 i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
+
+########################### todo - this is an odd log ##########################
+ι ← 'N3wyOHwxOTR8MHwwfDM4fDE5LjkxNjQ2NTgyNjE4OTQ3M3wwfDB8MnwwfDExMDl8MTQwfDB8M3wwfDF8OHwxfDB8MXwxfDF8MjI4fHRydWV8ZmFsc2V8dHJ1ZXwxNTEwOTcyMTc1NDkyfDB8MHx0cnVlfHRydWV8dHJ1ZXwxLDAsMCwwLDAsMCwwLDAsNSwxMCwxMCwyMCwyMCwxMSwxNiwyMCwxLDAsMCwwLDAsMSwwLDMsNiw1LDUsNSw1LDUsNSwxMHwtMSwtMSwtMSwtMSwtMSwtMSwtMSwtMQ==|YzI4NzJmYTg4MTZlY2IzNzhhNDU0MzI1ZmJjMjExMzc='
+ι.split('|')[0] |>(ι=> Buffer.from(ι,'base64')+'')
+r ← '7|28|10000|0|0|38|19.916465826189473|0|0|2|0|1109|140|0|3|0|1|8|1|0|1|1|1|228|true|false|true|1510972175492|0|0|true|true|true|1,0,0,0,0,0,0,0,5,10,10,20,20,11,16,20,1,0,0,0,0,1,0,3,6,5,5,5,5,5,5,10|-1,-1,-1,-1,-1,-1,-1,-1'
+require('crypto').createHash('md5').update(r).digest().toString('hex')
+b ← '4866525ce4fc2a3331806600943bb995'
+;[r,b].map(ι=> Buffer.from(ι).toString('base64')).join('|')

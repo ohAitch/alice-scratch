@@ -2,7 +2,7 @@
 # config: os_daemon(φ`~/code/scratch/φ_Δ_archive.ζ`).restart()
 
 #################################### prelude ###################################
-Δ_as ← (s,f)=>{t←;ι←; last ← slot_persist('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f)|>(simple_hash)) )){ last.ι = t; ↩ ι } }
+Δ_as ← (s,f)=>{t←;ι←; last ← @device('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f)|>(simple_hash)) )){ last.ι = t; ↩ ι } }
 
 ################################## φ_Δ_archive #################################
 # this is not quite right. like, the thing we're pretending to be is a giant stream of all filesystem events. filtering through that by a filesystem set selector is outside the scope of EventEmitter.

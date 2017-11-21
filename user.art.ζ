@@ -1,59 +1,4 @@
-### https://github.com/ggreer/the_silver_searcher needs these ascii characters to see this file ###############################################################################################################################################################################################################################################################################################################
-
-#################################### ui glue ###################################
-⧫. notify ==> ι=>{
-	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
-	net1 ;↩ device_listen().then(H=>{
-	at ← H.address()|>(ι=>[,ι.address,ι.port])
-	r ← H.just_first_json()
-	hsᵥ`hs.notify.new(
-		function(x) x:withdraw() ;simple_send_json(${at},{ at=x:actualDeliveryDate() }) end
-		,{ title=${ι[0]} ,informativeText=${or∅(ι[1],'')} ,otherButtonTitle='\u{2063}' ,actionButtonTitle='\u{2063}' }
-		):send()`
-	↩ r }) }
-
-⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
-
-################################### data glue ##################################
-⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _.values(ι)[0].revisions[0]['*'] )
-
-################################# service glue #################################
-⧫. hsᵥ ==> (ss,…ιs)=>{
-	ENC ← ι⇒
-		: Tstr(ι)||Tnum(ι)? JSON.stringify(ι)
-		: Tarr(ι)? '{'+ι.map(ENC).join(',')+'}'
-		: '{'+_u(ι).map((ι,i)=>'['+ENC(i)+']='+ENC(ι)).join(',')+'}'
-	ι ← simple_template(ss,ιs,ENC).join('')
-	# t ← shᵥ`hs -c ${ι}`
-	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
-	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
-	t ← (t+'').split('\n')[-1] ;r ← catch_ι(=> JSON.parse(t)[0]) ;↩ r!==∅?r: t }
-
-⧫. tsᵥ ==> (ss,…ιs)=>{
-	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	ι = 'require "totalspaces2" ;TS = TotalSpaces2 ;'+ι
-	PORT = 34290
-	R ← => JSON.parse(fs_ipc_emit(PORT,ι))[0]
-	launch_serv ← =>{
-		;(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
-		t ← φ`/tmp/evalserv_${random_id(9)}.rb`
-		t.text = String.raw`#!/usr/bin/env ruby
-			require "socket" ;require "json"
-			server = TCPServer.new("localhost",${PORT})
-			loop do
-			  t = server.accept
-			  r = JSON.generate([eval(File.read("/tmp/fs_ipc_#{${PORT}}"))])
-			  t.print "HTTP/1.1 200 OK\r\n"+"Content-Type: text/plain\r\n"+"Content-Length: #{r.bytesize}\r\n"+"Connection: close\r\n"+"\r\n"+r
-			  t.close
-			end`
-		shᵥ`chmod +x ${t}`
-		require('child_process').spawn(t,{shell:✓,detached:✓,stdio:'ignore'}).unref()
-		# process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ })
-		}
-	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;sleep(0.1) ;↩ R() } }
-
-############################ user's art or something ###########################
-⧫. moon ==> ι=>{ ι||(ι=Time()) ;moons ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;↩ moons[floor((npm`suncalc@1.7.0`.getMoonIllumination(ι).phase * moons.‖ + 0.5) % moons.‖)] }
+⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
 
 ⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''
 	# very nice google maps urls
@@ -84,7 +29,7 @@
 		)) ι = ι.slice(…sourcemap.url)
 	
 	ι = ι.replace(/%CE%B6/g,'ζ')
-	apply_regexes(λ(){/*
+	apply_regexes(String.raw`
 	\bhttps://         http://
 	\b(http://)www\.   $1
 	\b(http://)(?:mail\.)?(google\.com/mail/)u/0/[?&]?#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
@@ -108,7 +53,7 @@
 	 - Wikipedia, the free encyclopedia( http://wikipedia\.org/)  $1
 	 - Album on Imgur( http://imgur\.com/)             $1
 	 - Google Maps( http://google\.com/maps/)          $1
-	*/})
+	`)
 
 	ι = parse_alicetext(ι).map(ι=>{t←;
 		if (ι.type === 'url') {
@@ -123,9 +68,9 @@
 				} ;ι.ι = u+'' }
 		↩ ι}).map(.ι).join('')
 
-	apply_regexes(λ(){/*
+	apply_regexes(String.raw`
 	: \d{5,}: Amazon(?:Smile)?: Books( http://amzn.com/)        $1
-	*/})
+	`)
 
 	ι = parse_alicetext(ι).map(ι=>{t←;
 		if (ι.type === 'url') {
@@ -154,32 +99,3 @@
 	# https://www.google.com/search?q=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2&oq=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2
 
 	↩ ι }
-
-################################### new tools ##################################
-⧫. lock ==>{
-	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
-	locks ← {}
-	♓_on_exits(=> _.keys(locks).map(lock.un.⚓) )
-	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
-	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx')
-		.then(fd=>{ locks[id] = ✓ ;↩ fs_close(fd) })
-		.catch(e=>{ opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
-			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
-			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
-			})
-	lock.un = id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
-	lock.un.⚓ = id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch (e){} ;delete locks[id] }
-	lock.∃ = id=> fs_open(𐅨𐅯(id),'r')
-		.then(fd=>{ fs.close(fd) ;↩ ✓ })
-		.catch(e=> e.code==='ENOENT'? ✗ : Π(e))
-	↩ lock }
-
-⧫. stream4 ==>{ E ← {}
-	E.send_json = memoize_weak(s=>{ t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .fbind })
-	E.as_json = memoize_weak(s=>{ ;t ← npm`split2@2.2.0`(ι=>{ try{↩ JSON.parse(ι) }catch(e){ @.emit('error',e) } }) ;s.pipe(t) ;↩ t.P`data` })
-	↩ E }
-
-⧫. net1 ==>{
-	γ.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
-	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
-	}

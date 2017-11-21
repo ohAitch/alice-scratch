@@ -1,0 +1,27 @@
+# let's do this the poor way
+################################## get strains #################################
+https://www.leafly.com/explore/sort-newest
+setInterval(()=> $('.ga_Explore_LoadMore').click() ,2*1e3)
+# wait to load
+# @2017-11-19T15:58Z finds 2304 results instead of the promised 2327 but that's good enough
+r = $('a > .strain-tile').toArray().map(ι=> location.origin + $(ι).parent().attr('href') )
+r = _.uniq(r.sort(),true)
+copy(JSON.stringify(r))
+@device`𐅩𐅜𐅜𐅪𐅫`.ι = JSON.parse(p())
+################################## get reviews #################################
+q0 ← ι=> cn.log('scraping',ι)
+q1 ← ι=>{ now ← Time().i ;if( 𐅋𐅰𐅜𐅰𐅝 + 20 < now ){ 𐅋𐅰𐅜𐅰𐅝 = now ;q0(ι) } } ;𐅋𐅰𐅜𐅰𐅝 ← Time().i
+@device`𐅩𐅜𐅜𐅪𐅫`.ι.map(memoize_persist((ι,i2)=>{t←;
+	r ← []
+	for( i←0 ; ;i++ ){
+		r2 ← (GET_L(`${ι}/reviews?page=${i}&sort=date`,2e5)+'')
+			|>(ι=> (ι.match((t=/<a.*?href="(.*?)".*>Read Full Review<\/a>/).g)||[]).map(.match(t)[1]) )
+		r.push(…r2)
+		if( r2.‖ ) q1([i2,i])
+		else{ q0([i2,i]) ;break } }
+	↩ r }))
+
+
+
+
+# scrape strain data too

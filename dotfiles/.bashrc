@@ -24,6 +24,7 @@ export PROMPT_COMMAND='__prompt $? "$(history 1)" || PROMPT_COMMAND=pwd'; export
 shopt -s no_empty_cmd_completion
 alias -- -='cd ~-'
 unset HISTFILE
+export HISTCONTROL=ignoreboth:erasedups
 l(){ ls -AG "$@"; }
 f(){ ζ ' go_to("path",a0) ;' "${1:-.}"; } # ported to ‡; remove
 ar(){ tar -c "$@" | xz -v > "$(basename "$1").tar.xz"; } # another xz option is -9

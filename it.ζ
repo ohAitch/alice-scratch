@@ -1,0 +1,121 @@
+################################# data : basic #################################
+
+################################# data : parse #################################
+
+################################## data : time #################################
+
+############################## data : friend glue ##############################
+⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _.values(ι)[0].revisions[0]['*'] )
+
+######################### net incl context device,proc #########################
+# ⧫. lock ==>{
+# 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
+# 	locks ← {}
+# 	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
+# 	♓_on_exits(=> _.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
+# 	un ← id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
+# 	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx').then(
+# 		,fd=>( locks[id] = ✓ ,fs_close(fd).then(=> =>un(id) ) )
+# 		,e=>{ T.Error(e) || ‽ ;opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
+# 			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
+# 			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
+# 			} )
+# 	lock.∃ = id=> fs_open(𐅨𐅯(id),'r').then(
+# 		,fd=>( fs.close(fd) ,✓ )
+# 		,e=> e.code==='ENOENT'? ✗ : Π(e) )
+# 	↩ lock }
+
+⧫. stream4 ==>{ E ← {}
+	E.send_json = memoize_weak(s=>{ ;t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .fbind })
+	E.as_json = memoize_weak(s=>{ ;t ← npm`split2@2.2.0`(ι=>{ try{↩ JSON.parse(ι) }catch(e){ @.emit('error',e) } }) ;s.pipe(t) ;↩ t.P`data` })
+	↩ E }
+
+⧫. net1 ==>{ E ← {}
+	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
+	E.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
+	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
+	net.Server.prototype‘.at .get= λ(){t←; ↩ @.𐅯𐅩𐅞𐅫𐅫||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	↩ E }
+
+⧫. Π ==>{ ↩ ι⇒
+	: Tfun(ι) && /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
+	: T.Error(ι)? Promise.reject(ι)
+	: Promise.resolve(ι)
+	}
+
+############################### friend glue : ui ###############################
+⧫. _electron__start_my ==>{
+	# ! requires modules using /usr/local/bin/node 's ABI; currently electron matches but this will break
+	start_el_app ← code=>{
+		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
+		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})()`
+		require('child_process').spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',fs.openSync(t.out,'a+'),fs.openSync(t.err,'a+')] })
+		|> (ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
+		}
+	start_my ← => start_el_app(=>{ el ← require('electron') ;el.app.Π`ready`|>(=>{
+		send ← (w,ι)=> w.webContents.executeJavaScript(ι+';0')
+		on_msg ← ({,id,code})=>{ w ← 𐅮𐅭𐅰𐅂𐅮‘[id]
+			if(! w.ι ){
+				w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ })
+				w.ι.loadURL('about:blank')
+				w.ι.Π`closed`.then(=> w.∃ = ✗ )
+				send(w.ι,` require('/usr/local/bin/ζ')(global) `) }
+			send(w.ι,code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
+		net1.device_listen()|>(H=>{
+			H.on('connection',s=> stream4.as_json(s).on(on_msg) )
+			@device`app_𐅝𐅝𐅦𐅃𐅫`.ι = H.at
+			})
+		})})
+	↩ start_my }
+
+⧫. notify ==> ι=>{
+	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
+	net1.device_listen().then(H=>{
+	r ← H.just_first_json()
+	hsᵥ`hs.notify.new(
+		function(x) ;x:withdraw() ;simple_send(${H.at},{ at=x:actualDeliveryDate() }) end
+		,{ title=${ι[0]} ,informativeText=${or∅(ι[1],'')} ,otherButtonTitle='\u{2063}' ,actionButtonTitle='\u{2063}' }
+		):send()`
+	↩ r }) }
+
+⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
+
+################################## friend glue #################################
+⧫. hsᵥ ==> (ss,…ιs)=>{
+	ENC ← ι⇒
+		: Tstr(ι)||Tnum(ι)? JSON.stringify(ι)
+		: Tarr(ι)? '{'+ι.map(ENC).join(',')+'}'
+		: '{'+_u(ι).map((ι,i)=>'['+ENC(i)+']='+ENC(ι)).join(',')+'}'
+	ι ← simple_template(ss,ιs,ENC).join('')
+	# t ← shᵥ`hs -c ${ι}`
+	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
+	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
+	t ← (t+'').split('\n')[-1] ;↩ or∅( catch_ι(=> JSON.parse(t)),t ) }
+
+⧫. tsᵥ ==> (ss,…ιs)=>{
+	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	ι = 'require "totalspaces2" ;TS = TotalSpaces2 ;'+ι
+	PORT = 34290
+	R ← => JSON.parse(fs_ipc_emit(PORT,ι))[0]
+	launch_serv ← =>{
+		;(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
+		t ← φ`/tmp/evalserv_${random_id(9)}.rb`
+		t.text = String.raw`#!/usr/bin/env ruby
+			require "socket" ;require "json"
+			server = TCPServer.new("localhost",${PORT})
+			loop do
+			  t = server.accept
+			  r = JSON.generate([eval(File.read("/tmp/fs_ipc_#{${PORT}}"))])
+			  t.print "HTTP/1.1 200 OK\r\n"+"Content-Type: text/plain\r\n"+"Content-Length: #{r.bytesize}\r\n"+"Connection: close\r\n"+"\r\n"+r
+			  t.close
+			end`
+		shᵥ`chmod +x ${t}`
+		require('child_process').spawn(t,{shell:✓,detached:✓,stdio:'ignore'}).unref()
+		# process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ })
+		}
+	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
+
+################################ automatic input ###############################
+
+############################### to be deprecated ###############################
+⧫. multiline ==> ι=>{ ι = (ι+'').split('\n').slice(1,-1) ;t ← ι.map(.re`^\t*`[0].‖)._.min() ;ι = ι.map(.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }

@@ -13,7 +13,7 @@ E.__prompt = (E,history_1)=>{t←; E ← E |0
 	# ideal:
 	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
 	# t ← bind( D(sh`$$`), [#Q φ.cwd #Q], { 'ℍ.‖':2 }).ℍ; t[0]!==t[1] && out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
-	last_cwd ← slot_persist('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
+	last_cwd ← @device('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	postrun('hash -r')
 	}
 

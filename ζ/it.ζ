@@ -95,6 +95,7 @@ E.postfix = new Proxy(t,{set(ˣ,id,ι,self){t←; id+='' ;𐅯𐅬𐅫𐅋𐅃.p
 
 postfix['|>'] = (ι,f)=> f(ι)
 postfix['<|'] = (f,ι)=> f(ι)
+postfix['!>'] = (ι,f)=>( f(ι) ,ι )
 postfix['…←'] = Object.assign
 # obj_hash ← ι=> [ ,[(a,b)=>a===b,[…protos(ι)][1]] ,[_l.isEqual,ps(ι)] ,…(Tfun(ι)? [[(a,b)=>a===b,Function.prototype.toString.call(ι)]] : []) ]
 # postfix['#obj='] = (a,b)=> [a,b].map(obj_hash) |> (ι=> _u.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
@@ -105,7 +106,6 @@ postfix['…←'] = Object.assign
 E._ = _u
 path ← require('path')
 fs ← require('fs')
-def(E,'robot',lazy('robot',=> npm`robotjs@0.4.5` ))
 def(E,'require_new',lazy('require_new',=>{ t ← npm`require-uncached@1.0.3` ;↩ ι=> t((ι+'').replace(/^\.(?=\/)/,φ.cwd)) }))
 _u.mixin({ isEqual:_l.isEqual })
 
@@ -182,7 +182,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 			r ← [] ;for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			↩ r } })()
 	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
-	id_c ← 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += Π& Π| ? * + - & | ∃ ∋'
+	id_c ← 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += ? * + - & | ∃ ∋'
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(/([=←:(,]) *(?!\.\.\.)\./g,(ˣ,ι)=> ι+'(𐅭𐅞)=>𐅭𐅞.' )
 		.replace(𐅦𐅪𐅭𐅯𐅭||(𐅦𐅪𐅭𐅯𐅭= re`‘\.([${word}]+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property2(ι,${ι}))` )
@@ -242,7 +242,7 @@ buf36 ← lazy_fn(=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode)
 E.simple_flesh = ι⇒
 	: Tfun(ι)? T(ι)+ι
 	: JSON.stringify(ι, (i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_u.keys(ι)().sort().forEach(i=> r[i]=ι[i]) ;↩ r } })
-E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4` )).hash64(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> buf36(ι).slice(-12)) ;𐅜𐅪𐅫𐅪𐅃←; # best hash is murmurhash.v3.128
+E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> buf36(ι).slice(-12)) ;𐅜𐅪𐅫𐅪𐅃←; # best hash is murmurhash.v3.128
 
 memo_frp ← (names,within,f)=>{
 	dir ← φ`~/file/.cache/memo_frp/${names}`
@@ -261,8 +261,10 @@ E.memoize_weak = f=>{ cache ← new WeakMap() ;↩ (ι=>{ if( cache.has(ι) ) �
 # WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 # this does
 E.memoize_tick = f=>{ f = memoize_proc(f) ;cache ← f.cache ;↩ (ι=>{ t ← ι+'' ;process.nextTick(=> delete cache[t]) ;↩ f(ι) }) …← ({cache}) }
-# ? frp will remove the last use(s) of slot_persist
-E.slot_persist = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`‘.json
+# ? frp will remove the last use(s) of @device
+E.@device = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`‘.json
+E.@proc = ι=> 𐅜𐅩𐅭𐅦𐅰‘[ι+''] ;𐅜𐅩𐅭𐅦𐅰 ← {}
+E.slot_persist = @device
 
 # ;[#p ersist_here ~/code/declare/npm]
 _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -272,7 +274,7 @@ _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	cache ← φ`~/.npm/${name}/${version}` ;final ← cache.φ`/node_modules/${name}`+(sub||'')
 	try{ ↩ require(final) }catch(e){ if( !(e.code==="MODULE_NOT_FOUND")) throw e }
 	cache.BAD_exists() || shᵥ`cd ~ ;npm cache add ${abs_name()}`
-	a←;b←; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = ∅
+	a←;b←; (a=cache.φ`package.json`).ι = {,description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = ∅
 	↩ require(final) }
 E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;𐅪𐅰 ← memoize_proc(_npm) # such a hack. takes 300ns because of the template string +='' hack ;80ns without
 
@@ -383,8 +385,6 @@ genex ← λ Λ(ι){↩0,
 		‽(ι) }
 
 E …← (_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-E.multiline = λ(ι){ ι = (ι+'').split('\n').slice(1,-1) ;t ← ι.map(.re`^\t*`[0].‖)._.min() ;ι = ι.map(.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
-E.sleep = ι=>{ h←; for(hr←hrtime() ;(h=hrtime(hr)) < ι ;ι-h > 0.03 && (shᵥ`sleep ${ι-h-0.02}`,1)); }
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 	# ! really should include a confidence interval or smth
 	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r,'s')
@@ -492,8 +492,6 @@ assign_properties_in_E_informal({
 		if( Tarr(ι)){ t ← ι.find_index_deep(f) ;if( t) ↩ [i,…t] }
 		else{ if( f(ι) )↩ [i] }
 		} }
-,'Array.prototype.Π&':{get(){↩ Π.&(@) }}
-,'Array.prototype.Π|':{get(){↩ Π.|(@) }}
 ,'Array.prototype.seq':{get(){ θ ← λ*(){ for(;θ.i<θ.ι.‖;) yield θ.ι[θ.i++] }() ;θ …← ({ ι:@, i:0, clone(){↩ @.ι.seq …← (@) } }) ;↩ θ }}
 ,'Array.prototype.find_last_index':λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
 # ,'Set.prototype.@@iterator':Set.prototype.values
@@ -516,17 +514,6 @@ Promise.prototype‘.thunk …← ({ get(){↩ λ f(){↩ f.ι.ι } …← ({ι:
 Promise.prototype[|>] = (ι,f)=> ι.status? f(ι.ι) : ι.then(f)
 
 TimerCons ← λ(a,b){@.a=a;@.b=b} ;TimerCons.prototype = {clear:λ(){@.a.clear();@.b.clear()}, ref:λ(){@.a.ref();@.b.ref()}, unref:λ(){@.a.unref();@.b.unref()}}
-E.Π = ι⇒
-	: !Tfun(ι)?( T.Error(ι)? Promise.reject(ι) : Promise.resolve(ι) )
-	: /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
-	: (=>{ # type union of new.Promise(nodeback) and Promise.resolve(object)
-		type ← '?'
-		r ← (…a)=>{ type==='?' &&( type = 'nodeback' ) ;↩ type==='object'? ι(…a) : Π((yes,no)=> ι(…a,(e,ι)=>{ e? no(e) : yes(ι) })) }
-		for(var name of ['then','catch'])
-			r[name] = (…a)=>{ type==='?' &&( type = 'object', ι = Promise.resolve(ι) ) ;↩ ι[name](…a) }
-		↩ r })()
-Π.& = ι=> Promise.all(ι)
-Π.| = ι=> Promise.race(ι)
 assign_properties_in_E_informal({
 ,'Function.prototype.P':λ(…a){↩ @.bind(∅,…a) }
 ,'Function.prototype.X':{get(){↩ ι=> @(ι) }}
@@ -611,7 +598,7 @@ E.normal_CDF = x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (
 E.invert_specific = f=> fι=>{ ι ← 0 ;while( f(ι) > fι ) ι += 0.01 ;↩ ι }
 
 normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)) ;↩ ι }
-diff_Set ← (a,b)=>{r←; ↩0?0
+E.diff_Set = (a,b)=>{r←; ↩0?0
 	: [a,b].every(T.Set)?
 		# [a,b] *.count zip **|0 *-
 		( r = normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(.count())).map(([a,b],i)=>[i, (a||0) - (b||0)]))), [#Q r.name #Q].def({ value:a.name }), r )
@@ -661,8 +648,8 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 
 	focus || sfx`ack`
 
-	# windows_in_current_space_in_app ← app=> hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end)`
-	# apps_with_windows_in_current_space ← => hsᵥ`hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end)`
+	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))`
+	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows(), function(x) return x:application():name() end))`
 
 	############################ go to specific chrome ###########################
 	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
@@ -711,7 +698,7 @@ E.go_to = (…a)=>{ # synonyms: go_to, open, search?
 			ι = φ('~/file/'+ι)
 			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
 		if( in_app==='terminal'){
-			here ← hsᵥ`hs.json.encode(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))` # ... the behavior changed. fuck
+			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows(), function(x) return x:id() end))` # ... the behavior changed. fuck
 			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
 			available ← new Set([here]).∩(unbusy())[0]
 			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
@@ -757,7 +744,7 @@ E.sb = λ self(){↩ self._call() } # let ζ.user use sb as callable
 		↩ r },
 	})
 
-fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;↩ shᵥ`curl -s -X PUT localhost:${port}`+'' }
+fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;↩ shᵥ`curl -s -X PUT localhost:${port}`+'' } # net.Socket
 
 E.sbᵥ = (ss,…ιs)=>{
 	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
@@ -1113,7 +1100,9 @@ E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` …←({ι}) +''
 require(φ`~/code/declare/module.ζ`+'').patch(E)
 
 ##################################### main #####################################
-sh_ify ← ι=>{t←; ↩ Π( 0?0
+sh_ify ← ι=>{t←;
+	Π ← ι=> Promise.resolve(ι) # COPY
+	↩ Π( 0?0
 	: T.Promise(ι)? ι.then(sh_ify.X)
 	: ι===∅? {}
 	: Tstr(ι)? {out:ι}
