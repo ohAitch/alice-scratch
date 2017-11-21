@@ -55,10 +55,10 @@ P ← require('./parsimmon')
 		↩ Regex })()
 	parse_regex ← ι=>{ flags ← ι.flags||'u'; ι = ι.source||ι
 		if (!flags.re`u`) ‽('can only parse unicode regex')
-		if (flags.re`y`) ‽('no /y support yet') // should it be handled separately? // r = R`#seq ${[R`#sticky`,r]}`
-		if (flags.re`i`) ‽('no /i support yet') // r = R`#ignore_case ${r}`
+		if (flags.re`y`) ‽('no /y support yet') # should it be handled separately? # r = R`#seq ${[R`#sticky`,r]}`
+		if (flags.re`i`) ‽('no /i support yet') # r = R`#ignore_case ${r}`
 		if (flags.re`g`) ‽('/g should be handled separately')
-		// g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
+		# g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
 
 		ι = Regex.exec(ι)
 		walk_regex(ι,ι=>{
@@ -78,7 +78,7 @@ P ← require('./parsimmon')
 				if (ι.ι.‖===1) ↩ ι.ι[0]
 				}
 			if( !skip_𐅰𐅦𐅝𐅦𐅰 ) [[is_null,/(?:)/u],[is_bottom,/(?!)/u]].forEach(([f,r])=>{ if (f(ι)){ skip_𐅰𐅦𐅝𐅦𐅰 = ✓; r = $(r); skip_𐅰𐅦𐅝𐅦𐅰 = ✗; ↩ r } })
-			// if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
+			# if( ι.≈`#complement` && ι.ι.≈`#set` && !ι.ι.ι.‖ ) ↩ $(/(?:)/u)
 			if( ι.≈`#^$` ) ↩ $({ '^':'(?<![^])', '$':'(?![^])', '^m':'(?<![^\n\r])', '$m':'(?![^\n\r])' }[ι.ι])
 			↩ ι })
 		↩ ι }
@@ -100,7 +100,7 @@ P ← require('./parsimmon')
 		/(['"])((\\.|(?!\1|\\)[^])*?\1)/u,
 		/(?:\\[^]|(?!`|\$\{)[^])+/u,
 
-		// fix:
+		# fix:
 		/[\d]/u,
 		/[^\d]/u,
 		/[\D]/u,

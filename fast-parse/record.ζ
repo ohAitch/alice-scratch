@@ -1,4 +1,4 @@
-// eve-style records with tags, sort of
+# eve-style records with tags, sort of
 
 Tagged ← λ(){ @.tag = new Set() }
 Tagged.prototype.inspect = λ(d,opt){
@@ -8,7 +8,7 @@ Tagged.prototype.inspect = λ(d,opt){
 Tagged.prototype.≈  = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; ↩ @.tag.has(ι.replace(/^#/,'')) }
 Tagged.prototype.+= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.add(ι.replace(/^#/,'')); ↩ @ }
 Tagged.prototype.-= = λ(ss,…ιs){ ss.‖===1 || ‽; ι ← ss[0]; ι.re`^#` || ‽; @.tag.delete(ι.replace(/^#/,'')); ↩ @ }
-// Tagged.prototype.…← = 
+# Tagged.prototype.…← = 
 Rₐ ← (…a)=>{t←;
 	if (is_template(a)){ r ← new Tagged(); easy_template(ι=>ι)(…a).map…(ι=> Tstr(ι)? ι.trim().split(' ') : [{ι:ι[0]}]).forEach(ι=> Tstr(ι)? r.+=([ι]) : r …← (ι) ); ↩ r }
 	a.‖===1 || ‽; ι ← a[0]
@@ -16,14 +16,14 @@ Rₐ ← (…a)=>{t←;
 	if (Tprim(ι)) ↩ R`${ι}`
 	if ((t=Object.getPrototypeOf(ι))===null || t===Object.prototype) ↩ new Tagged() …← (ι)
 	‽ }
-// ι = {ι:6}
-// R`#foo #bar ${ι}`
-// R`#foo #bar …${ι}`
-// R`#foo #bar f:${ι}`
-// R`#foo #bar …${{f:ι}}`
-// R(ι).+=`#repeat` vs R`#repeat …${ι}`
+# ι = {ι:6}
+# R`#foo #bar ${ι}`
+# R`#foo #bar …${ι}`
+# R`#foo #bar f:${ι}`
+# R`#foo #bar …${{f:ι}}`
+# R(ι).+=`#repeat` vs R`#repeat …${ι}`
 
-// map_tag_tree ← (ι,f)=>{ if(ι&&( Tarr(ι) || ι.tag )) _(ι).forEach((v,k)=> ι[k] = map_tag_tree(v,f) ); ↩ f(ι) }
+# map_tag_tree ← (ι,f)=>{ if(ι&&( Tarr(ι) || ι.tag )) _(ι).forEach((v,k)=> ι[k] = map_tag_tree(v,f) ); ↩ f(ι) }
 
 Rᵢ ← (tag,ι)=>{ if (!ι){ ι = tag; tag = ∅ }
 	if (tag) ι.tag = tag

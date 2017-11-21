@@ -34,19 +34,19 @@ P._unit = ι=> Parser('unit',{
 	})
 P.not = ι=> Parser('not',{
 	ι:P(ι),
-	// not:not: -> t.status? make_win(i,∅) : t
-	// not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
+	# not:not: -> t.status? make_win(i,∅) : t
+	# not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
 	_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩; yield { i, ι:∅ } },
 	})
 __seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next(); if( done ) yield {i,ι:[]}; else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { i:rest.i, ι:[ι.ι,…rest.ι] } }
-// __seq ← λ* Λ(ps,ps_i,in_,i){
-// 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
-// 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }
-// 	}
+# __seq ← λ* Λ(ps,ps_i,in_,i){
+# 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
+# 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { i:rest.i, ι:[ιs.ι,…rest.ι] }
+# 	}
 P._seq = ι=> Parser('seq',{
 	ι:ι.map(P.X),
 	_:λ*(in_,i){ yield* __seq2(@.ι.seq,in_,i) },
-	// _:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) },
+	# _:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) },
 	})
 P.alt = ι=> Parser('alt',{
 	ι:ι.map(P.X),
@@ -63,7 +63,7 @@ P.prototype.chain = λ(f){↩ Parser('chain',{
 
 ############################# pseudocomposite types ############################
 P.alt_range = (a,b)=> Parser('alt',{
-	// def(,'ι',{get(){ }})
+	# def(,'ι',{get(){ }})
 	a, b,
 	_:λ*(in_,i){ ι ← in_[i]; if( a<=ι&&ι<b ) yield {i:i+1,ι} },
 	})
@@ -104,7 +104,7 @@ P.build_op = (unit,op)=>{
 	_1R ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
 	_2L ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
 	_2R ← p=>{ r ← P(=> p.chain(a=> P.alt([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ); ↩ r }
-	↩ unit |> (_2L,_1L,_1R) }
+	↩ unit |>(_2L) |>(_1L) |>(_1R) }
 
 ################################ todo eventually ###############################
 # pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
