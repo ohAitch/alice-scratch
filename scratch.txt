@@ -1,5 +1,5 @@
----------------------------- operations on git repos ---------------------------
------------- merge -----------
+############################ operations on git repos ###########################
+############ merge ###########
 to_path=~/code/scratch
 from='lang-alpha'
 from_url='git@github.com:alice0meta/lang-alpha.git'
@@ -10,7 +10,7 @@ git fetch "$from"
 git merge "$from/master"
 git remote remove "$from"
 
------------- split -----------
+############ split ###########
 split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_branch=kc8vu2z3a
 	# !!! this will destroy existing commit ids; use carefully
 	# may not work with unicode filenames
@@ -38,7 +38,7 @@ split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_bra
 	git push --force origin
 	}
 
------------------------------- this is pretty cute -----------------------------
+############################## this is pretty cute #############################
 # ! color names randomly in ansi 12359abc
 gen2fn ← f=>{ t ← f(); ↩ => t.next().value }
 # gen2fn ← f=> [#Q seq(f()).next_ι #Q].bind
@@ -49,7 +49,7 @@ namegen ← gen2fn(λ*(){
 	to ← round((long.‖)/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
 	c ← {}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
 
--------------------------------------- ocr -------------------------------------
+###################################### ocr #####################################
 # # used up: alice0meta@gmail.com
 # # 46 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
@@ -57,7 +57,7 @@ namegen ← gen2fn(λ*(){
 tesseract ← npm`node-tesseract@0.2.7`
 φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
--------------------------------- jquery ish misc -------------------------------
+################################ jquery ish misc ###############################
 E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← => nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
 
 keyinfo ← λ(key){
@@ -68,10 +68,10 @@ $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] 
 	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
--------------------------------- de-duplication --------------------------------
+################################ de-duplication ################################
 φ`**`.φs.map(ι=> [ι+'',ι.get()])._.groupBy(1)|>(_.values).map(ι=> _(ι).map(0)).filter(.‖ > 1)
 
------------------------------- python data science -----------------------------
+############################## python data science #############################
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -89,10 +89,10 @@ ax.set_ylabel('G Label')
 ax.set_zlabel('B Label')
 plt.show()
 
------------------------------- sublime api things ------------------------------
+############################## sublime api things ##############################
 T ← 10; i←0; (=>{sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
-------------------------------------- life -------------------------------------
+##################################### life #####################################
 sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0,view.size()),${ι})`
 
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
@@ -117,16 +117,16 @@ life ← λ(ι){
 		↩ {X,Y,ι:r} } }
 ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
--------------------------- bits. floating point bits. --------------------------
+########################## bits. floating point bits. ##########################
 bit_reverse = λ(L,ι){r ← 0; for (i←0;i<L;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
 to_binary_LE ← ι=> […ι].map(ι=> ('00000000'+ι.toString(2)).slice(-8).split('').reverse().join('')).join('')
 q ← ι=>{ t ← Buffer(8); t.writeDoubleLE(ι,0); t = to_binary_LE(t); ↩ t.slice(0,52)+' '+t.slice(52,52+11)+' '+t[-1]+' = '+ι }
 
------------------------------------ entities -----------------------------------
+################################### entities ###################################
 entities_encode ← .replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
 entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
 
------------------------- fun with fraction approximation -----------------------
+######################## fun with fraction approximation #######################
 wu ← npm`wu@2.1.0`
 Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.‖), f(ι,i,l) )) }
 gcd ← (a,b)=> b>0? gcd(b, a%b) : a
@@ -145,11 +145,11 @@ bench(=> cn.log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
 
------------------------------- real clipboard api ------------------------------
+############################## real clipboard api ##############################
 osaᵥ`set x to clipboard info; the clipboard as (item 1 of item 2 of x)`
 probably hammerspoon is better
 
-------------------------------- neat chrome apis -------------------------------
+############################### neat chrome apis ###############################
 http://developer.chrome.com/extensions/accessibilityFeatures
 http://developer.chrome.com/extensions/debugger
 http://developer.chrome.com/extensions/devtools_inspectedWindow
@@ -159,7 +159,7 @@ http://developer.chrome.com/extensions/extension
 http://developer.chrome.com/extensions/tabs
 http://developer.chrome.com/extensions/windows
 
------------------------------------ databases ----------------------------------
+################################### databases ##################################
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
 google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
@@ -180,7 +180,7 @@ rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK
 rHjUHnG7WOQ should be obviously type(youtube url)
 youtube.video.from({ id:'rHjUHnG7WOQ' })
 
---------------------------------------------------------------------------------
+################################################################################
 global key command: chrome bookmarks?
 really why dont you have sublime's command autocomplete yet
 [ …fi`/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands`.ι, …φ`~/Library/Application Support/Sublime Text 3/Packages/User/Default.sublime-commands`.json ]
@@ -203,13 +203,13 @@ def(E,'fi',=>{
 		}
 	↩ fi })
 
---------------------------------------------------------------------------------
+################################################################################
 # duti -s com.google.Chrome chrome-extension
 
-------------------------------------- tests ------------------------------------
+##################################### tests ####################################
 / 'charCodeAt|fromCharCode|codePointAt|fromCodePoint' # should be ord,chr
 
--------------------- IccXML install instructions : osx 10.12 -------------------
+#################### IccXML install instructions : osx 10.12 ###################
 brew install libtiff
 brew install pkg-config
 brew install libxml2
@@ -224,10 +224,10 @@ make
 make install
 # multiply vcgt by x^(γ/1.6) , use iccFromXml iccToXml
 
--------------------------- i dont know what this does --------------------------
+########################## i dont know what this does ##########################
 ;[process.stdout, process.stderr].forEach(s=> s && s.isTTY && s._handle && s._handle.setBlocking && s._handle.setBlocking(✓) ) # sad fix
 
------------------------- global-invariant type detection -----------------------
+######################## global-invariant type detection #######################
 E.__global = (=>{
 	anon_e4jlu ← ι=> catch_ι(=> ι.toString.constructor('return this')() )
 	id ← Symbol.for`⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙`
@@ -237,7 +237,7 @@ Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
 ι=> ι instanceof Array                             faster or on par with builtin
 ι=> ι instanceof global.Array                      very slow??
 
-------------------------------------- cruft ------------------------------------
+##################################### cruft ####################################
 'Function.prototype.at':lazy('at',=>{priorityqueuejs ← require('priorityqueuejs')
 	# https://github.com/Automattic/kue
 	# https://github.com/rschmukler/agenda
@@ -257,7 +257,7 @@ convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 
----- remaining work for φ ----
+#### remaining work for φ ####
 formats include
 	image               
 	pixels              
@@ -284,7 +284,7 @@ the formats are complicated to interact with, because
 # we need to think about how this interacts with distributed machines (e.g. mixing file and http URLs)
 # 	“like, it should be caching urls all the time.”
 
----------------------------- which ports are in use ----------------------------
+############################ which ports are in use ############################
 sudo lsof -PiTCP -sTCP:LISTEN
 
 ############################ node:: analog to npm:: ############################
@@ -311,7 +311,7 @@ done = done.map(ι=> ι[0])
 todo = todo._.sortBy(.‖)
 ;[code,…done,…todo]
 
-------------------- this is silly and i shd probably toss it -------------------
+################### this is silly and i shd probably toss it ###################
 enc_id ← (=>{
 	safe ← memoize_proc(ι=> catch_ι(=> (0,eval)(`'use strict'; var ${ι} = 0; 1`)))
 	ESC_ ← ι=> […Buffer.from(ι).toString('hex')].map(ι=> […'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'][parseInt(ι,16)]).join('')
@@ -337,7 +337,7 @@ fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(�
 		Tarr(ι)
 		} })()
 
-------------------------------------- with -------------------------------------
+##################################### with #####################################
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
 ;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
 
