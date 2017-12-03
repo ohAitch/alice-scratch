@@ -1,3 +1,5 @@
+# remember to s/; / ;/
+
 ###### for external use ######
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 alias Z=ζ; alias Zlog=ζlog # ! temporary while terminal unicode is broken
@@ -79,6 +81,8 @@ youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1"; }
 # ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort; }
 alias http-server='http-server -c-1'
 alias Zcache='cd ~/Library/Caches/ζ.logic/'
+nom=user@74.207.242.236
+nom(){ ssh "$nom" ;}
 
 ############################## aborted experiments #############################
 # alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'

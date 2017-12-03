@@ -163,17 +163,17 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		var ident = P(re`(?![0-9])[${word}]+|@`)
 		var comment = re`(//.*|/\*[^]*?(\*/|$)|#[\s#].*)+`
 		var simple_js = P(()=> P.alt(
-			P(comment).T`comment`,
-			P.seq( P('{') ,simple_js ,P('}') ),
-			P.seq( P.alt(
-				P(/(['"])(((?!\1)[^\\]|\\.)*?\1)/).T`string`,
-				ident,
-				P.seq( P('`').T`template` ,tmpl_ι.many() ,P('`').T`template` ),
-				P(/[)\]0-9]/)
-				) ,P.alt( P(re`[ \t]*(?!${comment})/`) ,P.of('') ) ),
-			P(/\[#persist_here .*?\]/),
-			P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).T`regex`,
-			P(re`[^{}/#'"…${'`'})@\[\]${word}]+|[^}]`)
+			P(comment).T`comment`
+			,P.seq( P('{') ,simple_js ,P('}') )
+			,P.seq( P.alt(
+				P(/(['"])(((?!\1)[^\\]|\\.)*?\1)/).T`string`
+				,ident
+				,P.seq( P('`').T`template` ,tmpl_ι.many() ,P('`').T`template` )
+				,P(/[)\]0-9]/)
+				) ,P.alt( P(re`[ \t]*(?!${comment})/`) ,P.of('') ) )
+			,P(/\[#persist_here .*?\]/)
+			,P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).T`regex`
+			,P(re`[^{}/#'"…${'`'})@\[\]${word}]+|[^}]`)
 			).many() )
 		var tmpl_ι = P.alt( P.seq( P('${').T`template` ,simple_js ,P('}').T`template` ) ,P(/(?:\\[^]|(?!`|\$\{)[^])+/).T`template` )
 		var js_file = P.seq( P(/(#!.*\n)?/).T`shebang` ,simple_js )
@@ -193,7 +193,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		.replace(/∅/g,'undefined')
 		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅫𐅮𐅪𐅰𐅃(__name(${ι})).ι=`) // an initial try ;probably .name inference needs another form
 		.replace(/‘lexical_env/g,`𐅫𐅮𐅪𐅰𐅃(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
-		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` )
+		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` ) // these days i would do it with a symbol nameifying and a global?
 		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
@@ -277,6 +277,7 @@ var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = undefined
 	return require(final) }
 E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;var 𐅪𐅰 = memoize_proc(_npm) // such a hack. takes 300ns because of the template string +='' hack ;80ns without
+
 
 E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (()=>{
@@ -1097,7 +1098,8 @@ E.ζ_repl_start = opt=>{ opt = { compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[
 E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
 
 //################################### prelude ###################################
-require(φ`~/code/declare/module.ζ`+'').patch(E)
+φ`~/code/declare/module.ζ`.BAD_exists() &&
+	require(φ`~/code/declare/module.ζ`+'').patch(E)
 
 //#################################### main #####################################
 var sh_ify = ι=>{var t;

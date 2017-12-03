@@ -318,31 +318,9 @@ enc_id ← (=>{
 	ESC ← ι=> (/^[♈-♓🔅🔆🔒‡⧫§]$/u.test(ι)? unicode_names : ESC_)(ι)
 	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : ESC(ι) ).join('') ) })()
 
-####################### a simple infix operator language #######################
-# for:
-# E.Property = ∪( ,§`obj × id -> place`
-# 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
-# 	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
-
-fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
-
-§ ← (=>{
-	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
-	Any ← =>Any; Any = ‘lexical_env=>{
-		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
-		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
-		|> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
-	↩ ι=>{ι+=''
-		ι = Any.parse(ι)
-		Tarr(ι)
-		} })()
-
 ##################################### with #####################################
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
 ;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
-
---------------------------------------------------------------------------------
-i'd like that to be #!/usr/bin/env node --max_old_space_size=10000 
 
 ########################### todo - this is an odd log ##########################
 ι ← 'N3wyOHwxOTR8MHwwfDM4fDE5LjkxNjQ2NTgyNjE4OTQ3M3wwfDB8MnwwfDExMDl8MTQwfDB8M3wwfDF8OHwxfDB8MXwxfDF8MjI4fHRydWV8ZmFsc2V8dHJ1ZXwxNTEwOTcyMTc1NDkyfDB8MHx0cnVlfHRydWV8dHJ1ZXwxLDAsMCwwLDAsMCwwLDAsNSwxMCwxMCwyMCwyMCwxMSwxNiwyMCwxLDAsMCwwLDAsMSwwLDMsNiw1LDUsNSw1LDUsNSwxMHwtMSwtMSwtMSwtMSwtMSwtMSwtMSwtMQ==|YzI4NzJmYTg4MTZlY2IzNzhhNDU0MzI1ZmJjMjExMzc='

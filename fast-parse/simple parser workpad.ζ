@@ -1,0 +1,71 @@
+####### ex-parser items ######
+✓ ✗ null ∅
+
+##############################
+word s refer to the procedure-local database of words we know about
+
+parse word s as
+re`(.category.re`[LNPMS].`)+` # tip: @device`𐅰𐅩𐅭𐅃𐅃`.ι
+except, wordbreak around the below ops and 'filter! map! map… [ ] ( ) { }'.split(' ')
+
+? do this after the other parse steps so that they can reserve their chars
+
+##############################
+skip /[ \t]/
+except when otherwise stated, skip /\n/
+
+############# ops ############
+! _
+- _
+_ + _
+_ - _
+_ × _
+_ ÷ _
+_ ^ _
+_ ∩ _
+_ ∪ _
+lhs ← _
+lhs ←! _
+_ . rhs
+_ = _
+_ ≠ _
+_ < _
+_ > _
+_ <= _
+_ >= _
+_ & _
+_ | _
+_ ? _ : _
+_ ‖
+_ !> λvoid
+_ |> λ
+λ <| _
+_ ‘ _ i dont understand this, i want foo‘.bar to work
+… _
+_ …← _
+_ ∈ _
+_ ∋ _
+
+##############################
+regex string number
+array object
+
+function
+	↩← _
+	↩ _
+	↩
+	(if _ (: |) | _ ?) _ ((: | else |) _ |)
+
+call
+
+\n
+	remember js has ([/+- relevant to ,; and \n
+	newline ,; implication?
+
+often we want to separate adjacent objects visually so they are clearly distinct
+we generally do this with one of \n , ;
+\n and ; are used in contexts where the objects are sideeffecting; , where the objects are values
+or |> can be used to pipe a single value
+
+often \n, is used when the separation includes \n s
+\n; is not used because javascript lets it be just \n

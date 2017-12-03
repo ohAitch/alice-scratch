@@ -203,14 +203,3 @@ E.kp = E.keypresses = =>{
 	o←; diy_stdin(ι=>{ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
 	}
 E.keypresses.cant_pool = ✓
-
-E.regex_set = ι=>{
-	Π(ι)
-	# process.stdin.pin()
-	.then(ι=>{ ι = (ι+'').replace(/\n$/,'')
-		t←[]; […[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
-		x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
-		ι = t.map(ι=>{↩ ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) }).join('')
-		out(ι)
-		})
-	}

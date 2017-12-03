@@ -1,5 +1,5 @@
 # let's do this the poor way
-################################## get strains #################################
+################################### strain id ##################################
 https://www.leafly.com/explore/sort-newest
 setInterval(()=> $('.ga_Explore_LoadMore').click() ,2*1e3)
 # wait to load
@@ -8,9 +8,12 @@ r = $('a > .strain-tile').toArray().map(ι=> location.origin + $(ι).parent().at
 r = _.uniq(r.sort(),true)
 copy(JSON.stringify(r))
 @device`𐅩𐅜𐅜𐅪𐅫`.ι = JSON.parse(p())
-################################## get reviews #################################
+################################## strain data #################################
+@device`𐅩𐅜𐅜𐅪𐅫`.ι.forEach((ι,i)=>{ cn.log('GET_L',i) ;GET_L(ι,∞) })
+################################### review id ##################################
+node --max_old_space_size=25000 /usr/local/bin/ζ
 q0 ← ι=> cn.log('scraping',ι)
-q1 ← ι=>{ now ← Time().i ;if( 𐅋𐅰𐅜𐅰𐅝 + 20 < now ){ 𐅋𐅰𐅜𐅰𐅝 = now ;q0(ι) } } ;𐅋𐅰𐅜𐅰𐅝 ← Time().i
+q1 ← _u.throttle(q0,20*1e3)
 @device`𐅩𐅜𐅜𐅪𐅫`.ι.map(memoize_persist((ι,i2)=>{t←;
 	r ← []
 	for( i←0 ; ;i++ ){
@@ -20,8 +23,57 @@ q1 ← ι=>{ now ← Time().i ;if( 𐅋𐅰𐅜𐅰𐅝 + 20 < now ){ 𐅋𐅰�
 		if( r2.‖ ) q1([i2,i])
 		else{ q0([i2,i]) ;break } }
 	↩ r }))
+@device`𐅩𐅩𐅩𐅭𐅫`.ι = _.sortBy(t)._.uniq(true)
+################################ review parsing ################################
+100..map(=>{ i ← random(1761) ;↩ random(φ`~/file/leaf_review/${i}.json`.json)[1] })
+.map((ι,i)=> φ`~/file/leaf_sample/${i}.html`.text = ι )
 
+for i0 in {7..176}; do
+node --max_old_space_size=10000 /usr/local/bin/ζ '
+i0 ← '"$i0"' ;_.range(1761).chunk(10)[i0].map…(i1=> φ`~/file/leaf_review/${i1}.json`.json.map((ι,i2)=>{
+	if(! ι[1].re`<h2 class="heading--lg">(.*?)</h2>` ) ↩;
+	dom ← new (npm`jsdom@11.4.0`.JSDOM)(ι[1])
+	$ ← ι=> […dom.window.document.querySelectorAll(ι)]
+	𐅩1 ← ι=>{ t ← $("h1,h2").filter(.textContent===ι)[0] ;↩ t && t.parentElement }
+	𐅩2 ← ι=> […ι.querySelectorAll("li")].map(.textContent)
+	i←; t←; ↩ {
+	,about: $(".strain-link")[0].href
+	,at: $("time")[0].dateTime
+	,user: 𐅩1("Reviewed By").querySelector("a").href
+	,text: $(".m-review")[0].firstElementChild.textContent
+	,rating: $("[star-rating]").map(.getAttribute("star-rating")).filter(.re`^\d$`)[0]|0
+	,[i="Form & Method"]: 𐅩2(𐅩1(i))
+	,[i="Effects"]: 𐅩2(𐅩1(i))
+	,[i="Flavor Profile"]: 𐅩2(𐅩1(i))
+	,[i="Acquired From"]: (t = 𐅩1("Acquired From") ,t && t.querySelector("a").href)
+	} }).filter(ι=>ι) ) |>(ι=>{ φ`~/file/leaf_review_2/${i0}.json`.ι = ι })
+;'
+done
 
+φ`~/file/leaf_review.json`.ι = _.range(177).map…(i=> φ`~/file/leaf_review_2/${i}.json`.json )
+φ`~/file/leaf_strain.json`.ι = _.range(24).map…(i=> φ`~/Downloads/leaf_strain_ι/${i}.json`.json )
+################################ strain parsing ################################
+@device`𐅩𐅜𐅜𐅪𐅫`.ι.map((ι,i)=> φ`~/file/leaf_strain/${i}.html`.text = GET_L(ι,∞) )
+100..map(=> random(@device`𐅩𐅜𐅜𐅪𐅫`.ι)).map((ι,i)=> φ`~/file/leaf_strain_sample/${i}.html`.text = GET_L(ι,∞) )
 
-
-# scrape strain data too
+for i0 in {0..23}; do
+node --max_old_space_size=10000 /usr/local/bin/ζ '
+closest ← (ι,sel)=>{ while( ι ){ if( ι.matches(sel) ) ↩ ι ;ι = ι.parentElement } }
+i0 ← '"$i0"' ;t0 ← @device`𐅩𐅜𐅜𐅪𐅫`.ι ;_.range(t0.‖).chunk(100)[i0].map(i1=>{
+	name ← t0[i1]
+	ι ← GET_L(name,∞)
+	dom ← new (npm`jsdom@11.4.0`.JSDOM)(ι)
+	doc ← dom.window.document
+	$ ← (el,ι)=> […el.querySelectorAll(ι)]
+	𐅩1 ← ι=>{ t ← $(doc,"h1,h2").filter(.textContent===ι)[0] ;↩ t && closest(t,"section") }
+	i←; t←; ↩ {
+	,name: name.replace(/^https\:\/\/www\.leafly\.com/,"")
+	,[i="Strain Highlights"]: (=>{ ι ← 𐅩1(i) ;↩ ι && $(ι,".description")[0].textContent })()
+	,[i="Most Popular In"]: (=>{ ι ← 𐅩1(i) ;↩ ι && $(ι,"a").map(.href) })()
+	,[i="Flavors"]: (=>{ ι ← 𐅩1(i) ;↩ ι && $(ι,"li").map(.getAttribute("title")) })()
+	,"lineage": (=>{ ι ← 𐅩1("Strain Data") ;if(!ι)↩ ;ι = $(ι,".strain__lineage li a") ;if(!ι)↩ ;↩ ι.map(.href) })()
+	,[i="Strain Data"]: (=>{ try{ ι ← 𐅩1(i) ;if(!ι)↩ ;ι = $(ι,".growInfoRow") ;if(!ι)↩ ;↩ ι.map(ι=>[ ι.textContent.trim().split(/\s+/)[0] ,$(ι,"div.selected")[0].textContent.trim() ]) }catch(e){} })()
+	,"Strain Attributes": (=>{ ι ← $(doc,".strain__attributes")[0] ;if(!ι)↩ ;ι = $(ι,".m-histogram-item-wrapper") ;if(!ι)↩ ;↩ ι.map(ι=>[ $(ι,".m-attr-label")[0].textContent ,+$(ι,".m-attr-bar")[0].style._values.width.replace(/%$/,"")/100 ]) })()
+	} }) |>(ι=>{ φ`~/Downloads/leaf_strain_ι/${i0}.json`.ι = ι })
+;'
+done

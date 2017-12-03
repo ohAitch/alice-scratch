@@ -153,7 +153,8 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 	else {
 		c = _(c).map(ι⇒ {'⌘':'command', '^':'control', '⇧':'shift', '⌥':'alt'}[ι])
 		ι = text_keys.includes(ι)? ι : { '^':'control', F1:'f1', F2:'f2', F3:'f3', F4:'f4', F5:'f5', F6:'f6', F7:'f7', F8:'f8', F9:'f9', Fa:'f10', Fb:'f11', Fc:'f12', FnF1:'lights_mon_down', FnF2:'lights_mon_up', FnF5:'lights_kbd_down', FnF6:'lights_kbd_up', FnF7:'audio_prev', FnF8:'audio_pause', FnF9:'audio_next', FnFa:'audio_mute', FnFb:'audio_vol_down', FnFc:'audio_vol_up', '←':'left', '↑':'up', '→':'right', '↓':'down', '↩':'enter', '⇥':'tab', '⇧':'shift', '⌥':'alt', '⌘':'command', '⌫':'backspace', '⎋':'escape', '␣':'space', }[ι] || ‽
-		npm`robotjs@0.4.7`.keyTap(ι,c) } }
+		# hurrah, .typeString works now! if you want to use it
+		npm`robotjs_head_2017-12-01@0.4.8`.keyTap(ι,c) } }
 
 // mild todo:
 // right command is maybe problematic
