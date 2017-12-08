@@ -43,7 +43,7 @@ ctx ← =>{
 			}, },
 		}._.map((ι,name)⇒ {name,ι})._.indexBy('name')}], }
 	ctx.resolve = λ(name){
-		for(scope ←of @.stack._.clone().reverse()) if (has(scope.vars,name)) ↩ scope.vars[name]
+		for(scope← of @.stack._.clone().reverse()) if (has(scope.vars,name)) ↩ scope.vars[name]
 		‽('no var',name,'in',@) }
 	↩ ctx }
 

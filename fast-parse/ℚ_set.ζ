@@ -88,4 +88,4 @@ module.exports = ℚ_set
 
 #################################### scruff ####################################
 # performance: not great ;architecture: minimal. tentative.
-# ℤ_set.prototype.keys = ℤ_set.prototype.values = ℤ_set.prototype.@@iterator = λ*(){ for(ι ←of @.ιₛ) for(i←ι.a;i<ι.b;i++) yield i }
+# ℤ_set.prototype.keys = ℤ_set.prototype.values = ℤ_set.prototype.@@iterator = λ*(){ for(ι← of @.ιₛ) for(i←ι.a;i<ι.b;i++) yield i }

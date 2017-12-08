@@ -22,7 +22,7 @@ write ← (ι,to)=>{
 
 	}
 
-for (ι ←of φ`*`){ sc ← image_scale({by:'nearest neighbor'}); A ← sc(ι,1/2); sc(A,2).eq(ι) || ‽; write(A,ι) }
+for (ι← of φ`*`){ sc ← image_scale({by:'nearest neighbor'}); A ← sc(ι,1/2); sc(A,2).eq(ι) || ‽; write(A,ι) }
 
 
 

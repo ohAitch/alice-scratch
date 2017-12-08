@@ -9,7 +9,7 @@ P.prototype.R = λ(tag){ tag+='' ;↩ @.map(ι=> R(tag,ι) ) }
 walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
 	clone ← _.once(=>{ ι = Tag() …← (ι) })
 	# ifΔ is weird. why?
-	ifΔ! ← (a,f=Object.is)=>{ for(k ←in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
+	ifΔ! ← (a,f=Object.is)=>{ for(k← in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
 	if( ι.ι ) ι = ifΔ!({ ι: Tarr(ι.ι)? ι.ι.map(me) : me(ι.ι) })
 	ι = f(ι,{ifΔ!})
 	} ;↩ ι })

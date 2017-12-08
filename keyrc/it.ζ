@@ -4,9 +4,9 @@ KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
 // -------------------------------------------------------------------------- //
 char16hex ← ι=> ('000'+ord(ι).toString(16)).slice(-4)
-take_while ← λ(l,f){ i←0; for(ι ←of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
-drop_while ← λ(l,f){ i←0; for(ι ←of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
-split_with ← λ(l,f){ i←0; for(ι ←of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
+take_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
+drop_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
+split_with ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
 
 _alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` //! design better, then rename to alert
 

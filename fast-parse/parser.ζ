@@ -19,7 +19,7 @@ P ← module.exports = ι⇒
 	: T.RegExp(ι)? _regex(ι)
 	: ‽('cant make parser from',ι)
 P.prototype = Tag()
-P.prototype.exec = λ*(in_){ for(t ←of @._(in_,0)) yield t.ι }
+P.prototype.exec = λ*(in_){ for(t← of @._(in_,0)) yield t.ι }
 P.prototype.exec0 = λ(in_){↩ seq( @.exec(in_) ).next_ι }
 P.prototype.parse = λ(in_){↩ seq( @.skip(/$/).exec(in_) ).next_ι }
 P0 ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
@@ -31,12 +31,12 @@ _unit ← ι=> P0('unit',{
 	})
 P.! = ι=> P0('!',{
 	,ι:P(ι)
-	,_:λ*(in_,i){ for(t ←of @.ι._(in_,i)) ↩ ;yield { ,i ,ι:∅ } }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ ;yield { ,i ,ι:∅ } }
 	})
 __seq ← λ*(pₛ,in_,i){ p ← pₛ.next_ιι
 	if( !p ) yield {,i,ι:[]} ;else
-		for(ι ←of p._(in_,i))
-			for(rest ←of __seq(pₛ.clone,in_,ι.i) )
+		for(ι← of p._(in_,i))
+			for(rest← of __seq(pₛ.clone,in_,ι.i) )
 				yield { ,i:rest.i ,ι: ι.ι===∅? rest.ι : [ι.ι,…rest.ι] } }
 _seq ← ι=> P0('seq',{
 	,ι:ι.map(P.X)
@@ -44,7 +44,7 @@ _seq ← ι=> P0('seq',{
 	})
 P.| = ι=> P0('|',{
 	,ι:ι.map(P.X)
-	,_:λ*(in_,i){ for(p ←of @.ι) yield* p._(in_,i) }
+	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
 	})
 P.return = ι=> P0('return',{
 	,ι
@@ -52,7 +52,7 @@ P.return = ι=> P0('return',{
 	})
 P.prototype.chain = λ(f){↩ P0('chain',{
 	,ι:@ ,f
-	,_:λ*(in_,i){ start ← i ;for({i,ι} ←of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) }
+	,_:λ*(in_,i){ start ← i ;for({i,ι}← of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) }
 	}) }
 # P.custom = P0
 
