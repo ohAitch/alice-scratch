@@ -1,4 +1,3 @@
-#!/usr/bin/env ζ
 # _Stream ← (str,i)=>{ t← Object.create(_Stream.prototype) ;t.str=str ;t.i=i ;↩ t }
 # _Stream.prototype = {
 # 	,‖:λ(){↩ @.str.‖-i }
@@ -9,73 +8,64 @@
 # [#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})
 # wow, (in_,i) vs { i,ι } is fucky - could call it (constants,backpropagate) vs { edit,new }
 
-# ! oh hey, this will break on unicode planes
+# ! oh hey, this will break on unicode planes during the phase of reading from in_ - i think it gets the rest right?
 
-#################################### Parser ####################################
-Parser ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
-P ← ι⇒
+################################## start place #################################
+P ← module.exports = ι⇒
 	: P.prototype.isPrototypeOf(ι)? ι
-	: Tstr(ι)? ι.‖===1? P._unit(ι) : P([…ι]).map(.join(''))
-	: Tfun(ι)? P._graph_thunk(ι)
-	: Tarr(ι)? P._seq(ι)
-	: T.RegExp(ι)? P._regex(ι)
+	: Tstr(ι)? ι.‖===1? _unit(ι) : P([…ι]).map(.join(''))
+	: Tfun(ι)? _graph_thunk(ι)
+	: Tarr(ι)? _seq(ι)
+	: T.RegExp(ι)? _regex(ι)
 	: ‽('cant make parser from',ι)
 P.prototype = Tag()
-P.prototype.exec = λ*(in_){ for(var t of @._(in_,0)) yield t.ι }
-P.prototype.exec0 = λ(in_){↩ seq( @.exec(in_) ).next_ι() }
-P.prototype.parse = λ(in_){↩ seq( @.skip(/$/).exec(in_) ).next_ι() }
-
-module.exports = P
+P.prototype.exec = λ*(in_){ for(t ←of @._(in_,0)) yield t.ι }
+P.prototype.exec0 = λ(in_){↩ seq( @.exec(in_) ).next_ι }
+P.prototype.parse = λ(in_){↩ seq( @.skip(/$/).exec(in_) ).next_ι }
+P0 ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
 
 ################################## root types ##################################
-P.any1 = Parser('any1',{
-	,_:λ*(in_,i){ if( i<in_.‖ ) yield { ,i:i+1 ,ι:in_[i] } }
-	})
-P._unit = ι=> Parser('unit',{
+_unit ← ι=> P0('unit',{
 	,ι
 	,_:λ*(in_,i){ if( in_[i]===@.ι ) yield { ,i:i+1 ,ι:in_[i] } }
 	})
-P.! = ι=> Parser('!',{
+P.! = ι=> P0('!',{
 	,ι:P(ι)
-	# !:!: -> t.status? make_win(i,∅) : t
-	# !: -> t.status? lose(opt.stylize('!','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
-	,_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩ ;yield { ,i ,ι:∅ } }
+	,_:λ*(in_,i){ for(t ←of @.ι._(in_,i)) ↩ ;yield { ,i ,ι:∅ } }
 	})
-__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next()
-	if( done ) yield {,i,ι:[]} ;else
-		for(var ι of p._(in_,i))
-			for(var rest of Λ(pₛ.clone(),in_,ι.i) )
-				yield { ,i:rest.i ,ι:ι.ι===∅? rest.ι : [ι.ι,…rest.ι] } }
-# __seq ← λ* Λ(ps,ps_i,in_,i){
-# 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
-# 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { ,i:rest.i ,ι:[ιs.ι,…rest.ι] }
-# 	}
-P._seq = ι=> Parser('seq',{
+__seq ← λ*(pₛ,in_,i){ p ← pₛ.next_ιι
+	if( !p ) yield {,i,ι:[]} ;else
+		for(ι ←of p._(in_,i))
+			for(rest ←of __seq(pₛ.clone,in_,ι.i) )
+				yield { ,i:rest.i ,ι: ι.ι===∅? rest.ι : [ι.ι,…rest.ι] } }
+_seq ← ι=> P0('seq',{
 	,ι:ι.map(P.X)
-	,_:λ*(in_,i){ yield* __seq2(@.ι.seq,in_,i) }
-	# ,_:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) }
+	,_:λ*(in_,i){ yield* __seq(seq(@.ι),in_,i) }
 	})
-P.| = ι=> Parser('|',{
+P.| = ι=> P0('|',{
 	,ι:ι.map(P.X)
-	,_:λ*(in_,i){ for(var p of @.ι) yield* p._(in_,i) }
+	,_:λ*(in_,i){ for(p ←of @.ι) yield* p._(in_,i) }
 	})
-P.return = ι=> Parser('return',{
+P.return = ι=> P0('return',{
 	,ι
 	,_:λ*(in_,i){ yield {,i,ι:@.ι} }
 	})
-P.prototype.chain = λ(f){↩ Parser('chain',{
+P.prototype.chain = λ(f){↩ P0('chain',{
 	,ι:@ ,f
-	,_:λ*(in_,i){ start ← i ;for(var {i,ι} of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) }
+	,_:λ*(in_,i){ start ← i ;for({i,ι} ←of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) }
 	}) }
-# P.custom = Parser
+# P.custom = P0
 
 ################################# further types ################################
-P.⋯ = (a,b)=> Parser('|',{
-	,a ,b
-	# def(,'ι',{get(){ }})
-	,_:λ*(in_,i){ ι ← in_[i] ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield {,i:i+1,ι} }
+P.any1 = P0('any1',{
+	,_:λ*(in_,i){ if( i<in_.‖ ) yield { ,i:i+1 ,ι:in_[i] } }
 	})
-P.prototype.× = λ(for_,greedy=✓){↩ Parser('×',{
+P.⋯ = (a,b)=> P0('|',{
+	,a ,b
+	,_:λ*(in_,i){ ι ← in_[i] ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield {,i:i+1,ι} }
+	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
+	})
+P.prototype.× = λ(for_,greedy=✓){↩ P0('×',{
 	,ι:@ ,for_ ,greedy
 	,_:λ*(in_,i){
 		if( !@.for_[1] ){ yield {i,ι:[]} ;↩ }
@@ -83,11 +73,11 @@ P.prototype.× = λ(for_,greedy=✓){↩ Parser('×',{
 		yield* ( @.for_[0]? rest : P.|(@.greedy? [rest,P.return([])] : [P.return([]),rest]) )._(in_,i)
 		}
 	}) }
-P._regex = ι=> Parser('regex',{
+_regex ← ι=> P0('regex',{
 	,ι
 	,_:λ*(in_,i){t←; !@.ι.flags.replace(/[muy]/g,'')||‽ ;if( t=@.ι.u.y.exec_at(in_,i) ) yield { ,i:i+t[0].‖ ,ι:t.‖===1? t[0] : t.slice() } }
 	})
-P._graph_thunk = f=> Parser('graph_thunk',{
+_graph_thunk ← f=> P0('graph_thunk',{
 	,ι:f
 	,_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ) ;↩ (0,@.ι)._(in_,i) }
 	})

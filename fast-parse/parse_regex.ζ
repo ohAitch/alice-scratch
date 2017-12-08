@@ -4,11 +4,13 @@ P ← require('./parser')
 R ← (tag,ι)=>{ r ← Tag() ;r.tag = tag ;ι!==∅ &&( r.ι = ι ) ;↩ r }
 P.prototype.R = λ(tag){ tag+='' ;↩ @.map(ι=> R(tag,ι) ) }
 
-walk_regex ← (ι,f)=> ι |> (λ Λ(ι){ if( ι&&ι.tag ){
+⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
+
+walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
 	clone ← _.once(=>{ ι = Tag() …← (ι) })
 	# ifΔ is weird. why?
-	ifΔ! ← (a,f=Object.is)=>{ for(var k in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
-	if( ι.ι ) ι = ifΔ!({ ι: Tarr(ι.ι)? ι.ι.map(Λ) : Λ(ι.ι) })
+	ifΔ! ← (a,f=Object.is)=>{ for(k ←in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
+	if( ι.ι ) ι = ifΔ!({ ι: Tarr(ι.ι)? ι.ι.map(me) : me(ι.ι) })
 	ι = f(ι,{ifΔ!})
 	} ;↩ ι })
 
@@ -40,7 +42,7 @@ Regex ← (=>{
 		,P(['(?<!',Regex,')']).map(..1).R`behind`.R`!`
 		,P(['(',Regex,')']).map(..1).R`capture`
 		,P(['[' ,/\^?/ ,(=>{ t ← P.|([ Set_Escape,/[^\]]/ ]) ;↩ P.|([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]) ,t ]).* })() ,']'])
-			.map(([ˣ,not,ι,ʸ])=>{ r ← R(`|`,ι.map(ι=> Tarr(ι)? R(`⋯`,ι) : ι )) ;if( not ) r = !ι.‖? R(`any`,∅) : R(`seq`,[ R(`!`,r) ,R(`any`,∅) ]) ;↩ r })
+			.map(([ˣ,not,ι,ʸ])=>{ r ← R(`|`,ι.map(ι=> Tarr(ι)? R(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? R(`any`,∅) : R(`seq`,[ R(`!`,r) ,R(`any`,∅) ]) ;↩ r })
 		,P(/[$^]/).R`^$`
 		,/[^)]/
 		])
@@ -57,39 +59,35 @@ parse_regex ← ι=>{ flags ← ι.flags||'u' ;ι = ι.source||ι
 	if( flags.re`y` ) ‽('no /y support yet') # should it be handled separately?
 	if( flags.re`i` ) ‽('no /i support yet')
 	if( flags.re`g` ) ‽('/g should be handled separately')
-	# g should be part of the call, ! the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
+	# g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
 
 	ι = Regex.parse(ι)
-	walk_regex(ι,ι=>{
-		if( ι.≈`^$` ) if( flags.re`m` ) ι.ι += 'm'
-		})
+	walk_regex(ι,ι=> ι.≈`^$` && flags.re`m` &&( ι.ι += 'm' ) )
 	↩ ι }
 
-normalize_to_axioms_regex ← ι=>{
-	ι = walk_regex(ι,(ι,{ifΔ!})=>{
-		# these seem redundant. why?
-		is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`|` || ι.≈`seq`) && ι.ι.every(is_null) ) || ( ι.≈`!` && is_bottom(ι.ι) )
-		is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`|` && ι.ι.every(is_bottom) ) || ( ι.≈`seq` && ι.ι.some(is_bottom) ) || ( ι.≈`!` && is_null(ι.ι) )
+normalize_to_axioms_regex ← ι=> walk_regex(ι,(ι,{ifΔ!})=>{
+	# these seem redundant. why?
+	is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`|` || ι.≈`seq`) && ι.ι.every(is_null) ) || ( ι.≈`!` && is_bottom(ι.ι) )
+	is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`|` && ι.ι.every(is_bottom) ) || ( ι.≈`seq` && ι.ι.some(is_bottom) ) || ( ι.≈`!` && is_null(ι.ι) )
 
-		is_1not ← ι=> Tstr(ι)? ✗ : ι.≈`seq` && ι.ι.‖===2 && ι.ι[0].≈ && ι.ι[0].≈`!` && ι.ι[1].≈ && ι.ι[1].≈`any`
-		ι_1not ← .ι[0].ι
+	is_1not ← ι=> Tstr(ι)? ✗ : ι.≈`seq` && ι.ι.‖===2 && ι.ι[0].≈ && ι.ι[0].≈`!` && ι.ι[1].≈ && ι.ι[1].≈`any`
+	ι_1not ← .ι[0].ι
 
-		if( is_1not(ι) && is_1not(ι_1not(ι)) ){
-			ι = ι_1not(ι_1not(ι))
-			# if( length(ι)===1 ) ↩ ι ;else
-			↩ R(`seq`,[ R(`!`,R(`!`,ι)) ,R(`any`,∅) ])
-			}
+	if( is_1not(ι) && is_1not(ι_1not(ι)) ){
+		ι = ι_1not(ι_1not(ι))
+		# if( length(ι)===1 ) ↩ ι ;else
+		↩ R(`seq`,[ R(`!`,R(`!`,ι)) ,R(`any`,∅) ])
+		}
 
-		if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,_.isEqual )
+	if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,_.isEqual )
 
-		if( (ι.≈`|`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
+	if( (ι.≈`|`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
 
-		if( is_null(ι) ) ↩ R(`seq`,[])
-		# if( is_bottom(ι) ) ↩ R(`!`,R(`seq`,[]))
+	if( is_null(ι) ) ↩ R(`seq`,[])
+	# if( is_bottom(ι) ) ↩ R(`!`,R(`seq`,[]))
 
-		if( ι.≈`^$` ) ↩ $({ ,'^':'(?<![^])' ,'$':'(?![^])' ,'^m':'(?<![^\n\r])' ,'$m':'(?![^\n\r])' }[ι.ι])
-		↩ ι })
-	↩ ι }
+	if( ι.≈`^$` ) ↩ $({ ,'^':'(?<![^])' ,'$':'(?![^])' ,'^m':'(?<![^\n\r])' ,'$m':'(?![^\n\r])' }[ι.ι])
+	↩ ι })
 
 $0 ← ι=> normalize_to_axioms_regex(parse_regex(ι))
 𐅋𐅝𐅃𐅃𐅮 ← memoize_proc($0)
@@ -115,24 +113,14 @@ P_ify ← ι=> walk_regex(ι,ι⇒
 module.if_main_do(=>{
 
 ;[
-	,/(?:)/u
-	,/(?!)/u
-	,/(?:(|))/u
-	,/(|)/u
-
-	,/(#!.*\n)?$/u
-	,/foo[a-x]/u
-	,/^(foo)?(?:b(b.)){2,7}\baz[^]??[^\n](?:\\b.ar|\b[\ba-c-e()}][^\s]|b*?|baz(gremlin\u2424$)?(?!groblem)|)*\3/u
+	,/(?:)(?!)(?:(|))(|)/u
+	,/foo[a-x][^imu]/u
+	,/^(foo)?(?:b(b.)){2,7}\baz[^]??[^\n](?:\\b.ar|\b[\ba-c-e()}][^\s]|b*?|baz(gremlin\u2424$)?(?!groblem)|)*\3(#!.*\n)?$/u
 	,/\{([0-9]+)(?:(,)([0-9]*))?\}/u
-	,/[^imu]/u
 	,/(['"])((\\.|(?!\1|\\)[^])*?\1)/u
 	,/(?:\\[^]|(?!`|\$\{)[^])+/u
 	,/(?=a|b)[^a]/u
-
-	,/[\d]/u
-	,/[^\D]/u
-	,/[^]/u
-	,/[^]*#!/u
+	,/[^]\B[\d][^\D]/u
 ].forEach(ι=>cn.log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
 
 ;[

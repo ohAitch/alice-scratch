@@ -77,7 +77,7 @@ E.D = E.diesis = E['‡'] = =>{ ‡_repl_start() }
 E['‡'].cant_pool = ✓
 
 ################## personal concepts ### for interactive mode ##################
-E.im_resize = (…a)=>{ for (var t of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
+E.im_resize = (…a)=>{ for(t ←of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
 	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
 	a.filter(.re`\.jpg$`).map(ι=>{

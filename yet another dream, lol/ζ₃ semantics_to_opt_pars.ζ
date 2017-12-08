@@ -21,7 +21,7 @@ set_result
 string
 
 // ---------------------------------- util ---------------------------------- //
-countBy ← ι=>{ r ← new Map(); for (var t of ι) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r }
+countBy ← ι=>{ r ← new Map(); for (t ←of ι) r.set(t, (r.has(t)? r.get(t) : 0)+1 ); ↩ r }
 
 // ast -> bool
 interesting ← ι⇒

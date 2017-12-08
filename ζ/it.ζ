@@ -11,7 +11,7 @@ _u ← require('underscore') # lodash is better than underscore except for _()
 Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(i=> [i,ι[i]])
 
 λ Descriptor(ι){ Object.assign(@,ι) }
-define_properties_in ← (o,names,ι)=>{ t ← o ;for(var i of names.slice(0,-1)) t = (t[i] ||( t[i] = {} )) ;t[names[names.length-1]] = ι ;↩ o }
+define_properties_in ← (o,names,ι)=>{ t ← o ;for(i ←of names.slice(0,-1)) t = (t[i] ||( t[i] = {} )) ;t[names[names.length-1]] = ι ;↩ o }
 assign_properties_in ← (o,ι)=>{ Reflect_ownEntries(Object.getOwnPropertyDescriptors(ι)).forEach(([i,{value:ι}])=> ι instanceof Descriptor? def(o,i,ι) : assign_properties_in(o[i] ||( o[i] = {} ),ι) ) ;↩ o }
 # ! does that need Object.getOwnPropertyDescriptors at all?
 
@@ -181,7 +181,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 		js_file ← P.seq( P(/(#!.*\n)?/).T`shebang` ,simple_js )
 		↩ code=>{
 			ι ← js_file.parse(code)._.flatten()
-			r ← [] ;for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
+			r ← [] ;for(t ←of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			↩ r } })()
 	s_or ← ι=> re`(?:…${ι.split(' ').map(ι=> re`${ι}`.source).join('|')})`
 	id_c ← 'filter! map… map! ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ≈ ‖ ⚓ -= += ? * + & | ∃ ∋ × ! -0 -1 -2 -3 -4 -'
@@ -198,7 +198,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅫𐅮𐅪𐅰𐅃(__name(${ι})).ι=`) # an initial try ;probably .name inference needs another form
 		.replace(/‘lexical_env/g,`𐅫𐅮𐅪𐅰𐅃(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
 		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` ) # these days i would do it with a symbol nameifying and a global?
-		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
+		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(?=(;)?)(?=((?:of|in)\b)?)`.g ),(ˣ,name,ws,end,of_)=> 'var '+name+ws+(end||of_?'':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
 		.replace(𐅪𐅯𐅯𐅯𐅦||(𐅪𐅯𐅯𐅯𐅦= re`\.\.(${s_or(id_num)})`.g ),(ˣ,ι)=> `[${ι}]`)
@@ -223,7 +223,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 		.replace(𐅭𐅭𐅃𐅪𐅃||(𐅭𐅭𐅃𐅪𐅃= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι} ;return ${ι}`)
 	# ζ_compile_nonliteral_tree ← ι=>{
 	# 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(.‖) )
-	# 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0} ;dir ← ι[i] in at? 1 : -1 ;for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++ ;ι[i]===b && at[a]-- } ;if( _u(at).every(ι=>ι===0) ) break ;i += dir ;if( !(0<=i&&i<ι.‖)) ↩ ;} ;↩ i }
+	# 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0} ;dir ← ι[i] in at? 1 : -1 ;for(;;){ for([a,b] ←of ['[]','()','{}']){ ι[i]===a && at[a]++ ;ι[i]===b && at[a]-- } ;if( _u(at).every(ι=>ι===0) ) break ;i += dir ;if( !(0<=i&&i<ι.‖)) ↩ ;} ;↩ i }
 	# 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
 	↩ memoize_tick(code=>{
 		t ← code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t # ! it is a clumsy hack to put this on all of these code paths
@@ -371,6 +371,7 @@ E.JSON_pretty = (ι,replacer)=>{
 				↩ (t=a+ι.join(', ')+b).‖ <= wrap_width? t : a+'\n'+T+ι.join(',\n'+T)+'\n'+b
 				} }
 	↩ show(ι) }
+cartesian_str ← .reduce((a,b)=>{ r ← [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;↩ r } ,[''])
 genex_simple ← ι=>{ P ← require('parsimmon')
 	unit ← P.lazy(=> P.alt( P.noneOf('()|') ,P.string('(').then(s_or).skip(P.string(')')).map(ι⇒{T:'capture',ι}) ) )
 	s_or ← P.sepBy(unit.many(),P.string('|')).map(ι=> ι.length > 1? {T:'or',ι:ι} : ι[0])
@@ -415,23 +416,17 @@ E.♓_on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require('sign
 	f(i,sig) }) ;𐅰𐅞𐅜𐅯𐅨←;
 E.pad_r = (ι,s)=> [ι,s.slice(ι.‖)].fold(Tstr(ι)? (a,b)=> a+b : Tarr(ι)? (a,b)=> […a,…b] : ‽)
 
-cartesian_str ← .reduce((a,b)=>{ r ← [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;↩ r } ,[''])
-E.seq = ι=>{ t← Object.create(seq.prototype) ;t.ι = ι ;↩ t }
-seq.prototype = {
-	,next_ι:λ(){ t ← @.ι ;if(! t.next ) t = t.@@iterator() ;↩ t.next().value }
-	# ,map(){}
-	# ,'map…':λ(){}
-	# ,fold(){}
-	# ,×(){}
-	# ,filter(){}
-	# ,clone(){}
-	# ,pin(){}
-	# ,find_(){}
-	# ,slice(){}
-	# ,'‖':λ(){}
-	# ,some(){}
-	# ,every(){}
-	}
+𐅯𐅩𐅪𐅨𐅃 ← λ*(θ){ for(;θ.i<θ.l.‖;) yield θ.l[θ.i++] }
+E.seq = ι=>{
+	r ← Object.create(seq.prototype)
+	if( Tarr(ι) ){ ;r.ι = 𐅯𐅩𐅪𐅨𐅃(r) ;r.i = 0 ;r.l = ι }
+	else if( !ι.next ) r.ι = ι.@@iterator()
+	else r.ι = ι
+	↩ r }
+seq.prototype = { ,ι:∅ ,i:∅ ,l:∅ } # ,map(){} ,'map…':λ(){} ,fold(){} ,×(){} ,filter(){} ,pin(){} ,find_(){} ,slice(){} ,'‖':λ(){} ,some(){} ,every(){}
+seq.prototype‘.next_ι .get= λ(){↩ @.ι.next().value }
+seq.prototype‘.next_ιι .get= λ(){ t ← @.ι.next() ;if( t.done )↩ ;t = t.value ;t===∅ && ‽ ;↩ t }
+seq.prototype‘.clone .get= λ(){ t← seq(@.l) ;t.i= @.i ;↩ t }
 # (λ*(){ yield 5 })().next()
 # Object.getOwnPropertyDescriptors([…protos(λ*(){}())][2])
 # […protos(new Set())].map(Object.getOwnPropertyDescriptors)
@@ -466,8 +461,8 @@ assign_properties_in_E_informal({
 
 ,'Set.prototype.join':λ(ι){↩ […@].join(ι) }
 
-,'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map() ;for (var t of @) r.set(t, (r.has(t)? r.get(t) : 0)+1 ) ;↩ r }
-,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (var t of @){ t2 ← f(t) ;r.set(t2, (r.get(t2)||new Set()).∪([t])) } ;↩ r }
+,'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map() ;for (t ←of @) r.set(t, (r.has(t)? r.get(t) : 0)+1 ) ;↩ r }
+,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t ←of @){ t2 ← f(t) ;r.set(t2, (r.get(t2)||new Set()).∪([t])) } ;↩ r }
 
 ,'Map.prototype.zip':λ(…a){ a.unshift(@) ;r ← new Map() ;a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].×(a.‖) ;t[i] = ι ;r.set(k,t) })) ;↩ r }
 
@@ -479,13 +474,13 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String).prototype.-4':{get(){↩ @.‖<4? ∅ : @[@.‖-4] },set(ι){ @.‖<4 || (@[@.‖-4] = ι) }}
 
 ,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].map…(ι=> […ι])) }
-,'(Array|Set).prototype.∩':λ(…a){ r ← new Set(@) ;for(var x of a){ x = T.Set(x)? x : new Set(x) ;for(var ι of r) x.has(ι) || r.delete(ι) } ;↩ r }
-,'(Array|Set).prototype.-':λ(…a){ r ← new Set(@) ;for(var t of a) for(var ι of t) r.delete(ι) ;↩ r }
+,'(Array|Set).prototype.∩':λ(…a){ r ← new Set(@) ;for(x ←of a){ x = T.Set(x)? x : new Set(x) ;for(ι ←of r) x.has(ι) || r.delete(ι) } ;↩ r }
+,'(Array|Set).prototype.-':λ(…a){ r ← new Set(@) ;for(t ←of a) for(ι ←of t) r.delete(ι) ;↩ r }
 ,'(Array|Set).prototype.⊕':λ(b){a←@ ;↩ a.-(b).∪(b.-(a)) }
 
 ,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
 ,'Set.prototype.pop':λ(){ t ← @[0] ;@.delete(t) ;↩ t }
-,'Set.prototype.0':{get(){↩ seq(@).next_ι() }}
+,'Set.prototype.0':{get(){↩ seq(@).next_ι }}
 ,'(Array|Set).prototype.-eq':λ(…a){ t ← _u([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _u.values(t)._.flatten(✓) }
 
 ,'Map.prototype.⁻¹declare_uniq':{get(){↩ new Map([…@.entries()].map(ι=>[ι[1],ι[0]])) }}
@@ -497,9 +492,8 @@ assign_properties_in_E_informal({
 		if( Tarr(ι)){ t ← ι.find_index_deep(f) ;if( t) ↩ [i,…t] }
 		else{ if( f(ι) )↩ [i] }
 		} }
-,'Array.prototype.seq':{get(){ θ ← λ*(){ for(;θ.i<θ.ι.‖;) yield θ.ι[θ.i++] }() ;θ …← ({ ι:@, i:0, clone(){↩ @.ι.seq …← (@) } }) ;↩ θ }}
 ,'Array.prototype.find_last_index':λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
-,'Array.prototype.join2':λ(ι){ r ← [] ;for(var t of @) r.push(t,ι) ;r.pop() ;↩ r }
+,'Array.prototype.join2':λ(ι){ r ← [] ;for(t ←of @) r.push(t,ι) ;r.pop() ;↩ r }
 # ,'Set.prototype.@@iterator':Set.prototype.values
 # ,'Map.prototype.@@iterator':Map.prototype.entries
 ,'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse(@)) }
@@ -547,7 +541,7 @@ E.walk = (ι,f,k,o)=>( Tprim(ι)||_u(ι).forEach((ι,k,o)=> walk(ι,f,k,o)), ι!
 E.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι), _u(ι).forEach(ι=> walk_graph(ι,f,seen)), seen.pop(), ι!==∅ && ι!==null && f(ι), ι )
 E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι), seen.push(ι), _u(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)), seen.pop(), fᵇ(ι), ι )
 E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)), f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object(), f(ι,k,o) )
-E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (=>{ for (var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;↩ f(ι) })()
+E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (=>{ for (k ←in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;↩ f(ι) })()
 E.search_obj = (ι,f)=>{ r←[] ;walk(ι,(ι,k,o)=> ι!==∅ && ι!==null && f(ι,k,o) && r.push(ι)) ;↩ r }
 E.search_graph = (ι,f)=>{ r←[] ;walk_graph(ι,ι=> ι!==∅ && ι!==null && f(ι) && r.push(ι)) ;↩ r }
 # the right name for walk is going to be along the lines of

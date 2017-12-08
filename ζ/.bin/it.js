@@ -198,7 +198,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅫𐅮𐅪𐅰𐅃(__name(${ι})).ι=`) // an initial try ;probably .name inference needs another form
 		.replace(/‘lexical_env/g,`𐅫𐅮𐅪𐅰𐅃(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
 		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` ) // these days i would do it with a symbol nameifying and a global?
-		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(;?)`.g ),(ˣ,name,ws,end)=> 'var '+name+ws+(end?';':'=') )
+		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(?=(;)?)(?=((?:of|in)\b)?)`.g ),(ˣ,name,ws,end,of_)=> 'var '+name+ws+(end||of_?'':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
 		.replace(𐅪𐅯𐅯𐅯𐅦||(𐅪𐅯𐅯𐅯𐅦= re`\.\.(${s_or(id_num)})`.g ),(ˣ,ι)=> `[${ι}]`)
@@ -223,7 +223,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 		.replace(𐅭𐅭𐅃𐅪𐅃||(𐅭𐅭𐅃𐅪𐅃= re`return\s+var\s+([${word}]+)`.g ), (ˣ,ι)=> `var ${ι} ;return ${ι}`)
 	// ζ_compile_nonliteral_tree ← ι=>{
 	// 	ι = ι.map…(ι=> ι.T? [ι] : ι.split(/(?=[{([\])}])/g).map…(ι=> ι.match(/^([{([\])}]?)([^]*)$/).slice(1)).filter(.‖) )
-	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0} ;dir ← ι[i] in at? 1 : -1 ;for(;;){ for(var [a,b] of ['[]','()','{}']){ ι[i]===a && at[a]++ ;ι[i]===b && at[a]-- } ;if( _u(at).every(ι=>ι===0) ) break ;i += dir ;if( !(0<=i&&i<ι.‖)) ↩ ;} ;↩ i }
+	// 	@ other_bracket ← i=>{ at ← {'[':0,'{':0,'(':0} ;dir ← ι[i] in at? 1 : -1 ;for(;;){ for([a,b] ←of ['[]','()','{}']){ ι[i]===a && at[a]++ ;ι[i]===b && at[a]-- } ;if( _u(at).every(ι=>ι===0) ) break ;i += dir ;if( !(0<=i&&i<ι.‖)) ↩ ;} ;↩ i }
 	// 	↩ ι.map(ι=> ι.T? ι.ι : ι) }
 	return memoize_tick(code=>{
 		var t = code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t // ! it is a clumsy hack to put this on all of these code paths
@@ -371,6 +371,7 @@ E.JSON_pretty = (ι,replacer)=>{
 				return (t=a+ι.join(', ')+b)["‖"] <= wrap_width? t : a+'\n'+T+ι.join(',\n'+T)+'\n'+b
 				} }
 	return show(ι) }
+var cartesian_str =(𐅭𐅞)=>𐅭𐅞.reduce((a,b)=>{ var r = [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;return r } ,[''])
 var genex_simple = ι=>{ var P = require('parsimmon')
 	var unit = P.lazy(()=> P.alt( P.noneOf('()|') ,P.string('(').then(s_or).skip(P.string(')')).map(ι=>0?0:{T:'capture',ι}) ) )
 	var s_or = P.sepBy(unit.many(),P.string('|')).map(ι=> ι.length > 1? {T:'or',ι:ι} : ι[0])
@@ -415,23 +416,17 @@ E._pisces__on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require(
 	f(i,sig) }) ;var 𐅰𐅞𐅜𐅯𐅨;
 E.pad_r = (ι,s)=> [ι,s.slice(ι["‖"])].fold(Tstr(ι)? (a,b)=> a+b : Tarr(ι)? (a,b)=> [...a,...b] : !function(...a){throw Error(__err_format(...a))}('‽'))
 
-var cartesian_str =(𐅭𐅞)=>𐅭𐅞.reduce((a,b)=>{ var r = [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;return r } ,[''])
-E.seq = ι=>{ var t= Object.create(seq.prototype) ;t.ι = ι ;return t }
-seq.prototype = {
-	next_ι:function(){ var t = this.ι ;if(! t.next ) t = t[Symbol.iterator]() ;return t.next().value }
-	// ,map(){}
-	// ,'map…':λ(){}
-	// ,fold(){}
-	// ,×(){}
-	// ,filter(){}
-	// ,clone(){}
-	// ,pin(){}
-	// ,find_(){}
-	// ,slice(){}
-	// ,'‖':λ(){}
-	// ,some(){}
-	// ,every(){}
-	}
+var 𐅯𐅩𐅪𐅨𐅃 = function*(θ){ for(;θ.i<θ.l["‖"];) yield θ.l[θ.i++] }
+E.seq = ι=>{
+	var r = Object.create(seq.prototype)
+	if( Tarr(ι) ){ ;r.ι = 𐅯𐅩𐅪𐅨𐅃(r) ;r.i = 0 ;r.l = ι }
+	else if( !ι.next ) r.ι = ι[Symbol.iterator]()
+	else r.ι = ι
+	return r }
+seq.prototype = { ι:undefined ,i:undefined ,l:undefined } // ,map(){} ,'map…':λ(){} ,fold(){} ,×(){} ,filter(){} ,pin(){} ,find_(){} ,slice(){} ,'‖':λ(){} ,some(){} ,every(){}
+seq.prototype[γ["|>"]] (ι=> new Property2(ι,"next_ι")) .get= function(){return this.ι.next().value }
+seq.prototype[γ["|>"]] (ι=> new Property2(ι,"next_ιι")) .get= function(){ var t = this.ι.next() ;if( t.done )return ;t = t.value ;t===undefined && !function(...a){throw Error(__err_format(...a))}('‽') ;return t }
+seq.prototype[γ["|>"]] (ι=> new Property2(ι,"clone")) .get= function(){ var t= seq(this.l) ;t.i= this.i ;return t }
 // (λ*(){ yield 5 })().next()
 // Object.getOwnPropertyDescriptors([…protos(λ*(){}())][2])
 // […protos(new Set())].map(Object.getOwnPropertyDescriptors)
@@ -485,7 +480,7 @@ assign_properties_in_E_informal({
 
 ,'(Set|Map).prototype.filter!':function(f){ this.forEach((ι,i)=> f(ι,i,this) || this.delete(i)) }
 ,'Set.prototype.pop':function(){ var t = this[0] ;this.delete(t) ;return t }
-,'Set.prototype.0':{get(){return seq(this).next_ι() }}
+,'Set.prototype.0':{get(){return seq(this).next_ι }}
 ,'(Array|Set).prototype.-eq':function(...a){ var t = _u([...this]).groupBy(simple_flesh) ;a.forEach((𐅭𐅞)=>𐅭𐅞.forEach(ι=> delete t[simple_flesh(ι)])) ;return _u.values(t)._.flatten(true) }
 
 ,'Map.prototype.⁻¹declare_uniq':{get(){return new Map([...this.entries()].map(ι=>[ι[1],ι[0]])) }}
@@ -497,7 +492,6 @@ assign_properties_in_E_informal({
 		if( Tarr(ι)){ var t = ι.find_index_deep(f) ;if( t) return [i,...t] }
 		else{ if( f(ι) )return [i] }
 		} }
-,'Array.prototype.seq':{get(){ var θ = function*(){ for(;θ.i<θ.ι["‖"];) yield θ.ι[θ.i++] }() ;θ [γ['…←']] ({ ι:this, i:0, clone(){return this.ι.seq [γ['…←']] (this) } }) ;return θ }}
 ,'Array.prototype.find_last_index':function(f){ for(var i=this["‖"]-1;i>=0;i--) if( f(this[i],i,this) ) return i }
 ,'Array.prototype.join2':function(ι){ var r = [] ;for(var t of this) r.push(t,ι) ;r.pop() ;return r }
 // ,'Set.prototype.@@iterator':Set.prototype.values
