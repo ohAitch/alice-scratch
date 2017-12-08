@@ -33,7 +33,7 @@ builtin_keys ← parse_boards0(multiline`
 	`)[0].keys._.flatten(✓)
 parse_boards ← λ(ι){
 	ι ← ι.map…(parse_boards0)
-	ι.filter(.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].repeat(14), …ι.keys, ['_'].repeat(11)]})
+	ι.filter(.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].×(14), …ι.keys, ['_'].×(11)]})
 	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(✓) })
 	ι.forEach(λ(ι){ ι.keys = ι.keys.map(ι=> Object.hasOwnProperty(macros,ι)? macros[ι] : ι) })
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
@@ -162,7 +162,7 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 // 2d regexes would be wonderful for parsing .keyrc
 // remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
 
-// todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it repeat even if it's a VK_OPEN_URL_*
+// todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it × even if it's a VK_OPEN_URL_*
 
 // https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/Tabs
 // https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/MediaStrategies

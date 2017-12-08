@@ -1,6 +1,6 @@
 #!/usr/bin/env ζ
 
-col ← ι=> ι+' '.repeat(max(0,100-ι.‖))
+col ← ι=> ι+' '.×(max(0,100-ι.‖))
 
 t ← φ`~/file/.archive/spotify/*`.φs.sort()[-1].json.map(ι=>
 	col(ι.artists.map(.name).join(' & ')+' ('+ι.album.name+') - '+ι.name)+' ∈ '+ι.tags.map(.name).map(ι=>','+ι).join(' ')

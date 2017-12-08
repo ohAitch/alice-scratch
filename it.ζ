@@ -1,4 +1,12 @@
 ################################# data : basic #################################
+⧫. Tag ==>{ r ← => Object.create(𐅝𐅯𐅩𐅝𐅞) ;𐅝𐅯𐅩𐅝𐅞 ← {
+	,inspect(d,opt){
+		ks ← (…a)=> _.isEqual( new Set(_(@).keys()).-(['inspect','_']) ,new Set(a) )
+		r ← [ opt.stylize(@.tag,'regexp') ]
+		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag','inspect','_') ,opt) )
+		↩ r.join(' ') }
+	,'≈':λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
+	} ;↩ r }
 
 ################################# data : parse #################################
 ⧫. regex_set ==> ι=>{

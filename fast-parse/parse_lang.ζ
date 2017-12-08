@@ -1,0 +1,84 @@
+##################################### note #####################################
+conceptual: word s refer to the procedure-local database of words we know about
+
+ex-parser items: ✓ ✗ null ∅ ‖
+
+note; dont forget: frequently we want to [error if start and not finish] in a form, such as string
+
+P ← require_new(φ`~/code/scratch/fast-parse/parser`)
+
+is_word_unit ← memoize_persist(ι=> memoize_persist(=>
+	_u(npm`unicode@10.0.0/category`)
+	.filter((ˣ,type)=> type.re`^[LNPMS].$`)
+	.map…(ι=> _.keys(ι).map(ι=> ι|0) )
+	._.sortBy()
+	)().includes(ord(ι)) )
+
+# words create a tree structure
+# words are considered in a particular order
+# it is almost as if words are parsed first via a lexer, but it is not quite
+
+parenless function calls? mb figure those out after you get this working. this is haard.
+
+#################################### grammar ###################################
+that_inter_thing ← (ᛟ,ι)=> [ᛟ,P([ι,ᛟ]).*]
+infix ← ι=> [_,ι,_].join2(ᛟ₂)
+prefix ← ι=> [ι,ᛟ₁,_]
+ᛟ₁ ← /[ \t]*/
+ᛟ₂ ← /[ \t\n]*/
+ᛟ₃ ← /[ \t\n,]*/
+_ ← [
+	,/(['"])(((?!\1)[^\\]|\\.)*?\1)/
+	,[_,ᛟ₂,'.',ᛟ₁,P.|([word,string])]
+	,[_,ᛟ₂,'‘.',ᛟ₁,P.|([word,string])]
+ 	,[_,ᛟ₁,'(',that_inter_thing(ᛟ₃,_),')']
+	,[_,'[',_,']'].join2(ᛟ₁)
+	,[_,'‘[',_,']'].join2(ᛟ₁)
+	,['^'].map(ι=> infix(ι) …← ({ right:✓ }) )
+	,['!','-'].map(prefix)
+	,['×','/'].map(infix)
+	,['+','-'].map(infix)
+	,['∪','∩'].map(infix)
+	,['…←'].map(infix)
+	,['=','≠','<','>','<=','>=','∈','∋'].map(infix)
+	,['&','|'].map(infix)
+	,['!>','|>'].map(infix)
+	,[_,'?',_,':',_].join2(ᛟ₂)
+	,['if',_,P(':').?,_,P.|([':','else']).?,_].join2(ᛟ₂)
+	,['←','←!'].map(ι=> infix(ι) …← ({ right:✓ }) )
+	,['…','↩←'].map(prefix)
+	,['↩',ᛟ₁,_.?]
+	,[_,ᛟ₁,'⇒',ᛟ₂,_]
+	,[':'].map(infix)
+	,['()','[]','{}'].map(([a,b])=> [a,that_inter_thing(ᛟ₃,_),b])
+	,[ ['[',that_inter_thing(ᛟ₃,_),']']
+	,is_word_unit.+
+	]
+
+####################### btw i made a simple infix parser #######################
+# for:
+# E.Property = ∪( ,§`obj × id -> place`
+# 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
+# 	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
+
+P.build_op = (unit,op)=>{
+	# binary left: 1-2-3 = (1-2)-3  ;binary right: 1^2^3 = 1^(2^3)
+	# ,'2 center':p=> P([ p, P.seq(op,p).*.map(ι=> _(ι).flatten(✓)) ]).map(([a,op_bs])=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) )
+	_1L ← p=>{ r ← P(=> P.|([ P([ op,r ]).map(([op,ι])=> [op,∅,ι]) ,p ])) ;↩ r }
+	_1R ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
+	_2L ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
+	_2R ← p=>{ r ← P(=> p.chain(a=> P.|([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ) ;↩ r }
+	↩ unit |>(_2L) |>(_1L) |>(_1R) }
+
+fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
+
+§ ← (=>{
+	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
+	Any ← =>Any; Any = ‘lexical_env=>{
+		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
+		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
+		|> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
+	↩ ι=>{ι+=''
+		ι = Any.parse(ι)
+		Tarr(ι)
+		} })()

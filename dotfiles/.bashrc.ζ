@@ -58,14 +58,14 @@ E.diff = (base,edit)=>{
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
 		t = t.split('\n')
-		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
+		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _u.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
 		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
 		t = iG.map(.map(i=> [t[i],i]))
 		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
 		process.exitCode = t.‖ ?1:0
 		↩ t.map(.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
 			.join('\n')+'\n')
-			.join('\x1b[90m'+'-'.repeat(30)+'\x1b[0m'+'\n')
+			.join('\x1b[90m'+'-'.×(30)+'\x1b[0m'+'\n')
 	} }
 
 E.rm_empty_dirs = => shᵥ`find . -type d -empty -delete`
@@ -129,7 +129,7 @@ E.run_project.cant_pool = ✓
 E.d = (a='.')=>{
 	# would be neat if this was .Trash aware
 	sum ← 0
-	q ← (ι,fl)=> cn.log( (' '.repeat(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
+	q ← (ι,fl)=> cn.log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
 	fs.readdirSync(a).map(fl=>{
 		if( φ(fl).is_dir ){
 			o ← process.stderr.write; process.stderr.write = =>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
@@ -138,7 +138,7 @@ E.d = (a='.')=>{
 		sum += b; q(b,fl) })
 	q(sum,a)
 
-	progress_bar ← (L,at)=>( L -= 2, at = floor(at*L), '['+('='.repeat(L)+'>').slice(-at)+' '.repeat(L-at)+']' )
+	progress_bar ← (L,at)=>( L -= 2, at = floor(at*L), '['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
 	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
@@ -199,7 +199,7 @@ E.bookmarks = ι=>{
 
 E.kp = E.keypresses = =>{
 	diy_stdin ← f=>{ process.stdin.setRawMode(✓); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
-	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.repeat(9))
+	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
 	o←; diy_stdin(ι=>{ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
 	}
 E.keypresses.cant_pool = ✓

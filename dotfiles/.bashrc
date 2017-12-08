@@ -87,3 +87,5 @@ nom(){ ssh "$nom" ;}
 ############################## aborted experiments #############################
 # alias ,='_home_link "$PWD$([ -z "$PWF" ] || echo "/$PWF")"'
 # cd(){ local v="${!#}"; if (( "$#" )) && ! [[ -d "$v" ]]; then PWFdirty=0; builtin cd "${@:1:($#-1)}" "$(dirname "$v")"; PWF="$(basename "$v")"; else builtin cd "$@"; fi; } # PWF(dirty) is not used elsewhere; it's an aborted experiment
+
+# iterm's imgcat might be neat

@@ -1,7 +1,4 @@
 #!/usr/bin/env ζ
-{Rᵢ:R} ← require_new(__dirname+'/record')
-# ℝ_set ← require_new(__dirname+'/ℝ_set')
-
 # _Stream ← (str,i)=>{ t← Object.create(_Stream.prototype) ;t.str=str ;t.i=i ;↩ t }
 # _Stream.prototype = {
 # 	,‖:λ(){↩ @.str.‖-i }
@@ -12,6 +9,8 @@
 # [#Q _Stream.prototype.host #Q].def({ ,get(){↩ @.str.slice(i) }})
 # wow, (in_,i) vs { i,ι } is fucky - could call it (constants,backpropagate) vs { edit,new }
 
+# ! oh hey, this will break on unicode planes
+
 #################################### Parser ####################################
 Parser ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
 P ← ι⇒
@@ -21,24 +20,32 @@ P ← ι⇒
 	: Tarr(ι)? P._seq(ι)
 	: T.RegExp(ι)? P._regex(ι)
 	: ‽('cant make parser from',ι)
-P.prototype = R(∅,{})
+P.prototype = Tag()
 P.prototype.exec = λ*(in_){ for(var t of @._(in_,0)) yield t.ι }
+P.prototype.exec0 = λ(in_){↩ seq( @.exec(in_) ).next_ι() }
 P.prototype.parse = λ(in_){↩ seq( @.skip(/$/).exec(in_) ).next_ι() }
 
 module.exports = P
 
 ################################## root types ##################################
+P.any1 = Parser('any1',{
+	,_:λ*(in_,i){ if( i<in_.‖ ) yield { ,i:i+1 ,ι:in_[i] } }
+	})
 P._unit = ι=> Parser('unit',{
 	,ι
 	,_:λ*(in_,i){ if( in_[i]===@.ι ) yield { ,i:i+1 ,ι:in_[i] } }
 	})
-P.not = ι=> Parser('not',{
+P.! = ι=> Parser('!',{
 	,ι:P(ι)
-	# not:not: -> t.status? make_win(i,∅) : t
-	# not: -> t.status? lose(opt.stylize('not','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
+	# !:!: -> t.status? make_win(i,∅) : t
+	# !: -> t.status? lose(opt.stylize('!','special')+' '+util.inspect(self.ι,opt)) : make_win(i,∅)
 	,_:λ*(in_,i){ for(var t of @.ι._(in_,i)) ↩ ;yield { ,i ,ι:∅ } }
 	})
-__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next() ;if( done ) yield {i,ι:[]} ;else for(var ι of p._(in_,i)) for(var rest of Λ(pₛ.clone(),in_,ι.i) ) yield { ,i:rest.i ,ι:[ι.ι,…rest.ι] } }
+__seq2 ← λ* Λ(pₛ,in_,i){ {value:p,done} ← pₛ.next()
+	if( done ) yield {,i,ι:[]} ;else
+		for(var ι of p._(in_,i))
+			for(var rest of Λ(pₛ.clone(),in_,ι.i) )
+				yield { ,i:rest.i ,ι:ι.ι===∅? rest.ι : [ι.ι,…rest.ι] } }
 # __seq ← λ* Λ(ps,ps_i,in_,i){
 # 	if( ps.‖ - ps_i === 0 ) yield {i,ι:[]}
 # 	else for(var ιs of ps[ps_i]._(in_,i)) for(var rest of Λ(ps,ps_i+1,in_,ιs.i) ) yield { ,i:rest.i ,ι:[ιs.ι,…rest.ι] }
@@ -48,31 +55,32 @@ P._seq = ι=> Parser('seq',{
 	,_:λ*(in_,i){ yield* __seq2(@.ι.seq,in_,i) }
 	# ,_:λ*(in_,i){ yield* __seq(@.ι,0,in_,i) }
 	})
-P.alt = ι=> Parser('alt',{
+P.| = ι=> Parser('|',{
 	,ι:ι.map(P.X)
 	,_:λ*(in_,i){ for(var p of @.ι) yield* p._(in_,i) }
 	})
 P.return = ι=> Parser('return',{
 	,ι
-	,_:λ*(in_,i){ yield {i,ι:@.ι} }
+	,_:λ*(in_,i){ yield {,i,ι:@.ι} }
 	})
 P.prototype.chain = λ(f){↩ Parser('chain',{
 	,ι:@ ,f
 	,_:λ*(in_,i){ start ← i ;for(var {i,ι} of @.ι._(in_,i)) yield* @.f(ι,{ start,i,in_ })._(in_,i) }
 	}) }
+# P.custom = Parser
 
-############################# pseudocomposite types ############################
-P.alt_range = (a,b)=> Parser('alt',{
-	# def(,'ι',{get(){ }})
+################################# further types ################################
+P.⋯ = (a,b)=> Parser('|',{
 	,a ,b
-	,_:λ*(in_,i){ ι ← in_[i] ;if( a<=ι&&ι<b ) yield {i:i+1,ι} }
+	# def(,'ι',{get(){ }})
+	,_:λ*(in_,i){ ι ← in_[i] ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield {,i:i+1,ι} }
 	})
-P.prototype.repeat = λ(for_,greedy=✓){↩ Parser('repeat',{
+P.prototype.× = λ(for_,greedy=✓){↩ Parser('×',{
 	,ι:@ ,for_ ,greedy
 	,_:λ*(in_,i){
-		if (!@.for_[1]){ yield {i,ι:[]} ;↩ }
-		rest ← P([ ,@.ι ,@.ι.repeat(@.for_.map(ι=> max(0,ι-1)),@.greedy) ]).map(([x,xs])=> xs? [x,…xs] : [x] )
-		yield* ( @.for_[0]? rest : P.alt(@.greedy? [rest,P.return([])] : [P.return([]),rest]) )._(in_,i)
+		if( !@.for_[1] ){ yield {i,ι:[]} ;↩ }
+		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.greedy) ]).map(([x,xs])=> xs? [x,…xs] : [x] )
+		yield* ( @.for_[0]? rest : P.|(@.greedy? [rest,P.return([])] : [P.return([]),rest]) )._(in_,i)
 		}
 	}) }
 P._regex = ι=> Parser('regex',{
@@ -86,25 +94,16 @@ P._graph_thunk = f=> Parser('graph_thunk',{
 
 ################################ composite types ###############################
 P.prototype.map = λ(f){↩ @.chain( λ self(ι,etc){↩ P.return(self.f(ι,etc)) } …← ({f}) ) }
-def(P.prototype,'?',{get(){↩ @.repeat([0,1]).map(ι=>ι[0]) }})
-def(P.prototype,'*',{get(){↩ @.repeat([0,∞]) }})
-def(P.prototype,'+',{get(){↩ @.repeat([1,∞]) }})
-def(P.prototype,'??',{get(){↩ @.repeat([0,1],✗).map(ι=>ι[0]) }})
-def(P.prototype,'*?',{get(){↩ @.repeat([0,∞],✗) }})
-def(P.prototype,'+?',{get(){↩ @.repeat([1,∞],✗) }})
-P.prototype.skip = λ(p){↩ P([@,p]).map(ι=>ι[0]) }
-P.prototype.then = λ(p){↩ P([@,p]).map(ι=>ι[1]) }
-P.prototype.sep_by = λ(sep){↩ P([ ,@ ,P([sep,@]).map(ι=>ι[1]).* ]).map(([ι,ιs])=> [ι,…ιs]) }
-
-################################### build_op ###################################
-P.build_op = (unit,op)=>{
-	# binary left: 1-2-3 = (1-2)-3  ;binary right: 1^2^3 = 1^(2^3)
-	# ,'2 center':p=> P([ p, P.seq(op,p).*.map(ι=> _(ι).flatten(✓)) ]).map(([a,op_bs])=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) )
-	_1L ← p=>{ r ← P(=> P.alt([ P([ op,r ]).map(([op,ι])=> [op,∅,ι]) ,p ])) ;↩ r }
-	_1R ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
-	_2L ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
-	_2R ← p=>{ r ← P(=> p.chain(a=> P.alt([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ) ;↩ r }
-	↩ unit |>(_2L) |>(_1L) |>(_1R) }
+def(P.prototype,'?',{get(){↩ @.×([0,1]).map(..0) }})
+def(P.prototype,'*',{get(){↩ @.×([0,∞]) }})
+def(P.prototype,'+',{get(){↩ @.×([1,∞]) }})
+def(P.prototype,'??',{get(){↩ @.×([0,1],✗).map(..0) }})
+def(P.prototype,'*?',{get(){↩ @.×([0,∞],✗) }})
+def(P.prototype,'+?',{get(){↩ @.×([1,∞],✗) }})
+P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
+P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
+P.prototype.sep_by = λ(sep){↩ P([ ,@ ,P([sep,@]).map(..1).* ]).map(([ι,ιs])=> [ι,…ιs]) }
 
 ################################ todo eventually ###############################
 # pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
+# ?theory? pattern: left simplification/reduction

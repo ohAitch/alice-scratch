@@ -34,7 +34,7 @@ interesting ← ι⇒
 // so far just pretty printing
 pt ← {
 	,inspect(d,opt){t←; r←;
-		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count()].filter(ι=>ι[1]>1).map(ι=>ι[0])); opt._cache = new Map() }
+		if (!opt._cache){ t←[]; walk_both_obj(@,ι=> t.push(ι),ι=>0,ι=> t.push(ι)); opt._will_cache = new Set([…t.count()].filter(..1>1).map(..0)); opt._cache = new Map() }
 		if ((t=opt._cache.get(@))!==∅) ↩ opt.stylize('#'+t,'quote')
 		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
@@ -185,7 +185,7 @@ vmζ_runInContext ← (ast,global_)=>{
 		: o.type==='closure'?(
 			stack.push({ f:o, ι:[
 				…(o.ι.name? [[o.ι.name.ι,o]] : []),
-				…o.ι.params.map((k,i)=> [k,a[i]]).filter(ι=>ι[0]),
+				…o.ι.params.map((k,i)=> [k,a[i]]).filter(..0),
 				]._.object() }),
 			(r = eval_(o.ι.ι)),
 			stack.pop(),

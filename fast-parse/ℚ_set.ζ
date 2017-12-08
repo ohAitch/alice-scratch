@@ -1,0 +1,91 @@
+# ℚ_set? Float_set tbh
+
+binary_search ← npm`binary-search@1.3.2`
+# binary_search_num_by ← (l,ι,f)=>{ t ← binary_search(l,ι,(a,b)=> f(a)-f(b)) ;found ← t>=0 ;i ← t<0? -t-1 : t ;↩ {found,i} }
+binary_search_num_by_low ← (l,ι,f)=>{ t ← binary_search(l,ι,(a,b)=> f(a)-f(b)) ;↩ t<0? -t-1-1 : t }
+
+# ‡ yeah, the way i use [new] is mighty weird, probably transition to Object.create?
+
+ℚ_interval ← λ(a,b){ /* [a,b) */ if (!(@ instanceof ℚ_interval)) ↩ new ℚ_interval(a,b)
+	if( Tarr(a) && a.‖===2 ) [a,b] = a
+	Tnum(a)||‽ ;Tnum(b)||‽
+	if (!(a < b)) [a,b] = [0,0]
+	@.a = a ;@.b = b
+	Object.freeze(@) }
+def(ℚ_interval.prototype,'‖',{get(){↩ @.b - @.a }})
+ℚ_interval.prototype.∩ = λ(b){ a ← @ ;↩ ℚ_interval(max(a.a,b.a),min(a.b,b.b)) }
+# ℚ_interval.prototype.∩s = λ(b){↩ !!@.∩(b).‖ }
+ℚ_interval.touches = (a,b)=>{ if (!(a.a <= b.a)) #swap a b ;↩ b.b >= a.a && a.b >= b.a }
+ℚ_interval.cover = (…a)=> ℚ_interval(min(…a.map(.a)),max(…a.map(.b)))
+# cn.log([ [[1,2],[3,4]],[[1,3],[2,4]],[[1,2],[1,4]],[[1,4],[2,4]],[[1,2],[2,4]], ].map(ι=>{ ι = ι.map(ι=> ℚ_interval(…ι)) ;↩ [ι,!!ι[0].∩(ι[1]).‖,!!ι[1].∩(ι[0]).‖] }))
+
+# ‡ can it ℚ_set be an array?
+
+# ‡ must we have ℚ_interval? e.g. ℚ_set(@.cover) -> @.cover ;@.cover -> @.cover.ι[0]
+
+# ‡ the root of mutate and not mutate?
+
+# nonoverlapping [,) interval set
+ℚ_set ← λ(ι){ if (!(@ instanceof ℚ_set)) ↩ new ℚ_set(ι)
+	@.ι = 0?0
+		: ι===∅? []
+		: T.ℤ(ι)? [ ℚ_interval(ι,ι+1) ]
+		: Tarr(ι)? [ ℚ_interval(ι) ]
+		: ι instanceof ℚ_interval? [ι]
+		: ι instanceof ℚ_set? ι.ι
+		: ‽(ι) }
+[#Q ℚ_set.prototype.cover #Q].def({ get(){↩ ℚ_interval( !@.ι.‖? [0,0] : [@.ι[0].a,@.ι[-1].b] ) } })
+ℚ_set.prototype.∪! = λ(x){
+	ℚ_set(x).ι.forEach(ι=>{ start←;
+		Array.prototype.find_last_index = λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
+		if( (start = @.ι.findIndex(ℚ_interval.touches.P(ι).X))!==-1 ){
+			end ← @.ι.find_last_index(ℚ_interval.touches.P(ι).X)
+			# ! this, why isn't it like “if they have a union which is an interval” like - a=> a.∪(ι) ∈ ℚ_interval
+			@.ι.splice( start, end+1-start, ℚ_interval.cover( @.ι[start],@.ι[end],ι ) )
+			↩ }
+		virt_θι ← i=> 0<=i && i<@.ι.‖? @.ι[i] : {a:∞,b:-∞};
+		for (i←0;i<@.ι.‖+1;i++) if( virt_θι(i-1).b < ι.a && ι.b < virt_θι(i).a ){ @.ι.splice(i,0,ι) ;↩ }
+		‽ })
+	↩ @ }
+ℚ_set.prototype.-! = λ(x){
+	if( @.ι.‖===0 ) ↩ @
+	if( @.ι.‖===1 ){
+		@.ι = [ @.ι[0].a, …ℚ_set(x).ι.filter(ι=> @.ι[0].a < ι.b && ι.a < @.ι[0].b ).map…(ι=>[ι.a,ι.b]), @.ι[0].b ].chunk(2).map(ι=> ℚ_interval(…ι)).filter(.‖)
+		# decompose ← .ι.map…(ι=>[ {on:1,i:ι.a}, {off:1,i:ι.b} ]) […decompose(@),…decompose(x)]
+		↩ @ }
+	@.ι = ℚ_set(@.cover).-!(ℚ_set(@.cover).-!(@).∪!(x)).ι
+	↩ @ }
+ℚ_set.prototype.∩! = λ(x){↩ @.-!(ℚ_set(@.cover).-!(x)) }
+
+_('-∪∩').map(k=> ℚ_set.prototype[k] = λ(ι){↩ ℚ_set() …← ({ι:_.clone(@.ι)}) [k+'!'](ι) } )
+ℚ_set.prototype.has = λ(ι){ i ← binary_search_num_by_low(@.ι,{a:ι},.a) ;↩ 0<=i && i<@.ι.‖ && @.ι[i].a <= ι && ι < @.ι[i].b }
+
+module.exports = ℚ_set
+
+ℚ_interval.prototype.inspect = λ(d,opt){↩ '['+opt.stylize(@.a,'number')+' '+opt.stylize(@.b,'number')+')' }
+ℚ_set.prototype.inspect = λ(d,opt){↩ opt.stylize('{','regexp')+' '+@.ι.map(ι=> util_inspect_autodepth(ι,opt)).join(' ')+' '+opt.stylize('}','regexp') }
+
+##################################### test #####################################
+# cn.log('a1',ℚ_set())
+# cn.log('a2',ℚ_set().∪([0,0xff]))
+# cn.log('a3',ℚ_set().∪([0,0xff]).∪!([0,0xff]))
+# cn.log('a4',ℚ_set().∪([0,0xff]).∪!([5,10]))
+# cn.log('a5',ℚ_set().∪([0,0xff]).∪!([0x200,0x400]).∪!(0x1000))
+# cn.log('a6',ℚ_set().∪([0,0xff]).∪!([0x200,0x400]).∪!(0x1000).∪!([0x80,700]).∪!(0xfff))
+# cn.log('b1',ℚ_set([1,0x10ffff]).-!([0x20,0x23]))
+# cn.log('b2',ℚ_set([1,0x10ffff]).-!([0x20,0x23]).-!([0x10,0x1000]))
+# cn.log('b3',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).-!([0x10,0x1000]).-!([0x200,0x400]))
+# cn.log('b4',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).-!([0x10,0x1000]).-!([0x200,0x400]).-!(0x1000))
+# cn.log('b5',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).-!([0x200,0x400]).-!(0x1000))
+# cn.log('c1',ℚ_set([0,0x10ffff]).-!([0x20,0x23]))
+# cn.log('c2',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).∩!([0x10,0x1000]))
+# cn.log('c3',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).∩!([0x10,0x1000]).∩!([0x200,0x400]))
+# cn.log('c4',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).∩!([0x10,0x1000]).∩!([0x200,0x400]).∩!(0x300))
+# cn.log('in',ℚ_set([0,0x10ffff]).-!([0x20,0x23]).∩!([0x10,0x1000]).-!([0x200,0x400]).∪!(0x1000))
+# ;[-10,0,0,0,15,0,16,1,17,1,31,1,32,0,34,0,35,1,100,1,300,1,800,0,∞,0,1000000000,0,5000,0,4096,1,4097,0,5.6,0,24.49489742783178,1].chunk(2).every(([in_,out])=>{ out = !!out
+# 	r ← ℚ_set([0,0x10ffff]).-!([0x20,0x23]).∩!([0x10,0x1000]).-!([0x200,0x400]).∪!(0x1000).has(in_) === out ;r || cn.log('error',in_,out)
+# 	↩ r }) && cn.log('win')
+
+#################################### scruff ####################################
+# performance: not great ;architecture: minimal. tentative.
+# ℤ_set.prototype.keys = ℤ_set.prototype.values = ℤ_set.prototype.@@iterator = λ*(){ for(var ι of @.ιₛ) for(i←ι.a;i<ι.b;i++) yield i }

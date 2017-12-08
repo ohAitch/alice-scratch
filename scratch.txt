@@ -305,7 +305,7 @@ global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
 	console.log(JSON.stringify(locs.ιs()))
 	}})(${Tprim})`}`+'') )()
 
-t ← _( global_net._.groupBy(ι=>ι[-1]) ).mapObject(.map(.join('.')))
+t ← _( global_net._.groupBy(.-1) ).mapObject(.map(.join('.')))
 [done,todo] ← _( _(t).values().sort() ).partition(.‖===1)
 done = done.map(ι=> ι[0])
 todo = todo._.sortBy(.‖)

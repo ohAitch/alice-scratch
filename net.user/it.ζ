@@ -44,7 +44,7 @@ has_prop(window,'rate') || def(window,'rate',{ get(){↩ get_viaudeo().playbackR
 # 	↩ bs[0].prop`playbackRate` }
 # def(window,'rate') || def(window,'rate', => rate_el().ι, ι isa 0 => rate_el().ι = ι)
 
-when_at ← [ ,'scholtek.com','xkcd.com','egscomics.com','strongfemaleprotagonist.com','smbc-comics.com','kongregate.com','gunnerkrigg.com' ]
+when_at ← [ ,'scholtek.com','xkcd.com','egscomics.com','strongfemaleprotagonist.com','smbc-comics.com','kongregate.com','gunnerkrigg.com','konggames.com' ]
 host2 ← location.host.split('.').slice(-2).join('.')
 if( when_at.some(ι=> host2===ι) )
 	css('* { image-rendering:pixelated; }')
