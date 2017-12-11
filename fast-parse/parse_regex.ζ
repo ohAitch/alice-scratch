@@ -36,13 +36,15 @@ Regex ← (=>{
 		,Escape
 		,P('.').map(=> $(/[^\n\r\u2028\u2029]/u))
 		,P(['(?:',Regex,')']).map(..1)
-		,P(['(?!',Regex,')']).map(..1).R`!`
-		,P(['(?=',Regex,')']).map(..1).R`!`.R`!`
+		# ! evidently these four are atomic, which i didn't know
+		# atomic ← ι=> re`(?=(…${ι}))\1`
+		,P(['(?=',Regex,')']).map(..1).R`not`.R`not`
+		,P(['(?!',Regex,')']).map(..1).R`not`
 		,P(['(?<=',Regex,')']).map(..1).R`behind`
-		,P(['(?<!',Regex,')']).map(..1).R`behind`.R`!`
+		,P(['(?<!',Regex,')']).map(..1).R`behind`.R`not`
 		,P(['(',Regex,')']).map(..1).R`capture`
 		,P(['[' ,/\^?/ ,(=>{ t ← P.|([ Set_Escape,/[^\]]/ ]) ;↩ P.|([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]) ,t ]).* })() ,']'])
-			.map(([ˣ,not,ι,ʸ])=>{ r ← R(`|`,ι.map(ι=> Tarr(ι)? R(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? R(`any`,∅) : R(`seq`,[ R(`!`,r) ,R(`any`,∅) ]) ;↩ r })
+			.map(([ˣ,not,ι,ʸ])=>{ r ← R(`¦`,ι.map(ι=> Tarr(ι)? R(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? R(`any`,∅) : R(`seq`,[ R(`not`,r) ,R(`any`,∅) ]) ;↩ r })
 		,P(/[$^]/).R`^$`
 		,/[^)]/
 		])
@@ -50,16 +52,28 @@ Regex ← (=>{
 		if(! rep ) ↩ ι
 		for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (=>{ [ˣ,a,two,b] ← ι ;↩ [a|0,b? b|0 : two? ∞ : a|0] })()
 		↩ R(`×` ,∅)…← ({ ,ι ,for:for_(rep[0]) ,greedy:!rep[1] }) })
-	Infix ← Postfix.*?.R`seq`.sep_by('|').?.map(ι=> ι.‖===1? ι[0] : R(`|`,ι) )
+	Infix ← Postfix.*?.R`seq`.sep_by('|').?.map(ι=> ι.‖===1? ι[0] : R(`¦`,ι) )
 	Regex ← Infix
 	↩ Regex })()
 
-parse_regex ← ι=>{ flags ← ι.flags||'u' ;ι = ι.source||ι
-	if( !flags.re`u` ) ‽('can only parse unicode regex')
-	if( flags.re`y` ) ‽('no /y support yet') # should it be handled separately?
+parse_regex ← ι=>{ [flags,ι] ← Tstr(ι)? ['u',ι] : [ι.flags,ι.source]
+	
+
+# regexpu ← npm`regexpu-core@4.1.3`
+# regexpu('foo.bar','u')
+# regexpu('[\\u{1D306}-\\u{1D308}a-z]', 'u')
+# # (?:[a-z]|\uD834[\uDF06-\uDF08])
+# regexpu('[\\u{1D306}-\\u{1D308}a-z]', 'ui')
+# (?:[a-z\u017F\u212A]|\uD834[\uDF06-\uDF08])
+
+
+	if( !flags.re`u` ) ‽('only /u supported as yet')
 	if( flags.re`i` ) ‽('no /i support yet')
-	if( flags.re`g` ) ‽('/g should be handled separately')
-	# g should be part of the call, not the regex (split no care, search no care, replace care simple, match care simple, exec care weird)
+
+	if( flags.re`y` ) ‽('/y is a caller thing')
+	if( flags.re`g` ) ‽('/g is a caller thing')
+	# g should be part of the call, not the regex (split no care, search no care, replace,match care simple, exec care weird) ,test idk
+	# y: match,exec care simple ;split,search,replace,test idk
 
 	ι = Regex.parse(ι)
 	walk_regex(ι,ι=> ι.≈`^$` && flags.re`m` &&( ι.ι += 'm' ) )
@@ -67,24 +81,24 @@ parse_regex ← ι=>{ flags ← ι.flags||'u' ;ι = ι.source||ι
 
 normalize_to_axioms_regex ← ι=> walk_regex(ι,(ι,{ifΔ!})=>{
 	# these seem redundant. why?
-	is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`|` || ι.≈`seq`) && ι.ι.every(is_null) ) || ( ι.≈`!` && is_bottom(ι.ι) )
-	is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`|` && ι.ι.every(is_bottom) ) || ( ι.≈`seq` && ι.ι.some(is_bottom) ) || ( ι.≈`!` && is_null(ι.ι) )
+	is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`¦` || ι.≈`seq`) && ι.ι.every(is_null) ) || ( ι.≈`not` && is_bottom(ι.ι) )
+	is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`¦` && ι.ι.every(is_bottom) ) || ( ι.≈`seq` && ι.ι.some(is_bottom) ) || ( ι.≈`not` && is_null(ι.ι) )
 
-	is_1not ← ι=> Tstr(ι)? ✗ : ι.≈`seq` && ι.ι.‖===2 && ι.ι[0].≈ && ι.ι[0].≈`!` && ι.ι[1].≈ && ι.ι[1].≈`any`
+	is_1not ← ι=> Tstr(ι)? ✗ : ι.≈`seq` && ι.ι.‖===2 && ι.ι[0].≈ && ι.ι[0].≈`not` && ι.ι[1].≈ && ι.ι[1].≈`any`
 	ι_1not ← .ι[0].ι
 
 	if( is_1not(ι) && is_1not(ι_1not(ι)) ){
 		ι = ι_1not(ι_1not(ι))
 		# if( length(ι)===1 ) ↩ ι ;else
-		↩ R(`seq`,[ R(`!`,R(`!`,ι)) ,R(`any`,∅) ])
+		↩ R(`seq`,[ R(`not`,R(`not`,ι)) ,R(`any`,∅) ])
 		}
 
 	if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,_.isEqual )
 
-	if( (ι.≈`|`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
+	if( (ι.≈`¦`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
 
 	if( is_null(ι) ) ↩ R(`seq`,[])
-	# if( is_bottom(ι) ) ↩ R(`!`,R(`seq`,[]))
+	# if( is_bottom(ι) ) ↩ R(`not`,R(`seq`,[]))
 
 	if( ι.≈`^$` ) ↩ $({ ,'^':'(?<![^])' ,'$':'(?![^])' ,'^m':'(?<![^\n\r])' ,'$m':'(?![^\n\r])' }[ι.ι])
 	↩ ι })
@@ -97,20 +111,25 @@ $ ← ι=>{ ι= ι |>(𐅋𐅝𐅃𐅃𐅮) ;↩ _l.cloneDeep(ι) …← ({tag:�
 # t ← { Regex,parse_regex,normalize_to_axioms_regex }
 # exports …← (t)
 
+
+𐅋𐅩𐅫𐅫𐅪 ← .map(.filter(ι=>ι!==∅).join(''))
 P_ify ← ι=> walk_regex(ι,ι⇒
-	: ι.≈`|`? P.|(ι.ι)
+	: ι.≈`¦`? P.|(ι.ι)
 	: ι.≈`⋯`? P.⋯(…ι.ι)
 	: ι.≈`any`? P.any1
-	: ι.≈`!`? P.!(ι.ι)
-	: ι.≈`×`? P(ι.ι).×(ι.for,ι.greedy) .map(.join(''))
-	: ι.≈`seq`? P(ι.ι) .map(.join(''))
-	# backref
-	# behind
-	# capture
+	: ι.≈`not`? ι.ι.not
+	: ι.≈`×`? P(ι.ι).×(ι.for,ι.greedy) |>(𐅋𐅩𐅫𐅫𐅪)
+	: ι.≈`seq`? P(ι.ι) |>(𐅋𐅩𐅫𐅫𐅪)
+	# backref: P(result of a previous capture)
+	# behind: reverse this parser and proceed in reverse
+	# capture: index the captures found in the regex during the regex parsing. return an array with the match results. implicit capture around the entire regex.
 	: ‽(ι.tag) )
 
 ################################################################################
 module.if_main_do(=>{
+
+# _log ← =>∅
+_log ← cn.log
 
 ;[
 	,/(?:)(?!)(?:(|))(|)/u
@@ -121,17 +140,20 @@ module.if_main_do(=>{
 	,/(?:\\[^]|(?!`|\$\{)[^])+/u
 	,/(?=a|b)[^a]/u
 	,/[^]\B[\d][^\D]/u
-].forEach(ι=>cn.log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
+].forEach(ι=>_log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
 
 ;[
 	,[ /[^]*?(?:#!.*)$/um ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!.*\n/u ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!/u ,' #!' ]
 ].forEach(([ι,test])=>{
+	_log(ι)
 	ast ← $0(ι)
+	_log('=',ast)
 	p ← P_ify(ast)
-	# cn.log( ι,'\n=',ast,'\n=',p,'\nusing:',[test],'\n' )
-	cn.log( ι,'\n=',ast,'\n=',p,'\nusing:',[test],'\n',[p.exec0(test)],'\n' )
+	_log('=',p)
+	_log('using:',[test])
+	_log('=',[p.exec0(test)])
 	})
 
 })

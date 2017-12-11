@@ -1,6 +1,6 @@
 {
   "name": "zeta-lang",
-  "version": "0.12.1537",
+  "version": "0.12.1547",
   "description": "simple js utility library",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {"preinstall": "ln -sf it.js .bin/ζλ", "postinstall": "./postinstall.sh"},

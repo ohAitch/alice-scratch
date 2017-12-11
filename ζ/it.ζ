@@ -51,7 +51,7 @@ is_l ← [
 	,['Buffer',Buffer.isBuffer]
 	# , ['Error',ι=> Object.prototype.toString.call(ι)==='[object Error]' || ι instanceof Error]
 	,… ['Error','String','Boolean','Number'].map(ty=> [ty,ι=> Object.prototype.toString.call(ι)==='[object '+ty+']'])
-	,… (!b_util? [] : ['ArrayBuffer','DataView','Date','Map','MapIterator','Promise','RegExp','Set','SetIterator','TypedArray'].map(ι=> [ι,x=> b_util['is'+ι](x)]) )
+	,… (!b_util? [] : ['AnyArrayBuffer','DataView','Date','Map','MapIterator','Promise','RegExp','Set','SetIterator','TypedArray'].map(ι=> [ι,eval(`ι=> b_util.is${ι}(ι)`)]) )
 	]
 # would like to be using ∈ instead
 Object.assign(T,_u(is_l).object(),{
@@ -244,10 +244,13 @@ if( require.extensions && !require.extensions['.ζ'] )(=>{
 #################################### prelude ###################################
 E.protos = λ*(ι){ for(;!( ι===null || ι===∅ ) ;ι = Object.getPrototypeOf(ι)) yield ι }
 buf36 ← lazy_fn(=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode)
-E.simple_flesh = ι⇒
-	: Tfun(ι)? T(ι)+ι
-	: JSON.stringify(ι, (i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_u.keys(ι)().sort().forEach(i=> r[i]=ι[i]) ;↩ r } })
-E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> buf36(ι).slice(-12)) ;𐅜𐅪𐅫𐅪𐅃←; # best hash is murmurhash.v3.128
+E.simple_flesh = ι=>{
+	if( Tfun(ι) )↩ T(ι)+ι
+	t ← [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_u.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;↩ r } } ]
+	# try{
+	↩ JSON.stringify(…t) }
+	# }catch(e){ if( e.message==='Converting circular structure to JSON' )↩ npm`circular-json@0.4.0`.stringify(ι) ;throw e } }
+E.simple_hash = ι=> (𐅜𐅪𐅫𐅪𐅃||(𐅜𐅪𐅫𐅪𐅃= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> ('0'.×(12)+buf36(ι)).slice(-12)) ;𐅜𐅪𐅫𐅪𐅃←; # best hash is murmurhash.v3.128
 
 memo_frp ← (names,within,f)=>{
 	dir ← φ`~/file/.cache/memo_frp/${names}`
@@ -284,14 +287,13 @@ _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	↩ require(final) }
 E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;𐅪𐅰 ← memoize_proc(_npm) # such a hack. takes 300ns because of the template string +='' hack ;80ns without
 
-
 E.unicode_names = ι=> […ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (=>{
 		unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _u.values(npm('unicode@0.6.1/category/'+ι)) )
 		↩ unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 		})() ) )[ord(ι)]).X).join('') ;𐅩𐅩𐅩𐅝𐅋←;
 
-regex_parse ← lazy_fn(=>{t←; # status: output format unrefined
+E.regex_parse_0 = lazy_fn(=>{t←; # status: output format unrefined
 	P ← require('./parsimmon2.js')
 	dehex ← ι=> chr(parseInt(ι,16))
 	ESCAPE ← P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex) ,P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex) ,P(/u([0-9a-fA-F]{4})/,1).map(dehex) ,P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
@@ -310,7 +312,7 @@ regex_parse ← lazy_fn(=>{t←; # status: output format unrefined
 		]).map(([ι,for_])=> !for_? ι : {T:'times' ,ι ,for:for_} )
 	s2 ← P.alt( P('^').T`begin` ,P('$').T`end` ,TIMES )
 	OR_or_SEQ ← P.sep_by(s2.many().T`seq` ,'|').map(ι=> ι.‖ > 1? P.T('or',ι) : ι[0])
-	# t1 ← regex_parse(/^(foo)(?:bep){2,7}\baz(?:\\b.ar|[a-c-e()}][^\s]|b|baz(?=gremlin)(?!groblem)|)*/i)
+	# t1 ← regex_parse_0(/^(foo)(?:bep){2,7}\baz(?:\\b.ar|[a-c-e()}][^\s]|b|baz(?=gremlin)(?!groblem)|)*/i)
 	↩ ι⇒ {ι:OR_or_SEQ.parse(ι.source) ,flags:ι.flags} })
 E.applescript = {
 	parse: lazy_fn(=>{
@@ -423,7 +425,11 @@ E.seq = ι=>{
 	else if( !ι.next ) r.ι = ι.@@iterator()
 	else r.ι = ι
 	↩ r }
-seq.prototype = { ,ι:∅ ,i:∅ ,l:∅ } # ,map(){} ,'map…':λ(){} ,fold(){} ,×(){} ,filter(){} ,pin(){} ,find_(){} ,slice(){} ,'‖':λ(){} ,some(){} ,every(){}
+seq.prototype = {
+	,ι:∅ ,i:∅ ,l:∅
+	,map:λ*(f){ for(t← of @.ι) yield f(t) }
+	# ,'map…':λ(){} ,fold(){} ,×(){} ,filter(){} ,pin(){} ,find_(){} ,slice(){} ,'‖':λ(){} ,some(){} ,every(){}
+	}
 seq.prototype‘.next_ι .get= λ(){↩ @.ι.next().value }
 seq.prototype‘.next_ιι .get= λ(){ t ← @.ι.next() ;if( t.done )↩ ;t = t.value ;t===∅ && ‽ ;↩ t }
 seq.prototype‘.clone .get= λ(){ t← seq(@.l) ;t.i= @.i ;↩ t }
@@ -431,7 +437,8 @@ seq.prototype‘.clone .get= λ(){ t← seq(@.l) ;t.i= @.i ;↩ t }
 # Object.getOwnPropertyDescriptors([…protos(λ*(){}())][2])
 # […protos(new Set())].map(Object.getOwnPropertyDescriptors)
 # […protos(new Set().@@iterator())].map(Object.getOwnPropertyDescriptors)
-# https://www.npmjs.com/package/wu does a lot of this too but i dont think i want it
+# ok,,,, the cloneability property desired here is fundamentally impossible
+# yay
 
 E.⋯ = ι=> _u.range(ι)
 assign_properties_in_E_informal({
@@ -496,7 +503,7 @@ assign_properties_in_E_informal({
 ,'Array.prototype.join2':λ(ι){ r ← [] ;for(t← of @) r.push(t,ι) ;r.pop() ;↩ r }
 # ,'Set.prototype.@@iterator':Set.prototype.values
 # ,'Map.prototype.@@iterator':Map.prototype.entries
-,'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse(@)) }
+,'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse_0(@)) }
 ,'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i ;↩ @.exec(ι) }
 
 ,'Promise.prototype.status':{ ,writable:✓ ,get(){get←;
@@ -566,7 +573,7 @@ assign_properties_in_E_informal({
 })
 
 E.schema = (=>{
-	sc_merge ← λ(a,b){ak ← _u.keys(a) ;bk ← _u.keys(b) ;bk.-(ak).forEach(k=> a[k] = b[k]) ;ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]) ;↩ a }
+	sc_merge ← λ(a,b){ ak ← _u.keys(a) ;bk ← _u.keys(b) ;bk.-(ak).forEach(k=> a[k] = b[k]) ;ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]) ;↩ a }
 	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _u.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	})()
 
