@@ -22,11 +22,12 @@ Regex ← (=>{
 		,P(/c([A-Z])/).map(ι=> chr( ord(ι[1]) - ord('A') + 1 ))
 		,P(/[trnvf0]/).map(ι⇒ {t:'\t',r:'\r',n:'\n',v:'\v',f:'\f',0:'\0'}[ι])
 		,P(/[dDwWsSbB]/).map(ι=> $({
-			,d:/[0-9]/u
-			,w:/[A-Za-z0-9_]/u
-			,s:/[ \f\n\r\t\v\xa0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/u
+			,d:/[0-9]/
+			# this will send unintended modes
+			,w:/[A-Za-z0-9_]/
+			,s:/[ \f\n\r\t\v\xa0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/
 			,b:String.raw`(?<=\w)(?!\w)|(?<!\w)(?=\w)`
-			,D:/[^\d]/u ,W:/[^\w]/u ,S:/[^\s]/u ,B:/(?!\b)/u
+			,D:/[^\d]/ ,W:/[^\w]/ ,S:/[^\s]/ ,B:/(?!\b)/
 			}[ι]))
 		,P(/[1-9][0-9]*/).map(ι=> R(`backref`,ι|0) )
 		,/[^]/
@@ -34,7 +35,7 @@ Regex ← (=>{
 	Set_Escape ← P.|([ P('\\b').map(=>'\b') ,Escape ])
 	Unit ← P.|([
 		,Escape
-		,P('.').map(=> $(/[^\n\r\u2028\u2029]/u))
+		,P('.').map(=> $(/[^\n\r\u2028\u2029]/))
 		,P(['(?:',Regex,')']).map(..1)
 		# ! evidently these four are atomic, which i didn't know
 		# atomic ← ι=> re`(?=(…${ι}))\1`
@@ -56,24 +57,16 @@ Regex ← (=>{
 	Regex ← Infix
 	↩ Regex })()
 
-parse_regex ← ι=>{ [flags,ι] ← Tstr(ι)? ['u',ι] : [ι.flags,ι.source]
-	
-
-# regexpu ← npm`regexpu-core@4.1.3`
-# regexpu('foo.bar','u')
-# regexpu('[\\u{1D306}-\\u{1D308}a-z]', 'u')
-# # (?:[a-z]|\uD834[\uDF06-\uDF08])
-# regexpu('[\\u{1D306}-\\u{1D308}a-z]', 'ui')
-# (?:[a-z\u017F\u212A]|\uD834[\uDF06-\uDF08])
-
-
-	if( !flags.re`u` ) ‽('only /u supported as yet')
-	if( flags.re`i` ) ‽('no /i support yet')
-
+regexpu ← npm`regexpu-core@4.1.3`
+parse_regex ← ι=>{ [flags,ι] ← Tstr(ι)? ['',ι] : [ι.flags,ι.source]
 	if( flags.re`y` ) ‽('/y is a caller thing')
 	if( flags.re`g` ) ‽('/g is a caller thing')
 	# g should be part of the call, not the regex (split no care, search no care, replace,match care simple, exec care weird) ,test idk
 	# y: match,exec care simple ;split,search,replace,test idk
+
+	if( flags.re`i` ) ‽('no /i support yet')
+	flags.re`u` &&( ι = regexpu(ι,flags) )
+
 
 	ι = Regex.parse(ι)
 	walk_regex(ι,ι=> ι.≈`^$` && flags.re`m` &&( ι.ι += 'm' ) )
@@ -122,6 +115,8 @@ P_ify ← ι=> walk_regex(ι,ι⇒
 	: ι.≈`seq`? P(ι.ι) |>(𐅋𐅩𐅫𐅫𐅪)
 	# backref: P(result of a previous capture)
 	# behind: reverse this parser and proceed in reverse
+		# ‡ needs parser.ζ support
+		# nested behind seems to be implemented as noop
 	# capture: index the captures found in the regex during the regex parsing. return an array with the match results. implicit capture around the entire regex.
 	: ‽(ι.tag) )
 
@@ -143,7 +138,7 @@ _log ← cn.log
 ].forEach(ι=>_log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
 
 ;[
-	,[ /[^]*?(?:#!.*)$/um ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
+	,[ /[^]*?(?:#!.*)$/m ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!.*\n/u ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!/u ,' #!' ]
 ].forEach(([ι,test])=>{

@@ -1,4 +1,5 @@
 # a parser is a function. typically: from a string. to a mostly ordered tree. taking non-overlapping substrings to tree nodes. mostly monotonic.
+# this is a string parser
 
 ############ entry ###########
 P0 ← (tag,ι)=> Object.create(P.prototype) …← ({tag},ι)
@@ -10,17 +11,15 @@ P ← module.exports = ι⇒
 	: T.RegExp(ι)? _regex_native(ι)
 	: ‽(ι)
 P.prototype = Tag()
-P.prototype.exec0 = λ(in_){↩ seq( seq( @._(in_,0) ).map(.ι) ).next_ι }
+P.prototype.exec0 = λ(in_){ t ← seq( seq( @._(in_,0) ).map(.ι) ).next_ι ;↩ t===P∅? ∅ : t }
 P.prototype.parse = λ(in_){↩ @.skip(/$/) .exec0(in_) }
 
 ######### app prelude ########
 win ← (i,ι)⇒ { ,span_to:i ,ι }
+P∅ ← Symbol('P∅_lose')
+‡ is this the right way to do backtrack prevention?
 
-###### root incl string ######
-_graph_thunk ← f=> P0('graph_thunk',{
-	,ι:f
-	,_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ) ;↩ (0,@.ι)._(in_,i) }
-	})
+############ root ############
 _data ← ι=> P0('data',{
 	,ι
 	,_:λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
@@ -31,53 +30,37 @@ _seq ← ι=> P0('seq',{
 	})
 	𐅨𐅂𐅫𐅦𐅂 ← λ*(in_,i,pₛ,pᵢ){
 		if( pᵢ===pₛ.‖ ) yield win(i,[]) ;else
-			for(ι← of pₛ[pᵢ]._(in_,i))
-				for(b← of 𐅨𐅂𐅫𐅦𐅂(in_,ι.span_to,pₛ,pᵢ+1) ) # rest
-					yield win(b.span_to,[ι.ι,…b.ι]) }
+			for(ι← of pₛ[pᵢ]._(in_,i)) {
+				if( ι===P∅ ) ↩ yield ι
+				for(b← of 𐅨𐅂𐅫𐅦𐅂(in_,ι.span_to,pₛ,pᵢ+1) ) { # rest
+					if( b===P∅ ) ↩ yield b
+					yield win(b.span_to,[ι.ι,…b.ι]) } } }
 P.| = ι=> P0('¦',{
 	,ι:ι.map(P.X)
 	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
 	})
 P.prototype‘.not .get= λ(){↩ P0('not',{
 	,ι:@
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ ;yield win(i,∅) }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ t===P∅? yield win(i,∅) : ∅ ;yield win(i,∅) }
 	}) }
 P.prototype.map = λ(f){↩ P0('map',{
 	,ι:@ ,f
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield win(t.span_to,@.f(t.ι)) }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield t===P∅? t : win(t.span_to,@.f(t.ι)) }
 	}) }
 
-########### useful ###########
+############ extra ###########
+_graph_thunk ← f=> P0('graph_thunk',{
+	,ι:f
+	,_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ) ;↩ (0,@.ι)._(in_,i) }
+	})
 P.prototype.× = λ(for_,greedy=✓){↩ P0('×',{
 	,ι:@ ,for_ ,greedy
 	,_:λ*(in_,i){
 		if( !@.for_[1] ) ↩ yield win(i,[])
 		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.greedy) ]).map(([x,xs])=> xs? [x,…xs] : [x] )
-		yield* ( @.for_[0]? rest : P.|(@.greedy? [rest,P.return([])] : [P.return([]),rest]) )._(in_,i)
+		yield* ( @.for_[0]? rest : P.|(@.greedy? [rest,P([])] : [P([]),rest]) )._(in_,i)
 		}
 	}) }
-
-_regex_native ← ι=> P0('regex',{
-	,ι
-	,_:λ*(in_,i){t←; @.ι.flags.replace(/[muy]/g,'') && ‽ ;if( t=@.ι.u.y.exec_at(in_,i) ) yield win( i+t[0].‖ ,t.‖===1? t[0] : t.slice() ) }
-	})
-
-
-# additional functions:
-# 	⋯
-# 	is_word_char
-# 	_regex_native
-# but i want to optimize parsers
-# um
-
-
-P.⋯ = (a,b)=> P0('⋯',{
-	,a ,b
-	,_:λ*(in_,i){ ι ← in_[i] ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield win(i+1,ι) }
-	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
-	})
-
-########## composite #########
 P.prototype‘['?'] .get= λ(){↩ @.×([0,1]).map(..0) }
 P.prototype‘['*'] .get= λ(){↩ @.×([0,∞]) }
 P.prototype‘['+'] .get= λ(){↩ @.×([1,∞]) }
@@ -88,13 +71,33 @@ P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
 P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
 P.prototype.sep_by = λ(sep){↩ P([ ,@ ,P([sep,@]).map(..1).* ]).map(([ι,ιs])=> [ι,…ιs]) }
 
-######### discard me #########
+########## fast path #########
+win1u ← (in_,i)=>{ t ← chr(ord(in_,i)) ;↩ win(i+t.‖,t) }
+
+P.⋯ = (a,b)=> P0('⋯',{
+	,a ,b
+	,_:λ*(in_,i){ ι ← ord(in_,i) ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield win(i+1,ι) }
+	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
+	})
+_regex_native ← ι=> P0('regex',{
+	,ι
+	,_:λ*(in_,i){t←; @.ι.flags.replace(/[muy]/g,'') && ‽ ;if( t=@.ι.u.y.exec_at(in_,i) ) yield win( i+t[0].‖ ,t.‖===1? t[0] : t.slice() ) }
+	})
+P.unicode_category = cat=> P0('cat',{
+	,cat
+	,_:λ*(in_,i){ if( i<in_.‖ && 𐅪𐅝𐅭𐅩𐅞(@.cat,ord(in_,i)) ) yield win1u(in_,i) }
+	})
+	𐅪𐅝𐅭𐅩𐅞 ← memoize_persist((cat,ι)=> memoize_persist(cat=>
+		_u(npm`unicode@10.0.0/category`)
+		.filter((ˣ,type)=> type.re`^…${cat}$`)
+		.map…(ι=> _.keys(ι).map(ι=> ι|0) )
+		._.sortBy()
+		)(cat.source).includes(ord(ι)) )
 P.any1 = P0('any1',{
 	,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) }
 	})
-P.return = ι=> P0('return',{
-	,ι
-	,_:λ*(in_,i){ yield win(i,@.ι) }
+P.any1u = P0('any1u',{
+	,_:λ*(in_,i){ if( i<in_.‖ ) yield win1u(in_,i) }
 	})
 
 ################################################################################

@@ -9,8 +9,8 @@ log2 ← ι=> ι.map(ι=> ι.Δ && log('Δ',ι.Δ) )
 
 #################################### prelude ###################################
 on_off ← =>{ ι ← [] ;↩ { ,on(…a){ [ee,m,f]←a ;ee.on(m,f) ;ι.push(a) } ,off(){ ι.map(([ee,m,f])=> ee.removeListener(m,f)); ι = [] } } }
-Set.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
-Map.prototype.inspect = λ(d,opt){ [#Q @.inspect #Q].def({ value:∅ }); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
+Set.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ); delete @.inspect; ↩ r }
+Map.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗); r ← util.inspect(@,{}…←(opt)); @.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ); delete @.inspect; ↩ r }
 # vs ,you know
 # : Set { 'Type', 'Value' }
 # : new Set([ 'Type', 'Value' ])

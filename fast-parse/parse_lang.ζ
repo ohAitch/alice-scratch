@@ -1,18 +1,13 @@
 ##################################### note #####################################
 conceptual: word s refer to the procedure-local database of words we know about
 
-ex-parser items: ✓ ✗ null ∅ ‖
+modules: ✓ ✗ null ∅ ‖
 
 note; dont forget: frequently we want to [error if start and not finish] in a form, such as string
+backtrack prevention?
 
 P ← require_new(φ`~/code/scratch/fast-parse/parser`)
-
-is_word_unit ← memoize_persist(ι=> memoize_persist(=>
-	_u(npm`unicode@10.0.0/category`)
-	.filter((ˣ,type)=> type.re`^[LNPMS].$`)
-	.map…(ι=> _.keys(ι).map(ι=> ι|0) )
-	._.sortBy()
-	)().includes(ord(ι)) )
+is_word_unit ← P.unicode_category(/[LNPMS]./)
 
 # words create a tree structure
 # words are considered in a particular order

@@ -11,15 +11,15 @@ git merge "$from/master"
 git remote remove "$from"
 
 ############ split ###########
-split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_branch=kc8vu2z3a
-	# !!! this will destroy existing commit ids; use carefully
+split(){ repo=~/code/scratch ;subfolder='.archive' ;out=~/code/.archive ;tmp_branch=kc8vu2z3a
+	# !!! this will destroy existing commit ids ;use carefully
 	# may not work with unicode filenames
 	# may not work at all
 
 	cd "$repo"
 	git subtree split -P "$subfolder" -b "$tmp_branch"
 
-	mkdir -p "$out"; cd "$out"
+	mkdir -p "$out" ;cd "$out"
 	git init
 	git pull "$repo" "$tmp_branch"
 
@@ -40,32 +40,32 @@ split(){ repo=~/code/scratch; subfolder='.archive'; out=~/code/.archive; tmp_bra
 
 ############################## this is pretty cute #############################
 # ! color names randomly in ansi 12359abc
-gen2fn ← f=>{ t ← f(); ↩ => t.next().value }
+gen2fn ← f=>{ t ← f() ;↩ => t.next().value }
 # gen2fn ← f=> [#Q seq(f()).next_ι #Q].bind
 namegen ← gen2fn(λ*(){
 	long ← 'bekas cahlo caris cekla dedna dekik emiak eseik gazok gihza girim gumlu halbo hanka henuh kadut kagzi kakki kamor kehul kisar kizak kofur kohig lopra mesat mesip mezid motka nahso nalic nirsu omiac radil ratis repgi resra rukan siral sorzo tarak tilke zalsi zehaz zekhu zeluz zephu zifin zirez zohip zokmi zonri zusci'.split(' ')
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
-	to ← round((long.‖)/2); yield* _.shuffle([…long, …short.slice(0,to)]); yield* short.slice(to)
-	c ← {}; for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join(''); if (c[t]) continue; yield (c[t]=1, t)} })
+	to ← round((long.‖)/2) ;yield* _.shuffle([…long, …short.slice(0,to)]) ;yield* short.slice(to)
+	c ← {} ;for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join('') ;if (c[t]) continue ;yield (c[t]=1, t)} })
 
 ###################################### ocr #####################################
 # # used up: alice0meta@gmail.com
 # # 46 requests remaining on sparkleshy@gmail.com @ KqsDmZ77kW
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
-# ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt"; }
+# ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt" ;}
 tesseract ← npm`node-tesseract@0.2.7`
 φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
 
 ################################ jquery ish misc ###############################
-E.poll = λ(f,cb,time){ r←{}; (λ Λ(){ nxt ← => nxt=0; t ← f(nxt); r.done = !!t; t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })(); ↩ r }
+E.poll = λ(f,cb,time){ r←{} ;(λ Λ(){ nxt ← => nxt=0 ;t ← f(nxt) ;r.done = !!t ;t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })() ;↩ r }
 
 keyinfo ← λ(key){
 	t ← {'⇥':[9,'↓'],'↩':[13],'⎋':[27,'↑'],'←':[37,'↓'],'↑':[38,'↓'],'→':[39,'↓'],'↓':[40,'↓']}[key]||[]
 	↩ {code: t[0] || ord(key), $onfn: t[1]? {'↑':'keyup','↓':'keydown'}[t[1]] : 'keypress'} }
 $.prototype.on_key = λ(key,sel,cb0){ if( arguments.length===2 ){ [key,cb0,sel] = arguments }
-	# [key,…ns] ← key.split(/(?=\.\w)/); ns = ns.join('')
-	t ← keyinfo(key); @.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
+	# [key,…ns] ← key.split(/(?=\.\w)/) ;ns = ns.join('')
+	t ← keyinfo(key) ;@.on(t.$onfn/*+ns*/,sel,λ(e){if (e.which===t.code) ↩ cb0(e)}) }
 $.prototype.find_self = λ(sel){↩ @.find(sel).add(@.filter(sel))}
 
 ################################ de-duplication ################################
@@ -90,55 +90,55 @@ ax.set_zlabel('B Label')
 plt.show()
 
 ############################## sublime api things ##############################
-T ← 10; i←0; (=>{sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
+T ← 10 ;i←0 ;(=>{sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].begin(),"\n")`}).every(T)
 
 ##################################### life #####################################
 sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0,view.size()),${ι})`
 
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
-braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← []; for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]); ↩ t.join('')}).join('\n')}
+braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← [] ;for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]) ;↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4}; ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )); ↩ ι} # 115,46
-	else {X ← +ι.X; Y ← +ι.Y; ι = ι.ι
+	if (!ι) {ι ← {X:115*2,Y:46*4} ;ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )) ;↩ ι} # 115,46
+	else {X ← +ι.X ;Y ← +ι.Y ;ι = ι.ι
 		r ← Buffer.from(ι)
 		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
 		for(y←1;y<Y-1;y++) for(x←1;x<X-1;x++) {
 			n ← ι[(y-1)*X+x-1] + ι[(y-1)*X+x] + ι[(y-1)*X+x+1] + ι[y*X+x-1] + ι[y*X+x+1] + ι[(y+1)*X+x-1] + ι[(y+1)*X+x] + ι[(y+1)*X+x+1]
 			r[y*X+x] = (n===2? ι[y*X+x] : n===3? 1 : 0) }
 		for(y←0;y<Y;y+=Y-1) for(x←0;x<X;x++) {
-			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+			n ← 0 ;for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
 		for(x←0;x<X;x+=X-1) for(y←1;y<Y-1;y++) {
-			n ← 0; for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
+			n ← 0 ;for(xₒ←-1;xₒ<=1;xₒ++) for(yₒ←-1;yₒ<=1;yₒ++) n += get(x+xₒ,y+yₒ)
 			r[y*X+x] = (n===2? get(x,y) : n===3? 1 : 0) }
 		# for(y←0;y<Y;y++) for(x←0;x<X;x++) {
-		# 	n ← 0; for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
+		# 	n ← 0 ;for(yₒ←-1;yₒ<=1;yₒ++) for(xₒ←-1;xₒ<=1;xₒ++) n += get(x+xₒ,y+yₒ)
 		# 	r[y*X+x] = (n===3? 1 : n===4 && get(x,y)===1? 1 : 0) }
 		↩ {X,Y,ι:r} } }
-ι←; for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
+ι← ;for(;;) sublime_set_buffer(braille_2d(ι = life(ι)))
 
 ########################## bits. floating point bits. ##########################
-bit_reverse = λ(L,ι){r ← 0; for (i←0;i<L;i++){r = (r << 1) | (ι & 1); ι = ι >> 1}; ↩ r}
+bit_reverse = λ(L,ι){r ← 0 ;for (i←0;i<L;i++){r = (r << 1) | (ι & 1) ;ι = ι >> 1} ;↩ r}
 to_binary_LE ← ι=> […ι].map(ι=> ('00000000'+ι.toString(2)).slice(-8).split('').reverse().join('')).join('')
-q ← ι=>{ t ← Buffer(8); t.writeDoubleLE(ι,0); t = to_binary_LE(t); ↩ t.slice(0,52)+' '+t.slice(52,52+11)+' '+t[-1]+' = '+ι }
+q ← ι=>{ t ← Buffer(8) ;t.writeDoubleLE(ι,0) ;t = to_binary_LE(t) ;↩ t.slice(0,52)+' '+t.slice(52,52+11)+' '+t[-1]+' = '+ι }
 
 ################################### entities ###################################
 entities_encode ← .replace(/[&"'<>]/g,λ(ι){↩ {'&':'&amp;', '"':'&quot;', '\'':'&apos;', '<':'&lt;', '>':'&gt;'}[ι]})
-entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea'); t.innerHTML = ι; ↩ t.value}
+entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHtmlEntities.decode : λ(ι){t ← document.createElement('textarea') ;t.innerHTML = ι ;↩ t.value}
 
 ######################## fun with fraction approximation #######################
 wu ← npm`wu@2.1.0`
 Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.‖), f(ι,i,l) )) }
 gcd ← (a,b)=> b>0? gcd(b, a%b) : a
-reduced ← (a,b)=>{ t ← gcd(a,b); ↩ [a/t,b/t] }
+reduced ← (a,b)=>{ t ← gcd(a,b) ;↩ [a/t,b/t] }
 bits ← ι=> log2(ι[0]*ι[1])
-list_approx ← λ*(ι){ Rp ← (a,b)=> gcd(a,b)===1; a←1; b←1; for(;;){
-	while (a/b > ι) b++; if (Rp(a,b-1)) yield [a,b-1]; if (Rp(a,b)) yield [a,b]
-	while (a/b < ι) a++; if (Rp(a-1,b)) yield [a-1,b]; if (Rp(a,b)) yield [a,b]
+list_approx ← λ*(ι){ Rp ← (a,b)=> gcd(a,b)===1 ;a←1 ;b←1 ;for(;;){
+	while (a/b > ι) b++ ;if (Rp(a,b-1)) yield [a,b-1] ;if (Rp(a,b)) yield [a,b]
+	while (a/b < ι) a++ ;if (Rp(a-1,b)) yield [a-1,b] ;if (Rp(a,b)) yield [a,b]
 	} }
-error ← (ι,approx)=>{ t ← (approx[0]/approx[1]) / (ι[0]/ι[1]); ↩ 1 - (t<1? t : 1/t) }
+error ← (ι,approx)=>{ t ← (approx[0]/approx[1]) / (ι[0]/ι[1]) ;↩ 1 - (t<1? t : 1/t) }
 score ← (ι,approx)=> ((ι[0]*ι[1]) / (approx[0]*approx[1])) * (1/error(ι,approx))
-best_approx ← x=>{ size_x ← x[0]*x[1]; ↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
+best_approx ← x=>{ size_x ← x[0]*x[1] ;↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
 
 to ← 1e5
 bench(=> cn.log(
@@ -146,7 +146,7 @@ bench(=> cn.log(
 	) )
 
 ############################## real clipboard api ##############################
-osaᵥ`set x to clipboard info; the clipboard as (item 1 of item 2 of x)`
+osaᵥ`set x to clipboard info ;the clipboard as (item 1 of item 2 of x)`
 probably hammerspoon is better
 
 ############################### neat chrome apis ###############################
@@ -161,7 +161,7 @@ http://developer.chrome.com/extensions/windows
 
 ################################### databases ##################################
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← []; q ← ι=>{ r.push(…ι.items); if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1); else yes(r) }; f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← [] ;q ← ι=>{ r.push(…ι.items) ;if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1) ;else yes(r) } ;f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
@@ -172,10 +172,10 @@ youtube ← {
 		},
 	}
 
-# rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1"; }
+# rwby_dl(){ /usr/local/bin/youtube-dl -o ~/file/consume/video/RWBY/"$2.%(ext)s" "$1" ;}
 # rwby_dl W9wyWgvyp0s 's3e01 Round One'
 
-rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then( .map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅; t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/); ↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ) |>(Promise.all) )
+rwby_episodes ← youtube.playlist.from({ id:'PLUBVPK8x-XMhCW2fW7ZYlD9MHjvmT8IGK' }).then( .map(ι=> youtube.video.from({ id:ι.snippet.resourceId.videoId }).then(ι=>{ if (!ι) ↩ ∅ ;t ← ι.snippet.title.match(/^RWBY (?:Volume (\d+), )?Chapter (\d+): (.+)$/) ;↩ { id:ι.id, name: !t? ι.snippet.title : 's'+(t[1]||'1')+'e'+('00'+t[2]).slice(-2)+' '+t[3] } }) ) |>(Promise.all) )
 
 rHjUHnG7WOQ should be obviously type(youtube url)
 youtube.video.from({ id:'rHjUHnG7WOQ' })
@@ -194,7 +194,7 @@ def(E,'fi',=>{
 		zip ← '/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package'
 		sub ← 'Default.sublime-commands'
 		get ← =>{
-			shᵥ`rm -rf /tmp/mbq3p; mkdir /tmp/mbq3p; unzip ${zip} -d /tmp/mbq3p/Default`
+			shᵥ`rm -rf /tmp/mbq3p ;mkdir /tmp/mbq3p ;unzip ${zip} -d /tmp/mbq3p/Default`
 			t ← φ`/tmp/mbq3p/Default/${sub}`.text
 			# this json needs lenient parsing (sigh)
 			t = t.replace(/,(?=\s*\])/g,'')
@@ -231,8 +231,8 @@ make install
 E.__global = (=>{
 	anon_e4jlu ← ι=> catch_ι(=> ι.toString.constructor('return this')() )
 	id ← Symbol.for`⣱⣛⠃⣘⣾⣸⢎⠪⡩⠙`
-	↩ ι=>{t←;G←; if( Tprim(ι) ) ↩; if(t= ι[id] ) ↩ t; if(!(G= anon_e4jlu(ι) )) ↩; new Property(G.Object.prototype,id).def({ ,value:G ,configurable:✗ }); ↩ ι[id] } })()
-Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
+	↩ ι=>{t←;G← ;if( Tprim(ι) ) ↩ ;if(t= ι[id] ) ↩ t ;if(!(G= anon_e4jlu(ι) )) ↩ ;G.Object.prototype‘[id] .host= { ,value:G ,configurable:✗ } ;↩ ι[id] } })()
+Tarr_1 ← ι=>{ t ← __global(ι) ;↩ t && ι instanceof t.Array }
 ι=> __global(ι) && ι instanceof __global(ι)[T]     super mega slow
 ι=> ι instanceof Array                             faster or on par with builtin
 ι=> ι instanceof global.Array                      very slow??
@@ -245,16 +245,16 @@ Tarr_1 ← ι=>{ t ← __global(ι); ↩ t && ι instanceof t.Array }
 	# ! not robust to the process failing ! should use redis or something instead !
 	# ! wth is up with the { hrtime() …←> time } comparison
 	qu ← new priorityqueuejs((a,b)=> b.time-a.time)
-	P←; ensure ← =>{if (P) ↩; P = ✓; (λ Λ(){t←;
+	P← ;ensure ← =>{if (P) ↩ ;P = ✓ ;(λ Λ(){t←;
 		qu.size() === 0? (P = ✗) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
 		})() }
-	↩ λ(time){ t ← {time, ι:@}; ↩ time < hrtime()? (t.ι.in(), =>{}) : (qu.enq(t), ensure(), =>{t.ι = ∅}) } }),
+	↩ λ(time){ t ← {time, ι:@} ;↩ time < hrtime()? (t.ι.in(), =>{}) : (qu.enq(t), ensure(), =>{t.ι = ∅}) } }),
 E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
-E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png`; _sc(…a,t); _alert('uploading to imgur','...',1.5); ι ← _imgur(t); go_to(ι); p(googl(ι)+'#imgur'); shᵥ`rm ${t}` }
-del(){ for v in "$@"; do v="$(realpath "$v")"; ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v"; rm -f "$(dirname "$v")/.DS_STORE"; done; }
-im_pdf_to_png__bad() { for v in "$@"; do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png"; done; }
+E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png` ;_sc(…a,t) ;_alert('uploading to imgur','...',1.5) ;ι ← _imgur(t) ;go_to(ι) ;p(googl(ι)+'#imgur') ;shᵥ`rm ${t}` }
+del(){ for v in "$@" ;do v="$(realpath "$v")" ;ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v" ;rm -f "$(dirname "$v")/.DS_STORE" ;done ;}
+im_pdf_to_png__bad() { for v in "$@" ;do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png" ;done ;}
 convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
-ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4; }
+ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4 ;}
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 
 #### remaining work for φ ####
@@ -294,14 +294,14 @@ global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
 	;['assert','async_hooks','buffer','child_process','cluster','console','constants','crypto','dgram','dns','domain','events','fs','http','https','inspector','module','net','os','path','process','punycode','querystring','readline','repl','stream','string_decoder','timers','tls','tty','url','util','v8','vm','zlib'].map(ι=> node[ι] = require(ι))
 
 	deref ← .reduce((o,id)=>o[id],global)
-	locs ← (=>{ ιs ← []; id ← new Set(); v_to_id ← new WeakMap(); ENC ← JSON.stringify; ↩ { ,ιs(){↩ ιs} ,check(ι){
+	locs ← (=>{ ιs ← [] ;id ← new Set() ;v_to_id ← new WeakMap() ;ENC ← JSON.stringify ;↩ { ,ιs(){↩ ιs} ,check(ι){
 		v ← Object.getOwnPropertyDescriptor(deref(ι.slice(0,-1)),ι[ι.length-1]).value
 		if(!( id.has(ENC(ι)) || Tprim(v) || v_to_id.has(v) )){ ;ιs.push(ι) ;id.add(ENC(ι)) ;v_to_id.set(v,ENC(ι)) }
 		} } })()
 	locs.check(['global'])
 
 	search1 ← => locs.ιs().forEach(loc=> Object.getOwnPropertyNames(deref(loc)).forEach(id=> locs.check([…loc,id]) ) )
-	do{ t ← locs.ιs().length; search1() }while( t!==locs.ιs().length )
+	do{ t ← locs.ιs().length ;search1() }while( t!==locs.ιs().length )
 	console.log(JSON.stringify(locs.ιs()))
 	}})(${Tprim})`}`+'') )()
 
@@ -313,14 +313,14 @@ todo = todo._.sortBy(.‖)
 
 ################### this is silly and i shd probably toss it ###################
 enc_id ← (=>{
-	safe ← memoize_proc(ι=> catch_ι(=> (0,eval)(`'use strict'; var ${ι} = 0; 1`)))
+	safe ← memoize_proc(ι=> catch_ι(=> (0,eval)(`'use strict' ;var ${ι} = 0 ;1`)))
 	ESC_ ← ι=> […Buffer.from(ι).toString('hex')].map(ι=> […'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'][parseInt(ι,16)]).join('')
 	ESC ← ι=> (/^[♈-♓🔅🔆🔒‡⧫§]$/u.test(ι)? unicode_names : ESC_)(ι)
 	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : ESC(ι) ).join('') ) })()
 
 ##################################### with #####################################
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
-;(=>{ bar ← 5; ↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
+;(=>{ bar ← 5 ;↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
 
 ########################### todo - this is an odd log ##########################
 ι ← 'N3wyOHwxOTR8MHwwfDM4fDE5LjkxNjQ2NTgyNjE4OTQ3M3wwfDB8MnwwfDExMDl8MTQwfDB8M3wwfDF8OHwxfDB8MXwxfDF8MjI4fHRydWV8ZmFsc2V8dHJ1ZXwxNTEwOTcyMTc1NDkyfDB8MHx0cnVlfHRydWV8dHJ1ZXwxLDAsMCwwLDAsMCwwLDAsNSwxMCwxMCwyMCwyMCwxMSwxNiwyMCwxLDAsMCwwLDAsMSwwLDMsNiw1LDUsNSw1LDUsNSwxMHwtMSwtMSwtMSwtMSwtMSwtMSwtMSwtMQ==|YzI4NzJmYTg4MTZlY2IzNzhhNDU0MzI1ZmJjMjExMzc='
