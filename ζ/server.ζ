@@ -23,7 +23,7 @@ eval_in_worker ← (=>{
 	🏷busy ← new Set(); 🏷free ← new Set()
 	make ← => eval_in_new_worker('('+(=>{ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽; f(ι[1]) }) })
-		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `${Time()} shit, got ${e.stack} in ${ι}`; throw e } }) # ! todo: make this logging less stupid
+		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `${Time()} shit, got ${e.stack} in ${ι}`; ‽(e) } }) # ! todo: make this logging less stupid
 		wait()
 		♓.on('beforeExit',i=>{ ♓.send([['exit_',i],['unbusy']]); ♓.exitCode = 0; wait() })
 		♓_on_exits(i=>{ ♓.send([['exit_',i]]) })

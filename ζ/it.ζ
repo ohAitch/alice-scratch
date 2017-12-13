@@ -22,12 +22,10 @@ def ← (o,name,ι)=> def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(
 slot0 ← (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
 
 #################################### prelude ###################################
-__err_format ← (…a)=> Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' '))
-E.__err_format = __err_format # deprecated
-E.‼ = (…a)=>{ throw a.‖===1 && T.Error(a[0])? a[0] : __err_format(…a) }
+E.‽ = (…a)=>{ throw a.‖===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' ')) }
 E.catch_union = f=>{ try{ r ← f() ;bad ← T.Error(r) ;if( !bad) ↩ r }catch(e){ r ← e ;T.Error(r) || ‽ ;↩ r } ;bad && ‽ } # _l.attempt may be better
 E.catch_ι = f=>{ try{ r ← f() ;bad ← r===∅ ;if( !bad) ↩ r }catch(e){} ;bad && ‽ }
-E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ if( '__catchable' in e) ↩ e.__catchable ;else throw e } }
+E.catch_ = f=> λ(){ try{ ↩ f.apply(@,arguments) }catch(e){ '__catchable' in e || ‽(e) ;↩ e.__catchable } }
 E.return_ = ι=>{ throw {__catchable:ι} }
 
 E.T = ι=>{t←;
@@ -131,7 +129,7 @@ lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # takes a
 # 	↩ _u.zip( tok.map(ι=> code.slice(ι.start,ι.end)) ,tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) )._.flatten(✓).filter(ι=>ι) }
 # E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : ✗
 E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; 𐅜𐅦𐅩𐅝𐅃←; 𐅂𐅂𐅃𐅝𐅦←; 𐅨𐅂𐅫𐅯𐅃←; 𐅜𐅯𐅩𐅪𐅃←; 𐅝𐅩𐅭𐅪𐅃←; 𐅮𐅰𐅰𐅝𐅭←; 𐅭𐅦𐅫𐅩𐅝←; 𐅦𐅞𐅃𐅝𐅪←; 𐅦𐅪𐅭𐅯𐅭←; 𐅪𐅯𐅯𐅯𐅦←;
-	word_extra ← re`♈-♓🔅🔆‡⧫§▣⋯‼`
+	word_extra ← re`♈-♓🔅🔆‡⧫§▣⋯‽`
 	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿${word_extra}∞`
 	ζ_parse ← E.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
@@ -170,7 +168,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 		.replace(/∅/g,'undefined')
 		.replace(𐅜𐅯𐅩𐅪𐅃||(𐅜𐅯𐅩𐅪𐅃= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅯𐅮𐅦𐅬𐅂(__name(${ι})).ι=`) # an initial try ;probably .name inference needs another form
 		.replace(/‘lexical_env/g,`𐅯𐅮𐅦𐅬𐅂(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
-		.replace(/‽(?=(\(|`)?)/g,(ˣ,callp)=> `!λ(…a){throw Error(__err_format(…a))}${callp? `` : `('‽')`}` ) # deprecated
+		.replace(/‽(?!\(|`| = \(…a\)=>)/g,'‽()')
 		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(?=[ \t]*(;|of\b|in\b)?)`.g ),(ˣ,name,ws,eq0)=> 'var '+name+ws+(eq0?'':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
 		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
@@ -232,13 +230,13 @@ E.simple_flesh = ι=>{
 	t ← [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_u.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;↩ r } } ]
 	# try{
 	↩ JSON.stringify(…t) }
-	# }catch(e){ if( e.message==='Converting circular structure to JSON' )↩ npm`circular-json@0.4.0`.stringify(ι) ;throw e } }
+	# }catch(e){ e.message==='Converting circular structure to JSON' || ‽(e) ;↩ npm`circular-json@0.4.0`.stringify(ι) } }
 E.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> ('0'.×(12)+buf36(ι)).slice(-12)) ;𐅭𐅋𐅫𐅭𐅂←; # best hash is murmurhash.v3.128
 
 memo_frp ← (names,within,f)=>{
 	dir ← φ`~/file/.cache/memo_frp/${names}`
 	if( within ){
-		try{ t ← fs.readdirSync(dir+'') }catch(e){ if( !(e.code==='ENOENT')) throw e ;t ← [] }
+		try{ t ← fs.readdirSync(dir+'') }catch(e){ e.code==='ENOENT' || ‽(e) ;t ← [] }
 		now ← Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
 		if( t ) ↩ dir.φ(t).json2.ι }
 	a ← Time().iso ;ι ← f() ;b ← Time().iso
@@ -264,7 +262,7 @@ _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	abs_name ← => name+'@'+version
 	if(! version ){ sfx`ack` ;version = shᵥ`npm show ${ι} version`+'' ;↩ 'npm`'+abs_name()+'`' ;↩ }
 	cache ← φ`~/.npm/${name}/${version}` ;final ← cache.φ`/node_modules/${name}`+(sub||'')
-	try{ ↩ require(final) }catch(e){ if( !(e.code==="MODULE_NOT_FOUND")) throw e }
+	try{ ↩ require(final) }catch(e){ e.code==='MODULE_NOT_FOUND' || ‽(e) }
 	cache.BAD_exists() || shᵥ`cd ~ ;npm cache add ${abs_name()}`
 	a←;b←; (a=cache.φ`package.json`).ι = {,description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = ∅
 	↩ require(final) }
@@ -348,7 +346,7 @@ E.JSON_pretty = (ι,replacer)=>{
 			case 'boolean': case '[object Boolean]': case 'number': case '[object Number]': ↩ ι+''
 			case 'function': ↩ 'null'
 			default:
-				if( seen.indexOf(ι) !== -1) throw TypeError('Converting circular structure to JSON')
+				!seen.includes(ι) || ‽(TypeError('Converting circular structure to JSON'))
 				seen.push(ι)
 				if( Tarr(ι)) { [a,b] ← '[]' ;ι = ι.map(indent_show) ;for (i←0;i<ι.‖;i++) ι[i]===∅ && (ι[i] = 'null') }
 				else { [a,b] ← '{}' ;ι = _u.pairs(ι).filter(ι=> !(ι[1]===∅ || Tfun(ι[1]))).map(ι=> show(ι[0])+': '+indent_show(ι[1])) }

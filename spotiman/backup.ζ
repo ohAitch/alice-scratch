@@ -43,6 +43,6 @@ module.if_main_do((…a)=>{
 			.then(get_my_tracks).then(ι=>{ φ`~/file/.archive/spotify/${Time().ymdhms}.json`.ι = ι ;cn.log(APP,'backup done') })
 		} })
 
-# process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;throw e })
+# process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;‽(e) })
 
 # doesn't include any of the data about who owned the tags, aaa

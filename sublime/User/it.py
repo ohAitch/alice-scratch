@@ -65,7 +65,7 @@ class open_context(sublime_plugin.TextCommand):
 	def run(self,edit,type,focus=True,mouse=False):
 		view = self.view
 		if type == "github":
-			ζfresh_async('try{ go_to(github_url('+E(serialize(view))+'),{focus:'+E(focus)+'}) }catch(e){ if (e.human) hsᵥ`hs.alert(${e.human},4)`; else throw e }')
+			ζfresh_async('try{ go_to(github_url('+E(serialize(view))+'),{focus:'+E(focus)+'}) }catch(e){ e.human || ‽(e) ;hsᵥ`hs.alert(${e.human},4)` }')
 		elif type == "terminal":
 			ζ(""" here ← """+E(view.file_name())+"""; go_to('path', here? φ(here).φ`..`+'' : process.env.HOME, {focus:"""+E(focus)+""",in_app:'terminal'}) """)
 		elif type == "link":
