@@ -64,3 +64,24 @@ module.if_main_do(=>{
 	colors_to_tmTheme(P+'ὄνειρον.colors', P+'.bin/ὄνειρον.tmTheme')
 	sb_keyrc_to_sublime_keymap(P+'.sb-keyrc', P+'.bin/Default.sublime-keymap')
 	})
+
+############################# 𐅦𐅃𐅋𐅂𐅮 color generator ############################
+# cs ← [
+# 	,'#ff0000'
+# 	,'#00ff00'
+# 	,'#0000ff'
+# 	,'#00ffff'
+# 	,'#ff00ff'
+# 	,'#ffff00'
+# 	].map(color.X)
+# string_to_float ← (ι,αβ)=> […ι].map((ι,i)=> αβ.indexOf(ι) / αβ.‖^(i+1) ).reduce((a,b)=> a+b)
+# d ← ι=> string_to_float(ι,random_id.greek.αβ)
+# id ← ι=> '_'+d(ι).toString(16).replace('.','_')
+# c ← ι=> '#'+color.interpolate_0(cs,d(ι)).i.toString(16).padStart(8,'0').slice(0,-2)
+
+# αβ ← random_id.greek.αβ
+# αβ.map…(a=>{ t ← αβ.map(b=> a+b).map(ι=>[ ι,`${ι}[${αβ.join('')}]*` ]) ;↩ […t,[t[0][0],a]] })
+# # .map(([a,b])=> `    - { scope: '${id(a)}' ,match: '${b}' }`).line
+# .map(([a,b])=> `$fg bg ${c(a)}60 ${id(a)}`).line
+
+# ‡ todo: improve color quality

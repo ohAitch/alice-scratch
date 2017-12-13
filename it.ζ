@@ -12,12 +12,25 @@
 ⧫. regex_set ==> ι=>{
 	# ! low quality, scrap
 	ι = (ι+'').replace(/\n$/,'')
-	t←[]; […[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι); t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
-	x ← ι=>{ ι = chr(ι); ↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+	t←[] ;[…[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι) ;t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+	x ← ι=>{ ι = chr(ι) ;↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 	ι = t.map(ι=> ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) ).join('')
 	↩ ι }
 
+⧫. schema ==>{
+	sc_merge ← (a,b)=>{ ak ← _u.keys(a) ;bk ← _u.keys(b) ;bk.-(ak).forEach(k=> a[k] = b[k]) ;ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]) ;↩ a }
+	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _u.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
+	}
+
+
 ################################## data : time #################################
+
+################################# data : color #################################
+⧫. color ==>{
+	color ← npm`color@2.0.1`
+	color.interpolate_0 = (c,x)=>{ x *= c.‖; i ← x|0; r ← x-i; ↩ c[i%c.‖].mix(c[(i+1)%c.‖], 1-r) }
+	color.prototype‘.i .get= λ(){ ι ← @.rgb().color; ↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
+	↩ color }
 
 ############################## data : friend glue ##############################
 ⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _.values(ι)[0].revisions[0]['*'] )
@@ -49,7 +62,7 @@
 	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
 	E.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
-	net.Server.prototype‘.at .get= λ(){t←; ↩ @.𐅯𐅩𐅞𐅫𐅫||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅯𐅩𐅞𐅫𐅫||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
 	↩ E }
 
 ⧫. Π ==>{ ↩ ι⇒
@@ -60,7 +73,7 @@
 
 ############################### friend glue : ui ###############################
 ⧫. _electron__start_my ==>{
-	# ! requires modules using /usr/local/bin/node 's ABI; currently electron matches but this will break
+	# ! requires modules using /usr/local/bin/node 's ABI ;currently electron matches but this will break
 	start_el_app ← code=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
 		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})()`

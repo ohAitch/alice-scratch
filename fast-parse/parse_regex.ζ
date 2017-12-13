@@ -104,7 +104,6 @@ $ ← ι=>{ ι= ι |>(𐅋𐅝𐅃𐅃𐅮) ;↩ _l.cloneDeep(ι) …← ({tag:�
 # t ← { Regex,parse_regex,normalize_to_axioms_regex }
 # exports …← (t)
 
-
 𐅋𐅩𐅫𐅫𐅪 ← .map(.filter(ι=>ι!==∅).join(''))
 P_ify ← ι=> walk_regex(ι,ι⇒
 	: ι.≈`¦`? P.|(ι.ι)
@@ -151,4 +150,19 @@ _log ← cn.log
 	_log('=',[p.exec0(test)])
 	})
 
+t ← P.|([
+	,P.err_if_partial([ /'/,P(/([^]*?)'/).map(([ˣ,s])=> s) ])
+	,/[^]+/
+	]).catch(P.err_if_partial)
+cn.log('and',t.parse("'foobar'"))
+cn.log('and',t.parse("'foobar"))
+
 })
+
+################################### /u notes ###################################
+# Without the u flag, . matches any BMP symbol except line terminators. When the ES6 u flag is set, . matches astral symbols too.
+# with the u flag set, things like \a (where a is not an escape character) won’t be equivalent to a anymore.
+# with u, the string is parsed as code points, without, parsed as string indices
+# with u, negated char classes are for the full unicode range
+# without u, theyre just for ⋯0x10000
+# affects i for sure

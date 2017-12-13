@@ -11,13 +11,11 @@ P ← module.exports = ι⇒
 	: T.RegExp(ι)? _regex_native(ι)
 	: ‽(ι)
 P.prototype = Tag()
-P.prototype.exec0 = λ(in_){ t ← seq( seq( @._(in_,0) ).map(.ι) ).next_ι ;↩ t===P∅? ∅ : t }
+P.prototype.exec0 = λ(in_){↩ seq( seq( @._(in_,0) ).map(.ι) ).next_ι }
 P.prototype.parse = λ(in_){↩ @.skip(/$/) .exec0(in_) }
 
 ######### app prelude ########
 win ← (i,ι)⇒ { ,span_to:i ,ι }
-P∅ ← Symbol('P∅_lose')
-‡ is this the right way to do backtrack prevention?
 
 ############ root ############
 _data ← ι=> P0('data',{
@@ -30,22 +28,24 @@ _seq ← ι=> P0('seq',{
 	})
 	𐅨𐅂𐅫𐅦𐅂 ← λ*(in_,i,pₛ,pᵢ){
 		if( pᵢ===pₛ.‖ ) yield win(i,[]) ;else
-			for(ι← of pₛ[pᵢ]._(in_,i)) {
-				if( ι===P∅ ) ↩ yield ι
-				for(b← of 𐅨𐅂𐅫𐅦𐅂(in_,ι.span_to,pₛ,pᵢ+1) ) { # rest
-					if( b===P∅ ) ↩ yield b
-					yield win(b.span_to,[ι.ι,…b.ι]) } } }
+			for(ι← of pₛ[pᵢ]._(in_,i))
+				for(b← of 𐅨𐅂𐅫𐅦𐅂(in_,ι.span_to,pₛ,pᵢ+1) ) # rest
+					yield win(b.span_to,[ι.ι,…b.ι]) }
 P.| = ι=> P0('¦',{
 	,ι:ι.map(P.X)
 	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
 	})
 P.prototype‘.not .get= λ(){↩ P0('not',{
 	,ι:@
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ t===P∅? yield win(i,∅) : ∅ ;yield win(i,∅) }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ ;yield win(i,∅) }
 	}) }
 P.prototype.map = λ(f){↩ P0('map',{
 	,ι:@ ,f
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield t===P∅? t : win(t.span_to,@.f(t.ι)) }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield win(t.span_to,@.f(t.ι)) }
+	}) }
+P.prototype.catch = λ(f){↩ P0('catch',{
+	,ι:@ ,f
+	,_:λ*(in_,i){ ι ← @.ι._(in_,i) ;for(;;){ try{ t ← seq(ι).next_ιι ;if(! t )↩ ;yield t }catch(e){ @.f(e) } } }
 	}) }
 
 ############ extra ###########
@@ -70,6 +70,11 @@ P.prototype‘['+?'] .get= λ(){↩ @.×([1,∞],✗) }
 P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
 P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
 P.prototype.sep_by = λ(sep){↩ P([ ,@ ,P([sep,@]).map(..1).* ]).map(([ι,ιs])=> [ι,…ιs]) }
+
+P.err_if_partial = (e)⇒
+	: T.Error(e)? e===𐅮𐅦𐅨𐅝𐅃 || ‼(e)
+	: P([ e[0],e[1].? ]).map(([ˣ,ι])=> ι===∅? ‼(𐅮𐅦𐅨𐅝𐅃) : ι)
+	𐅮𐅦𐅨𐅝𐅃 ← Error()
 
 ########## fast path #########
 win1u ← (in_,i)=>{ t ← chr(ord(in_,i)) ;↩ win(i+t.‖,t) }
