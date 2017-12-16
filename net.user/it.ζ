@@ -111,7 +111,7 @@ if( at_url('*google.com') ){
 		$('body').append($('<svg style=";z-index:5000 ;position:absolute ;top:74px ;width:9px ;height:30px"><polygon points="0,0 0,9 9,9"></polygon><polygon points="0,9 9,9 9,21 0,21"></polygon><polygon points="0,30 0,21 9,21"></polygon></svg>'))
 		update ← ι=>{
 			t ← ι
-				.replace(/\B∈se\b/i,'(site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
+				.replace(/\B∈se\b/i,'(site:stackoverflow.com OR site:stackexchange.com OR site:mathoverflow.net OR site:serverfault.com OR site:superuser.com)')
 				.replace(/\B∈yc\b/i,'site:news.ycombinator.com')
 				.replace(/\B∈git\b/i,'site:github.com')
 				# .replace(/\B∈/i,'site:')

@@ -1,61 +1,57 @@
-##################################### note #####################################
-conceptual: word s refer to the procedure-local database of words we know about
-
-modules: ✓ ✗ null ∅ ‖
-
-note; dont forget: frequently we want to [error if start and not finish] in a form, such as string
-backtrack prevention?
-
 P ← require_new(φ`~/code/scratch/fast-parse/parser`)
-is_word_unit ← P.unicode_category(/[LNPMS]./)
+##################################### note #####################################
+# conceptual: word s refer to the procedure-local database of words we know about
+
+# modules: ✓ ✗ null ∅ ‖
 
 # words create a tree structure
 # words are considered in a particular order
 # it is almost as if words are parsed first via a lexer, but it is not quite
 
-parenless function calls? mb figure those out after you get this working. this is haard.
+# parenless function calls? mb figure those out after you get this working. this is haard.
 
-#################################### grammar ###################################
-that_inter_thing ← (ᛟ,ι)=> [ᛟ,P([ι,ᛟ]).*]
-infix ← ι=> [_,ι,_].join2(ᛟ₂)
-prefix ← ι=> [ι,ᛟ₁,_]
-ᛟ₁ ← /[ \t]*/
-ᛟ₂ ← /[ \t\n]*/
-ᛟ₃ ← /[ \t\n,]*/
-_ ← [
-	,/(['"])(((?!\1)[^\\]|\\.)*?\1)/
-	,[_,ᛟ₂,'.',ᛟ₁,P.|([word,string])]
-	,[_,ᛟ₂,'‘.',ᛟ₁,P.|([word,string])]
- 	,[_,ᛟ₁,'(',that_inter_thing(ᛟ₃,_),')']
-	,[_,'[',_,']'].join2(ᛟ₁)
-	,[_,'‘[',_,']'].join2(ᛟ₁)
+################################ grammar 0 flesh ###############################
+prefix ← (ι,f=ι=>ι)=> P([ι,ᛟ1,f(_)]).map(..2).Tag(ι)
+# free ← '◊'
+_s ← =>[
+	# ,[/(['"])(((?!\1)[^\\]|\\.)*?\1)/]
+	,[_,ᛟ2,'.',ᛟ1,_]
+	,[_,ᛟ2,'‘.',ᛟ1,_]
+ 	,[_,ᛟ1,'(',top,')']
+	,[_,'[',_,']'].join2(ᛟ1)
+	,[_,'‘[',_,']'].join2(ᛟ1)
 	,['^'].map(ι=> infix(ι) …← ({ right:✓ }) )
 	,['!','-'].map(prefix)
-	,['×','/'].map(infix)
-	,['+','-'].map(infix)
-	,['∪','∩'].map(infix)
-	,['…←'].map(infix)
-	,['=','≠','<','>','<=','>=','∈','∋'].map(infix)
-	,['&','|'].map(infix)
-	,['!>','|>'].map(infix)
-	,[_,'?',_,':',_].join2(ᛟ₂)
-	,['if',_,P(':').?,_,P.|([':','else']).?,_].join2(ᛟ₂)
+	,_2`× /`
+	,[ ,infix('+') ,[ P.|([ free,_ ]),ᛟ1,'-',ᛟ2,_ ] ]
+	,_2`∪ ∩`
+	,_2`…←`
+	,_2`= ≠ <= >= < > ∈ ∋`
+	,_2`& |`
+	,_2`!> |>`
+	,[_,'?',_,':',_].join2(ᛟ2)
+	,P([ 'if',_,P(':').?,_,P(/:|else/).?,_ ].join2(ᛟ2)).map(ι=>[ ι[2],ι[6],ι[10] ]).Tag`if`
+	# ,[word('if'),_,P(':').?,_,P.|([ ':',word('else') ]).?,_].join2(ᛟ2)
 	,['←','←!'].map(ι=> infix(ι) …← ({ right:✓ }) )
-	,['…','↩←'].map(prefix)
-	,['↩',ᛟ₁,_.?]
-	,[_,ᛟ₁,'⇒',ᛟ₂,_]
-	,[':'].map(infix)
-	,['()','[]','{}'].map(([a,b])=> [a,that_inter_thing(ᛟ₃,_),b])
-	,[ ['[',that_inter_thing(ᛟ₃,_),']']
-	,is_word_unit.+
-	]
+	,['…'].map(prefix)
+	,['↩',ᛟ1,_.?]
+	,[_,ᛟ1,'⇒',ᛟ2,_]
+	,_2`:`
+	# ,['()','[]','{}'].map(([a,b])=> [a,top,b])
+	# ,[P.unicode_category(/[LNPMS]./).+]
+	].map(ι=> ι.every(Tarr)? ι : [ι] )
 
-####################### btw i made a simple infix parser #######################
-# for:
-# E.Property = ∪( ,§`obj × id -> place`
-# 	,∋( §`-> 🔒 × hide` ,=> [✗,✓] )
-# 	,∋( §`-> host` ,(obj,id,place,🔒,hide)=> Set( Object.getOwnPropertyDescriptors(obj)[id], Object.getOwnPropertyDescriptor(obj,id), { ,configurable:!🔒 ,enumerable:!hide } …← (place) ).Just )
+################################ grammar 1 flesh ###############################
+leaf_prefixd ← P.|([
+	,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(([ˣ,ʸ,ι])=> ι) )
+	])
+_ ← P.|([
+	,leaf_prefixd
+	,P([ P.not(leaf_prefixd),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join('')).Tag`id`
+	]).catch(P.err_if_partial)
 
+############################### grammar -1 flesh ###############################
+# a simple infix parser
 P.build_op = (unit,op)=>{
 	# binary left: 1-2-3 = (1-2)-3  ;binary right: 1^2^3 = 1^(2^3)
 	# ,'2 center':p=> P([ p, P.seq(op,p).*.map(ι=> _(ι).flatten(✓)) ]).map(([a,op_bs])=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) )
@@ -65,15 +61,47 @@ P.build_op = (unit,op)=>{
 	_2R ← p=>{ r ← P(=> p.chain(a=> P.|([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ) ;↩ r }
 	↩ unit |>(_2L) |>(_1L) |>(_1R) }
 
-fn_wrap_lits ← f=> code=> code.eval_in_lexical_env('('+ζ_parse(code+'').map(ι=> ι.T==='shebang'? '' : ι.T==='string'||ι.T==='regex'? f(ι.ι) : ι ).join('')+')')
+# [ '.','×','+','->' ].fold(P.build_op,/[A-Za-z🔒ι]+/)
+# §`obj × id -> place`
+# §`-> 🔒 × hide`
+# §`-> host`
 
-§ ← (=>{
-	P ← require_new(φ`~/code/scratch/fast-parse/parsimmon.ζ`)
-	Any ← =>Any; Any = ‘lexical_env=>{
-		unit ← P.alt([ ,/[A-Za-z🔒ι]+/ ,P([ '[',Any,']' ]).map(ι=> ι[1]) ])
-		↩ [ '.','×','+','->' ].fold(P.build_op,unit) }
-		|> ( fn_wrap_lits(ι=> String.raw`P(${ι}).skip(/\s*/)`) )()
-	↩ ι=>{ι+=''
-		ι = Any.parse(ι)
-		Tarr(ι)
-		} })()
+################################### grammar 3 ##################################
+# ok this is cute but lets just hardcode a lexer and get on with it
+# hardcoded lexer + word prioritization (read time) (the way clojure does macros should be good enough)
+
+⧫. parse_lang ==>{
+
+γ.words = P(Set(
+	,sharp= P(Set(
+		,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2).Tag`string`
+		,P(/[ \t\n,]+/).map(ι=> ι.includes(',')? 3 : ι.includes('\n')? 2 : 1 ).Tag`space`
+		,RegExp(re(alt_ws`( ) [ ] { } . ‘ + - × / ^ * ∪ ∩ …← = ≠ <= >= < > ∈ ∋ & | !> |> ? : ← ←! ↩ ⇒`))
+		))
+	,RegExp(re(alt_ws`! …`))
+	,P([ P.not(sharp),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join(''))
+	)).* ;sharp←;
+
+id ← ι=> P.any1.filter(t=> t===ι)
+γ.trees = P(=>trees) ;trees = P(Set(
+	,… ['()round','[]square','{}curly'].map(ι=> P([ ,id(ι[0]),trees,id(ι[1]) ]).map(..1).Tag(ι.slice(2)))
+	,P.any1.filter(ι=> ! […'()[]{}'].includes(ι) )
+	)).*
+
+_2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
+ᛟ1 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=1 ).?
+ᛟ2 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=2 ).?
+ᛟ3 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=3 ).?
+# γ.ops = P(=>ops) ;ops =
+
+↩ ι=> [words,trees].fold((ι,p)=> p.parse(ι) ,ι) }
+
+;[
+	,"if 'handle' 5 : 6 7"
+	,"if 'handle' 5 : 6? 7:8"
+	,"yield'saddlepoint'"
+	,"↩ ['saddlepoint' [bogan]()]"
+	,"… ! ↩← 5"
+	,"…! ↩←"
+	]
+	.map(parse_lang.X)

@@ -6,7 +6,7 @@ file_extensions: [js,htc,ζ]
 first_line_match: ^#!/.*\b(node|js)$\n?
 scope: source.js
 variables:
-  identifier: '[_‡$‖♓§𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰[:alpha:]][_‡$‖♓§𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰[:alnum:]]*'
+  identifier: '[_‡$‖♓§[:alpha:]][_‡$‖♓§[:alnum:]]*'
   constant_identifier: '[[:upper:]][_$[:digit:][:upper:]]*\b'
   dollar_only_identifier: '\$(?![_$[:alnum:]])'
   dollar_identifier: '(\$)[_$[:alnum:]]+'
@@ -1490,7 +1490,7 @@ contexts:
         1: support.type.object.module.js
         2: punctuation.accessor.js
         3: support.type.object.module.js
-    - match: \b(global|GLOBAL|root|__dirname|__filename)\b
+    - match: \b(global|GLOBAL|γ|root|__dirname|__filename)\b
       scope: support.type.object.node.js
 
   object-property:

@@ -4,10 +4,12 @@ if still on sublime build 3154, my.zip is a replacement for sublime's builtin De
 
 # some commands
 root='/Applications/Sublime Text.app/Contents/MacOS/Packages'
-unzip "$root"/Default.sublime-package -d base
-‡ merge base and my, name it merge, delete all except base and merge
+unzip base.zip -d base
+unzip my.zip -d my
+unzip "$root/Theme - Default.sublime-package" -d theme
+‡ merge base into my, delete base
 cd base; zip ../base.zip *; cd ..; rm -r base
-cd merge; zip ../my.zip *; cd ..; rm -r merge
+cd my; zip ../my.zip *; cd ..; rm -r my
 cp my.zip "$root/"Default.sublime-package
 ‡ reboot sublime
 

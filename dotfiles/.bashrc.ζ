@@ -37,7 +37,7 @@ _pastebin_id ← => Π(yes=>
 E.pb.cant_pool = ✓
 
 E.ps2 = =>{
-	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← _(ιs).map(1)._.min(); t = t + (t < Time().i - 2*3600? 30*60 : 20); ↩ ιs.filter(ι=> ι[1] < t)._.map(0); }
+	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs.map(..1)._.min(); t += t < Time().i - 2*3600? 30*60 : 20; ↩ ιs.filter(..1 < t)._.map(0); }
 	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← .slice(h.search('COMMAND'))
@@ -51,8 +51,8 @@ E.ps2 = =>{
 
 E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
-		a ← new Set(fs.readdirSync(base)) # ! should walk all subfiles
-		b ← new Set(fs.readdirSync(edit))
+		a ← Set(…fs.readdirSync(base)) # ! should walk all subfiles
+		b ← Set(…fs.readdirSync(edit))
 		[same,changed] ← _([…a.∩(b)]).partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{

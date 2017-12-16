@@ -1,0 +1,41 @@
+[{}
+  ,{"":""
+    ,"class": "tabset_control"
+    // ,"tint_index": 1
+    // ,"layer0.opacity": 1.0
+    // ,"layer0.texture": "User/foo.png"
+    // ,"layer0.inner_margin": [0,0,0,0]
+    // ,"layer0.repeat": true
+    // ,"content_margin": [100,100,100,100]
+    // ,"layer0.opacity": 1.0
+    // ,"content_margin": [10,9]
+    ,"content_margin": [0, 0, 0, 0]
+    ,"tab_height": 30
+    ,"tab_overlap": 18
+  }
+  ,{"":""
+    ,"class": "tab_control"
+    ,"content_margin": [22, 4, 22, 0]
+  }
+  ,{"":""
+    ,"class": "tab_control"
+    ,"settings": ["!show_tab_close_buttons"]
+    ,"attributes": ["dirty"]
+  }
+  ,{"":""
+    ,"class": "tab_close_button"
+    ,"settings": ["!show_tab_close_buttons"]
+    ,"parents": [{"class": "tab_control", "attributes": ["dirty"]}]
+    ,"layer0.texture": "Theme - Default/common/dark/tab_dirty.png"
+    ,"content_margin": [10, 9]
+  }
+  ,{"":""
+    ,"class": "tab_close_button"
+    ,"settings": ["!show_tab_close_buttons"]
+    ,"parents": [{"class": "tab_control", "attributes": ["!dirty"]}]
+  }
+  ,{"":""
+    ,"class": "grid_layout_control"
+    ,"border_size": 0
+  }
+]

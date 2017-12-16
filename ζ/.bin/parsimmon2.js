@@ -128,7 +128,7 @@ Parser.prototype.times = function(min,max){ if (arguments.length < 2) max = min;
 
 Parser.prototype.map    = function(f){ Tfun(f) || _interrobang_(); return __map(this,f) }
 Parser.prototype.map_js = function(f){ Tfun(f) || _interrobang_(); return __map_js(this,f) }
-Parser.prototype.skip = function(next){return P([this,next]).map(ι=> ι[0]) }
+Parser.prototype.skip = function(next){return P([this,next]).map((𐅭𐅞)=>𐅭𐅞[0]) }
 
 var eof = P.eof = __eof()
 
@@ -172,7 +172,7 @@ P.sep_by1 = (p,sep)=>{ p = P(p); sep = P(sep)
 	return p.chain(r=> pairs.map(rs=> [r].concat(rs) ) ) }
 
 Parser.prototype.or = function(p){return alt(this,p) }
-Parser.prototype.then = function(next){ next = P(next); return P([this,next]).map(ι=> ι[1]) }
+Parser.prototype.then = function(next){ next = P(next); return P([this,next]).map((𐅭𐅞)=>𐅭𐅞[1]) }
 
 Parser.prototype.result = function(ι){return this.map(()=> ι) }
 Parser.prototype.at_most = function(n){return this.times(0,n) }

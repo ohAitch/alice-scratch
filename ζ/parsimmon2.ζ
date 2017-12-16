@@ -128,7 +128,7 @@ Parser.prototype.times = λ(min,max){ if (arguments.length < 2) max = min; Tnum(
 
 Parser.prototype.map    = λ(f){ Tfun(f) || ‽; ↩ __map(@,f) }
 Parser.prototype.map_js = λ(f){ Tfun(f) || ‽; ↩ __map_js(@,f) }
-Parser.prototype.skip = λ(next){↩ P([@,next]).map(ι=> ι[0]) }
+Parser.prototype.skip = λ(next){↩ P([@,next]).map(..0) }
 
 eof ← P.eof = __eof()
 
@@ -172,7 +172,7 @@ P.sep_by1 = (p,sep)=>{ p = P(p); sep = P(sep)
 	↩ p.chain(r=> pairs.map(rs=> [r].concat(rs) ) ) }
 
 Parser.prototype.or = λ(p){↩ alt(@,p) }
-Parser.prototype.then = λ(next){ next = P(next); ↩ P([@,next]).map(ι=> ι[1]) }
+Parser.prototype.then = λ(next){ next = P(next); ↩ P([@,next]).map(..1) }
 
 Parser.prototype.result = λ(ι){↩ @.map(=> ι) }
 Parser.prototype.at_most = λ(n){↩ @.times(0,n) }

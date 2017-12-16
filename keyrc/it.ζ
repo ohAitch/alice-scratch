@@ -19,7 +19,7 @@ macros ← {}
 parse_boards0 ← ι=>
 	transpose_str(ι).split(/\n(?: +\n)+/u).map(transpose_str).map(λ(ι){ι = ι.split('\n'); ↩ {
 		root: (ι[0].match(/^┌─+ (\S+) ─+┐$/u)||[∅,''])[1],
-		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.λ(ι)[1]).map(ι=> /\S\S?/gu.λ(ι)),
+		keys: ι.slice(1,-1).map(ι=> /^│(.+)│$/u.exec(ι)[1]).map(ι=> /\S\S?/gu.exec(ι)),
 		} })
 builtin_keys ← parse_boards0(multiline`
 	┌──────── [homoiconic] ────────┐
@@ -58,7 +58,7 @@ system ← parse_boards([multiline`
 	│  _  z x c v b n m , . /  _   │ │  _  Z X C V B N M < > ?  _   │
 	└──────────────────────────────┘ └──────────────────────────────┘
 	`])
-text_keys ← […system.map(.trigger).filter(ι=> ι[0]!=='⇧'), ' ']
+text_keys ← […system.map(.trigger).filter(..0!=='⇧'), ' ']
 macros['X'] = '; sfx`nack`'
 
 parse_key_line ← ι=>{ t ← ι.match(/^\s*(@\w+)?\s*(\S+)\s+([^]*\S)/); ↩ M(t[2],t[3],t[1]) }
@@ -75,17 +75,17 @@ show_private_xml ← λ(mappings){t←;
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
 	appdef ← ι=> appdefs[ι] = ι |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
 	compile_mapping ← λ(ι){
-		Key ← ι=> ('KeyCode::'+(/^\d$/.λ(ι)? 'KEY_'+ι : /^[a-z]$/.λ(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
+		Key ← ι=> ('KeyCode::'+(/^\d$/.exec(ι)? 'KEY_'+ι : /^[a-z]$/.exec(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
-			[md,ky] ← split_with(/FnF.|F.|.[LR]|./g.λ(ι), Mod)
+			[md,ky] ← split_with(/FnF.|F.|.[LR]|./g.exec(ι), Mod)
 			if (md.‖ === 1 && ky.‖ === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
 			if (!{1:1,2:1}[ky.‖]) ‽(APP+' invalid keystring: '+util.inspect(ι))
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.‖], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← ι=>{ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← ι=>{t←; ↩0,
-			(t=/^\] ([^]*)$/.λ(ι))? compile_keystring(t[1]).ι :
-			// (t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
-			(t=/^; ([^]+)$/.λ(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
+			(t=/^\] ([^]*)$/.exec(ι))? compile_keystring(t[1]).ι :
+			// (t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
+			(t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
 				_(ι).map(ι=> _(char16hex(ι)).map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),∅) )
 		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ ∅ }
@@ -102,7 +102,7 @@ show_private_xml ← λ(mappings){t←;
 				${ι} ] ^${ι} `),
 				// ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
 				].map(compile_key_line) ),
-			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.λ(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.λ(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
+			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.exec(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.exec(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(_(ι).omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
 			…(t=mappings.map(compile_mapping).filter(ι=>ι)._.groupBy('if'), […_(t).omit('undefined')|>(_.values), t.undefined]).map(ι=>M2( 'keyrc '+ι[0].if, ι.map(.ι).reverse(), ι[0].if )),
 			],

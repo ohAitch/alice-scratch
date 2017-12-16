@@ -1,12 +1,15 @@
-################################# data : basic #################################
-⧫. Tag ==>{ r ← => Object.create(𐅝𐅯𐅩𐅝𐅞) ;𐅝𐅯𐅩𐅝𐅞 ← {
-	,inspect(d,opt){
-		ks ← (…a)=> _.isEqual( new Set(_(@).keys()).-(['inspect','_']) ,new Set(a) )
+################################## see : data ##################################
+⧫. Tag ==>{
+	𐅝𐅯𐅩𐅝𐅞 ← {}
+	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
+		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
 		r ← [ opt.stylize(@.tag,'regexp') ]
-		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : _(_(@).pairs()._.object()).omit('tag','inspect','_') ,opt) )
+		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : _u(_u.pairs(@)._.object()).omit('tag','inspect','_') ,opt) )
 		↩ r.join(' ') }
-	,'≈':λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
-	} ;↩ r }
+	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
+	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
+
+################################# data : basic #################################
 
 ################################# data : parse #################################
 ⧫. regex_set ==> ι=>{
@@ -22,7 +25,6 @@
 	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _u.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
 	}
 
-
 ################################## data : time #################################
 
 ################################# data : color #################################
@@ -33,14 +35,14 @@
 	↩ color }
 
 ############################## data : friend glue ##############################
-⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _.values(ι)[0].revisions[0]['*'] )
+⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
 
 ######################### net incl context device,proc #########################
 # ⧫. lock ==>{
 # 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
 # 	locks ← {}
 # 	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
-# 	♓_on_exits(=> _.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
+# 	♓_on_exits(=> _u.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
 # 	un ← id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
 # 	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx').then(
 # 		,fd=>( locks[id] = ✓ ,fs_close(fd).then(=> =>un(id) ) )

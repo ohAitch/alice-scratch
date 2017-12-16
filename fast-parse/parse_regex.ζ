@@ -1,13 +1,10 @@
 #!/usr/bin/env ζ
 P ← require('./parser')
 
-R ← (tag,ι)=>{ r ← Tag() ;r.tag = tag ;ι!==∅ &&( r.ι = ι ) ;↩ r }
-P.prototype.R = λ(tag){ tag+='' ;↩ @.map(ι=> R(tag,ι) ) }
-
 ⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
 
 walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
-	clone ← _.once(=>{ ι = Tag() …← (ι) })
+	clone ← _u.once(=>{ ι = Tag() …← (ι) })
 	# ifΔ is weird. why?
 	ifΔ! ← (a,f=Object.is)=>{ for(k← in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
 	if( ι.ι ) ι = ifΔ!({ ι: Tarr(ι.ι)? ι.ι.map(me) : me(ι.ι) })
@@ -29,7 +26,7 @@ Regex ← (=>{
 			,b:String.raw`(?<=\w)(?!\w)|(?<!\w)(?=\w)`
 			,D:/[^\d]/ ,W:/[^\w]/ ,S:/[^\s]/ ,B:/(?!\b)/
 			}[ι]))
-		,P(/[1-9][0-9]*/).map(ι=> R(`backref`,ι|0) )
+		,P(/[1-9][0-9]*/).map(ι=> Tag(`backref`,ι|0) )
 		,/[^]/
 		]) ]).map(..1)
 	Set_Escape ← P.|([ P('\\b').map(=>'\b') ,Escape ])
@@ -39,21 +36,19 @@ Regex ← (=>{
 		,P(['(?:',Regex,')']).map(..1)
 		# ! evidently these four are atomic, which i didn't know
 		# atomic ← ι=> re`(?=(…${ι}))\1`
-		,P(['(?=',Regex,')']).map(..1).R`not`.R`not`
-		,P(['(?!',Regex,')']).map(..1).R`not`
-		,P(['(?<=',Regex,')']).map(..1).R`behind`
-		,P(['(?<!',Regex,')']).map(..1).R`behind`.R`not`
-		,P(['(',Regex,')']).map(..1).R`capture`
+		,P(['(?=',Regex,')']).map(..1).Tag`not`.Tag`not`
+		,P(['(?!',Regex,')']).map(..1).Tag`not`
+		,P(['(?<=',Regex,')']).map(..1).Tag`behind`
+		,P(['(?<!',Regex,')']).map(..1).Tag`behind`.Tag`not`
+		,P(['(',Regex,')']).map(..1).Tag`capture`
 		,P(['[' ,/\^?/ ,(=>{ t ← P.|([ Set_Escape,/[^\]]/ ]) ;↩ P.|([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]) ,t ]).* })() ,']'])
-			.map(([ˣ,not,ι,ʸ])=>{ r ← R(`¦`,ι.map(ι=> Tarr(ι)? R(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? R(`any`,∅) : R(`seq`,[ R(`not`,r) ,R(`any`,∅) ]) ;↩ r })
-		,P(/[$^]/).R`^$`
+			.map(([ˣ,not,ι,ʸ])=>{ r ← Tag(`¦`,ι.map(ι=> Tarr(ι)? Tag(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? Tag(`any`,∅) : Tag(`seq`,[ Tag(`not`,r) ,Tag(`any`,∅) ]) ;↩ r })
+		,P(/[$^]/).Tag`^$`
 		,/[^)]/
 		])
-	Postfix ← P([ Unit ,P([ P.|([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]) ,P('?').? ,]).? ]).map(([ι,rep])=>{
-		if(! rep ) ↩ ι
-		for_ ← ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (=>{ [ˣ,a,two,b] ← ι ;↩ [a|0,b? b|0 : two? ∞ : a|0] })()
-		↩ R(`×` ,∅)…← ({ ,ι ,for:for_(rep[0]) ,greedy:!rep[1] }) })
-	Infix ← Postfix.*?.R`seq`.sep_by('|').?.map(ι=> ι.‖===1? ι[0] : R(`¦`,ι) )
+	Postfix ← P([ Unit ,P([ P.|([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]) ,P('?').? ,]).? ]).map(([ι,rep])=> !rep? ι :
+		Tag(`×`,∅) …← ({ ,ι ,for:rep[0] |>(ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (([ˣ,a,two,b])=>[ a|0 ,b? b|0 : two? ∞ : a|0 ])(ι)) ,sort:rep[1]?'asc':'desc' }) )
+	Infix ← Postfix.*?.Tag`seq`.join('|').?.map(ι=> ι.‖===1? ι[0] : Tag(`¦`,ι) )
 	Regex ← Infix
 	↩ Regex })()
 
@@ -66,7 +61,6 @@ parse_regex ← ι=>{ [flags,ι] ← Tstr(ι)? ['',ι] : [ι.flags,ι.source]
 
 	if( flags.re`i` ) ‽('no /i support yet')
 	flags.re`u` &&( ι = regexpu(ι,flags) )
-
 
 	ι = Regex.parse(ι)
 	walk_regex(ι,ι=> ι.≈`^$` && flags.re`m` &&( ι.ι += 'm' ) )
@@ -83,15 +77,15 @@ normalize_to_axioms_regex ← ι=> walk_regex(ι,(ι,{ifΔ!})=>{
 	if( is_1not(ι) && is_1not(ι_1not(ι)) ){
 		ι = ι_1not(ι_1not(ι))
 		# if( length(ι)===1 ) ↩ ι ;else
-		↩ R(`seq`,[ R(`not`,R(`not`,ι)) ,R(`any`,∅) ])
+		↩ Tag(`seq`,[ Tag(`not`,Tag(`not`,ι)) ,Tag(`any`,∅) ])
 		}
 
-	if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,_.isEqual )
+	if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,≈ )
 
 	if( (ι.≈`¦`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
 
-	if( is_null(ι) ) ↩ R(`seq`,[])
-	# if( is_bottom(ι) ) ↩ R(`not`,R(`seq`,[]))
+	if( is_null(ι) ) ↩ Tag(`seq`,[])
+	# if( is_bottom(ι) ) ↩ Tag(`not`,Tag(`seq`,[]))
 
 	if( ι.≈`^$` ) ↩ $({ ,'^':'(?<![^])' ,'$':'(?![^])' ,'^m':'(?<![^\n\r])' ,'$m':'(?![^\n\r])' }[ι.ι])
 	↩ ι })
@@ -109,8 +103,8 @@ P_ify ← ι=> walk_regex(ι,ι⇒
 	: ι.≈`¦`? P.|(ι.ι)
 	: ι.≈`⋯`? P.⋯(…ι.ι)
 	: ι.≈`any`? P.any1
-	: ι.≈`not`? ι.ι.not
-	: ι.≈`×`? P(ι.ι).×(ι.for,ι.greedy) |>(𐅋𐅩𐅫𐅫𐅪)
+	: ι.≈`not`? P.not(ι.ι)
+	: ι.≈`×`? P(ι.ι).×(ι.for,ι.sort) |>(𐅋𐅩𐅫𐅫𐅪)
 	: ι.≈`seq`? P(ι.ι) |>(𐅋𐅩𐅫𐅫𐅪)
 	# backref: P(result of a previous capture)
 	# behind: reverse this parser and proceed in reverse
@@ -137,8 +131,8 @@ _log ← cn.log
 ].forEach(ι=>_log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
 
 ;[
-	,[ /[^]*?(?:#!.*)$/m ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
-	# ,[ /[^]*?#!.*\n/u ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:R} ← it\n# 5\n\n' ]
+	,[ /[^]*?(?:#!.*)$/m ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:T} ← it\n# 5\n\n' ]
+	# ,[ /[^]*?#!.*\n/u ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:T} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!/u ,' #!' ]
 ].forEach(([ι,test])=>{
 	_log(ι)
@@ -150,16 +144,10 @@ _log ← cn.log
 	_log('=',[p.exec0(test)])
 	})
 
-t ← P.|([
-	,P.err_if_partial([ /'/,P(/([^]*?)'/).map(([ˣ,s])=> s) ])
-	,/[^]+/
-	]).catch(P.err_if_partial)
-cn.log('and',t.parse("'foobar'"))
-cn.log('and',t.parse("'foobar"))
-
 })
 
 ################################### /u notes ###################################
+# https://mathiasbynens.be/notes/es6-unicode-regex
 # Without the u flag, . matches any BMP symbol except line terminators. When the ES6 u flag is set, . matches astral symbols too.
 # with the u flag set, things like \a (where a is not an escape character) won’t be equivalent to a anymore.
 # with u, the string is parsed as code points, without, parsed as string indices
