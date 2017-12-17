@@ -6,9 +6,9 @@ P0 ← (tag,ι)=> new_(P) …← ({tag},ι)
 P ← module.exports = ι⇒
 	: P ∋ (ι)? ι
 	: Tfun(ι)? _graph_thunk(ι)
-	: Tstr(ι)? ι.‖? _data(ι) : P([]).map(=>'')
-	: Tarr(ι)? _seq(ι)
-	: T.Set(ι)? _alt(ι)
+	: Tarr(ι)? _seq(ι.map(P.X))
+	: T.Set(ι)? _alt(ι.map(P.X))
+	: Tstr(ι)? ι.‖? _data(ι) : P.of('')
 	: T.RegExp(ι)? _regex_native(ι)
 	: ‽(ι)
 ;`see`; P.prototype = Tag()
@@ -26,12 +26,12 @@ _data ← ι=> P0('data',{
 	,_:λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
 	})
 _seq ← ι=> P0('seq',{
-	,ι:ι.map(P.X)
+	,ι
 	,_:λ*(in_,i){
 		if(! @.ι.‖ ) ↩ yield win(i,[])
 		p ← P(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) } })
 _alt ← ι=> P0('¦',{
-	,ι:ι.map(P.X)
+	,ι
 	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
 	})
 P.if = ι=> P.not(P.not(ι))
@@ -120,7 +120,7 @@ P.err_if_partial = (a,b)⇒
 	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
 	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
 	𐅮𐅦𐅨𐅝𐅃 ← Error()
-P.| = _alt
+P.| = ι=> _alt(ι.map(P.X))
 
 ################################################################################
 # todo eventually pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure

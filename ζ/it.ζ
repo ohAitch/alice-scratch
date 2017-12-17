@@ -749,13 +749,15 @@ E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
 # 	view
 
 # would like to embed regex in [] and have that be ok ;ie re`[${/[a-z]/}]` = /[a-z]/
-E.re = (ι,…ιs)⇒
-	: is_template0(ι,ιs)?
-		simple_template(ι,ιs,[(…a)=>re(…a).source,'']).map(ι=> !Tstr(ι)? re(ι.raw) : ι).join('')
-		|>(ι=> RegExp(ι,'u'))
+E.re = (ι,…ιs)=>(
+	is_template0(ι,ιs)
+		? simple_template(ι,ιs,[(…a)=>re(…a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
+		: 𐅋𐅨𐅨𐅜𐅦(ι)
+	) |>(ι=> RegExp(ι,'u'))
+𐅋𐅨𐅨𐅜𐅦 ← ι⇒
 	: T.RegExp(ι)? ( ι.flags.replace(/[gy]/g,'')==='u' || ‽, ι.source )
-	: Tarr(ι)? ι.map(re.X).join('')
-	: T.Set(ι)? `(?:${ι.map(re.X).join('|')})`
+	: Tarr(ι)? ι.map(𐅋𐅨𐅨𐅜𐅦).join('')
+	: T.Set(ι)? `(?:${ι.map(𐅋𐅨𐅨𐅜𐅦).join('|')})`
 	: (ι+'').replace(/([.*+?^${}()\[\]|\\])/g, String.raw`\$1`)
 assign_properties_in_E_informal({
 ,'String.prototype.re':λ(…a){↩ @.match(re(…a)) }
