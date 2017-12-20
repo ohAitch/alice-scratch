@@ -66,22 +66,24 @@ module.if_main_do(=>{
 	})
 
 ############################# 𐅦𐅃𐅋𐅂𐅮 color generator ############################
-# cs ← [
-# 	,'#ff0000'
-# 	,'#00ff00'
-# 	,'#0000ff'
-# 	,'#00ffff'
-# 	,'#ff00ff'
-# 	,'#ffff00'
-# 	].map(color.X)
-# string_to_float ← (ι,αβ)=> […ι].map((ι,i)=> αβ.indexOf(ι) / αβ.‖^(i+1) ).reduce((a,b)=> a+b)
-# d ← ι=> string_to_float(ι,random_id.greek.αβ)
-# id ← ι=> '_'+d(ι).toString(16).replace('.','_')
-# c ← ι=> '#'+color.interpolate_0(cs,d(ι)).i.toString(16).padStart(8,'0').slice(0,-2)
+gen_𐅦𐅃𐅋𐅂𐅮_color ← =>{
+cs ← lines`
+#b52c2b
+#9d5800
+#006d0d
+#006b7d
+#5e4cb5
+#a2005d
+`.map(color.X)
+string_to_float ← (ι,αβ)=> […ι].map((ι,i)=> αβ.indexOf(ι) / αβ.‖^(i+1) ).reduce((a,b)=> a+b)
+d ← ι=> string_to_float(ι,random_id.greek.αβ)
+id ← ι=> '_'+d(ι).toString(16).replace('.','_')
+c ← ι=> '#'+color.interpolate_0(cs,d(ι)).i.toString(16).padStart(8,'0').slice(0,-2)
 
-# αβ ← random_id.greek.αβ
-# αβ.map…(a=>{ t ← αβ.map(b=> a+b).map(ι=>[ ι,`${ι}[${αβ.join('')}]*` ]) ;↩ […t,[t[0][0],a]] })
-# # .map(([a,b])=> `    - { scope: '${id(a)}' ,match: '${b}' }`).line
-# .map(([a,b])=> `$fg bg ${c(a)}60 ${id(a)}`).line
+αβ ← random_id.greek.αβ
+↩ αβ.map…(a=>{ t ← αβ.map(b=> a+b).map(ι=>[ ι,`${ι}[${αβ.join('')}]*` ]) ;↩ […t,[t[0][0],a]] })
+# .map(([a,b])=> `    - { scope: '${id(a)}' ,match: '${b}' }`).line
+.map(([a,b])=> `$bg bg ${c(a)}70 ${id(a)}`).line
+}
 
 # ‡ todo: improve color quality

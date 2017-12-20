@@ -4,7 +4,7 @@
 	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
 		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
 		r ← [ opt.stylize(@.tag,'regexp') ]
-		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : _u(_u.pairs(@)._.object()).omit('tag','inspect','_') ,opt) )
+		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
 		↩ r.join(' ') }
 	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
 	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }

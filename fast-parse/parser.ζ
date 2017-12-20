@@ -1,29 +1,29 @@
 # a parser is a function. typically: from a string. to a mostly ordered tree. taking non-overlapping substrings to tree nodes. mostly monotonic.
 # this parser works on strings and arrays
 
-############ entry ###########
+##################################### entry ####################################
 P0 ← (tag,ι)=> new_(P) …← ({tag},ι)
 P ← module.exports = ι⇒
 	: P ∋ (ι)? ι
 	: Tfun(ι)? _graph_thunk(ι)
 	: Tarr(ι)? _seq(ι.map(P.X))
 	: T.Set(ι)? _alt(ι.map(P.X))
-	: Tstr(ι)? ι.‖? _data(ι) : P.of('')
+
+	: Tstr(ι)? ι.‖? _string(ι) : P.of('')
 	: T.RegExp(ι)? _regex_native(ι)
+
 	: ‽(ι)
 ;`see`; P.prototype = Tag()
 ;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
 P.prototype.exec0 = λ(in_){↩ seq( seq( @._(in_,0) ).map(.ι) ).next_ι }
-P.prototype.parse = λ(in_){↩ @.skip(_eof) .exec0(in_) }
+P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
 
-######### app prelude ########
+################################## app prelude #################################
 win ← (i,ι)⇒ { ,span_to:i ,ι }
 
-############ root ############
-_data ← ι=> P0('data',{
-	,ι
-	# in_:String
-	,_:λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
+################################### root ish ###################################
+P.any1 = P0('any1',{
+	,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) }
 	})
 _seq ← ι=> P0('seq',{
 	,ι
@@ -42,12 +42,14 @@ P.not = ι=> P0('not',{
 
 P.of = ι=> P0('of',{ ,ι ,_:λ*(in_,i){ yield win(i,@.ι) } })
 P.∅ = P0('∅',{ ,_:λ*(in_,i){} })
-P.prototype.chain = λ(f){↩ P0('chain',{
+chain ← λ(f){↩ P0('chain',{
 	,ι:@ ,f
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* @.f(t.ι)._(in_,t.span_to) }
+	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* P(@.f(t.ι))._(in_,t.span_to) }
 	}) }
-P.prototype.map = λ(f){↩ @.chain( (ι=> P.of(f(ι))) …← ({f}) ) }
-P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
+P.prototype.chain = chain
+P.prototype.map = λ(f){↩ chain.call(@, (ι=> P.of(f(ι))) …← ({f}) ) }
+P.prototype.filter = λ(f){↩ chain.call(@, (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
+P.filter = f=> P.any1.filter(f)
 # P.prototype.map = λ(f){↩ P0('map',{
 # 	,ι:@ ,f
 # 	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield win(t.span_to,@.f(t.ι)) }
@@ -57,45 +59,46 @@ P.prototype.catch = λ(f){↩ P0('catch',{
 	,_:λ*(in_,i){ ι ← @.ι._(in_,i) ;for(;;){ try{ t ← seq(ι).next_ιι ;if(! t )↩ ;yield t }catch(e){ @.f(e) } } }
 	}) }
 
-############ extra ###########
+################################### extra ish ##################################
 _graph_thunk ← f=> P0('graph_thunk',{
 	,ι:f
-	,_(in_,i){ Tfun(@.ι) &&( @.ι = @.ι() ) ;↩ (0,@.ι)._(in_,i) }
+	,_(in_,i){ Tfun(@.ι) &&( @.ι = P(@.ι()) ) ;↩ (0,@.ι)._(in_,i) }
 	})
 P.prototype.× = λ(for_,sort){sort||(sort='desc') ;↩ P0('×',{
 	,ι:@ ,for_ ,sort
 	,_:λ*(in_,i){
 		if( !@.for_[1] ) ↩ yield win(i,[])
 		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.sort) ]).map(([x,xs])=> xs? [x,…xs] : [x] )
-		yield* ( @.for_[0]? rest : P.|(@.sort==='desc'? [rest,P([])] : @.sort==='asc'? [P([]),rest] : ‽ ))._(in_,i) }
+		yield* ( @.for_[0]? rest : P(Set(…(@.sort==='desc'? [rest,P([])] : @.sort==='asc'? [P([]),rest] : ‽ ))))._(in_,i) }
 	}) }
 P.prototype‘['?'] .get= λ(){↩ @.×([0,1]).map(..0) }
 P.prototype‘['*'] .get= λ(){↩ @.×([0,∞]) }
 P.prototype‘['+'] .get= λ(){↩ @.×([1,∞]) }
-P.prototype‘['??'] .get= λ(){↩ @.×([0,1],✗).map(..0) }
-P.prototype‘['*?'] .get= λ(){↩ @.×([0,∞],✗) }
-P.prototype‘['+?'] .get= λ(){↩ @.×([1,∞],✗) }
+P.prototype‘['??'] .get= λ(){↩ @.×([0,1],'asc').map(..0) }
+P.prototype‘['*?'] .get= λ(){↩ @.×([0,∞],'asc') }
+P.prototype‘['+?'] .get= λ(){↩ @.×([1,∞],'asc') }
 P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
 P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
 P.prototype.join = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).* ]).map(([ι,ιs])=> [ι,…ιs]) }
 
-########## fast path #########
+##################### in_ :: String   data root & fast path ####################
 win1u ← (in_,i)=>{ t ← chr(ord(in_,i)) ;↩ win(i+t.‖,t) }
 
+_string ← ι=> P0('data',{
+	,ι
+	,_:λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
+	})
 P.⋯ = (a,b)=> P0('⋯',{
 	,a ,b
-	# in_:String
 	,_:λ*(in_,i){ ι ← ord(in_,i) ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield win(i+1,ι) }
 	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
 	})
 _regex_native ← ι=> P0('regex',{
 	,ι
-	# in_:String
 	,_:λ*(in_,i){t←; @.ι.flags.replace(/[muy]/g,'') && ‽ ;if( t=@.ι.u.y.exec_at(in_,i) ) yield win( i+t[0].‖ ,t.‖===1? t[0] : t.slice() ) }
 	})
 P.unicode_category = ι=> P0('category',{
 	,ι
-	# in_:String
 	,_:λ*(in_,i){ if( i<in_.‖ && 𐅪𐅝𐅭𐅩𐅞(@.ι,ord(in_,i)) ) yield win1u(in_,i) }
 	})
 	𐅪𐅝𐅭𐅩𐅞 ← memoize_persist((cat,ι)=> memoize_persist(cat=>
@@ -104,82 +107,6 @@ P.unicode_category = ι=> P0('category',{
 		.map…(ι=> _.keys(ι).map(ι=> ι|0) )
 		._.sortBy()
 		)(cat.source).includes(ord(ι)) )
-P.any1 = P0('any1',{
-	,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) }
-	})
 P.any1u = P0('any1u',{
 	,_:λ*(in_,i){ if( i<in_.‖ ) yield win1u(in_,i) }
-	# in_:String
 	})
-
-########### discard ##########
-_eof ← P0('eof',{
-	,_:λ*(in_,i){ if( i>=in_.‖ ) yield win(i,∅) }
-	})
-P.err_if_partial = (a,b)⇒
-	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
-	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
-	𐅮𐅦𐅨𐅝𐅃 ← Error()
-P.| = ι=> _alt(ι.map(P.X))
-
-################################################################################
-# todo eventually pattern: abstract branch prediction, e.g. with metadata gathering turned off for the first execution when metadata is only used in case of failure
-
-# P0 ... |>(record)
-# _record ← (ι,in_,i)=> cn.log( simple_hash(in_),'[',i,']',simple_hash(npm`circular-json@0.4.0`.stringify(ι)) )
-# record ← ι=>{ t ← ι._ ;ι._ = λ(…a){ _record(@,…a) ;↩ t.call(@,…a) } ;↩ ι }
-
-# ;`
-# P ←
-# 	#data _ := .startsWith(it) ? ,‖,ι
-# 	[P]
-# 	{P}
-# 	#if P   := #not #not P
-# 	#not P  := it ? ∅ : ,0,∅
-# 	#of _
-# 	P #chain f
-# 	P * f
-# 	P #catch f
-# 	P f #thunk
-# 	P × (⋯ #span) sort:#desc
-
-# 	P ? := P × 0⋯1
-# 	P * := P × 0⋯∞
-# 	P + := P × 1⋯∞
-# 	P ?? := P × 0⋯1 #asc
-# 	P *? := P × 0⋯∞ #asc
-# 	P +? := P × 1⋯∞ #asc
-# 	P join P := [ a ,… [b a]*.1 * ]
-# `
-
-# # why am i handwriting datafunctions?
-# # these are all, like, function reifications
-
-# # P.data‘(ι)
-
-# {ι:T.string} ,∅ ,λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
-# {ι:Tarr} ,.map_(P.X) ,λ*(in_,i){
-# 	if(! @.ι.‖ ) ↩ yield win(i,[])
-# 	p ← P(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) }
-# {ι:T.Set} ,.map_(P.X) ,λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
-# ['if',{ι:∅}] ,P 
-
-
-# param ← _.memoize(npm`get-parameter-names@0.3.0`)
-# partial_P ← (ι,id)=> (…a)=> new_(P) …← ({,tag:id,_:ι(…a)}) …← (_.zip(param(ι),a)._.object())
-# as_method ← f=> λ(…a){↩ f(@,…a)}
-
-# P ← module.exports = ι=> ‽
-# 𐅰𐅯𐅩𐅞𐅨 ← {
-# ,_data:ι=> λ*(in_,i){ if( in_.startsWith(@.ι,i) ) yield win(i+@.ι.‖,@.ι) }
-# ,_seq:ι=> λ*(in_,i){
-# 	if(! @.ι.‖ ) ↩ yield win(i,[])
-# 	p ← P(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) }
-# ,_alt:ι=> λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
-# # ,if:ι=> P.not(P.not(ι))
-# ,chain:(ι,f)=> λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* @.f(t.ι)._(in_,t.span_to) }
-# } |>(_u).mapObject(partial_P)
-# P …← (𐅰𐅯𐅩𐅞𐅨)
-# P.prototype = Tag() …← (_u(𐅰𐅯𐅩𐅞𐅨).mapObject(as_method))
-
-# P.chain('a','b')

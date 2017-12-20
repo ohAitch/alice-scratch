@@ -10,6 +10,8 @@ split_with ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ [
 
 _alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` //! design better, then rename to alert
 
+multiline ← ι=> lines(ι+'').map(.replace(/^\t*/,'')).join('\n')
+
 // -------------------------------------------------------------------------- //
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
@@ -30,11 +32,11 @@ builtin_keys ← parse_boards0(multiline`
 	│  ⇧L z x c v b n m , . /  ⇧R  │
 	│ Fn^ ⌥L⌘L    ␣    ⌘R⌥R← ↑ ↓ → │
 	└──────────────────────────────┘
-	`)[0].keys._.flatten(✓)
+	`)[0].keys.…
 parse_boards ← λ(ι){
 	ι ← ι.map…(parse_boards0)
 	ι.filter(.keys.‖ === 4).forEach(λ(ι){ι.keys = [['_'].×(14), …ι.keys, ['_'].×(11)]})
-	ι.forEach(λ(ι){ ι.keys = ι.keys._.flatten(✓) })
+	ι.forEach(λ(ι){ ι.keys = ι.keys.… })
 	ι.forEach(λ(ι){ ι.keys = ι.keys.map(ι=> Object.hasOwnProperty(macros,ι)? macros[ι] : ι) })
 	ι.forEach(λ(ι){ ι.keys = _.zip(builtin_keys,ι.keys).filter(ι=> ι[1] !== '_') })
 	ι = ι.map…(λ(ι){ ι.keys.forEach(k=> k[0] = ι.root+k[0]); ↩ ι.keys })

@@ -1,5 +1,6 @@
 #!/usr/bin/env ζ
 P ← require('./parser')
+P.| = ι=> P(Set(…ι))
 
 ⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
 
@@ -46,7 +47,7 @@ Regex ← (=>{
 		,P(/[$^]/).Tag`^$`
 		,/[^)]/
 		])
-	Postfix ← P([ Unit ,P([ P.|([ '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ ]) ,P('?').? ,]).? ]).map(([ι,rep])=> !rep? ι :
+	Postfix ← P([ Unit ,P([ P(Set( '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ )) ,P('?').? ,]).? ]).map(([ι,rep])=> !rep? ι :
 		Tag(`×`,∅) …← ({ ,ι ,for:rep[0] |>(ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (([ˣ,a,two,b])=>[ a|0 ,b? b|0 : two? ∞ : a|0 ])(ι)) ,sort:rep[1]?'asc':'desc' }) )
 	Infix ← Postfix.*?.Tag`seq`.join('|').?.map(ι=> ι.‖===1? ι[0] : Tag(`¦`,ι) )
 	Regex ← Infix
@@ -100,7 +101,7 @@ $ ← ι=>{ ι= ι |>(𐅋𐅝𐅃𐅃𐅮) ;↩ _l.cloneDeep(ι) …← ({tag:�
 
 𐅋𐅩𐅫𐅫𐅪 ← .map(.filter(ι=>ι!==∅).join(''))
 P_ify ← ι=> walk_regex(ι,ι⇒
-	: ι.≈`¦`? P.|(ι.ι)
+	: ι.≈`¦`? P(Set(…ι.ι))
 	: ι.≈`⋯`? P.⋯(…ι.ι)
 	: ι.≈`any`? P.any1
 	: ι.≈`not`? P.not(ι.ι)
@@ -116,9 +117,6 @@ P_ify ← ι=> walk_regex(ι,ι⇒
 ################################################################################
 module.if_main_do(=>{
 
-# _log ← =>∅
-_log ← cn.log
-
 ;[
 	,/(?:)(?!)(?:(|))(|)/u
 	,/foo[a-x][^imu]/u
@@ -128,20 +126,20 @@ _log ← cn.log
 	,/(?:\\[^]|(?!`|\$\{)[^])+/u
 	,/(?=a|b)[^a]/u
 	,/[^]\B[\d][^\D]/u
-].forEach(ι=>_log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
+].forEach(ι=>log( ι,/*'\n=',parse_regex(ι),*/'\n=',$0(ι),'\n' ))
 
 ;[
 	,[ /[^]*?(?:#!.*)$/m ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:T} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!.*\n/u ,'lambda bar lorem ipsum\nsalem peacemaker #!/usr/bin/env ζ\n{Rᵢ:T} ← it\n# 5\n\n' ]
 	# ,[ /[^]*?#!/u ,' #!' ]
 ].forEach(([ι,test])=>{
-	_log(ι)
+	log(ι)
 	ast ← $0(ι)
-	_log('=',ast)
+	log('=',ast)
 	p ← P_ify(ast)
-	_log('=',p)
-	_log('using:',[test])
-	_log('=',[p.exec0(test)])
+	log('=',p)
+	log('using:',[test])
+	log('=',[p.exec0(test)])
 	})
 
 })

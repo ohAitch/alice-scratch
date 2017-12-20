@@ -30,6 +30,7 @@
 	"color_scheme": "Packages/User/.bin/ὄνειρον.tmTheme",
 	"default_line_ending": "unix",
 	"draw_indent_guides": false,
+  "show_definitions": false,
 	"enable_tab_scrolling": false,
 	"ensure_newline_at_eof_on_save": true,
 	"file_exclude_patterns":

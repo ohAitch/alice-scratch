@@ -1,4 +1,5 @@
 P ← require_new(φ`~/code/scratch/fast-parse/parser`)
+
 ##################################### note #####################################
 # conceptual: word s refer to the procedure-local database of words we know about
 
@@ -11,37 +12,26 @@ P ← require_new(φ`~/code/scratch/fast-parse/parser`)
 # parenless function calls? mb figure those out after you get this working. this is haard.
 
 ################################ grammar 1 flesh ###############################
-leaf_prefixd ← P.|([
-	,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(([ˣ,ʸ,ι])=> ι) )
-	])
-_ ← P.|([
-	,leaf_prefixd
-	,P([ P.not(leaf_prefixd),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join('')).Tag`id`
-	]).catch(P.err_if_partial)
+# P.err_if_partial = (a,b)⇒
+# 	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
+# 	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
+# 	𐅮𐅦𐅨𐅝𐅃 ← Error()
 
-############################### grammar -1 flesh ###############################
-# a simple infix parser
-P.build_op = (unit,op)=>{
-	# binary left: 1-2-3 = (1-2)-3  ;binary right: 1^2^3 = 1^(2^3)
-	# ,'2 center':p=> P([ p, P.seq(op,p).*.map(ι=> _(ι).flatten(✓)) ]).map(([a,op_bs])=> !op_bs.length? a : R('op',{A:'2 center', ι:[a, …op_bs]}) )
-	∅R_ ← p=>{ r ← P(=> P.|([ P([ op,r ]).map(([op,ι])=> [op,∅,ι]) ,p ])) ;↩ r }
-	_R∅ ← p=> P([ p, op.* ]).map(([x,r])=> r.fold((ι,op)=> [op,ι,∅], x) )
-	_R_l ← p=> P([ p, P([ op,p ]).* ]).map(([x,r])=> r.fold((a,[op,b])=>[op,a,b], x) )
-	_R_r ← p=>{ r ← p.chain(a=> P.|([ P([ op, r ]).map(([op,b])=>[op,a,b]) ,P.of(a) ])) ;↩ r }
-	↩ unit |>(_R_l) |>(∅R_) |>(_R∅) }
-
-# [ '.','×','+','->' ].fold(P.build_op,/[A-Za-z🔒ι]+/)
-# §`obj × id -> place`
-# §`-> 🔒 × hide`
-# §`-> host`
+# leaf_prefixd ← P(Set(
+# 	,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(([ˣ,ʸ,ι])=> ι) )
+# 	))
+# _ ← P(Set(
+# 	,leaf_prefixd
+# 	,P([ P.not(leaf_prefixd),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join('')).Tag`id`
+# 	)).catch(P.err_if_partial)
 
 ################################### grammar 3 ##################################
 # ok this is cute but lets just hardcode a lexer and get on with it
 # hardcoded lexer + word prioritization (read time) (the way clojure does macros should be good enough)
 
-⧫. parse_lang ==>{
+# ⧫. parse_lang ==>{
 
-γ.words = P(Set(
+word ← P(Set(
 	,sharp= P(Set(
 		,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2).Tag`string`
 		,P(/[ \t\n,]+/).map(ι=> ι.includes(',')? 3 : ι.includes('\n')? 2 : 1 ).Tag`space`
@@ -49,50 +39,76 @@ P.build_op = (unit,op)=>{
 		))
 	,re(alt_ws`! …`)
 	,P([ P.not(sharp),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join(''))
-	)).* ;sharp←;
+	)) ;sharp←;
 
-id ← ι=> P.any1.filter(t=> t===ι)
-γ.trees = P(=>trees) ;trees = P(Set(
-	,… ['()round','[]square','{}curly'].map(ι=> P([ ,id(ι[0]),trees,id(ι[1]) ]).map(..1).Tag(ι.slice(2)))
-	,P.any1.filter(ι=> ! […'()[]{}'].includes(ι) )
-	)).*
+# is ← ι=> P.filter(t=> Tstr(ι)? t===ι : re`^${ι}$`.test(t) )
+is ← ι=> P.filter(t=> t===ι)
+tree ← P(=>tree) ;tree ← P(Set(
+	,… ['()round','[]square','{}curly'].map(ι=> P([ ,is(ι[0]),tree.*,is(ι[1]) ]).map(..1).Tag(ι.slice(2)))
+	,P.filter(ι=> ! […'()[]{}'].includes(ι) )
+	))
 
-_2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
-# prefix ← (ι,f=ι=>ι)=> P([ι,ᛟ1,f(_)]).map(..2).Tag(ι)
-ᛟ1 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=1 ).?
-ᛟ2 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=2 ).?
-ᛟ3 ← P.any1.filter(ι=> ι.tag==='space' && ι.ι<=3 ).?
-# γ.ops = P(=>ops) ;ops =
-	# ,[_,ᛟ2,'.',ᛟ1,_]
-	# ,[_,ᛟ2,'‘.',ᛟ1,_]
+##############################
+# _2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
+ᛟ1 ← P.filter(ι=> ι.tag==='space' && ι.ι<=1 ).?
+ᛟ2 ← P.filter(ι=> ι.tag==='space' && ι.ι<=2 ).?
+ᛟ3 ← P.filter(ι=> ι.tag==='space' && ι.ι<=3 ).?
+
+_2            ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,is(ι),ᛟ2]).map(..1) })
+_2_norm_tight ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,is(ι),ᛟ1]).map(..1) })
+_2_tight_norm ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ1,is(ι),ᛟ2]).map(..1) })
+ops ← [
+	,_2_norm_tight`. ‘.`
 	# ,[_,ᛟ1,'(',top,')']
+	,Set( { ,id:'round' ,P:P([ᛟ1,P.filter(.tag==='round')]).map(..1).map(ι=>( ι.ι= top.parse(ι.ι) ,ι )) } )
 	# ,[_,'[',_,']'].join2(ᛟ1)
 	# ,[_,'‘[',_,']'].join2(ᛟ1)
-	# ,['^'].map(ι=> infix(ι) …← ({ right:✓ }) )
+	,_2`^`
 	# ,['!','-'].map(prefix)
-	# ,_2`× /`
-	# ,[ ,…_2`+` ,[ P.|([ free,_ ]),ᛟ1,'-',ᛟ2,_ ] ]
-	# ,_2`∪ ∩`
-	# ,_2`…←`
-	# ,_2`= ≠ <= >= < > ∈ ∋`
-	# ,_2`& |`
-	# ,_2`!> |>`
+	,_2`× /`
+	# ,[,[ P(Set( free,_ )),ᛟ1,'-',ᛟ2,_ ] ]
+	,_2`+ -`
+	,_2`∪ ∩`
+	,_2`…←`
+	,_2`= ≠ <= >= < > ∈ ∋`
+	,_2`& |`
+	,_2`!> |>`
 	# ,[_,'?',_,':',_].join2(ᛟ2)
 	# ,[ 'if',_,P(':').?,_,P(/:|else/).?,_ ].join2(ᛟ2)
-	# ,['←','←!'].map(ι=> infix(ι) …← ({ right:✓ }) )
+	,_2`←`
 	# ,['…'].map(prefix)
 	# ,['↩',ᛟ1,_.?]
-	# ,[_,ᛟ1,'⇒',ᛟ2,_]
-	# ,_2`:`
-
-↩ ι=> [words,trees].fold((ι,p)=> p.parse(ι) ,ι) }
-
-;[
-	,"if 'handle' 5 : 6 7"
-	,"if 'handle' 5 : 6? 7:8"
-	,"yield'saddlepoint'"
-	,"↩ ['saddlepoint' [bogan]()]"
-	,"… ! ↩← 5"
-	,"…! ↩←"
+	,_2_tight_norm`⇒`
+	,_2`:`
 	]
-	.map(parse_lang.X)
+𐅪 ← ι=> ops.findIndex(t=> […t].some(t=> t.id===ι.id))
+𐅃o ← ι=> 𐅝𐅦𐅦𐅬𐅨.get(ι) ;𐅝𐅦𐅦𐅬𐅨 ← ops.….index(.id)
+cmp ← new Map() .| ((a,b)=> 𐅪(b) - 𐅪(a))
+ops_lt ← ι=> memoize_proc(ι=> Set(…ops.….filter(t=> cmp(𐅃o(ι),t)<0 )) )(o_name(ι))
+o_name ← ι=> Tstr(ι)? ι : ι.tag # it is possible i want to replace all .id with .tag ,via Tag(...)
+oP ← ops=> P(Set(…ops.map(.P)))
+𐅯𐅮word ← P.not(oP(ops.…)).then(P.any1).?
+𐅋𐅬op ← (p,ops)=> p.chain(a=> P(Set(
+	,𐅋𐅬op( oP(ops).chain(o=> 𐅋𐅬op(𐅯𐅮word,ops_lt(o)).map(b=>[ o,a,b ]) ) ,ops )
+	,P.of(a) )) )
+top ← 𐅋𐅬op(𐅯𐅮word,ops.…).*?
+
+ops.….map(ι=> cmp.set…(ι,ι,1) )
+;['^','←'].map(𐅃o).map(ι=> cmp.set…(ι,ι,-1) )
+cmp.set…(𐅃o('+'),𐅃o('←'),-1)
+
+# if 'handle' 5 : 6 7
+# if 'handle' 5 : 6? 7:8
+# yield'saddlepoint'
+# ↩ ['saddlepoint' [bogan]()]
+# … ! ↩← 5
+# …! ↩←
+lines`
+'space'
+an.i.mal + so.und + cloud.grey('space')
+azo
+space ^ quon ^ now
+a + a + c + .d2^d3 × e
+a + a← b + b
+.+.
+`.map(ι=> [word.*,tree.*,top].fold((ι,p)=> p.parse(ι) ,ι) )
