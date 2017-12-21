@@ -306,7 +306,7 @@ global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
 	}})(${Tprim})`}`+'') )()
 
 t ← _( global_net._.groupBy(.-1) ).mapObject(.map(.join('.')))
-[done,todo] ← _( _(t).values().sort() ).partition(.‖===1)
+[done,todo] ← _u(t).values().sort()._.partition(.‖===1)
 done = done.map(..0)
 todo = todo._.sortBy(.‖)
 ;[code,…done,…todo]

@@ -88,7 +88,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				JSON.parse(ι).map(ι=>{
 					𐅦𐅯𐅦𐅞𐅜 ← [] ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
 					r ← catch_union2(=> ζ_eval(ι))
-					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(sb.encode.X).join('\\n') || '∅'
+					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
 					}) """,E(ι)))
 			for i in range(len(sel))[::-1]:
 				view.replace(edit ,sel[i] ,r[i])
@@ -101,7 +101,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				ends.map(end=>{
 					𐅦𐅯𐅦𐅞𐅜 ← [] ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
 					r ← catch_union2(=> ζ_eval( npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'') ) )
-					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(sb.encode.X).join('\\n') || '∅'
+					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
 					}) """,E([ ends ,view.substr(Region(0,ends[-1])) ])))
 			for i in range(len(sel))[::-1]:
 				ι = sel[i]

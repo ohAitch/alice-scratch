@@ -134,12 +134,12 @@ lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # takes a
 E.__name = name=> ‘.name !>(.enumerable= ✗) .value= name
 E.alt_ws = ι=> Set(… (ι+'').split(' ')._.sortBy(ι=> -ι.‖) )
 E.lines = ι=>{ t ← ( ι.raw? ι.raw[0] : ι ).split('\n') ;↩ t.slice( t[0].trim()?0:1 ,t.‖ - (t[-1].trim()?0:1) ) }
-E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; 𐅩𐅜𐅃𐅩𐅪←; 𐅂𐅂𐅃𐅝𐅦←; 𐅨𐅂𐅫𐅯𐅃←; 𐅋𐅝𐅞𐅬𐅰←; 𐅝𐅩𐅭𐅪𐅃←; 𐅮𐅰𐅰𐅝𐅭←; 𐅭𐅦𐅫𐅩𐅝←; 𐅦𐅞𐅃𐅝𐅪←; 𐅃𐅪𐅜𐅫𐅮←; 𐅪𐅯𐅯𐅯𐅦←;
-	word_extra ← re`♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉`
-	word ← re`A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿${word_extra}∞ᛟ`
+E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
+	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃o<)`
+	word ← re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	ζ_parse ← E.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
-		ident ← P(re`(?![0-9])[${word}]+|@`)
+		ident ← P(re`(?![0-9])${word}+|@`)
 		comment ← re`(//.*|/\*[^]*?(\*/|$)|#[\s#].*)+`
 		simple_js ← P(=> P.alt(
 			,P(comment).T`comment`
@@ -152,7 +152,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 				) ,P.alt( P(re`[ \t]*(?!${comment})/`) ,P.of('') ) )
 			,P(/\[#persist_here .*?\]/)
 			,P(re`/((?:[^/\\\[]|(?:\\.)|\[(?:[^\\\]]|(?:\\.))*\])*)/([a-z]*)`).T`regex`
-			,P(re`[^{}/#'"…${'`'})@\[\]${word}]+|[^}]`)
+			,P(re`(?:(?!${word})[^{}/#'"…${'`'})@\[\]])+|[^}]`)
 			).many() )
 		tmpl_ι ← P.alt( P.seq( P('${').T`template` ,simple_js ,P('}').T`template` ) ,P(/(?:\\[^]|(?!`|\$\{)[^])+/).T`template` )
 		js_file ← P.seq( P(/(#!.*\n)?/).T`shebang` ,simple_js )
@@ -165,18 +165,18 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(/ifΔ!/g,'ifΔbang')
 		.replace(/(=>|[=←:(,]) *(?!\.\.\.)(‘?\.)/g,(ˣ,a,b)=> a+'(𐅭𐅞)=>𐅭𐅞'+b )
-		.replace(𐅃𐅪𐅜𐅫𐅮||(𐅃𐅪𐅜𐅫𐅮= re`‘\.([${word}]+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property(ι,${ι}))` )
+		.replace(𐅃𐅪𐅜𐅫𐅮||(𐅃𐅪𐅜𐅫𐅮= re`‘\.(${word}+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property(ι,${ι}))` )
 		.replace(/‘(?=\[)/g ,`|> (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))` )
 		.replace(𐅦𐅞𐅃𐅝𐅪||(𐅦𐅞𐅃𐅝𐅪= re`(?:…${[…postfix].map(ι=> re`${ι}`.source).join('|')})(?=\s*([(:])?)`.g ),(id,right)⇒ { ,∅:js`γ[${id}]` ,'(':js`[γ[${id}]]` ,':':js`${id}` }[right] )
 		.replace(/✓/g,'true')
 		.replace(/✗/g,'false')
 		.replace(/∅/g,'undefined')
-		.replace(𐅋𐅝𐅞𐅬𐅰||(𐅋𐅝𐅞𐅬𐅰= re`🏷([${word}]+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅯𐅮𐅦𐅬𐅂(__name(${ι})).ι=`) # an initial try ;probably .name inference needs another form
+		.replace(𐅋𐅝𐅞𐅬𐅰||(𐅋𐅝𐅞𐅬𐅰= re`🏷(${word}+)(\s*)←`.g ),(ˣ,ι,s)=> js`…${ι+s}← 𐅯𐅮𐅦𐅬𐅂(__name(${ι})).ι=`) # an initial try ;probably .name inference needs another form
 		.replace(/‘lexical_env/g,`𐅯𐅮𐅦𐅬𐅂(ι=> ι.eval_in_lexical_env= ι=>eval(ι) ).ι=`)
 		.replace(/‽(?!\(|`| = \(…a\)=>)/g,'‽()')
-		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[[${word},…]+\]|\{[${word},:…]+\}|[${word}]+)(\s*)←(?=[ \t]*(;|of\b|in\b)?)`.g ),(ˣ,name,ws,eq0)=> 'var '+name+ws+(eq0?'':'=') )
+		.replace(𐅨𐅋𐅦𐅜𐅦||(𐅨𐅋𐅦𐅜𐅦= re`(\[(?:${word}|[,…])+\]|\{(?:${word}|[,:…])+\}|${word}+)(\s*)←(?=[ \t]*(;|of\b|in\b)?)`.g ),(ˣ,name,ws,eq0)=> 'var '+name+ws+(eq0?'':'=') )
 		.replace(/λ(?=\*?(?:[ \t][^\(=←]*)?\([^\)]*\)[ \t]*\{)/g,'function')
-		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@([${word}]+)`.g ),'[Symbol.$1]')
+		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@(${word}+)`.g ),'[Symbol.$1]')
 		.replace(𐅪𐅯𐅯𐅯𐅦||(𐅪𐅯𐅯𐅯𐅦= re`\.\.(${id_num})`.g ),(ˣ,ι)=> `[${ι}]`)
 		.replace(𐅩𐅜𐅃𐅩𐅪||(𐅩𐅜𐅃𐅩𐅪= re`\.(${id_c})`.g ),(ˣ,ι)=> js`[${ι}]`)
 		.replace(𐅝𐅩𐅭𐅪𐅃||(𐅝𐅩𐅭𐅪𐅃= re`(${id_c}):`.g ),(ˣ,ι)=> js`${ι}:`)
@@ -191,15 +191,15 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 			# .replace(/\.‘this/g,'["‘@"]')
 		.replace(/∞/g,'Infinity')
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ,':':'0?0' ,'{':'0?0:' }[ι]||‽)+x )
-		.replace(𐅭𐅦𐅫𐅩𐅝||(𐅭𐅦𐅫𐅩𐅝= re`(^|[^\s\)${word}]\s*)(=>(?:\s*=>)*)`.g ),(ˣ,t,ι)=> t+'()=>'.×(ι.match(/=>/g).‖))
+		.replace(𐅭𐅦𐅫𐅩𐅝||(𐅭𐅦𐅫𐅩𐅝= re`(^|(?!${word})[^\s\)]\s*)(=>(?:\s*=>)*)`.g ),(ˣ,t,ι)=> t+'()=>'.×(ι.match(/=>/g).‖))
 		.replace(/↩ ?/g,'return ')
 		.replace(/(^|[^])\^/g,(ˣ,ι)=> ι+(ι==='b'? '^' : '**') )
-		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ([${word}.]+) ([${word}.]+)`.g ),(ˣ,a,b)=>{ t ← '_'+random_id.greek(9) ;↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
+		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ t ← '_'+random_id.greek(9) ;↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
-		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`[${word_extra}]+`.g ) ,unicode_names.X) # ! eventually, remove the thing with two underscores next to each other __
+		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X) # ! eventually, remove the thing with two underscores next to each other __
 		.replace(/([{([]\s*),/g,'$1')
-		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+([${word}]+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
-		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
+		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
+		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]|𐅯).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
 	↩ memoize_tick(code=>{
 		t ← code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t # ! it is a clumsy hack to put this on all of these code paths
 		↩ ζ_parse(t).map(ι⇒
@@ -459,6 +459,7 @@ assign_properties_in_E_informal({
 ,'(Set|Map|Number).prototype.map…':λ(f){↩ @.map(f).… }
 
 ,'Set.prototype.filter':λ(f){↩ Set(…[…@].filter(f)) }
+,'Set.prototype.partition':λ(f){↩ _u([…@]).partition(f).map(ι=> Set(…ι)) }
 
 ,'Array.prototype.…':{ get(){↩ @.map…(ι=>ι) } }
 
@@ -743,7 +744,7 @@ E.easy_template = (=>{
 	↩ f=> λ(ss,…ιs){↩ f.call(@,read(ss,ιs),show) }
 	})()
 
-E.clipboard = slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${sb.encode(ι)} |`` pbcopy` )
+E.clipboard = slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
 E.sb = λ self(){↩ self._call() } # let ζ.user use sb as callable
 sb‘.tab .get==>{
 	r ← sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -752,7 +753,7 @@ sb‘.tab .get==>{
 		get(){↩ sbᵥ` view = deserialize(${@}) ;view.substr(Region(0,view.size())) ` },
 		set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
 		} )
-	r‘.push !>( .enumerable= ✗ ) .ι = λ(ι){ shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f` ;@.length = 0 ;(=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
+	r‘.push !>( .enumerable= ✗ ) .ι = λ(ι){ shₐ`${ζ_inspect(ι)} |`` open -a 'Sublime Text.app' -f` ;@.length = 0 ;(=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
 	↩ r }
 
 fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;↩ shᵥ`curl -s -X PUT localhost:${port}`+'' } # net.Socket
@@ -1010,7 +1011,7 @@ sb._call = => sb.tab.active.ι
 E.p = λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
 E.ps = Object.getOwnPropertyDescriptors
 
-E‘.require_see .get= => require_new(φ`~/code/declare/see.ζ`+"")
+# E‘.require_see .get= => require_new(φ`~/code/declare/see.ζ`+"")
 
 #################################### ζ infra ###################################
 ;(…←)(util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
@@ -1037,16 +1038,25 @@ assign_properties_in_E_informal({
 # ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ @.toString = @.inspect = λ(){↩ @.join('\n') } ;↩ @ }}
 })
-sb.encode = ι⇒
+𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors'))
+promise_watch ← ι=>{ if(! ι.id ){
+	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
+	hr ← hrtime() ;ι.then(x=>{ x ← ζ_inspect(x) ;hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;↩ ι.id } ;𐅩𐅞𐅋𐅦𐅩←0
+E.ζ_inspect = (ι,opt={})⇒
 	: ι===∅? ''
 	: Tstr(ι)? ι
-	: T.Error(ι)? ι.stack # haaack
-	: util_inspect_autodepth(ι)
+	: T.Promise(ι)? 0?0
+		: ι.status? 'Π '+𐅯𐅦(ι.ι,opt)
+		: ι.status===∅? `Π #${promise_watch(ι)} #pending`
+		: 𐅯𐅦(ι,opt)
+	: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && ⋯(ι.‖).every(t=> t in ι)
+		? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι.‖,opt)
+	: 𐅯𐅦(ι,opt)
 # EventEmitter.prototype.inspect
 
 E.log = (…ι)=>{ ι = ι.‖===1? ι[0] : ι ;log.ι(ι) ;↩ ι }
-log.ι = ι=> process.stdout.write(util_inspect_autodepth(ι,{ colors:process.stdout.isTTY })+'\n')
-E.cn = {} ;cn.log = (…ι)=> process.stdout.write(ι.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
+log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
+E.cn = {} ;cn.log = (…ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
 
 E.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e6) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
 
@@ -1061,20 +1071,7 @@ E.‡_repl_start = => ζ_repl_start({
 		lock===ι || cn.log('⛓  '+lock)
 		↩ lock } })
 E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[0m ' } …← (opt)
-	𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors'))
-	promise_watch ← ι=>{ if(! ι.id ){
-		ι.id = ((𐅩𐅞𐅋𐅦𐅩||(𐅩𐅞𐅋𐅦𐅩= [0] ))‘.0++).toString(36)
-		hr ← hrtime() ;ι.then(x=>{ x ← my_inspect(x) ;hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } }
-	my_inspect ← (ι,opt={})⇒
-		: ι===∅? ''
-		: T.Promise(ι)? 0?0
-			: ι.status? 'Π '+𐅯𐅦(ι.ι,opt)
-			: ι.status===∅?( promise_watch(ι) ,`Π #${ι.id} #pending` )
-			: 𐅯𐅦(ι,opt)
-		: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && ⋯(ι.‖).every(t=> t in ι)
-			? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι.‖,opt)
-		: 𐅯𐅦(ι,opt)
-	↩ (f=> f.call( require('repl').start({useGlobal:✓} …← (_u(opt).pick('prompt'))) ))(λ(){
+	↩ (f=> f.call( require('repl').start({ ,useGlobal:✓ ,prompt:opt.prompt }) ))(λ(){
 	@.In = [] ;@.Out = []
 	super_ ← @.completer ;@.completer = λ(line,cb){ line.trim()===''? cb(∅,[]) : super_.call(@,line,cb) }
 	@.removeAllListeners('line').on('line',λ(line){
@@ -1094,7 +1091,7 @@ E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b
 		else{
 			if( T.Promise(ι) ) @.context‘.__ .thunk= ι
 			else if( ι!==∅ ) @.context.__ = ι
-			try{ t ← my_inspect(ι,{ colors:@.outputStream.isTTY }) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
+			try{ t ← ζ_inspect(ι,{ colors:@.outputStream.isTTY }) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
 			@.outputStream.write(t && t+'\n') }
 		@.displayPrompt()
 		})

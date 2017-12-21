@@ -53,7 +53,7 @@ E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
 		a ← Set(…fs.readdirSync(base)) # ! should walk all subfiles
 		b ← Set(…fs.readdirSync(edit))
-		[same,changed] ← _([…a.∩(b)]).partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
+		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
