@@ -1,17 +1,21 @@
 # a parser is a function. typically: from a string. to a mostly ordered tree. taking non-overlapping substrings to tree nodes. mostly monotonic.
-# this parser works on strings and arrays
+
+exports‘.string .thunk==> parser('string')
+exports‘.list .thunk==> parser('list')
+parser ← type=>{
 
 ##################################### entry ####################################
 P0 ← (tag,ι)=> new_(P) …← ({tag},ι)
-P ← module.exports = ι⇒
+P ← ι⇒
+	: ι===∅||ι===null? ‽(js2`P(${ι})`)
 	: P ∋ (ι)? ι
 	: Tfun(ι)? _graph_thunk(ι)
 	: Tarr(ι)? _seq(ι.map(P.X))
 	: T.Set(ι)? _alt(ι.map(P.X))
-
-	: Tstr(ι)? ι.‖? _string(ι) : P.of('')
-	: T.RegExp(ι)? _regex_native(ι)
-
+	: type==='list' && Tprim(ι)? P.filter(t=> t===ι)
+	: type==='string' && Tstr(ι)? ι.‖? _string(ι) : P.of('')
+	: type==='string' && T.RegExp(ι)? _regex_native(ι)	
+	: ι.P? ι.P # wow lol
 	: ‽(ι)
 ;`see`; P.prototype = Tag()
 ;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
@@ -29,7 +33,7 @@ _seq ← ι=> P0('seq',{
 	,ι
 	,_:λ*(in_,i){
 		if(! @.ι.‖ ) ↩ yield win(i,[])
-		p ← P(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) } })
+		p ← _seq(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) } })
 _alt ← ι=> P0('¦',{
 	,ι
 	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
@@ -42,13 +46,12 @@ P.not = ι=> P0('not',{
 
 P.of = ι=> P0('of',{ ,ι ,_:λ*(in_,i){ yield win(i,@.ι) } })
 P.∅ = P0('∅',{ ,_:λ*(in_,i){} })
-chain ← λ(f){↩ P0('chain',{
+P.prototype.chain = λ(f){↩ P0('chain',{
 	,ι:@ ,f
 	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* P(@.f(t.ι))._(in_,t.span_to) }
 	}) }
-P.prototype.chain = chain
-P.prototype.map = λ(f){↩ chain.call(@, (ι=> P.of(f(ι))) …← ({f}) ) }
-P.prototype.filter = λ(f){↩ chain.call(@, (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
+P.prototype.map = λ(f){↩ @.chain( (ι=> P.of(f(ι))) …← ({f}) ) }
+P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
 P.filter = f=> P.any1.filter(f)
 # P.prototype.map = λ(f){↩ P0('map',{
 # 	,ι:@ ,f
@@ -68,7 +71,7 @@ P.prototype.× = λ(for_,sort){sort||(sort='desc') ;↩ P0('×',{
 	,ι:@ ,for_ ,sort
 	,_:λ*(in_,i){
 		if( !@.for_[1] ) ↩ yield win(i,[])
-		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.sort) ]).map(([x,xs])=> xs? [x,…xs] : [x] )
+		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.sort) ]).map(([x,xs])=>[x,…xs])
 		yield* ( @.for_[0]? rest : P(Set(…(@.sort==='desc'? [rest,P([])] : @.sort==='asc'? [P([]),rest] : ‽ ))))._(in_,i) }
 	}) }
 P.prototype‘['?'] .get= λ(){↩ @.×([0,1]).map(..0) }
@@ -79,7 +82,10 @@ P.prototype‘['*?'] .get= λ(){↩ @.×([0,∞],'asc') }
 P.prototype‘['+?'] .get= λ(){↩ @.×([1,∞],'asc') }
 P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
 P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
-P.prototype.join = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).* ]).map(([ι,ιs])=> [ι,…ιs]) }
+P.prototype.join   = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).*  ]).map(([ι,ιs])=> [ι,…ιs]) }
+P.prototype.join?  = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).*? ]).map(([ι,ιs])=> [ι,…ιs]) }
+P.prototype.join2  = λ(s){↩ P([ ,s ,P([@,s]).map(..0).*  ]).map(..1) }
+P.prototype.join2? = λ(s){↩ P([ ,s ,P([@,s]).map(..0).*? ]).map(..1) }
 
 ##################### in_ :: String   data root & fast path ####################
 win1u ← (in_,i)=>{ t ← chr(ord(in_,i)) ;↩ win(i+t.‖,t) }
@@ -110,3 +116,6 @@ P.unicode_category = ι=> P0('category',{
 P.any1u = P0('any1u',{
 	,_:λ*(in_,i){ if( i<in_.‖ ) yield win1u(in_,i) }
 	})
+
+################################################################################
+↩ P }

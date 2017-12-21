@@ -160,7 +160,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←; 𐅨𐅋𐅦𐅜𐅦←; �
 			ι ← js_file.parse(code)._.flatten()
 			r ← [] ;for(t← of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			↩ r } })()
-	id_c ← alt_ws`filter! map… map! has… get… set… ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ‖ ⚓ -= += ? * + & | ∃ × ! -0 -1 -2 -3 -4 - 🔒 …`
+	id_c ← alt_ws`filter! map… map! has… get… set… join? join2? ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ‖ ⚓ -= += ? * + & | ∃ × ! -0 -1 -2 -3 -4 - 🔒 …`
 	id_num ← alt_ws`0 1 2 3 4`
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(/ifΔ!/g,'ifΔbang')
@@ -458,7 +458,7 @@ assign_properties_in_E_informal({
 # ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':λ(f){↩ @.map(f).… }
 
-# ,'Set.prototype.filter':λ(f){↩ Set(…[…@].filter(f)) }
+,'Set.prototype.filter':λ(f){↩ Set(…[…@].filter(f)) }
 
 ,'Array.prototype.…':{ get(){↩ @.map…(ι=>ι) } }
 
@@ -487,7 +487,7 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String).prototype.-3':{get(){↩ @.‖<3? ∅ : @[@.‖-3] },set(ι){ @.‖<3 || (@[@.‖-3] = ι) }}
 ,'(Array|Buffer|String).prototype.-4':{get(){↩ @.‖<4? ∅ : @[@.‖-4] },set(ι){ @.‖<4 || (@[@.‖-4] = ι) }}
 
-,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].map…(ι=> […ι])) }
+,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].map…(ι=> […ι])) } # why not .… ?
 ,'(Array|Set).prototype.∩':λ(…a){ r ← new Set(@) ;for(x← of a){ x = T.Set(x)? x : new Set(x) ;for(ι← of r) x.has(ι) || r.delete(ι) } ;↩ r }
 ,'(Array|Set).prototype.-':λ(…a){ r ← new Set(@) ;for(t← of a) for(ι← of t) r.delete(ι) ;↩ r }
 ,'(Array|Set).prototype.⊕':λ(b){a←@ ;↩ a.-(b).∪(b.-(a)) }
@@ -495,7 +495,7 @@ assign_properties_in_E_informal({
 ,'Map.prototype.has…':λ(…as){ι←@ ;as.‖>=1||‽ ;_1 ← as.pop() ;for(a← of as){ ι = ι.get(a) ;if(!ι)↩ } ;↩ ι.has(_1) }
 ,'Map.prototype.get…':λ(…as){ι←@ ;for(a← of as){ ι = ι.get(a) ;if(!ι)↩ } ;↩ ι }
 ,'Map.prototype.set…':λ(…as){t←;ι←@ ;as.‖>=2||‽ ;v ← as.pop() ;_1 ← as.pop() ;for(a← of as) ι = ι.get(a)||(ι.set(a,t=new Map()),t) ;ι.set(_1,v) ;↩ v }
-,'Map.prototype.|':λ(f){↩ ((…ι)=> @.has…(…ι)? @.get…(…ι) : f(…ι)) …←([@,f]) …←({set…:(…ι)=>@.set…(…ι)}) }
+# ,'Map.prototype.|':λ(f){↩ ((…ι)=> @.has…(…ι)? @.get…(…ι) : f(…ι)) …←([@,f]) …←({set…:(…ι)=>@.set…(…ι)}) }
 
 ,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
 ,'Set.prototype.pop':λ(){ t ← @[0] ;@.delete(t) ;↩ t }
@@ -787,6 +787,7 @@ assign_properties_in_E_informal({
 })
 
 E.js = E.py = (ss,…ιs)=>{ ENC ← JSON.stringify ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.js2 = E.py2 = (ss,…ιs)=>{ ENC ← ι=> ι===∅? '∅' : JSON.stringify(ι) ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = (ss,…ιs)=>{ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"

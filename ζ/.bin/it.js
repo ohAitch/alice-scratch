@@ -160,7 +160,7 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜; var 𐅨𐅋𐅦𐅜𐅦;
 			var ι = js_file.parse(code)._.flatten()
 			var r = [] ;for(var t of ι) t.T? r.push(t) : r[-1]&&r[-1].T? r.push(t) : (r[-1]+=t)
 			return r } })()
-	var id_c = alt_ws`filter! map… map! has… get… set… ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ‖ ⚓ -= += ? * + & | ∃ × ! -0 -1 -2 -3 -4 - 🔒 …`
+	var id_c = alt_ws`filter! map… map! has… get… set… join? join2? ⁻¹declare_uniq then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ‖ ⚓ -= += ? * + & | ∃ × ! -0 -1 -2 -3 -4 - 🔒 …`
 	var id_num = alt_ws`0 1 2 3 4`
 	var ζ_compile_nonliteral = ι=> ι
 		.replace(/ifΔ!/g,'ifΔbang')
@@ -458,7 +458,7 @@ assign_properties_in_E_informal({
 // ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':function(f){return this.map(f)['…'] }
 
-// ,'Set.prototype.filter':λ(f){↩ Set(…[…@].filter(f)) }
+,'Set.prototype.filter':function(f){return 𐅯Set(...[...this].filter(f)) }
 
 ,'Array.prototype.…':{ get(){return this['map…'](ι=>ι) } }
 
@@ -487,7 +487,7 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String).prototype.-3':{get(){return this["‖"]<3? undefined : this[this["‖"]-3] },set(ι){ this["‖"]<3 || (this[this["‖"]-3] = ι) }}
 ,'(Array|Buffer|String).prototype.-4':{get(){return this["‖"]<4? undefined : this[this["‖"]-4] },set(ι){ this["‖"]<4 || (this[this["‖"]-4] = ι) }}
 
-,'(Array|Set).prototype.∪':function(...a){return new Set([this,...a]['map…'](ι=> [...ι])) }
+,'(Array|Set).prototype.∪':function(...a){return new Set([this,...a]['map…'](ι=> [...ι])) } // why not .… ?
 ,'(Array|Set).prototype.∩':function(...a){ var r = new Set(this) ;for(var x of a){ x = T.Set(x)? x : new Set(x) ;for(var ι of r) x.has(ι) || r.delete(ι) } ;return r }
 ,'(Array|Set).prototype.-':function(...a){ var r = new Set(this) ;for(var t of a) for(var ι of t) r.delete(ι) ;return r }
 ,'(Array|Set).prototype.⊕':function(b){var a=this ;return a["-"](b)["∪"](b["-"](a)) }
@@ -495,7 +495,7 @@ assign_properties_in_E_informal({
 ,'Map.prototype.has…':function(...as){var ι=this ;as["‖"]>=1||_interrobang_() ;var _1 = as.pop() ;for(var a of as){ ι = ι.get(a) ;if(!ι)return } ;return ι.has(_1) }
 ,'Map.prototype.get…':function(...as){var ι=this ;for(var a of as){ ι = ι.get(a) ;if(!ι)return } ;return ι }
 ,'Map.prototype.set…':function(...as){var t;var ι=this ;as["‖"]>=2||_interrobang_() ;var v = as.pop() ;var _1 = as.pop() ;for(var a of as) ι = ι.get(a)||(ι.set(a,t=new Map()),t) ;ι.set(_1,v) ;return v }
-,'Map.prototype.|':function(f){return ((...ι)=> this['has…'](...ι)? this['get…'](...ι) : f(...ι)) [γ['…←']]([this,f]) [γ['…←']]({'set…':(...ι)=>this['set…'](...ι)}) }
+// ,'Map.prototype.|':λ(f){↩ ((…ι)=> @.has…(…ι)? @.get…(…ι) : f(…ι)) …←([@,f]) …←({set…:(…ι)=>@.set…(…ι)}) }
 
 ,'(Set|Map).prototype.filter!':function(f){ this.forEach((ι,i)=> f(ι,i,this) || this.delete(i)) }
 ,'Set.prototype.pop':function(){ var t = this[0] ;this.delete(t) ;return t }
@@ -787,6 +787,7 @@ assign_properties_in_E_informal({
 })
 
 E.js = E.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.js2 = E.py2 = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"

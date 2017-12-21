@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 # config: os_daemon(φ`~/code/scratch/φ_Δ_archive.ζ`).restart()
 
-notify('foo')
+notify('φ_Δ_archive start')
 
 #################################### prelude ###################################
 Δ_as ← (s,f)=>{t←;ι←; last ← @device('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f)|>(simple_hash)) )){ last.ι = t; ↩ ι } }

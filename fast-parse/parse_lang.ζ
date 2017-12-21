@@ -1,4 +1,4 @@
-P ← require_new(φ`~/code/scratch/fast-parse/parser`)
+Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 
 ##################################### note #####################################
 # conceptual: word s refer to the procedure-local database of words we know about
@@ -29,8 +29,10 @@ P ← require_new(φ`~/code/scratch/fast-parse/parser`)
 # ok this is cute but lets just hardcode a lexer and get on with it
 # hardcoded lexer + word prioritization (read time) (the way clojure does macros should be good enough)
 
-# ⧫. parse_lang ==>{
+⧫. parse_lang ==> ι=> [word.*,tree.*,top].fold((ι,p)=> p.parse(ι) ,ι)
 
+##############################
+P ← Ps.string
 word ← P(Set(
 	,sharp= P(Set(
 		,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2).Tag`string`
@@ -41,28 +43,37 @@ word ← P(Set(
 	,P([ P.not(sharp),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join(''))
 	)) ;sharp←;
 
-# is ← ι=> P.filter(t=> Tstr(ι)? t===ι : re`^${ι}$`.test(t) )
-is ← ι=> P.filter(t=> t===ι)
+##############################
+P ← Ps.list
 tree ← P(=>tree) ;tree ← P(Set(
-	,… ['()round','[]square','{}curly'].map(ι=> P([ ,is(ι[0]),tree.*,is(ι[1]) ]).map(..1).Tag(ι.slice(2)))
+	,… ['()','[]','{}'].map(ι=> P([ ,ι[0],tree.*,ι[1] ]).map(..1).Tag(ι) )
 	,P.filter(ι=> ! […'()[]{}'].includes(ι) )
 	))
 
 ##############################
-# _2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
-ᛟ1 ← P.filter(ι=> ι.tag==='space' && ι.ι<=1 ).?
-ᛟ2 ← P.filter(ι=> ι.tag==='space' && ι.ι<=2 ).?
-ᛟ3 ← P.filter(ι=> ι.tag==='space' && ι.ι<=3 ).?
+build_ops1 ← (op_ord)=>{
+	op_ord=op_ord .map(ι=> T.Set(ι)? ι : Set(ι) )
+	ops ← Set(…op_ord.…)
+	𐅪 ← ι=> op_ord.findIndex(t=> […t].some(t=> t.id===ι.id))
+	cmp ← new Map()
+	ops.map(a=> ops.map(b=> cmp.set…(a,b, 𐅪(b) - 𐅪(a) ) ))
+	↩ {ops,cmp} }
 
-_2            ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,is(ι),ᛟ2]).map(..1) })
-_2_norm_tight ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,is(ι),ᛟ1]).map(..1) })
-_2_tight_norm ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ1,is(ι),ᛟ2]).map(..1) })
-ops ← [
-	,_2_norm_tight`. ‘.`
-	# ,[_,ᛟ1,'(',top,')']
-	,Set( { ,id:'round' ,P:P([ᛟ1,P.filter(.tag==='round')]).map(..1).map(ι=>( ι.ι= top.parse(ι.ι) ,ι )) } )
-	# ,[_,'[',_,']'].join2(ᛟ1)
-	# ,[_,'‘[',_,']'].join2(ᛟ1)
+# _2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
+ᛟ ← ordid=> ι=> ι.tag==='space' && ι.ι<=ordid
+ᛟ1 ← P.filter(ᛟ(1)).?
+ᛟ2 ← P.filter(ᛟ(2)).?
+ᛟ3 ← P.filter(ᛟ(3)).?
+
+_2            ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,ι,ᛟ2]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
+_2_norm_tight ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,ι,ᛟ1]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
+_2_tight_norm ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ1,ι,ᛟ2]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
+{ops,cmp} ← build_ops1([
+	,_2_norm_tight`.`
+	# ,_2_norm_tight`. ‘.`
+	,{ ,id:'_(_)'  ,P:P([ᛟ1,    P.filter(.tag==='()')]).map(..1).map(ι=>[ ι,𐅃o('_(_)' ) ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
+	,{ ,id:'_[_]'  ,P:P([ᛟ1,    P.filter(.tag==='[]')]).map(..1).map(ι=>[ ι,𐅃o('_[_]' ) ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
+	,{ ,id:'‘_[_]' ,P:P([ᛟ1,'‘',P.filter(.tag==='[]')]).map(..2).map(ι=>[ ι,𐅃o('‘_[_]') ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
 	,_2`^`
 	# ,['!','-'].map(prefix)
 	,_2`× /`
@@ -80,35 +91,30 @@ ops ← [
 	# ,['↩',ᛟ1,_.?]
 	,_2_tight_norm`⇒`
 	,_2`:`
-	]
-𐅪 ← ι=> ops.findIndex(t=> […t].some(t=> t.id===ι.id))
-𐅃o ← ι=> 𐅝𐅦𐅦𐅬𐅨.get(ι) ;𐅝𐅦𐅦𐅬𐅨 ← ops.….index(.id)
-cmp ← new Map() .| ((a,b)=> 𐅪(b) - 𐅪(a))
-ops_lt ← ι=> memoize_proc(ι=> Set(…ops.….filter(t=> cmp(𐅃o(ι),t)<0 )) )(o_name(ι))
-o_name ← ι=> Tstr(ι)? ι : ι.tag # it is possible i want to replace all .id with .tag ,via Tag(...)
-oP ← ops=> P(Set(…ops.map(.P)))
-𐅯𐅮word ← P.not(oP(ops.…)).then(P.any1).?
-𐅋𐅬op ← (p,ops)=> p.chain(a=> P(Set(
-	,𐅋𐅬op( oP(ops).chain(o=> 𐅋𐅬op(𐅯𐅮word,ops_lt(o)).map(b=>[ o,a,b ]) ) ,ops )
-	,P.of(a) )) )
-top ← 𐅋𐅬op(𐅯𐅮word,ops.…).*?
-
-ops.….map(ι=> cmp.set…(ι,ι,1) )
+	])
+ops_lt_ ← a=> ops.filter(b=> cmp.get…(𐅃o_if(a),b)<0 )
+𐅃o ← ops.index(.id) ‘.get .f ;𐅃o_if ← a=> Tstr(a)? 𐅃o(a) : a
+ops.map(ι=> cmp.set…(ι,ι,1) )
 ;['^','←'].map(𐅃o).map(ι=> cmp.set…(ι,ι,-1) )
-cmp.set…(𐅃o('+'),𐅃o('←'),-1)
+ops_lt_('←').filter(.post).filter(.id!=='.') .map(a=> cmp.set…(a,𐅃o('←'),-1) )
+ops_lt ← new Map(ops.map(a=>[a, ops_lt_(a) ]))
+
+𐅯𐅮word ← P.not(ops).then(P.any1).?
+𐅋𐅬op ← (ops,p)=> p.chain(a=> Set(
+	,𐅋𐅬op(ops, P(ops).chain(([ι,o])=>{ m ← o.map? o‘.map .f : ι=>ι ;↩ !o.post? P.of(m([ ι,a ])) : 𐅋𐅬op(ops_lt.get(o),𐅯𐅮word).map(b=> m([ ι,a,b ])) }) )
+	,P.of(a) ) )
+top ← 𐅋𐅬op(ops,𐅯𐅮word).join2?(ᛟ3)
 
 # if 'handle' 5 : 6 7
 # if 'handle' 5 : 6? 7:8
 # yield'saddlepoint'
-# ↩ ['saddlepoint' [bogan]()]
 # … ! ↩← 5
 # …! ↩←
-lines`
-'space'
-an.i.mal + so.und + cloud.grey('space')
-azo
-space ^ quon ^ now
-a + a + c + .d2^d3 × e
-a + a← b + b
-.+.
-`.map(ι=> [word.*,tree.*,top].fold((ι,p)=> p.parse(ι) ,ι) )
+;(ι=>ι)`
+an.i.mal + so.und + cloud.grey('space') x y
+space ^ azo ^ now
+.+. + c + .d2^d3 × e← b + b
+a b c d e
+↩ ['saddlepoint' [bogan]()]
+` |>(ι=>[ ,lines(ι).map(parse_lang).… ,parse_lang(ι+'') ])
+

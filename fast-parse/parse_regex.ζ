@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ
-P ← require('./parser')
+P ← require('./parser').string
 P.| = ι=> P(Set(…ι))
 
 ⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
