@@ -1,6 +1,3 @@
-Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
-
-##################################### note #####################################
 # conceptual: word s refer to the procedure-local database of words we know about
 
 # modules: ✓ ✗ null ∅ ‖
@@ -11,37 +8,33 @@ Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 
 # parenless function calls? mb figure those out after you get this working. this is haard.
 
-################################ grammar 1 flesh ###############################
-# P.err_if_partial = (a,b)⇒
-# 	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
-# 	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
-# 	𐅮𐅦𐅨𐅝𐅃 ← Error()
+# you want to find the shortest substring that parses? you do this by iterating thru the file running top1 on unparsed chars & getting back parsed spans on success
+# i think this is a cheat but a good one
 
-# leaf_prefixd ← P(Set(
-# 	,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(([ˣ,ʸ,ι])=> ι) )
-# 	))
-# _ ← P(Set(
-# 	,leaf_prefixd
-# 	,P([ P.not(leaf_prefixd),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join('')).Tag`id`
-# 	)).catch(P.err_if_partial)
-
-################################### grammar 3 ##################################
+################################################################################
 # ok this is cute but lets just hardcode a lexer and get on with it
 # hardcoded lexer + word prioritization (read time) (the way clojure does macros should be good enough)
 
-⧫. parse_lang ==> ι=> [word.*,tree.*,top].fold((ι,p)=> p.parse(ι) ,ι)
+⧫. parse_lang ==> ι=> [words,tree.*,top].fold((ι,p)=> ι && p.parse(ι) ,ι)
 
+Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 ##############################
 P ← Ps.string
-word ← P(Set(
+
+P.err_if_partial = (a,b)⇒
+	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
+	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
+	𐅮𐅦𐅨𐅝𐅃 ← Error()
+
+words ← P(Set(
 	,sharp= P(Set(
-		,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2).Tag`string`
+		,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2) ).Tag`string`
 		,P(/[ \t\n,]+/).map(ι=> ι.includes(',')? 3 : ι.includes('\n')? 2 : 1 ).Tag`space`
-		,re(alt_ws`( ) [ ] { } . ‘ + - × / ^ * ∪ ∩ …← = ≠ <= >= < > ∈ ∋ & | !> |> ? : ← ←! ↩ ⇒`)
+		,re(alt_ws`( ) [ ] { } . ‘ + - × / ^ * ∪ ∩ …← = ≠ <= >= < > ∈ ∋ & | !> |> ? : ← ←! ↩ ⇒ =>`)
 		))
 	,re(alt_ws`! …`)
 	,P([ P.not(sharp),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join(''))
-	)) ;sharp←;
+	)).*.catch(P.err_if_partial) ;sharp←;
 
 ##############################
 P ← Ps.list
@@ -51,70 +44,88 @@ tree ← P(=>tree) ;tree ← P(Set(
 	))
 
 ##############################
-build_ops1 ← (op_ord)=>{
+build_ops1 ← op_ord=>{
 	op_ord=op_ord .map(ι=> T.Set(ι)? ι : Set(ι) )
 	ops ← Set(…op_ord.…)
+	ops.map( ‘.P .thunk= λ(){↩ P(@.p.trim(_)).map(ι⇒{op:@,ι}) } )
+	ops.map( .inspect= λ(){↩ Tag('op',@.id) } )
+	ops.map(ι=> ι.map||(ι.map= (ι,…a)=> a ))
 	𐅪 ← ι=> op_ord.findIndex(t=> […t].some(t=> t.id===ι.id))
 	cmp ← new Map()
 	ops.map(a=> ops.map(b=> cmp.set…(a,b, 𐅪(b) - 𐅪(a) ) ))
 	↩ {ops,cmp} }
 
-# _2 ← ι=> (ι+'').split(' ').map(ι=> P([ _,ι,_ ]).map(ι=> [ι[0],ι[1]]).Tag(ι).join(ᛟ2) )
 ᛟ ← ordid=> ι=> ι.tag==='space' && ι.ι<=ordid
 ᛟ1 ← P.filter(ᛟ(1)).?
 ᛟ2 ← P.filter(ᛟ(2)).?
 ᛟ3 ← P.filter(ᛟ(3)).?
-
-_2            ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,ι,ᛟ2]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
-_2_norm_tight ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ2,ι,ᛟ1]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
-_2_tight_norm ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,P:P([ᛟ1,ι,ᛟ2]).map(..1).map(ι=>[ ι,𐅃o(ι) ]) ,post:✓ })
+_ ← P(=>‽('_'))
+op_ws ← f=> ι=> alt_ws(ι).map_(f)
+# _R𐅯 ←  
+R_ ← op_ws(ι⇒{ ,id:ι ,p:[ι,ᛟ1,_] })
+𐅯2 ← (id,…ι)⇒{ ,id ,p:[_,…ι,_] }
+_2 ← op_ws(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
+# it should work fine to separate the map from the parser & just have it as an array and inspect it for the preposting
 {ops,cmp} ← build_ops1([
-	,_2_norm_tight`.`
-	# ,_2_norm_tight`. ‘.`
-	,{ ,id:'_(_)'  ,P:P([ᛟ1,    P.filter(.tag==='()')]).map(..1).map(ι=>[ ι,𐅃o('_(_)' ) ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
-	,{ ,id:'_[_]'  ,P:P([ᛟ1,    P.filter(.tag==='[]')]).map(..1).map(ι=>[ ι,𐅃o('_[_]' ) ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
-	,{ ,id:'‘_[_]' ,P:P([ᛟ1,'‘',P.filter(.tag==='[]')]).map(..2).map(ι=>[ ι,𐅃o('‘_[_]') ]) ,map([ι,a]){↩[ @.id,a,…top.parse(ι.ι) ]} }
+	,'.'|>(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ1))
+	,𐅯2('‘.',ᛟ2,'‘','.',ᛟ1)
+	,{ ,id:'_(_)'  ,p:[_,ᛟ1,    P.filter(.tag==='()')] ,map(ι,a){↩[ a,…top.parse(ι[1].ι) ]} }
+	,{ ,id:'_[_]'  ,p:[_,ᛟ1,    P.filter(.tag==='[]')] ,map(ι,a){↩[ a,…top.parse(ι[1].ι) ]} }
+	,{ ,id:'‘_[_]' ,p:[_,ᛟ1,'‘',P.filter(.tag==='[]')] ,map(ι,a){↩[ a,…top.parse(ι[2].ι) ]} }
 	,_2`^`
-	# ,['!','-'].map(prefix)
+	,R_`!`
 	,_2`× /`
-	# ,[,[ P(Set( free,_ )),ᛟ1,'-',ᛟ2,_ ] ]
-	,_2`+ -`
+	,Set( ,…_2`+` ,'-'|>(ι=> 𐅯2(ι,ᛟ1,ι,ᛟ2)) )
 	,_2`∪ ∩`
 	,_2`…←`
 	,_2`= ≠ <= >= < > ∈ ∋`
 	,_2`& |`
 	,_2`!> |>`
 	# ,[_,'?',_,':',_].join2(ᛟ2)
+	# ,{ ,id:'if?' ,pre:✓ ,:post:✓ ,p:P([ᛟ2,'?',ᛟ2,‡‡,ᛟ2,':',ᛟ2]).map(..3).map(a=>[ 𐅃o('if?'),'if',a ]) }
 	# ,[ 'if',_,P(':').?,_,P(/:|else/).?,_ ].join2(ᛟ2)
+	,alt_ws`⇒ =>`.map_(ι=> 𐅯2(ι,ᛟ1,ι,ᛟ2))
 	,_2`←`
-	# ,['…'].map(prefix)
-	# ,['↩',ᛟ1,_.?]
-	,_2_tight_norm`⇒`
+	,R_`…`
+	,R_`↩`
 	,_2`:`
+	# nonprefixed () [] {}
 	])
-ops_lt_ ← a=> ops.filter(b=> cmp.get…(𐅃o_if(a),b)<0 )
-𐅃o ← ops.index(.id) ‘.get .f ;𐅃o_if ← a=> Tstr(a)? 𐅃o(a) : a
-ops.map(ι=> cmp.set…(ι,ι,1) )
-;['^','←'].map(𐅃o).map(ι=> cmp.set…(ι,ι,-1) )
-ops_lt_('←').filter(.post).filter(.id!=='.') .map(a=> cmp.set…(a,𐅃o('←'),-1) )
-ops_lt ← new Map(ops.map(a=>[a, ops_lt_(a) ]))
+𐅃o ← ι=> 𐅫𐅫𐅂𐅰𐅩(Tstr(ι)? ι : ι.id) ;𐅫𐅫𐅂𐅰𐅩 ← ops.index(.id) ‘.get .f
+𐅃o< ← a=> ops.filter(b=> b.p[0]===_ && cmp.get…(𐅃o(a),b)<0 )
+cmp_is ← (a,b,ι)=> cmp.set…(𐅃o(a),𐅃o(b),ι)
+ops.map(ι=> cmp_is(ι,ι,1) )
+;['^','←'].map(ι=> cmp_is(ι,ι,-1) )
+b ← '←' ;𐅃o<(b).filter(.id!=='.') .map(a=> cmp_is(a,b,-1) )
+a ← '-' ;c ← '!' ;𐅃o<(a).-(𐅃o<(c)) .map(b=> cmp_is(a,b,1) )
+𐅃o< = memoize_proc(𐅃o<)
 
-𐅯𐅮word ← P.not(ops).then(P.any1).?
-𐅋𐅬op ← (ops,p)=> p.chain(a=> Set(
-	,𐅋𐅬op(ops, P(ops).chain(([ι,o])=>{ m ← o.map? o‘.map .f : ι=>ι ;↩ !o.post? P.of(m([ ι,a ])) : 𐅋𐅬op(ops_lt.get(o),𐅯𐅮word).map(b=> m([ ι,a,b ])) }) )
-	,P.of(a) ) )
-top ← 𐅋𐅬op(ops,𐅯𐅮word).join2?(ᛟ3)
+𐅯𐅮word ← P.not(Set( ops ,P.filter(.tag==='space') )).then(P.any1).?
+𐅩𐅫opR_ ← (ops,a)=> P(ops).chain(({op,ι})⇒
+	: op.p[-1]===_? 𐅯𐅮word.chain(𐅋𐅬ifpost(𐅃o<(op))).map(b=>[ op.id ,…op.map(ι,a,b) ])
+	: P.of([ op.id ,…op.map(ι,a) ])
+	).chain(𐅋𐅬ifpost(ops))
+𐅋𐅬ifpost ← ops=> a=>Set( 𐅩𐅫opR_(ops,a) ,P.of(a) )
+𐅃𐅪𐅨𐅭𐅫 ← P(Set( 𐅩𐅫opR_(ops,∅) ,𐅯𐅮word.chain(𐅋𐅬ifpost( ops.filter(.p[0]===_) )) ))
+top ← 𐅃𐅪𐅨𐅭𐅫.join2?(ᛟ3)
+top1 ← ᛟ3.then(𐅃𐅪𐅨𐅭𐅫)
 
-# if 'handle' 5 : 6 7
-# if 'handle' 5 : 6? 7:8
-# yield'saddlepoint'
-# … ! ↩← 5
-# …! ↩←
-;(ι=>ι)`
+parse_lang(`
+cmp_is ← (a,b,ι)=> cmp.set…(𐅃o(a),𐅃o(b),ι)
+=> e ← 5
+! a‘.b
++ 6
+- 6
+if 'handle' 5 : 6 7
+if 'handle' 5 : 6? 7:8
+yield'saddlepoint'
+… ! ↩
+! x + 5
+- 7
+#####
 an.i.mal + so.und + cloud.grey('space') x y
 space ^ azo ^ now
-.+. + c + .d2^d3 × e← b + b
+( .+. + c + .d2^d3 × e← b + b )
 a b c d e
-↩ ['saddlepoint' [bogan]()]
-` |>(ι=>[ ,lines(ι).map(parse_lang).… ,parse_lang(ι+'') ])
-
+↩ ( ['saddlepoint' [bogan]()] )
+`)

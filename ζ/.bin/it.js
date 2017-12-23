@@ -24,7 +24,7 @@ var slot0 = (get,set)=>{ var t = {} ;def(t,'ι',{get,set}) ;return t }
 E.𐅯Set = (...ι)=> new Set(ι)
 
 //################################### prelude ###################################
-E._interrobang_ = (...a)=>{ throw a["‖"]===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' ')) }
+E._interrobang_ = (...a)=>{ throw a["‖"]===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : ζ_inspect(ι)).join(' ')) }
 E.catch_union = f=>{ try{ var r = f() ;var bad = T.Error(r) ;if( !bad) return r }catch(e){ var r = e ;T.Error(r) || _interrobang_() ;return r } ;bad && _interrobang_() }
 E.catch_union2 = f=>{ try{return f() }catch(e){return e } }
 E.catch_ι = f=>{ try{ var r = f() ;var bad = r===undefined ;if( !bad) return r }catch(e){} ;bad && _interrobang_() }
@@ -33,7 +33,7 @@ E.return_ = ι=>{ throw {__catchable:ι} }
 E.new_ = ι=> Object.create( ι? ι.prototype || ι : null )
 
 E.T = ι=>{var t;
-	if( (t= typeof ι)!=='object' ) return t ;if( ι===null ) return 'null'
+	if( (t= typeof ι)!=='object' ) return t==='boolean'? '✓✗' : t ;if( ι===null ) return 'null'
 	if( Object.getPrototypeOf(ι)===Object.prototype ) return 'object'
 	for( t of is_l ) if( t[1](ι) ) return t[0]
 	return 'object' }
@@ -48,7 +48,7 @@ var is_l = [
 // would like to be using ∈ instead
 Object.assign(T,_u(is_l).object(),{
 	symbol: ι=> typeof ι==='symbol'
-	,boolean: ι=> typeof ι==='boolean'
+	,truefalse: ι=> typeof ι==='boolean'
 	,string: ι=> typeof ι==='string'
 	,number: ι=> typeof ι==='number'
 	,function: ι=> typeof ι==='function'
@@ -229,7 +229,7 @@ var properties_tree_formalify = ι=>
 			,(o,i)=> Tfun(ι)? o[i] = ι : def0(o,i,ι)
 			) ,{})
 var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι) ;[...patched].forEach(o=> assign_properties_in(o,ι)) }
-module.exports = to=> patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching') ,cn.log(Error('<stack>').stack) ,patched.add(to) ,assign_properties_in(to,E_) )
+module.exports = to=> patched.has(to) || ( log('\x1b[34m[ζ]\x1b[0m patching') ,log(Error('<stack>')) ,patched.add(to) ,assign_properties_in(to,E_) )
 
 //################################### prelude ###################################
 E.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
@@ -469,6 +469,9 @@ assign_properties_in_E_informal({
 ,'Array.prototype.repeat':function(x){return x<=0? [] : x['map…'](()=> this) }
 ,'Buffer.prototype.repeat':function(x){return Buffer.concat(x<=0? [] : x.map(()=> this)) }
 
+// ,'String.prototype.trim':λ(ι=/\s+/)){↩ @.replace(re`^${ι}|${ι}$`.g,'') }
+,'Array.prototype.trim':function(ι){ var a = this[0]===ι ;var b = this[-1]===ι ;return !(a||b)? this : this.slice( a?1:0 ,b?"-1":this["‖"] )}
+
 ,'String.prototype.×':String.prototype.repeat
 ,'Array.prototype.×':function(x){return x<=0? [] : x['map…'](()=> this) }
 ,'Buffer.prototype.×':function(x){return Buffer.concat(x<=0? [] : x.map(()=> this)) }
@@ -625,101 +628,6 @@ E.Δ_Sets = (...a)=>{ var f = a.pop()
 
 E.falsy = ι=> ι===undefined||ι===null||ι===false
 E.orundefined = (a,b)=> a!==undefined? a : b
-
-//#################################### .ζrc #####################################
-process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
-
-E.sfx = (ss,...ιs)=>{ var ι = ss[0]
-	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ var br = npm`brightness@3.0.0` ;br.get()[γ["|>"]](t=>{ br.set(0) ;(()=> br.set(t)).in(0.2) }) }
-	}
-// E‘.anon .get==>{t←; ↩ [t=random_id.greek(5),t+'←;'] }
-E[γ["|>"]] (ι=> new Property(ι,"anon")) .get=()=> random_id.greek(5)
-E[γ["|>"]] (ι=> new Property(ι,"now")) .get=()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }
-E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
-
-E.github_url = ι=>{
-	var github_remote_origin = file=>{
-		var ι = φ(file).root('/')
-		var root = ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
-		if( root+''==='/' ) throw Error() [γ['…←']] ({ human:'did not find github remote origin for '+(file||'<anon>') })
-		ι = (ι+'').slice((root+'/')["‖"])
-		var name = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
-		var commit = /*jet[*/ catch_ι(()=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
-		return encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
-	var [file,h] = sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
-	var fm = ι=> 'L'+(ι+1)
-	return github_remote_origin(file||'')+( _almost_equal_to_(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
-E.go_to = (...a)=>{ // synonyms? ,go_to ,open ,search
-	var opt = !Tprim(a[-1])? a.pop() : {}
-	var type = a["‖"]===1? undefined : a.shift()
-	var ι = a[0]
-	var {new:new_,focus,in_app,sb_view_file_name} = { new:false ,focus:true ,in_app:undefined ,sb_view_file_name:undefined } [γ['…←']] (opt)
-
-	var is_url =(𐅭𐅞)=>𐅭𐅞.re`^((https?|chrome-extension)://|file:|mailto:)`
-	var searchify = ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
-
-	in_app && (in_app = in_app.toLowerCase())
-
-	focus || sfx`ack`
-
-	// windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
-	// apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
-
-	//########################### go to specific chrome ###########################
-	// this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
-	// 	# System Events got an error: osascript is not allowed assistive access
-	// 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
-	//  
-	// 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
-
-	if( !type){ !new_ || _interrobang_()
-		if( !is_url(ι)) ι = searchify(ι)
-		if( !in_app && ι.re`^file:`){
-			var file = decodeURI(ι).replace(re`^file:(//)?`,'')
-			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||_interrobang_()).φ`..`+'' ,file ))
-			if( φ(file).is_dir) in_app = 'path finder'
-			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
-			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
-			else in_app = 'sublime text'
-			var [ˣ,p,r] = decodeURI(ι).re`^(.*?:)([^]*)` ;var ι = p+r.replace(/[^\/]+/g,encodeURIComponent.X)
-			}
-		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
-		else{
-			in_app ||( in_app = 'chrome' )
-			if( in_app==='chrome'){
-				var t = osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
-					{ var [window_,tab] = t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;return } }
-			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` // bug workaround
-			shᵥ`open …${in_app && sh`-b ${in_app [γ["|>"]] (memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
-			}
-		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
-		}
-	else if( type==='app'){ ( !new_ && focus && !in_app )||_interrobang_() ;var app = ι
-		// ! should gather most of this information periodically async & record it. should use FRP.
-		var hint_screen = {'sublime text':2 ,'path finder':3 ,'github desktop':4}
-		var isnt_standalone = {ibooks:1 ,preview:1}
-		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',...'chrome↩'].map(robot_key_tap) ;return }
-		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
-		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
-		}
-	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||_interrobang_() ;robot_key_tap('^'+ι) }
-	else if( type==='path'){ ( !new_ && focus )||_interrobang_()
-		// ! i think this might be a pretty badly designed type
-		new_ = true
-		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || _interrobang_() // ! duplication with sublime/User/it.py:FIND_RESULT
-			// in_app = 'sublime text'
-			var [ˣ,ι,line] = ι.re`^(.+):(\d+):$`
-			ι = φ('~/file/'+ι)
-			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;return }
-		if( in_app==='terminal'){
-			var here = hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` // ... the behavior changed. fuck
-			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
-			var available = 𐅯Set(here)["∩"](unbusy())[0]
-			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;return }
-		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
-		}
-	else _interrobang_() }
 
 //##### metaprogramming → runtime macros built on top of template literals ######
 // to design this correctly ,(ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
@@ -1013,7 +921,101 @@ E.ps = Object.getOwnPropertyDescriptors
 
 // E‘.require_see .get= => require_new(φ`~/code/declare/see.ζ`+"")
 
-//################################### ζ infra ###################################
+process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
+
+E.sfx = (ss,...ιs)=>{ var ι = ss[0]
+	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ var br = npm`brightness@3.0.0` ;br.get()[γ["|>"]](t=>{ br.set(0) ;(()=> br.set(t)).in(0.2) }) }
+	}
+// E‘.anon .get==>{t←; ↩ [t=random_id.greek(5),t+'←;'] }
+E[γ["|>"]] (ι=> new Property(ι,"anon")) .get=()=> random_id.greek(5)
+E[γ["|>"]] (ι=> new Property(ι,"now")) .get=()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }
+E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
+
+E.github_url = ι=>{
+	var github_remote_origin = file=>{
+		var ι = φ(file).root('/')
+		var root = ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+		if( root+''==='/' ) throw Error() [γ['…←']] ({ human:'did not find github remote origin for '+(file||'<anon>') })
+		ι = (ι+'').slice((root+'/')["‖"])
+		var name = root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
+		var commit = /*jet[*/ catch_ι(()=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
+		return encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+	var [file,h] = sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
+	var fm = ι=> 'L'+(ι+1)
+	return github_remote_origin(file||'')+( _almost_equal_to_(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+E.go_to = (...a)=>{ // synonyms? ,go_to ,open ,search
+	var opt = !Tprim(a[-1])? a.pop() : {}
+	var type = a["‖"]===1? undefined : a.shift()
+	var ι = a[0]
+	var {new:new_,focus,in_app,sb_view_file_name} = { new:false ,focus:true ,in_app:undefined ,sb_view_file_name:undefined } [γ['…←']] (opt)
+
+	var is_url =(𐅭𐅞)=>𐅭𐅞.re`^((https?|chrome-extension)://|file:|mailto:)`
+	var searchify = ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
+
+	in_app && (in_app = in_app.toLowerCase())
+
+	focus || sfx`ack`
+
+	// windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
+	// apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
+
+	//########################### go to specific chrome ###########################
+	// this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
+	// 	# System Events got an error: osascript is not allowed assistive access
+	// 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	//  
+	// 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if( !type){ !new_ || _interrobang_()
+		if( !is_url(ι)) ι = searchify(ι)
+		if( !in_app && ι.re`^file:`){
+			var file = decodeURI(ι).replace(re`^file:(//)?`,'')
+			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||_interrobang_()).φ`..`+'' ,file ))
+			if( φ(file).is_dir) in_app = 'path finder'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
+			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
+			else in_app = 'sublime text'
+			var [ˣ,p,r] = decodeURI(ι).re`^(.*?:)([^]*)` ;var ι = p+r.replace(/[^\/]+/g,encodeURIComponent.X)
+			}
+		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if( in_app==='chrome'){
+				var t = osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
+					{ var [window_,tab] = t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;return } }
+			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` // bug workaround
+			shᵥ`open …${in_app && sh`-b ${in_app [γ["|>"]] (memoize_persist(ι=> catch_ι(()=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			}
+		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
+		}
+	else if( type==='app'){ ( !new_ && focus && !in_app )||_interrobang_() ;var app = ι
+		// ! should gather most of this information periodically async & record it. should use FRP.
+		var hint_screen = {'sublime text':2 ,'path finder':3 ,'github desktop':4}
+		var isnt_standalone = {ibooks:1 ,preview:1}
+		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',...'chrome↩'].map(robot_key_tap) ;return }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
+		}
+	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||_interrobang_() ;robot_key_tap('^'+ι) }
+	else if( type==='path'){ ( !new_ && focus )||_interrobang_()
+		// ! i think this might be a pretty badly designed type
+		new_ = true
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || _interrobang_() // ! duplication with sublime/User/it.py:FIND_RESULT
+			// in_app = 'sublime text'
+			var [ˣ,ι,line] = ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;return }
+		if( in_app==='terminal'){
+			var here = hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` // ... the behavior changed. fuck
+			var unbusy = ()=> osaᵥ`terminal: id of windows where busy = false`
+			var available = 𐅯Set(here)["∩"](unbusy())[0]
+			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;return }
+		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
+		}
+	else _interrobang_() }
+
+//##################################### see #####################################
 ;(γ['…←'])(util.inspect.styles,{ null:'grey' ,quote:'bold' })
 ;[process,module].map((𐅭𐅞)=>𐅭𐅞.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) // ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 ;['γ','Object'].map(ι=>{
@@ -1027,24 +1029,28 @@ var Unit = (ι,u)=>0?0: {ι,u}
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"valueOf")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(){return this.ι } )
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"inspect")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(ˣ,opt){return util.inspect(this.ι,opt)+' '+opt.stylize(this.u,'number') } )
 assign_properties_in_E_informal({
-'Number.prototype.inspect':function(d,opt){'use strict' ;var ι = this ;if(! Tprim(ι) ) return ι ;return opt.stylize( Object.is(ι,-0)? '-0' : ι===Infinity? '∞' : ι===-Infinity? '-∞'
-	: Number.isSafeInteger(ι)? ''+ι
-	: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
-	,'number') }
-,'Boolean.prototype.inspect':function(d,opt){'use strict' ;return opt.stylize( this?'✓':'✗','boolean' ) }
+'Number.prototype.inspect':function(d,opt){'use strict' ;var ι = this ;if(! Tprim(ι) ) return ι ;return ζ_inspect(ι,opt) }
+,'Boolean.prototype.inspect':function(d,opt){'use strict' ;var ι = this ;if(! Tprim(ι) ) return ι ;return ζ_inspect(ι,opt) }
 ,'Date.prototype.inspect':function(d,opt){return opt.stylize(isNaN(+this)? 'Invalid Date' : this.getUTCSeconds()!==0? this.ymdhms : this.getUTCMinutes()!==0? this.ymdhm : this.getUTCHours()!==0? this.ymdh : this.ymd, 'date')}
 // ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
 // ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
 // ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ this.toString = this.inspect = function(){return this.join('\n') } ;return this }}
 })
-var 𐅯𐅦 = (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors'))
+E.util_inspect_autodepth = (ι,opt={})=>{ γ.𐅦𐅦𐅝𐅨𐅫 = opt; opt.L || (opt.L = 1e6) ;var last; for(var i=1;;i++){ var r = util.inspect(ι,{ maxArrayLength:opt.L/3 |0 ,depth:i } [γ['…←']] (opt)) ;if( r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last ;last = r } }
+var 𐅯𐅦 = (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
 var promise_watch = ι=>{ if(! ι.id ){
 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
 	var hr = hrtime() ;ι.then(x=>{ var x = ζ_inspect(x) ;hrtime(hr) < 5 && x["‖"] && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;return ι.id } ;var 𐅩𐅞𐅋𐅦𐅩=0
+var stylize = ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;var r ;return r }
 E.ζ_inspect = (ι,opt={})=>0?0
 	: ι===undefined? ''
+	: T.truefalse(ι)? stylize(opt)(ι?'✓':'✗','boolean' )
 	: Tstr(ι)? ι
+	: Tnum(ι)? stylize(opt)(Object.is(ι,-0)? '-0' : ι===Infinity? '∞' : ι===-Infinity? '-∞'
+		: Number.isSafeInteger(ι)? ''+ι
+		: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
+		,'number')
 	: T.Promise(ι)? 0?0
 		: ι.status? 'Π '+𐅯𐅦(ι.ι,opt)
 		: ι.status===undefined? `Π #${promise_watch(ι)} #pending`
@@ -1053,13 +1059,20 @@ E.ζ_inspect = (ι,opt={})=>0?0
 		? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι["‖"],opt)
 	: 𐅯𐅦(ι,opt)
 // EventEmitter.prototype.inspect
+var sh_inspect = ι=>{var t;
+	var Π = ι=> Promise.resolve(ι) // COPY
+	return Π( 0?0
+	: T.Promise(ι)? ι.then(sh_inspect)
+	: ι===undefined? {}
+	: Tstr(ι)? {out:ι}
+	: T.truefalse(ι)? {code:ι?0:1}
+	: (t=catch_union(()=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
+	: {out:ι+''} )}
 
 E.log = (...ι)=>{ ι = ι["‖"]===1? ι[0] : ι ;log.ι(ι) ;return ι }
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
-E.cn = {} ;cn.log = (...ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
 
-E.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e6) ;var last; for(var i=1;;i++){ var r = util.inspect(ι,{ maxArrayLength:opt.L/3 |0 ,depth:i } [γ['…←']] (opt)) ;if( r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last ;last = r } }
-
+//################################### ζ infra ###################################
 E._double_dagger__repl_start = ()=> ζ_repl_start({
 	prompt:'\x1b[30m\x1b[100m‡\x1b[0m '
 	// i know how to make the good repl for ct. i want to, but im tired
@@ -1068,7 +1081,7 @@ E._double_dagger__repl_start = ()=> ζ_repl_start({
 			: ['ct','chrome_tabs','ps2','d','bookmarks']["∪"]([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
-		lock===ι || cn.log('⛓  '+lock)
+		lock===ι || log('⛓  '+lock)
 		return lock } })
 E.ζ_repl_start = opt=>{ opt = { compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[0m ' } [γ['…←']] (opt)
 	return (f=> f.call( require('repl').start({ useGlobal:true ,prompt:opt.prompt }) ))(function(){
@@ -1111,23 +1124,17 @@ E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
 φ`~/code/declare/module.ζ`.BAD_exists() &&
 	require(φ`~/code/declare/module.ζ`+'').patch(E)
 
+//#################################### trash ####################################
+E.cn = {} ;cn.log = (...ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
+
 //#################################### main #####################################
-var sh_ify = ι=>{var t;
-	var Π = ι=> Promise.resolve(ι) // COPY
-	return Π( 0?0
-	: T.Promise(ι)? ι.then(sh_ify.X)
-	: ι===undefined? {}
-	: Tstr(ι)? {out:ι}
-	: T.boolean(ι)? {code:ι?0:1}
-	: (t=catch_union(()=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
-	: {out:ι+''} )}
 E.ζ_main = ({a})=>{var ι;
 	a[0]==='--fresh' && a.shift()
 	if( !a["‖"] ) ζ_repl_start()
 	else if( ι=a[0] ,φ(ι).BAD_exists() || ι.re`^\.?/` ){ process.argv = [process.argv[0],...a] ;var t = φ(ι).root('/')+'' ;var o=Module._cache;var m=Module._resolveFilename(t,undefined,true);var oι=o[m] ;o[m] = undefined ;Module._load(t,undefined,true) ;o[m] = oι }
 	else {
 		γ [γ['…←']] ({ require ,a }) ;γ.code = a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0] ;γ.module = { exports:{} }
-		sh_ify(ζ_eval(returnfix_compile(do_end_undefined_thing(code))))
+		sh_inspect( ζ_eval(returnfix_compile(do_end_undefined_thing(code))) )
 			.then(ι=>{ ι.out && process.stdout.write(ι.out) ;ι.code &&( process.exitCode = ι.code ) })
 		}
 	}

@@ -24,7 +24,7 @@ slot0 ← (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
 E.𐅯Set = (…ι)=> new Set(ι)
 
 #################################### prelude ###################################
-E.‽ = (…a)=>{ throw a.‖===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : util_inspect_autodepth(ι)).join(' ')) }
+E.‽ = (…a)=>{ throw a.‖===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : ζ_inspect(ι)).join(' ')) }
 E.catch_union = f=>{ try{ r ← f() ;bad ← T.Error(r) ;if( !bad) ↩ r }catch(e){ r ← e ;T.Error(r) || ‽ ;↩ r } ;bad && ‽ }
 E.catch_union2 = f=>{ try{↩ f() }catch(e){↩ e } }
 E.catch_ι = f=>{ try{ r ← f() ;bad ← r===∅ ;if( !bad) ↩ r }catch(e){} ;bad && ‽ }
@@ -33,7 +33,7 @@ E.return_ = ι=>{ throw {__catchable:ι} }
 E.new_ = ι=> Object.create( ι? ι.prototype || ι : null )
 
 E.T = ι=>{t←;
-	if( (t= typeof ι)!=='object' ) ↩ t ;if( ι===null ) ↩ 'null'
+	if( (t= typeof ι)!=='object' ) ↩ t==='boolean'? '✓✗' : t ;if( ι===null ) ↩ 'null'
 	if( Object.getPrototypeOf(ι)===Object.prototype ) ↩ 'object'
 	for( t of is_l ) if( t[1](ι) ) ↩ t[0]
 	↩ 'object' }
@@ -48,7 +48,7 @@ is_l ← [
 # would like to be using ∈ instead
 Object.assign(T,_u(is_l).object(),{
 	,symbol: ι=> typeof ι==='symbol'
-	,boolean: ι=> typeof ι==='boolean'
+	,✓✗: ι=> typeof ι==='boolean'
 	,string: ι=> typeof ι==='string'
 	,number: ι=> typeof ι==='number'
 	,function: ι=> typeof ι==='function'
@@ -229,7 +229,7 @@ properties_tree_formalify ← ι=>
 			,(o,i)=> Tfun(ι)? o[i] = ι : def0(o,i,ι)
 			) ,{})
 assign_properties_in_E_informal ← ι=>{ ι = properties_tree_formalify(ι) ;[…patched].forEach(o=> assign_properties_in(o,ι)) }
-module.exports = to=> patched.has(to) || ( cn.log('\x1b[34m[ζ]\x1b[0m patching') ,cn.log(Error('<stack>').stack) ,patched.add(to) ,assign_properties_in(to,E_) )
+module.exports = to=> patched.has(to) || ( log('\x1b[34m[ζ]\x1b[0m patching') ,log(Error('<stack>')) ,patched.add(to) ,assign_properties_in(to,E_) )
 
 #################################### prelude ###################################
 E.protos = λ*(ι){ for(;!( ι===null || ι===∅ ) ;ι = Object.getPrototypeOf(ι)) yield ι }
@@ -469,6 +469,9 @@ assign_properties_in_E_informal({
 ,'Array.prototype.repeat':λ(x){↩ x<=0? [] : x.map…(=> @) }
 ,'Buffer.prototype.repeat':λ(x){↩ Buffer.concat(x<=0? [] : x.map(=> @)) }
 
+# ,'String.prototype.trim':λ(ι=/\s+/)){↩ @.replace(re`^${ι}|${ι}$`.g,'') }
+,'Array.prototype.trim':λ(ι){ a ← @[0]===ι ;b ← @[-1]===ι ;↩ !(a||b)? @ : @.slice( a?1:0 ,b?-1:@.‖ )}
+
 ,'String.prototype.×':String.prototype.repeat
 ,'Array.prototype.×':λ(x){↩ x<=0? [] : x.map…(=> @) }
 ,'Buffer.prototype.×':λ(x){↩ Buffer.concat(x<=0? [] : x.map(=> @)) }
@@ -625,101 +628,6 @@ E.Δ_Sets = (…a)=>{ f ← a.pop()
 
 E.falsy = ι=> ι===∅||ι===null||ι===✗
 E.or∅ = (a,b)=> a!==∅? a : b
-
-##################################### .ζrc #####################################
-process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
-
-E.sfx = (ss,…ιs)=>{ ι ← ss[0]
-	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get()|>(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
-	}
-# E‘.anon .get==>{t←; ↩ [t=random_id.greek(5),t+'←;'] }
-E‘.anon .get==> random_id.greek(5)
-E‘.now .get==>{ t ← Time() ;↩ [t.ymdhm,t.ymdhms,t.ymdhmss] }
-E‘.day .get==> Time().local.ymd
-
-E.github_url = ι=>{
-	github_remote_origin ← file=>{
-		ι ← φ(file).root('/')
-		root ← ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
-		if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
-		ι = (ι+'').slice((root+'/').‖)
-		name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
-		commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
-		↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
-	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
-	fm ← ι=> 'L'+(ι+1)
-	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
-E.go_to = (…a)=>{ # synonyms? ,go_to ,open ,search
-	opt ← !Tprim(a[-1])? a.pop() : {}
-	type ← a.‖===1? ∅ : a.shift()
-	ι ← a[0]
-	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
-
-	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
-	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
-
-	in_app && (in_app = in_app.toLowerCase())
-
-	focus || sfx`ack`
-
-	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
-	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
-
-	############################ go to specific chrome ###########################
-	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
-	# 	# System Events got an error: osascript is not allowed assistive access
-	# 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
-	#  
-	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
-
-	if( !type){ !new_ || ‽
-		if( !is_url(ι)) ι = searchify(ι)
-		if( !in_app && ι.re`^file:`){
-			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
-			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
-			if( φ(file).is_dir) in_app = 'path finder'
-			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
-			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
-			else in_app = 'sublime text'
-			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
-			}
-		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
-		else{
-			in_app ||( in_app = 'chrome' )
-			if( in_app==='chrome'){
-				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
-					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
-			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
-			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
-			}
-		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
-		}
-	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
-		# ! should gather most of this information periodically async & record it. should use FRP.
-		hint_screen ← {'sublime text':2 ,'path finder':3 ,'github desktop':4}
-		isnt_standalone ← {ibooks:1 ,preview:1}
-		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
-		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
-		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
-		}
-	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
-	else if( type==='path'){ ( !new_ && focus )||‽
-		# ! i think this might be a pretty badly designed type
-		new_ = ✓
-		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
-			# in_app = 'sublime text'
-			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
-			ι = φ('~/file/'+ι)
-			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
-		if( in_app==='terminal'){
-			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
-			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
-			available ← Set(here).∩(unbusy())[0]
-			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
-		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
-		}
-	else ‽ }
 
 ###### metaprogramming → runtime macros built on top of template literals ######
 # to design this correctly ,(ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
@@ -1013,7 +921,101 @@ E.ps = Object.getOwnPropertyDescriptors
 
 # E‘.require_see .get= => require_new(φ`~/code/declare/see.ζ`+"")
 
-#################################### ζ infra ###################################
+process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
+
+E.sfx = (ss,…ιs)=>{ ι ← ss[0]
+	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get()|>(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
+	}
+# E‘.anon .get==>{t←; ↩ [t=random_id.greek(5),t+'←;'] }
+E‘.anon .get==> random_id.greek(5)
+E‘.now .get==>{ t ← Time() ;↩ [t.ymdhm,t.ymdhms,t.ymdhmss] }
+E‘.day .get==> Time().local.ymd
+
+E.github_url = ι=>{
+	github_remote_origin ← file=>{
+		ι ← φ(file).root('/')
+		root ← ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+		if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
+		ι = (ι+'').slice((root+'/').‖)
+		name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
+		commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
+		↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
+	fm ← ι=> 'L'+(ι+1)
+	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+E.go_to = (…a)=>{ # synonyms? ,go_to ,open ,search
+	opt ← !Tprim(a[-1])? a.pop() : {}
+	type ← a.‖===1? ∅ : a.shift()
+	ι ← a[0]
+	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
+
+	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
+	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
+
+	in_app && (in_app = in_app.toLowerCase())
+
+	focus || sfx`ack`
+
+	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
+	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
+
+	############################ go to specific chrome ###########################
+	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
+	# 	# System Events got an error: osascript is not allowed assistive access
+	# 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	#  
+	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if( !type){ !new_ || ‽
+		if( !is_url(ι)) ι = searchify(ι)
+		if( !in_app && ι.re`^file:`){
+			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
+			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
+			if( φ(file).is_dir) in_app = 'path finder'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
+			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
+			else in_app = 'sublime text'
+			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
+			}
+		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if( in_app==='chrome'){
+				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
+					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
+			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
+			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			}
+		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
+		}
+	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
+		# ! should gather most of this information periodically async & record it. should use FRP.
+		hint_screen ← {'sublime text':2 ,'path finder':3 ,'github desktop':4}
+		isnt_standalone ← {ibooks:1 ,preview:1}
+		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
+		}
+	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
+	else if( type==='path'){ ( !new_ && focus )||‽
+		# ! i think this might be a pretty badly designed type
+		new_ = ✓
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
+			# in_app = 'sublime text'
+			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
+		if( in_app==='terminal'){
+			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
+			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
+			available ← Set(here).∩(unbusy())[0]
+			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
+		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
+		}
+	else ‽ }
+
+###################################### see #####################################
 ;(…←)(util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
 ;[process,module].map(.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 ;['γ','Object'].map(ι=>{
@@ -1027,24 +1029,28 @@ Unit ← (ι,u)⇒ {ι,u}
 	!>( ‘.valueOf !>(.enumerable= ✗) .ι=λ(){↩ @.ι } )
 	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
 assign_properties_in_E_informal({
-,'Number.prototype.inspect':λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ opt.stylize( Object.is(ι,-0)? '-0' : ι===∞? '∞' : ι===-∞? '-∞'
-	: Number.isSafeInteger(ι)? ''+ι
-	: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
-	,'number') }
-,'Boolean.prototype.inspect':λ(d,opt){'use strict' ;↩ opt.stylize( @?'✓':'✗','boolean' ) }
+,'Number.prototype.inspect':λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
+,'Boolean.prototype.inspect':λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
 ,'Date.prototype.inspect':λ(d,opt){↩ opt.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')}
 # ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
 # ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
 # ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ @.toString = @.inspect = λ(){↩ @.join('\n') } ;↩ @ }}
 })
-𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors'))
+E.util_inspect_autodepth = (ι,opt={})=>{ γ.𐅦𐅦𐅝𐅨𐅫 = opt; opt.L || (opt.L = 1e6) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
+𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
 promise_watch ← ι=>{ if(! ι.id ){
 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
 	hr ← hrtime() ;ι.then(x=>{ x ← ζ_inspect(x) ;hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;↩ ι.id } ;𐅩𐅞𐅋𐅦𐅩←0
+stylize ← ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;r← ;↩ r }
 E.ζ_inspect = (ι,opt={})⇒
 	: ι===∅? ''
+	: T.✓✗(ι)? stylize(opt)(ι?'✓':'✗','boolean' )
 	: Tstr(ι)? ι
+	: Tnum(ι)? stylize(opt)(Object.is(ι,-0)? '-0' : ι===∞? '∞' : ι===-∞? '-∞'
+		: Number.isSafeInteger(ι)? ''+ι
+		: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
+		,'number')
 	: T.Promise(ι)? 0?0
 		: ι.status? 'Π '+𐅯𐅦(ι.ι,opt)
 		: ι.status===∅? `Π #${promise_watch(ι)} #pending`
@@ -1053,13 +1059,20 @@ E.ζ_inspect = (ι,opt={})⇒
 		? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι.‖,opt)
 	: 𐅯𐅦(ι,opt)
 # EventEmitter.prototype.inspect
+sh_inspect ← ι=>{t←;
+	Π ← ι=> Promise.resolve(ι) # COPY
+	↩ Π( 0?0
+	: T.Promise(ι)? ι.then(sh_inspect)
+	: ι===∅? {}
+	: Tstr(ι)? {out:ι}
+	: T.✓✗(ι)? {code:ι?0:1}
+	: (t=catch_union(=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
+	: {out:ι+''} )}
 
 E.log = (…ι)=>{ ι = ι.‖===1? ι[0] : ι ;log.ι(ι) ;↩ ι }
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
-E.cn = {} ;cn.log = (…ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
 
-E.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e6) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
-
+#################################### ζ infra ###################################
 E.‡_repl_start = => ζ_repl_start({
 	,prompt:'\x1b[30m\x1b[100m‡\x1b[0m '
 	# i know how to make the good repl for ct. i want to, but im tired
@@ -1068,7 +1081,7 @@ E.‡_repl_start = => ζ_repl_start({
 			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
-		lock===ι || cn.log('⛓  '+lock)
+		lock===ι || log('⛓  '+lock)
 		↩ lock } })
 E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[0m ' } …← (opt)
 	↩ (f=> f.call( require('repl').start({ ,useGlobal:✓ ,prompt:opt.prompt }) ))(λ(){
@@ -1111,23 +1124,17 @@ E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` …←({ι}) +''
 φ`~/code/declare/module.ζ`.BAD_exists() &&
 	require(φ`~/code/declare/module.ζ`+'').patch(E)
 
+##################################### trash ####################################
+E.cn = {} ;cn.log = (…ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
+
 ##################################### main #####################################
-sh_ify ← ι=>{t←;
-	Π ← ι=> Promise.resolve(ι) # COPY
-	↩ Π( 0?0
-	: T.Promise(ι)? ι.then(sh_ify.X)
-	: ι===∅? {}
-	: Tstr(ι)? {out:ι}
-	: T.boolean(ι)? {code:ι?0:1}
-	: (t=catch_union(=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
-	: {out:ι+''} )}
 E.ζ_main = ({a})=>{ι←;
 	a[0]==='--fresh' && a.shift()
 	if( !a.‖ ) ζ_repl_start()
 	else if( ι=a[0] ,φ(ι).BAD_exists() || ι.re`^\.?/` ){ process.argv = [process.argv[0],…a] ;t ← φ(ι).root('/')+'' ;o←Module._cache;m←Module._resolveFilename(t,∅,✓);oι←o[m] ;o[m] = ∅ ;Module._load(t,∅,✓) ;o[m] = oι }
 	else {
 		γ …← ({ ,require ,a }) ;γ.code = a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0] ;γ.module = { exports:{} }
-		sh_ify(ζ_eval(returnfix_compile(do_end_undefined_thing(code))))
+		sh_inspect( ζ_eval(returnfix_compile(do_end_undefined_thing(code))) )
 			.then(ι=>{ ι.out && process.stdout.write(ι.out) ;ι.code &&( process.exitCode = ι.code ) })
 		}
 	}
