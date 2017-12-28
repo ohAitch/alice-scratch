@@ -15,11 +15,11 @@ P ← ι⇒
 	: type==='list' && Tprim(ι)? P.filter(t=> t===ι)
 	: type==='string' && Tstr(ι)? ι.‖? _string(ι) : P.of('')
 	: type==='string' && T.RegExp(ι)? _regex_native(ι)	
-	: ι.P? ι.P # wow lol
-	: ‽(ι)
+	: ι.P? ι.P # wow lol # deprecated
+	: ‽(js2`P(${ι})`)
 ;`see`; P.prototype = Tag()
 ;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
-P.prototype.exec0 = λ(in_){↩ seq( seq( @._(in_,0) ).map(.ι) ).next_ι }
+P.prototype.exec0 = λ(in_){↩ seq( @._(in_,0) ).next_ι.ι }
 P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
 
 ################################## app prelude #################################
@@ -38,6 +38,7 @@ _alt ← ι=> P0('¦',{
 	,ι
 	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
 	})
+P.prototype.| = λ(b){↩ P(Set(@,b)) }
 P.if = ι=> P.not(P.not(ι))
 P.not = ι=> P0('not',{
 	,ι:P(ι)
