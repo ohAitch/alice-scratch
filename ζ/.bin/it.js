@@ -135,7 +135,7 @@ E.__name = name=>(𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [
 E.alt_ws = ι=> 𐅯Set(... (ι+'').split(' ')._.sortBy(ι=> -ι["‖"]) )
 E.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
 E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
-	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<)`
+	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<|𐅃𐅭op<)`
 	var word = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	var ζ_parse = E.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
@@ -437,6 +437,7 @@ seq.prototype[γ["|>"]] (ι=> new Property(ι,"clone")) .get= function(){ var t=
 E._midline_horizontal_ellipsis_ = ι=> _u.range(ι)
 E._almost_equal_to_ = _l.isEqual
 E._not_almost_equal_to_ = (a,b)=> ! _almost_equal_to_(a,b)
+E.zip_min = (a,b)=> _l.zip( a["‖"]>b["‖"]? a.slice(0,b["‖"]) : a , a["‖"]<b["‖"]? b.slice(0,a["‖"]) : b )
 assign_properties_in_E_informal({
 '(Array|Set|Map).prototype._':{ get(){return _u(this)} }
 
@@ -453,12 +454,17 @@ assign_properties_in_E_informal({
 ,'Set.prototype.map_':function(f){return new Set([...this].map(f)) }
 ,'Map.prototype.map_':function(f){return new Map([...this.entries()].map(f)) }
 
+,'(Set|Map).prototype.some':function(f){return [...this].some(f) }
+,'(Set|Map).prototype.every':function(f){return [...this].every(f) }
+
 // ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++){ t ← f(@[i],i,@) ;for (j←0;j<t.‖;j++) r.push(t[j]) } ;↩ r }
 ,'Array.prototype.map…':function(f){ var r = [] ;for(var i=0;i<this["‖"];i++) r.push(...f(this[i],i,this)) ;return r }
 // ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':function(f){return this.map(f)['…'] }
 
 ,'Set.prototype.filter':function(f){return 𐅯Set(...[...this].filter(f)) }
+
+,'Array.prototype.edge_comple':function(f){ var 𐅃𐅝={}; var r = [] ;for(var ι of this){ var t = f(ι) ;t===𐅃𐅝 ||( 𐅃𐅝= t ,r.push([]) ) ;r[-1].push(ι) } ;return r }
 ,'Set.prototype.partition':function(f){return _u([...this]).partition(f).map(ι=> 𐅯Set(...ι)) }
 
 ,'Array.prototype.…':{ get(){return this['map…'](ι=>ι) } }

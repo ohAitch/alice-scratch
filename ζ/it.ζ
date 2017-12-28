@@ -135,7 +135,7 @@ E.__name = name=> ‘.name !>(.enumerable= ✗) .value= name
 E.alt_ws = ι=> Set(… (ι+'').split(' ')._.sortBy(ι=> -ι.‖) )
 E.lines = ι=>{ t ← ( ι.raw? ι.raw[0] : ι ).split('\n') ;↩ t.slice( t[0].trim()?0:1 ,t.‖ - (t[-1].trim()?0:1) ) }
 E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
-	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<)`
+	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<|𐅃𐅭op<)`
 	word ← re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	ζ_parse ← E.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
@@ -437,6 +437,7 @@ seq.prototype‘.clone .get= λ(){ t← seq(@.l) ;t.i= @.i ;↩ t }
 E.⋯ = ι=> _u.range(ι)
 E.≈ = _l.isEqual
 E.≉ = (a,b)=> ! ≈(a,b)
+E.zip_min = (a,b)=> _l.zip( a.‖>b.‖? a.slice(0,b.‖) : a , a.‖<b.‖? b.slice(0,a.‖) : b )
 assign_properties_in_E_informal({
 ,'(Array|Set|Map).prototype._':{ get(){↩ _u(@)} }
 
@@ -453,12 +454,17 @@ assign_properties_in_E_informal({
 ,'Set.prototype.map_':λ(f){↩ new Set([…@].map(f)) }
 ,'Map.prototype.map_':λ(f){↩ new Map([…@.entries()].map(f)) }
 
+,'(Set|Map).prototype.some':λ(f){↩ […@].some(f) }
+,'(Set|Map).prototype.every':λ(f){↩ […@].every(f) }
+
 # ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++){ t ← f(@[i],i,@) ;for (j←0;j<t.‖;j++) r.push(t[j]) } ;↩ r }
 ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++) r.push(…f(@[i],i,@)) ;↩ r }
 # ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':λ(f){↩ @.map(f).… }
 
 ,'Set.prototype.filter':λ(f){↩ Set(…[…@].filter(f)) }
+
+,'Array.prototype.edge_comple':λ(f){ 𐅃𐅝←{}; r ← [] ;for(ι← of @){ t ← f(ι) ;t===𐅃𐅝 ||( 𐅃𐅝= t ,r.push([]) ) ;r[-1].push(ι) } ;↩ r }
 ,'Set.prototype.partition':λ(f){↩ _u([…@]).partition(f).map(ι=> Set(…ι)) }
 
 ,'Array.prototype.…':{ get(){↩ @.map…(ι=>ι) } }

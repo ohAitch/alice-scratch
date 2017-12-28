@@ -17,7 +17,7 @@
 #################################### prelude ###################################
 import sublime,sublime_plugin
 from sublime import Region
-import os,subprocess,re,urllib,json
+import os,subprocess,re,urllib,json,threading
 
 t = (os.environ.get('PATH') or '').split(':')
 if not '/usr/local/bin' in t: os.environ['PATH'] = ':'.join(t+['/usr/local/bin'])
@@ -260,3 +260,50 @@ class get_syntax(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		print('[fyi]','syntax:',view.settings().get('syntax'))
+
+################################## scrollpair ##################################
+def cache_xy(view):
+	view.settings().set('𐅭𐅫𐅂𐅬𐅦',view.viewport_position())
+
+def plugin_loaded():
+	global 𐅯𐅭𐅞𐅭𐅝
+	𐅯𐅭𐅞𐅭𐅝 = None
+	threading.Thread(target=synch_scroll, daemon=True).start()
+	for window in sublime.windows():
+		for view in window.views():
+			cache_xy(view)
+should_close = False
+def plugin_unloaded():
+	global should_close
+	should_close = True
+
+def synch_scroll():
+	global 𐅯𐅭𐅞𐅭𐅝
+	v = 𐅯𐅭𐅞𐅭𐅝
+	if v is None or v.is_loading():
+		pass
+	else:
+		a_x, a_y = v.viewport_position()
+		o_x, o_y = v.settings().get('𐅭𐅫𐅂𐅬𐅦')
+		if a_x != o_x or a_y != o_y:
+			for view in v.window().views():
+				if view.id() != v.id():
+					view.set_viewport_position((a_x,a_y+view.viewport_extent()[1]),True)
+					cache_xy(view)
+			cache_xy(v)
+	if not should_close: sublime.set_timeout(synch_scroll,1)
+
+class set_scrollpair(sublime_plugin.TextCommand):
+	def run(self,edit):
+		global 𐅯𐅭𐅞𐅭𐅝
+		cache_xy(self.view)
+		𐅯𐅭𐅞𐅭𐅝 = self.view
+
+class _4(sublime_plugin.EventListener):
+	def on_load(self,view):
+		cache_xy(view)
+	# def on_text_command(self, v, command_name, args):
+	# 	if command_name == 'move_to' and args['to'] in ['bof', 'eof']:
+	# 		for view in v.window().views():
+	# 			if view.id() != v.id():
+	# 				view.run_command(command_name, args)
