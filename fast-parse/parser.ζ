@@ -13,13 +13,14 @@ P ← ι⇒
 	: Tarr(ι)? _seq(ι.map(P.X))
 	: T.Set(ι)? _alt(ι.map(P.X))
 	: type==='list' && Tprim(ι)? P.filter(t=> t===ι)
+	: type==='list' && T.RegExp(ι)? re`^${ι}$` |>(a=> P.filter(b=> Tstr(b) && a.test(b)) )
 	: type==='string' && Tstr(ι)? ι.‖? _string(ι) : P.of('')
-	: type==='string' && T.RegExp(ι)? _regex_native(ι)	
+	: type==='string' && T.RegExp(ι)? _regex_native_string(ι)	
 	: ι.P? ι.P # wow lol # deprecated
-	: ‽(js2`P(${ι})`)
+	: ‽('P',ι)
 ;`see`; P.prototype = Tag()
 ;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
-P.prototype.exec0 = λ(in_){↩ seq( @._(in_,0) ).next_ι.ι }
+P.prototype.exec0 = λ(in_){ t ← seq( @._(in_,0) ).next_ι ;↩ t&&t.ι }
 P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
 
 ################################## app prelude #################################
@@ -100,7 +101,7 @@ P.⋯ = (a,b)=> P0('⋯',{
 	,_:λ*(in_,i){ ι ← ord(in_,i) ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield win(i+1,ι) }
 	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
 	})
-_regex_native ← ι=> P0('regex',{
+_regex_native_string ← ι=> P0('regex',{
 	,ι
 	,_:λ*(in_,i){t←; @.ι.flags.replace(/[muy]/g,'') && ‽ ;if( t=@.ι.u.y.exec_at(in_,i) ) yield win( i+t[0].‖ ,t.‖===1? t[0] : t.slice() ) }
 	})

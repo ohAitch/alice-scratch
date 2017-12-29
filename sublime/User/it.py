@@ -225,7 +225,7 @@ class make_divider(sublime_plugin.TextCommand):
 			else:
 				s = s.strip()
 			def len_a(ι): return sum([len(ι) for ι in ι])
-			if s == '':
+			if s.replace('#','') == '':
 				r = [ends,'',ends[::-1]]
 				len_ = length - len(tabs)*2 - len_a(r)
 				r[1] = fill * len_

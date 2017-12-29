@@ -16,7 +16,7 @@ Regex ← (=>{
 	Regex ← =>Regex
 	hex ← /[0-9a-fA-F]/u
 	Escape ← P([ ,'\\' ,P.|([
-		,P.|([ re`x(${hex}{2})` ,re`u\{(${hex}+)\}` ,re`u(${hex}{4})` ]).map(ι=> chr(parseInt(ι[1],16)))
+		,P(Set( ,re`x(${hex}{2})` ,re`u\{(${hex}+)\}` ,re`u(${hex}{4})` )).map(ι=> chr(parseInt(ι[1],16)))
 		,P(/c([A-Z])/).map(ι=> chr( ord(ι[1]) - ord('A') + 1 ))
 		,P(/[trnvf0]/).map(ι⇒ {t:'\t',r:'\r',n:'\n',v:'\v',f:'\f',0:'\0'}[ι])
 		,P(/[dDwWsSbB]/).map(ι=> $({

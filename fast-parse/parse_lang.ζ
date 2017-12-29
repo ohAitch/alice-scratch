@@ -2,28 +2,20 @@
 
 # modules: ✓ ✗ null ∅ ‖
 
-# words create a tree structure
-# words are considered in a particular order
-# it is almost as if words are parsed first via a lexer, but it is not quite
-
 # parenless function calls? mb figure those out after you get this working. this is haard.
 
 # you want to find the shortest substring that parses? you do this by iterating thru the file running 𐅪𐅨_ on unparsed chars & getting back parsed spans on success
 # i think this is a cheat but a good one
 
-################################################################################
-# ok this is cute but lets just hardcode a lexer and get on with it
-# hardcoded lexer + word prioritization (read time) (the way clojure does macros should be good enough)
-
 ################################## app prelude #################################
 Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
-𐅬Tag ← (…ι)⇒{ ,inspect:=>Tag(…ι) }
+𐅬Tag ← (…ι)⇒{ ,tag:ι[0] ,inspect:=>Tag(…ι) }
 
 #################################### parser ####################################
-############ entry ###########
+################# entry ################
 ⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,p)=> ι && p.parse(ι) ,ι)
 
-############ word ############
+################# word #################
 P ← Ps.string
 P.err_if_partial = (a,b)⇒
 	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
@@ -33,43 +25,37 @@ P.err_if_partial = (a,b)⇒
 words ← P(Set(
 	,sharp= P(Set(
 		,P.err_if_partial( /['"]/,P(/(['"])(((?!\1)[^\\]|\\.)*?)\1/).map(..2) ).Tag`string`
-		,P(/[ \t\n,]+/).map(ι=> ι.includes(',')? 3 : ι.includes('\n')? 2 : 1 ).Tag`space`
+		,P(Set(
+			,P(/[ \t\n,]+/).map(ι=> ι.includes(',')? 3 : ι.includes('\n')? 2 : 1 )
+			,P(/#[\s#].*/).map(=>2) )
+			).+.map(.fold((a,b)=> max(a,b))).Tag`space`
 		,re(alt_ws`( ) [ ] { } . ‘ + - × / ^ * ∪ ∩ …← = ≠ <= >= < > ∈ ∋ & | !> |> ? : ← ←! ↩ ⇒ =>`)
 		))
 	,re(alt_ws`! …`)
 	,P([ P.not(sharp),P.unicode_category(/[LNPMS]./) ]).map(..1).+ .map(.join(''))
 	)).*.catch(P.err_if_partial) ;sharp←;
 
-############ tree ############
+################# tree #################
 P ← Ps.list
 tree ← P(=>tree) ;tree ← P(Set(
 	,… ['()','[]','{}'].map(ι=> P([ ,ι[0],tree.*,ι[1] ]).map(..1).Tag(ι) )
 	,P.filter(ι=> ! […'()[]{}'].includes(ι) )
 	))
 
-######## ops: tools 1 ########
-_ ← P(=>‽('_')) …←(𐅬Tag('_'))
-_𐅭𐅃𐅪𐅫𐅮 ← _
+############# ops: tools 1 #############
+is0_ ← .p[0]===𐅭
+𐅭 ← P(=>‽('_')) …←(𐅬Tag('_'))
 [ᛟ1,ᛟ2,ᛟ3] ← [1,2,3].map(ordid=> P.filter(ι=> ι.tag==='space' && ι.ι<=ordid).? …←(𐅬Tag('ᛟ'+ordid)) )
-# op: {,id,p,map}
-𐅯tree ← (id,p,pᵢ)⇒{ ,id ,p
-	,map:(ι,a)=>{ t ← ι[-1] ;t = Tarr(t)? t[-1] : t ;↩[ a,…𐅪𐅨s_s.parse(t.ι) ] }
-	# ,map2:(op,ιs)=>Tag(op.id,[ op.p[0]===_? ιs[0] : ∅ ,…top2.parse(ιs[-1].ι) ])
-	}
-𐅯R ← (id,…ι)=> 𐅯tree(id,ι,-1)
-𐅯_Rι ← 𐅯R
-R_ ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,p:[ι,ᛟ1,_]
-	,map:(ι,a,b)=>[a,b]
-	# ,map2:(op,ιs)=>Tag(op.id,ιs[-1])
-	})
-𐅯2 ← (id,…ι)⇒{ ,id ,p:[_,…ι,_]
-	,map:(ι,a,b)=>[a,b]
-	# ,map2:(op,ιs)=>Tag(op.id,[ιs[0],ιs[-1]])
-	}
-_2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
 Ptree ← memoize_proc(tag=> P.filter(.tag===tag) …←(𐅬Tag('filter',tag)) )
+# op: {,id,p,map}
+𐅯tree ← (id,p,pᵢ)⇒{ ,id ,p ,map:ι=>{ [a,t] ← ι.‖===1? [∅,ι[0]] : ι ;t = Tarr(t)? t[-1] : t ;↩[ a,…𐅪𐅨s_s.parse(t.ι) ] } }
+𐅯R ← (id,…ι)=> 𐅯tree(id,ι,-1)
+𐅯n ← (id,p)=>{ t ← is0_({p})? ..0 : ..1 ;↩{ ,id ,p ,map:.chunk(2).map(t) } }
+𐅯2 ← (id,…ι)=> 𐅯n(id,[𐅭,…ι,𐅭])
+R_ ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,p:[ι,ᛟ1,𐅭] ,map:ι=>ι[-1] })
+_2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
 
-######## ops: tools 2 ########
+############# ops: tools 2 #############
 op_ord ← 𐅜𐅩𐅬𐅮𐅩().map(ι=> T.Set(ι)? ι : Set(ι) )
 𐅪 ← ι=> op_ord.findIndex(.some(.id===ι.id))
 ops ← Set(…op_ord.…)
@@ -80,14 +66,14 @@ cmp_is ← (a,b,ι)=> cmp.set…(as_op(a),as_op(b),ι)
 ops.map(a=> ops.map(b=> cmp_is(a,b, 𐅪(b) - 𐅪(a) ) ))
 𐅃op< ← a=> ops.filter(b=> cmp.get…(as_op(a),as_op(b))<0 )
 
-######### ops: define ########
+############## ops: define #############
 λ 𐅜𐅩𐅬𐅮𐅩(){↩[
 ,'.'|>(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ1))
 ,𐅯2('‘.',ᛟ2,'‘','.',ᛟ1)
-,𐅯R('()',_,ᛟ1,Ptree('()'))
-,𐅯R('[]',_,ᛟ1,Ptree('[]'))
+,𐅯R('()',𐅭,ᛟ1,Ptree('()'))
+,𐅯R('[]',𐅭,ᛟ1,Ptree('[]'))
 ,𐅯R('{}',Ptree('{}'))
-,𐅯R('‘[]',_,ᛟ1,'‘',Ptree('[]'))
+,𐅯R('‘[]',𐅭,ᛟ1,'‘',Ptree('[]'))
 ,_2`^`
 ,R_`!`
 ,_2`× /`
@@ -97,8 +83,8 @@ ops.map(a=> ops.map(b=> cmp_is(a,b, 𐅪(b) - 𐅪(a) ) ))
 ,_2`= ≠ <= >= < > ∈ ∋`
 ,_2`& |`
 ,_2`!> |>`
-# ,{ ,id:'if?' ,p:[_,'?',_,':',_].join2(ᛟ2) ,map(){} }
-# ,[ 'if',_,P(':').?,_,P(/:|else/).?,_ ].join2(ᛟ2)
+,𐅯n('if?',[𐅭,'?',𐅭,':',𐅭].join2(ᛟ2))
+,𐅯n('if_',['if',𐅭,P(':').?,𐅭,P(/:|else/u).?,𐅭].join2(ᛟ2))
 ,alt_ws`⇒ =>`.map_(ι=> 𐅯2(ι,ᛟ1,ι,ᛟ2))
 ,_2`←`
 ,R_`↩ …`
@@ -106,36 +92,41 @@ ops.map(a=> ops.map(b=> cmp_is(a,b, 𐅪(b) - 𐅪(a) ) ))
 ]}
 
 ops.map(ι=> cmp_is(ι,ι,1) )
-alt_ws`^ ← ⇒ =>`.map(ι=> cmp_is(ι,ι,-1) )
+alt_ws`^ ← ⇒ => if?`.map(ι=> cmp_is(ι,ι,-1) )
 b ← '←' ;𐅃op<(b).filter(.id!=='.') .map(a=> cmp_is(a,b,-1) )
 a ← '-' ;c ← '!' ;𐅃op<(a).-(𐅃op<(c)) .map(b=> cmp_is(a,b,1) )
 
-######### ops: parse #########
-ops.map(op=> op.p2 = op.p.edge_comple(ι=>ι===_𐅭𐅃𐅪𐅫𐅮).map(ι=> ι.‖===1? ι[0] : ι) )
+𐅃𐅭op_b_ops ← memoize_proc(op=> ops.filter(is0_.!).∪( 𐅃op<(op) ) )
 
+############## ops: parse ##############
+𐅭2 ← memoize_proc(op=> P(=> 𐅪𐅨_(𐅃𐅭op_b_ops(op)).? ) …←(𐅬Tag('_')) )
+𐅪P ← memoize_proc(op=>
+	op.p.edge_comple(ι=>ι===𐅭)
+	.map(ι=>ι.‖===1?ι[0]:ι)
+	.map(ι=> ι===𐅭? 𐅭2(op) : ι)
+	|>(ι=> is0_(op)? ι.slice(1) : ι)
+	|>(P) )
+
+𐅨𐅃op ← ops=>a=> P(ops.map_(op=> 𐅪P(op).map(ι=> Tag( op.id ,op.map(a===∅? ι : [a,…ι]) )))) .chain(𐅝𐅃(ops))
+𐅝𐅃 ← ops=>a=>Set( ,𐅨𐅃op(ops.filter(is0_))(a) ,P.of(a) )
 𐅬atom ← P.filter(.tag!=='space')
-𐅃𐅭op_b_ops ← memoize_proc(op=> ops.filter(.p[0]!==_𐅭𐅃𐅪𐅫𐅮).∪( 𐅃op<(op) ) )
-Po ← op=> P(op.p2.trim(_𐅭𐅃𐅪𐅫𐅮)).map(ι⇒{op,ι})
-𐅨𐅃op ← ops=>a=>
-	P(ops.map_(Po)).chain(({op,ι})⇒
-		: op.p[-1]===_𐅭𐅃𐅪𐅫𐅮? 𐅪𐅨_(𐅃𐅭op_b_ops(op)).map(b=>[ op.id ,…op.map(ι,a,b) ])
-		: P.of([ op.id ,…op.map(ι,a) ])
-		).chain(𐅞𐅰_op(ops.filter(.p[0]===_𐅭𐅃𐅪𐅫𐅮)))
-𐅞𐅰_op ← ops=>a=>Set( ,𐅨𐅃op(ops)(a) ,P.of(a) )
-𐅪𐅨_ ← ops=> P(Set( 𐅨𐅃op(ops)() ,𐅬atom.chain(𐅞𐅰_op(ops)) ,P.of() ))
+𐅪𐅨_ ← ops=> P(Set( ,𐅨𐅃op(ops)(∅) ,𐅬atom.chain(𐅝𐅃(ops)) ))
 𐅪𐅨s_s ← 𐅪𐅨_(ops).join2?(ᛟ3)
 
+########################################
 ;`
 a↩b … ! ↩
 bar ← cmp_is ← (a,b,ι)=> => cmp.set…(as_op(a),as_op(b),ι)
-if 'handle' 5 : 6? 7:8 9
+if( 'handle' ) 5 else 6? 7 : 8? 9 : 0
 ! x + 8.{7} × b← c + d
-{ {'saddlepoint' [] {}} }; ↩ {}
-{}
-[]
-()
-{{{}}}
-((()))
+P([5])
+{{ 'saddlepoint' [] () {} }}; ↩ {}
+
+P.err_if_partial = (a,b)⇒
+	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
+	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
+	𐅮𐅦𐅨𐅝𐅃 ← Error()
+
 `|>(parse_lang)
-# `|>(ι=> top2.parse(parse_1(ι)))
-# parse_1 ← ι=> [words,tree.*].fold((ι,p)=> ι && p.parse(ι) ,ι)
+
+# parse_lang(φ`~/code/scratch/fast-parse/parse_lang.ζ`.text)

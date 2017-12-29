@@ -83,7 +83,7 @@ postfix['∋'] = (a,b)=> Object.prototype.isPrototypeOf.call( a.prototype||a ,b 
 # obj_hash ← ι=> [ ,[(a,b)=>a===b,[…protos(ι)][1]] ,[≈,ps(ι)] ,…(Tfun(ι)? [[(a,b)=>a===b,Function.prototype.toString.call(ι)]] : []) ]
 # postfix['#obj='] = (a,b)=> [a,b].map(obj_hash) |> (ι=> _u.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
 
-########## Property ##########
+############### Property ###############
 # still v limited
 E.Property = λ(o,_id){ ;this.o = o ;this._id = _id }
 def(Property.prototype,'ι',{ ,get(){↩ @.o[@._id] } ,set(ι){ @.o[@._id] = ι } })
@@ -164,7 +164,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩�
 	id_num ← alt_ws`0 1 2 3 4`
 	ζ_compile_nonliteral ← ι=> ι
 		.replace(/ifΔ!/g,'ifΔbang')
-		.replace(/(=>|[=←:(,]) *(?!\.\.\.)(‘?\.)/g,(ˣ,a,b)=> a+'(𐅭𐅞)=>𐅭𐅞'+b )
+		.replace(/(=>|[=←:(,?]) *(?!\.\.\.)(‘?\.)/g,(ˣ,a,b)=> a+'(𐅭𐅞)=>𐅭𐅞'+b )
 		.replace(𐅃𐅪𐅜𐅫𐅮||(𐅃𐅪𐅜𐅫𐅮= re`‘\.(${word}+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property(ι,${ι}))` )
 		.replace(/‘(?=\[)/g ,`|> (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))` )
 		.replace(𐅦𐅞𐅃𐅝𐅪||(𐅦𐅞𐅃𐅝𐅪= re`(?:…${[…postfix].map(ι=> re`${ι}`.source).join('|')})(?=\s*([(:])?)`.g ),(id,right)⇒ { ,∅:js`γ[${id}]` ,'(':js`[γ[${id}]]` ,':':js`${id}` }[right] )
@@ -544,6 +544,7 @@ Promise.prototype‘.ι .thunk= λ(){ if( @.status!==∅ ) ↩ @.ι }
 
 TimerCons ← λ(a,b){@.a=a;@.b=b} ;TimerCons.prototype = { ,clear:λ(){@.a.clear();@.b.clear()} ,ref:λ(){@.a.ref();@.b.ref()} ,unref:λ(){@.a.unref();@.b.unref()} }
 assign_properties_in_E_informal({
+,'Function.prototype.!':{get(){↩ (…a)=> !@(…a) }}
 ,'Function.prototype.P':λ(…a){↩ @.bind(∅,…a) }
 ,'Function.prototype.X':{get(){↩ ι=> @(ι) }}
 ,'Function.prototype.XX':{get(){↩ (a,b)=> @(a,b) }}

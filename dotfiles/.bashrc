@@ -1,6 +1,6 @@
 # remember to s/; / ;/
 
-###### for external use ######
+########### for external use ###########
 ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]]; then /usr/local/bin/ζ "$@"; else ζλ "$@"; fi; } # ζ
 alias Z=ζ; alias Zlog=ζlog # ! temporary while terminal unicode is broken
 
@@ -55,7 +55,7 @@ open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photosh
 
 ################## personal concepts ### for interactive mode ##################
 
-############# im_ ############
+################## im_ #################
 im_size(){ for v in "$@"; do [ -f "$v" ] && { identify -format "%f %wx%h" "$v"; echo; }; done; }
 im_to_png(){ for v in "$@"; do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v"; }; done; }
 im_to_jpg(){ for v in "$@"; do [[ $v = *.jpg ]] || { convert "$v" jpg:"${v%.*}.jpg" && rm "$v"; }; done; }

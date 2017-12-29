@@ -2,7 +2,7 @@
   {"caption": "niceify url", "command": "nice_url"},
   {"caption": "ζ ↔ js", "command": "inline_compile_zeta_js"},
   {"caption": "eval(ζ)", "command": "inline_eval_zeta"},
-  {"caption": "make divider (short)", "command": "make_divider", "args": {"length": 30}},
+  {"caption": "make divider (short)", "command": "make_divider", "args": {"length": 40}},
   {"caption": "make divider (long)", "command": "make_divider", "args": {"length": 80}},
   {"caption": "open link", "command": "open_context", "args": {"type": "link"}},
   {"caption": "open github", "command": "open_context", "args": {"type": "github"}},

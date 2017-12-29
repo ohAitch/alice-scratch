@@ -33,7 +33,7 @@
 # /↩  ] ⌘⇧⌥^↩
 # ⌘⇧⌥^↩
 ⌘⌥↩    cmd.open_context({ "type":"link" })
-⌘⇧-    cmd.make_divider({ "length":30 })
+⌘⇧-    cmd.make_divider({ "length":40 })
 ⌘⇧=    cmd.make_divider({ "length":80 })
 # ;'  ] ⌘⇧⌥^;
 # ⌘⇧⌥^;

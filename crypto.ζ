@@ -27,7 +27,7 @@
 # ⁘ do a LOT of refactoring
 # ⁘ write a vec_distance thing i guess
 
-########### prelude ##########
+################ prelude ###############
 nk ← npm`numeric@1.2.6`
 buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
 bits ← ι=>{ if( Tarr(ι) ) ↩ ι ;ι = buffer(ι) ;↩ […ι].map…(ι=> 8..map(i=> (ι & 1<<i) >>i)) }
@@ -39,7 +39,7 @@ norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
 norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
 mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
 
-##############################
+########################################
 texts ← memoize_persist(=> [
 	,'abc'
 	,'abcabcabcabcabcabcabc'

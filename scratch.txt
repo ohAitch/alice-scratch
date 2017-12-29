@@ -1,5 +1,5 @@
 ############################ operations on git repos ###########################
-############ merge ###########
+################# merge ################
 to_path=~/code/scratch
 from='lang-alpha'
 from_url='git@github.com:alice0meta/lang-alpha.git'
@@ -10,7 +10,7 @@ git fetch "$from"
 git merge "$from/master"
 git remote remove "$from"
 
-############ split ###########
+################# split ################
 split(){ repo=~/code/scratch ;subfolder='.archive' ;out=~/code/.archive ;tmp_branch=kc8vu2z3a
 	# !!! this will destroy existing commit ids ;use carefully
 	# may not work with unicode filenames
@@ -257,7 +257,7 @@ convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4 ;}
 E.googl = ι=> JSON.parse(shᵥ`curl -s ${'https://www.googleapis.com/urlshortener/v1/url?key='+φ`~/.auth/googl`.text.trim()} -H 'Content-Type: application/json' -d ${JSON.stringify({longUrl:ι})}`+'').id
 
-#### remaining work for φ ####
+######### remaining work for φ #########
 formats include
 	image               
 	pixels              

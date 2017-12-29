@@ -30,7 +30,6 @@
 	"color_scheme": "Packages/User/.bin/ὄνειρον.tmTheme",
 	"default_line_ending": "unix",
 	"draw_indent_guides": false,
-  "show_definitions": false,
 	"enable_tab_scrolling": false,
 	"ensure_newline_at_eof_on_save": true,
 	"file_exclude_patterns":
@@ -78,6 +77,7 @@
 	"margin": -14,
 	"match_brackets": false,
 	"open_files_in_new_window": false,
+	"show_definitions": false,
 	"show_full_path": true,
 	"show_tab_close_buttons": false,
 	"tab_size": 2,
