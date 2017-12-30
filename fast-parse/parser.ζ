@@ -34,24 +34,13 @@ P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
 win ← (i,ι)⇒ { ,span_to:i ,ι }
 
 ################################### root ish ###################################
-P.any1 = P0('any1',{
-	,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) }
-	})
-_seq ← ι=> P0('seq',{
-	,ι
-	,_:λ*(in_,i){
-		if(! @.ι.‖ ) ↩ yield win(i,[])
-		p ← _seq(@.ι.slice(1)) ;for(ι← of @.ι[0]._(in_,i)) yield* p.map(t=> [ι.ι,…t])._(in_,ι.span_to) } })
-_alt ← ι=> P0('¦',{
-	,ι
-	,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) }
-	})
+P.any1 = P0('any1',{ ,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) } })
+
+_seq ← ι=> P0('seq',{ ,ι ,_:( !ι.‖? P.of([]) : ι[0].chain(a=> _seq(ι.slice(1)).map(r=>[a,…r])) )‘._ .f })
+_alt ← ι=> P0('¦',{ ,ι ,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) } })
 P.prototype.| = λ(b){↩ P(Set(@,b)) }
 P.if = ι=> P.not(P.not(ι))
-P.not = ι=> P0('not',{
-	,ι:P(ι)
-	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ ;yield win(i,∅) }
-	})
+P.not = ι=> P0('not',{ ,ι:P(ι) ,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) ↩ ;yield win(i,∅) } })
 
 P.of = ι=> P0('of',{ ,ι ,_:λ*(in_,i){ yield win(i,@.ι) } })
 P.∅ = P0('∅',{ ,_:λ*(in_,i){} })

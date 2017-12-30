@@ -6,7 +6,7 @@ Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 𐅬Tag ← (…ι)⇒{ ,tag:ι[0] ,inspect:=>Tag(…ι) }
 
 ################# entry ################
-⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,f)=>{ f===𐅪𐅨s_s &&( γ.𐅬𐅜𐅝𐅃𐅋 = ✓ ) ;r← ;log('bench',bench1(=> r = ι && f.parse(ι) )) ;↩ r },ι)
+⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,f,i)=>{ f===𐅪𐅨s_s &&( γ.𐅬𐅜𐅝𐅃𐅋 = ✓ ) ;r← ;log('bench',i,bench(=> r = ι && f.parse(ι) )) ;↩ r },ι)
 
 ################# word #################
 P ← Ps.string
@@ -30,14 +30,14 @@ words ← P(Set(
 
 ################# tree #################
 P ← Ps.list
-tree ← P(=>tree) ;tree ← P(Set(
-	,… ['()','[]','{}'].map(ι=> P([ ,ι[0],tree.*,ι[1] ]).map(..1).Tag(ι) )
+tree ← P(Set(
+	,… ['()','[]','{}'].map(ι=> P([ ,ι[0],=>tree.*,ι[1] ]).map(..1).Tag(ι) )
 	,P.filter(ι=> ! […'()[]{}'].includes(ι) )
 	))
 
 ############## ops: tools ##############
 is0_ ← .p[0]===𐅭
-𐅭 ← P(=>‽('_')) …←(𐅬Tag('_'))
+𐅭 ← P(=>‽('𐅭')) …←(𐅬Tag('𐅭'))
 [ᛟ1,ᛟ2,ᛟ3] ← [1,2,3].map(ordid=> P.filter(ι=> ι.tag==='space' && ι.ι<=ordid).? …←(𐅬Tag('ᛟ'+ordid)) )
 𐅮𐅦𐅭𐅜𐅬 ← =>{
 	γ.𐅃𐅃𐅃𐅋𐅜 = 𐅜𐅩𐅬𐅮𐅩.map(ι=> T.Set(ι)? ι : Set(ι) )
@@ -79,39 +79,36 @@ _2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
 ,R_`↩ …`
 ,_2`:`
 # ,{ ,id:'𐅬word' ,p:[P.filter(.tag!=='space')] ,map:..0..0 }
-,{ ,id:'𐅬word' ,p:[P.not(=> ops.map_(𐅪Pa.X)).then(P.filter(.tag!=='space'))] ,map:..0..0 }
+,{ ,id:'𐅬word' ,p:[P.not(=> ops.filter(.id!=='𐅬word').map_(𐅪Pa.X)).then(P.filter(.tag!=='space'))] ,map:..0..0 }
 ]
 𐅮𐅦𐅭𐅜𐅬()
 
-𐅃op< ← it=> ops.filter(sub=>
-	cmp.get…(it,sub)
-	|| it===sub? alt_ws`^ ← ⇒ => if?`.has(it.id)
-	: 𐅰(it) > 𐅰(sub) )
+𐅃op< ← (it,itᵢ)=> ops.filter(sub=> 0
+	|| 𐅨.get…(it,sub)
+	|| !is0_(sub)
+	|| ( it===sub? alt_ws`^ ← ⇒ => if?`.has(it.id)
+		: 𐅰(it) > 𐅰(sub) ) )
 	𐅰 ← ι=> 𐅃𐅃𐅃𐅋𐅜.findIndex(.has(ι))
-cmp ← new Map()
-	b ← '←' ;𐅃op<(b).filter(.id!=='.') .map(a=> cmp.set…(a,as_op(b),✓) )
-	a ← '-' ;c ← '!' ;𐅃op<(a).-(𐅃op<(c)) .map(b=> cmp.set…(as_op(a),b,✗) )
-𐅃𐅭op_b_ops ← memoize_proc(op=>Set( ,…ops.filter(is0_.!).filter(.id!=='𐅬word') ,…𐅃op<(op) ,as_op('𐅬word') ))
+	𐅨 ← new Map()
+	b ← '←' ;𐅃op<(b).filter(.id!=='.') .map(a=> 𐅨.set…(a,as_op(b),✓) )
+	a ← '-' ;c ← '!' ;𐅃op<(a).-(𐅃op<(c)) .map(b=> 𐅨.set…(as_op(a),b,✗) )
 
 ############## ops: parse ##############
-𐅭2 ← memoize_proc(op=> P(=> 𐅪𐅨_(𐅃𐅭op_b_ops(op)).? ) …←(𐅬Tag('𐅭')) )
-𐅪P ← memoize_proc(op=> op.p.edge_comple(ι=>ι===𐅭) .map(ι=> ι.‖===1&&ι[0]===𐅭? 𐅭2(op) : ι) )
+𐅭2 ← 𐅃op< ≫ (t=> P(=> 𐅨𐅃_(t)(∅).? ) …←(𐅬Tag('𐅭')) )
+𐅪P ← memoize_proc(op=> op.p.edge_comple(ι=>ι===𐅭) .map((ι,i)=> ι.‖===1&&ι[0]===𐅭? 𐅭2(op,i) : ι) )
 𐅪Pa ← (op,a)=> 𐅪P(op) |>(ι=> is0_(op)? ι.slice(1) : ι) |>(P) .map(ι=> op.map(!is0_(op)? ι : [a,…ι]) )
 𐅮𐅜𐅯𐅜𐅫 ← memoize_proc(.filter(is0_))
 𐅨𐅃_ ← memoize_proc( ops=>a=> P(ops.map_(op=> 𐅪Pa(op,a) )).chain(a=>Set( ,𐅨𐅃_(𐅮𐅜𐅯𐅜𐅫(ops))(a) ,P.of(a) )) )
-𐅪𐅨_ ← ops=> 𐅨𐅃_(ops)(∅) # .filter(ι=> ι.tag === )
-𐅪𐅨s_s ← 𐅪𐅨_(ops).join2?(ᛟ3)
-
-# oh dear. putting 𐅬word in that place ......... breaks
-# we really need to only parse 𐅬word if we cant parse any ops, even ones were not considering in the moment. um.
+𐅪𐅨s_s ← 𐅨𐅃_(ops)(∅).join2?(ᛟ3)
 
 ################# test #################
 parse_lang(`a b`)
 
 parse_lang(`
+0? a← 5 : 0
 a↩b … ! ↩
 bar ← cmp_is ← (a,b,ι)=> => cmp.set…(as_op(a),as_op(b),ι)
 if( 'handle' ) 5 else 6? 7 : 8? 9 : 0
-! x + 8.{7} × b← c+++++,
+! x + 8.{7} × b← c++,
 {{ 'saddlepoint' [] () {} }} ;↩ {P([5])}
 `)
