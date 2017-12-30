@@ -37,6 +37,19 @@
 ############################## data : friend glue ##############################
 ⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
 
+⧫. github_url ==> ι=>{
+	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
+	fm ← ι=> 'L'+(ι+1)
+	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+⧫. github_remote_origin ==> file=>{
+	ι ← φ(file).root('/')
+	root ← ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+	if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
+	ι = (ι+'').slice((root+'/').‖)
+	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
+	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
+	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+
 ######################### net incl context device,proc #########################
 # ⧫. lock ==>{
 # 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
@@ -110,6 +123,11 @@
 
 ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
 
+⧫. sfx ==> (ss,…ιs)=>{ ι ← ss[0]
+	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get()|>(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
+	}
+
 ################################## friend glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
 	ENC ← ι⇒
@@ -146,6 +164,82 @@
 	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
 
 ################################ automatic input ###############################
+
+#################################### user.ui ###################################
+⧫.go_to ==> (…a)=>{ # synonyms? ,go_to ,open ,search
+	opt ← !Tprim(a[-1])? a.pop() : {}
+	type ← a.‖===1? ∅ : a.shift()
+	ι ← a[0]
+	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
+
+	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
+	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
+
+	in_app && (in_app = in_app.toLowerCase())
+
+	focus || sfx`ack`
+
+	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
+	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
+
+	############################ go to specific chrome ###########################
+	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
+	# 	# System Events got an error: osascript is not allowed assistive access
+	# 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	#  
+	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if( !type){ !new_ || ‽
+		if( !is_url(ι)) ι = searchify(ι)
+		if( !in_app && ι.re`^file:`){
+			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
+			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
+			if( φ(file).is_dir) in_app = 'path finder'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
+			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
+			else in_app = 'sublime text'
+			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
+			}
+		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if( in_app==='chrome'){
+				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
+					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
+			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
+			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			}
+		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
+		}
+	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
+		# ! should gather most of this information periodically async & record it. should use FRP.
+		hint_screen ← {'sublime text':2 ,'path finder':3 ,'github desktop':4}
+		isnt_standalone ← {ibooks:1 ,preview:1}
+		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
+		}
+	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
+	else if( type==='path'){ ( !new_ && focus )||‽
+		# ! i think this might be a pretty badly designed type
+		new_ = ✓
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
+			# in_app = 'sublime text'
+			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
+		if( in_app==='terminal'){
+			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
+			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
+			available ← Set(here).∩(unbusy())[0]
+			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
+		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
+		}
+	else ‽ }
+
+################################## user.alias ##################################
+⧫. p ==> λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
+⧫ .ps ==> Object.getOwnPropertyDescriptors
 
 ############################### to be deprecated ###############################
 ⧫. multiline ==> ι=>{ ι = (ι+'').split('\n').slice(1,-1) ;t ← ι.map(.re`^\t*`[0].‖)._.min() ;ι = ι.map(.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }

@@ -28,7 +28,7 @@ schema2 = ι=>{ 𐅪𐅞𐅂𐅂𐅜←;
 			# 	...
 			# 	}
 			,show(){
-				d_t_s ← sch_to_data.⁻¹declare_uniq
+				d_t_s ← sch_to_data.⁻¹uniq
 				s_t_ι ← ι_to_sch.⁻¹
 				↩ @.map(ι=> JSON_pretty(ι.ι)+' '+s_t_ι.get(d_t_s.get(ι)).‖+' '+ι.id ) }
 			} })()

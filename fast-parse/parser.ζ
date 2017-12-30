@@ -6,6 +6,7 @@ parser ← type=>{
 
 ##################################### entry ####################################
 P0 ← (tag,ι)=> new_(P) …← ({tag},ι)
+# P0 ← (tag,ι)=> new_(P) …← ({tag},ι) |>(record)
 P ← ι⇒
 	: ι===∅||ι===null? ‽(js2`P(${ι})`)
 	: P ∋ (ι)? ι
@@ -16,12 +17,18 @@ P ← ι⇒
 	: type==='list' && T.RegExp(ι)? re`^${ι}$` |>(a=> P.filter(b=> Tstr(b) && a.test(b)) )
 	: type==='string' && Tstr(ι)? ι.‖? _string(ι) : P.of('')
 	: type==='string' && T.RegExp(ι)? _regex_native_string(ι)	
-	: ι.P? ι.P # wow lol # deprecated
 	: ‽('P',ι)
 ;`see`; P.prototype = Tag()
 ;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
 P.prototype.exec0 = λ(in_){ t ← seq( @._(in_,0) ).next_ι ;↩ t&&t.ι }
 P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
+
+# γ.𐅭𐅪𐅰𐅮𐅬 = Set()
+# log(𐅭𐅪𐅰𐅮𐅬.map(ι=> simple_hash(ι)+' '+ζ_inspect(ι).replace(/\n/g,' ') ).join('\n'))
+# _record ← (ι,in_,i)=> 𐅭𐅪𐅰𐅮𐅬.add(in_)
+
+# _record ← (ι,in_,i)=> γ.𐅬𐅜𐅝𐅃𐅋 && log([ simple_hash(𐅋𐅩𐅩𐅝𐅝(ι)),simple_hash(in_),i,ι.tag ].join(' ')) ;𐅋𐅩𐅩𐅝𐅝← npm`circular-json@0.4.0`.stringify
+# record ← ι=>{ t ← ι._ ;ι._ = λ(…a){ _record(@,…a) ;↩ t.call(@,…a) } ;↩ ι }
 
 ################################## app prelude #################################
 win ← (i,ι)⇒ { ,span_to:i ,ι }
@@ -52,13 +59,9 @@ P.prototype.chain = λ(f){↩ P0('chain',{
 	,ι:@ ,f
 	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* P(@.f(t.ι))._(in_,t.span_to) }
 	}) }
-P.prototype.map = λ(f){↩ @.chain( (ι=> P.of(f(ι))) …← ({f}) ) }
-P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
+P.prototype.map = λ(f){↩ @.chain( (ι=> P.of(f(ι))) …← ({f}) ) …←({tag:'map'}) }
+P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) …←({tag:'filter'}) }
 P.filter = f=> P.any1.filter(f)
-# P.prototype.map = λ(f){↩ P0('map',{
-# 	,ι:@ ,f
-# 	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield win(t.span_to,@.f(t.ι)) }
-# 	}) }
 P.prototype.catch = λ(f){↩ P0('catch',{
 	,ι:@ ,f
 	,_:λ*(in_,i){ ι ← @.ι._(in_,i) ;for(;;){ try{ t ← seq(ι).next_ιι ;if(! t )↩ ;yield t }catch(e){ @.f(e) } } }

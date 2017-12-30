@@ -1,19 +1,12 @@
-# conceptual: word s refer to the procedure-local database of words we know about
+#!/usr/bin/env ζ
+# parse_lang(φ`~/code/scratch/fast-parse/parse_lang.ζ`.text)
 
-# modules: ✓ ✗ null ∅ ‖
-
-# parenless function calls? mb figure those out after you get this working. this is haard.
-
-# you want to find the shortest substring that parses? you do this by iterating thru the file running 𐅪𐅨_ on unparsed chars & getting back parsed spans on success
-# i think this is a cheat but a good one
-
-################################## app prelude #################################
+############## app prelude #############
 Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 𐅬Tag ← (…ι)⇒{ ,tag:ι[0] ,inspect:=>Tag(…ι) }
 
-#################################### parser ####################################
 ################# entry ################
-⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,p)=> ι && p.parse(ι) ,ι)
+⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,f)=>{ f===𐅪𐅨s_s &&( γ.𐅬𐅜𐅝𐅃𐅋 = ✓ ) ;r← ;log('bench',bench1(=> r = ι && f.parse(ι) )) ;↩ r },ι)
 
 ################# word #################
 P ← Ps.string
@@ -42,32 +35,28 @@ tree ← P(=>tree) ;tree ← P(Set(
 	,P.filter(ι=> ! […'()[]{}'].includes(ι) )
 	))
 
-############# ops: tools 1 #############
+############## ops: tools ##############
 is0_ ← .p[0]===𐅭
 𐅭 ← P(=>‽('_')) …←(𐅬Tag('_'))
 [ᛟ1,ᛟ2,ᛟ3] ← [1,2,3].map(ordid=> P.filter(ι=> ι.tag==='space' && ι.ι<=ordid).? …←(𐅬Tag('ᛟ'+ordid)) )
-Ptree ← memoize_proc(tag=> P.filter(.tag===tag) …←(𐅬Tag('filter',tag)) )
-# op: {,id,p,map}
-𐅯tree ← (id,p,pᵢ)⇒{ ,id ,p ,map:ι=>{ [a,t] ← ι.‖===1? [∅,ι[0]] : ι ;t = Tarr(t)? t[-1] : t ;↩[ a,…𐅪𐅨s_s.parse(t.ι) ] } }
-𐅯R ← (id,…ι)=> 𐅯tree(id,ι,-1)
-𐅯n ← (id,p)=>{ t ← is0_({p})? ..0 : ..1 ;↩{ ,id ,p ,map:.chunk(2).map(t) } }
-𐅯2 ← (id,…ι)=> 𐅯n(id,[𐅭,…ι,𐅭])
-R_ ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,p:[ι,ᛟ1,𐅭] ,map:ι=>ι[-1] })
-_2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
-
-############# ops: tools 2 #############
-op_ord ← 𐅜𐅩𐅬𐅮𐅩().map(ι=> T.Set(ι)? ι : Set(ι) )
-𐅪 ← ι=> op_ord.findIndex(.some(.id===ι.id))
-ops ← Set(…op_ord.…)
-ops.map( .inspect= λ(){↩ Tag('op',@.id) } )
-as_op ← ι=> Tstr(ι)? 𐅫𐅫𐅂𐅰𐅩(ι) : ι ;𐅫𐅫𐅂𐅰𐅩 ← ops.index(.id) ‘.get .f
-cmp ← new Map()
-cmp_is ← (a,b,ι)=> cmp.set…(as_op(a),as_op(b),ι)
-ops.map(a=> ops.map(b=> cmp_is(a,b, 𐅪(b) - 𐅪(a) ) ))
-𐅃op< ← a=> ops.filter(b=> cmp.get…(as_op(a),as_op(b))<0 )
+𐅮𐅦𐅭𐅜𐅬 ← =>{
+	γ.𐅃𐅃𐅃𐅋𐅜 = 𐅜𐅩𐅬𐅮𐅩.map(ι=> T.Set(ι)? ι : Set(ι) )
+	γ.ops = Set(…𐅃𐅃𐅃𐅋𐅜.…)
+	ops.map( .inspect= λ(){↩ Tag('op',@.id) } )
+	γ.as_op = ι=> Tstr(ι)? 𐅫𐅫𐅂𐅰𐅩(ι) : ι ;𐅫𐅫𐅂𐅰𐅩 ← ops.group_uniq(.id) ‘.get .f
+	}
 
 ############## ops: define #############
-λ 𐅜𐅩𐅬𐅮𐅩(){↩[
+Ptree ← memoize_proc(tag=> P.filter(.tag===tag) …←(𐅬Tag('filter',tag)) )
+# op: {,id,p,map}
+𐅂𐅬 ← f=> λ(ι){↩ Tag( @.id ,f(ι) ) }
+𐅯R ← (id,…p)⇒{ ,id ,p ,map:𐅂𐅬(ι=>{ [a,t] ← ι.‖===1? [∅,ι[0]] : ι ;t = Tarr(t)? t[-1] : t ;↩[ a,…𐅪𐅨s_s.parse(t.ι) ] }) }
+𐅯n ← (id,p)=>{ t ← is0_({p})? ..0 : ..1 ;↩{ ,id ,p ,map:𐅂𐅬(.chunk(2).map(t)) } }
+𐅯2 ← (id,…ι)=> 𐅯n(id,[𐅭,…ι,𐅭])
+R_ ← ι=> alt_ws(ι).map_(ι⇒{ ,id:ι ,p:[ι,ᛟ1,𐅭] ,map:𐅂𐅬(.-1) })
+_2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ2) )
+
+𐅜𐅩𐅬𐅮𐅩 ← [
 ,'.'|>(ι=> 𐅯2(ι,ᛟ2,ι,ᛟ1))
 ,𐅯2('‘.',ᛟ2,'‘','.',ᛟ1)
 ,𐅯R('()',𐅭,ᛟ1,Ptree('()'))
@@ -89,44 +78,40 @@ ops.map(a=> ops.map(b=> cmp_is(a,b, 𐅪(b) - 𐅪(a) ) ))
 ,_2`←`
 ,R_`↩ …`
 ,_2`:`
-]}
+# ,{ ,id:'𐅬word' ,p:[P.filter(.tag!=='space')] ,map:..0..0 }
+,{ ,id:'𐅬word' ,p:[P.not(=> ops.map_(𐅪Pa.X)).then(P.filter(.tag!=='space'))] ,map:..0..0 }
+]
+𐅮𐅦𐅭𐅜𐅬()
 
-ops.map(ι=> cmp_is(ι,ι,1) )
-alt_ws`^ ← ⇒ => if?`.map(ι=> cmp_is(ι,ι,-1) )
-b ← '←' ;𐅃op<(b).filter(.id!=='.') .map(a=> cmp_is(a,b,-1) )
-a ← '-' ;c ← '!' ;𐅃op<(a).-(𐅃op<(c)) .map(b=> cmp_is(a,b,1) )
-
-𐅃𐅭op_b_ops ← memoize_proc(op=> ops.filter(is0_.!).∪( 𐅃op<(op) ) )
+𐅃op< ← it=> ops.filter(sub=>
+	cmp.get…(it,sub)
+	|| it===sub? alt_ws`^ ← ⇒ => if?`.has(it.id)
+	: 𐅰(it) > 𐅰(sub) )
+	𐅰 ← ι=> 𐅃𐅃𐅃𐅋𐅜.findIndex(.has(ι))
+cmp ← new Map()
+	b ← '←' ;𐅃op<(b).filter(.id!=='.') .map(a=> cmp.set…(a,as_op(b),✓) )
+	a ← '-' ;c ← '!' ;𐅃op<(a).-(𐅃op<(c)) .map(b=> cmp.set…(as_op(a),b,✗) )
+𐅃𐅭op_b_ops ← memoize_proc(op=>Set( ,…ops.filter(is0_.!).filter(.id!=='𐅬word') ,…𐅃op<(op) ,as_op('𐅬word') ))
 
 ############## ops: parse ##############
-𐅭2 ← memoize_proc(op=> P(=> 𐅪𐅨_(𐅃𐅭op_b_ops(op)).? ) …←(𐅬Tag('_')) )
-𐅪P ← memoize_proc(op=>
-	op.p.edge_comple(ι=>ι===𐅭)
-	.map(ι=>ι.‖===1?ι[0]:ι)
-	.map(ι=> ι===𐅭? 𐅭2(op) : ι)
-	|>(ι=> is0_(op)? ι.slice(1) : ι)
-	|>(P) )
-
-𐅨𐅃op ← ops=>a=> P(ops.map_(op=> 𐅪P(op).map(ι=> Tag( op.id ,op.map(a===∅? ι : [a,…ι]) )))) .chain(𐅝𐅃(ops))
-𐅝𐅃 ← ops=>a=>Set( ,𐅨𐅃op(ops.filter(is0_))(a) ,P.of(a) )
-𐅬atom ← P.filter(.tag!=='space')
-𐅪𐅨_ ← ops=> P(Set( ,𐅨𐅃op(ops)(∅) ,𐅬atom.chain(𐅝𐅃(ops)) ))
+𐅭2 ← memoize_proc(op=> P(=> 𐅪𐅨_(𐅃𐅭op_b_ops(op)).? ) …←(𐅬Tag('𐅭')) )
+𐅪P ← memoize_proc(op=> op.p.edge_comple(ι=>ι===𐅭) .map(ι=> ι.‖===1&&ι[0]===𐅭? 𐅭2(op) : ι) )
+𐅪Pa ← (op,a)=> 𐅪P(op) |>(ι=> is0_(op)? ι.slice(1) : ι) |>(P) .map(ι=> op.map(!is0_(op)? ι : [a,…ι]) )
+𐅮𐅜𐅯𐅜𐅫 ← memoize_proc(.filter(is0_))
+𐅨𐅃_ ← memoize_proc( ops=>a=> P(ops.map_(op=> 𐅪Pa(op,a) )).chain(a=>Set( ,𐅨𐅃_(𐅮𐅜𐅯𐅜𐅫(ops))(a) ,P.of(a) )) )
+𐅪𐅨_ ← ops=> 𐅨𐅃_(ops)(∅) # .filter(ι=> ι.tag === )
 𐅪𐅨s_s ← 𐅪𐅨_(ops).join2?(ᛟ3)
 
-########################################
-;`
+# oh dear. putting 𐅬word in that place ......... breaks
+# we really need to only parse 𐅬word if we cant parse any ops, even ones were not considering in the moment. um.
+
+################# test #################
+parse_lang(`a b`)
+
+parse_lang(`
 a↩b … ! ↩
 bar ← cmp_is ← (a,b,ι)=> => cmp.set…(as_op(a),as_op(b),ι)
 if( 'handle' ) 5 else 6? 7 : 8? 9 : 0
-! x + 8.{7} × b← c + d
-P([5])
-{{ 'saddlepoint' [] () {} }}; ↩ {}
-
-P.err_if_partial = (a,b)⇒
-	: b? P([ P.if(P(a)) ,P(b).? ]).map(([ˣ,ι])=> ι===∅? ‽(𐅮𐅦𐅨𐅝𐅃) : ι)
-	: a===𐅮𐅦𐅨𐅝𐅃 || ‽(a)
-	𐅮𐅦𐅨𐅝𐅃 ← Error()
-
-`|>(parse_lang)
-
-# parse_lang(φ`~/code/scratch/fast-parse/parse_lang.ζ`.text)
+! x + 8.{7} × b← c+++++,
+{{ 'saddlepoint' [] () {} }} ;↩ {P([5])}
+`)
