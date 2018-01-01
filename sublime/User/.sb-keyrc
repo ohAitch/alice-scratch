@@ -38,6 +38,7 @@
 # ;'  ] ⌘⇧⌥^;
 # ⌘⇧⌥^;
 ⌘'     cmd.inline_eval_zeta()
+# ⇧⌘'    cmd.inline_eval_zeta1()
 ⌘b     cmd.run_project()
 ⌘;     cmd.open_context({ "type":"terminal" })
 ⌘9     cmd.goto_last_tab()

@@ -14,12 +14,14 @@ _u ← require('underscore') # lodash is better than underscore except for _()
 E_ ← {}
 patched ← new Set([E_,γ])
 E ← new Proxy({},{ # exports
-	set(           ˣ,id,ι){ […patched].forEach(o=> o[id] = ι     ) ;↩ ✓ },
+	set(           ˣ,id,ι){ […patched].forEach(o=> o[id] = ι    ) ;↩ ✓ },
 	defineProperty(ˣ,id,ι){ […patched].forEach(o=> def0(o,id,ι) ) ;↩ ✓ },
 	})
 
 def0 ← Object.defineProperty
-def ← (o,name,ι)=> def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι))
+E.def = (o,name,ι)=>{
+	γ.𐅰𐅯𐅭𐅨𐅝&&log('def',o,name.@@toPrimitive(),ι)
+	↩ def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι)) }
 slot0 ← (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
 E.𐅯Set = (…ι)=> new Set(ι)
 
@@ -71,7 +73,7 @@ E.𐅯𐅮𐅦𐅬𐅂 = f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f ;↩ 𐅭𐅩𐅝𐅋�
 𐅯𐅬𐅫𐅋𐅃 ← [] ;t ← { @@iterator:𐅯𐅬𐅫𐅋𐅃.@@iterator.bind(𐅯𐅬𐅫𐅋𐅃) }
 E.postfix = new Proxy(t,{set(ˣ,id,ι,self){t←; id+='' ;𐅯𐅬𐅫𐅋𐅃.push(id)
 	;(E[id] = ι).@@toPrimitive = (ι=>=>ι)(Symbol(id))
-	wrap ← ι⇒ { ,enumerable:✗ ,get:(ι=>=>ι)(λ(){↩ ι.call(∅,@,…arguments) }) ,set(ι){ def(@,ι,wrap(ι)) } }
+	wrap ← f⇒ { ,enumerable:✗ ,get:(ι=>=>ι)( λ(){↩ f.call(∅,@,…arguments) } ) ,set(f){ def(@,ι,wrap(f)) } }
 	def(Object.prototype,ι,wrap(ι))
 	↩ ✓ }})
 
@@ -81,8 +83,9 @@ postfix['!>'] = (ι,f)=>( f(ι) ,ι )
 postfix['…←'] = Object.assign
 postfix['∋'] = (a,b)=> Object.prototype.isPrototypeOf.call( a.prototype||a ,b )
 
-𐅨𐅝𐅃𐅂𐅮 ← => λ me(…a){ l ← me.𐅦𐅜𐅰𐅜𐅩 ;t ← l[0].call(@,…a) ;for(i←1;i<l.‖;i++) t = l[i](t) ;↩ t }
-postfix['≫'] = (…ι)=>{ ι=ι.map…(ι=> ι.𐅦𐅜𐅰𐅜𐅩 || [ι] ) ;↩ ι.‖>1? 𐅨𐅝𐅃𐅂𐅮() …←({𐅦𐅜𐅰𐅜𐅩:ι}) : ι }
+𐅨𐅝𐅃𐅂𐅮 ← => λ me(…a){ l ← me['≫'] ;t ← l[0].call(@,…a) ;for(i←1;i<l.‖;i++) t = l[i](t) ;↩ t }
+# should be on Function.prototype instead of Object.prototype
+postfix['≫'] = (…ι)=>{ ι=ι.map…(ι=> ι['≫'] || [ι] ) ;↩ ι.‖<=1? ι : 𐅨𐅝𐅃𐅂𐅮() …←({'≫':ι}) }
 postfix['≪'] = (…ι)=> γ['≫'](…ι.reverse())
 
 # obj_hash ← ι=> [ ,[(a,b)=>a===b,[…protos(ι)][1]] ,[≈,ps(ι)] ,…(Tfun(ι)? [[(a,b)=>a===b,Function.prototype.toString.call(ι)]] : []) ]
@@ -172,7 +175,7 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩�
 		.replace(/(=>|[=←:(,?]) *(?!\.\.\.)(‘?\.)/g,(ˣ,a,b)=> a+'(𐅭𐅞)=>𐅭𐅞'+b )
 		.replace(𐅃𐅪𐅜𐅫𐅮||(𐅃𐅪𐅜𐅫𐅮= re`‘\.(${word}+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property(ι,${ι}))` )
 		.replace(/‘(?=\[)/g ,`|> (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))` )
-		.replace(𐅦𐅞𐅃𐅝𐅪||(𐅦𐅞𐅃𐅝𐅪= re`(?:…${[…postfix].map(ι=> re`${ι}`.source).join('|')})(?=\s*([(:])?)`.g ),(id,right)⇒ { ,∅:js`γ[${id}]` ,'(':js`[γ[${id}]]` ,':':js`${id}` }[right] )
+		.replace(𐅦𐅞𐅃𐅝𐅪||(𐅦𐅞𐅃𐅝𐅪= re`(\.)?(${Set(…postfix).map_(ι=> re`${ι}`)})(?=\s*([(:])?)`.g ),(ˣ,dot,id,right)⇒ { ,∅:js`γ[${id}]` ,'(':js`[γ[${id}]]` ,':':js`${id}` }[dot?'(':right] )
 		.replace(/✓/g,'true')
 		.replace(/✗/g,'false')
 		.replace(/∅/g,'undefined')
@@ -264,7 +267,7 @@ E.memoize_weak = f=>{ cache ← new WeakMap() ;↩ (ι=>{ if( cache.has(ι) ) �
 # resource management is a thing & i havent thought about it enough
 # WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 # this does
-E.memoize_tick = f=>{ f = memoize_proc(f) ;cache ← f.cache ;↩ (ι=>{ t ← ι+'' ;process.nextTick(=> delete cache[t]) ;↩ f(ι) }) …← ({cache}) }
+E.memoize_tick = f=>{ f = memoize_proc(f) ;cache ← f.cache ;↩ (ι=>{ t ← ι+'' ;process.nextTick(=> cache.delete(t) ) ;↩ f(ι) }) …← ({cache}) }
 # ? frp will remove the last use(s) of @device
 E.@device = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`‘.json
 E.@proc = ι=> 𐅜𐅩𐅭𐅦𐅰‘[ι+''] ;𐅜𐅩𐅭𐅦𐅰 ← {}
@@ -449,6 +452,7 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String|Function).prototype.‖':{ get(){↩ @.length } }
 ,'(Set|Map).prototype.‖':{ get(){↩ @.size } }
 
+# goal: replace `map` with `≫` everywhere .implementation slowed in hope for clarity wrt lists in the future of See
 # 'Array.prototype.map'
 # ,'Buffer.prototype.map':λ(f){ r ← Buffer.alloc(@.‖) ;for(i←0;i<@.‖;i++) r.push(f(@[i])) ;↩ r } does not even work
 ,'Set.prototype.map':λ(f){↩ […@].map(f) }
@@ -527,7 +531,7 @@ assign_properties_in_E_informal({
 		else{ if( f(ι) )↩ [i] }
 		} }
 ,'Array.prototype.find_last_index':λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
-,'Array.prototype.join2':λ(…s){ r← [] ;_0← ✓ ;for(t← of @) _0?( _0= ✗ ,r.push(t) ): r.push(…s,t) ;↩ r }
+,'Array.prototype.join_':λ(…s){ r← [] ;_0← ✓ ;for(t← of @) _0?( _0= ✗ ,r.push(t) ): r.push(…s,t) ;↩ r }
 
 # ,'Set.prototype.@@iterator':Set.prototype.values
 # ,'Map.prototype.@@iterator':Map.prototype.entries
@@ -1050,12 +1054,13 @@ E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` …←({ι}) +''
 E.cn = {} ;cn.log = (…ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
 
 ##################################### main #####################################
+E.ζ_builtins = { ,require ,module:{ ,exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }
 E.ζ_main = ({a})=>{ι←;
 	a[0]==='--fresh' && a.shift()
 	if( !a.‖ ) ζ_repl_start()
 	else if( ι=a[0] ,φ(ι).BAD_exists() || ι.re`^\.?/` ){ process.argv = [process.argv[0],…a] ;t ← φ(ι).root('/')+'' ;o←Module._cache;m←Module._resolveFilename(t,∅,✓);oι←o[m] ;o[m] = ∅ ;Module._load(t,∅,✓) ;o[m] = oι }
 	else {
-		γ …← ({ ,require ,a }) ;γ.code = a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0] ;γ.module = { exports:{} }
+		γ …←(ζ_builtins) ;γ.a = a ;code ← a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0]
 		sh_inspect( ζ_eval(returnfix_compile(do_end_undefined_thing(code))) )
 			.then(ι=>{ ι.out && process.stdout.write(ι.out) ;ι.code &&( process.exitCode = ι.code ) })
 		}

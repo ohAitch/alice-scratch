@@ -1,6 +1,5 @@
 #!/usr/bin/env ζ
 P ← require('./parser').string
-P.| = ι=> P(Set(…ι))
 
 ⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
 
@@ -15,7 +14,7 @@ walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
 Regex ← (=>{
 	Regex ← =>Regex
 	hex ← /[0-9a-fA-F]/u
-	Escape ← P([ ,'\\' ,P.|([
+	Escape ← P([ ,'\\' ,P(Set(
 		,P(Set( ,re`x(${hex}{2})` ,re`u\{(${hex}+)\}` ,re`u(${hex}{4})` )).map(ι=> chr(parseInt(ι[1],16)))
 		,P(/c([A-Z])/).map(ι=> chr( ord(ι[1]) - ord('A') + 1 ))
 		,P(/[trnvf0]/).map(ι⇒ {t:'\t',r:'\r',n:'\n',v:'\v',f:'\f',0:'\0'}[ι])
@@ -29,9 +28,9 @@ Regex ← (=>{
 			}[ι]))
 		,P(/[1-9][0-9]*/).map(ι=> Tag(`backref`,ι|0) )
 		,/[^]/
-		]) ]).map(..1)
-	Set_Escape ← P.|([ P('\\b').map(=>'\b') ,Escape ])
-	Unit ← P.|([
+		)) ]).map(..1)
+	Set_Escape ← P('\\b').map(=>'\b') .|(Escape)
+	Unit ← P(Set(
 		,Escape
 		,P('.').map(=> $(/[^\n\r\u2028\u2029]/))
 		,P(['(?:',Regex,')']).map(..1)
@@ -42,14 +41,14 @@ Regex ← (=>{
 		,P(['(?<=',Regex,')']).map(..1).Tag`behind`
 		,P(['(?<!',Regex,')']).map(..1).Tag`behind`.Tag`not`
 		,P(['(',Regex,')']).map(..1).Tag`capture`
-		,P(['[' ,/\^?/ ,(=>{ t ← P.|([ Set_Escape,/[^\]]/ ]) ;↩ P.|([ P([t,'-',t]).map(ι=>[ι[0],ι[2]]) ,t ]).* })() ,']'])
-			.map(([ˣ,not,ι,ʸ])=>{ r ← Tag(`¦`,ι.map(ι=> Tarr(ι)? Tag(`⋯`,ι) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? Tag(`any`,∅) : Tag(`seq`,[ Tag(`not`,r) ,Tag(`any`,∅) ]) ;↩ r })
+		,P(['[' ,/\^?/ , Set_Escape.|(/[^\]]/) |>(t=> P([t,t]).join('-').|(t)) .* ,']'])
+			.map(([ˣ,not,ι,ʸ])=>{ r ← Tag(`¦`,ι.map(ι=> Tarr(ι)? Tag(`⋯`,ι[0]) …← (⋯inspect) : ι )) ;if( not ) r = !ι.‖? Tag(`any`,∅) : Tag(`seq`,[ Tag(`not`,r) ,Tag(`any`,∅) ]) ;↩ r })
 		,P(/[$^]/).Tag`^$`
 		,/[^)]/
-		])
+		))
 	Postfix ← P([ Unit ,P([ P(Set( '*','+','?',/\{([0-9]+)(?:(,)([0-9]*))?\}/ )) ,P('?').? ,]).? ]).map(([ι,rep])=> !rep? ι :
 		Tag(`×`,∅) …← ({ ,ι ,for:rep[0] |>(ι=> ι==='*'? [0,∞] : ι==='+'? [1,∞] : ι==='?'? [0,1] : (([ˣ,a,two,b])=>[ a|0 ,b? b|0 : two? ∞ : a|0 ])(ι)) ,sort:rep[1]?'asc':'desc' }) )
-	Infix ← Postfix.*?.Tag`seq`.join('|').?.map(ι=> ι.‖===1? ι[0] : Tag(`¦`,ι) )
+	Infix ← ((Postfix.*?).Tag`seq`.join('|').?).map(ι=> ι.‖===1? ι[0] : Tag(`¦`,ι) )
 	Regex ← Infix
 	↩ Regex })()
 

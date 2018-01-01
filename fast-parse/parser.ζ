@@ -1,12 +1,11 @@
 # a parser is a function. typically: from a string. to a mostly ordered tree. taking non-overlapping substrings to tree nodes. mostly monotonic.
 
-exports‘.string .thunk==> parser('string')
-exports‘.list .thunk==> parser('list')
+module.exports‘.string .thunk==> parser('string')
+module.exports‘.list .thunk==> parser('list')
 parser ← type=>{
 
 ##################################### entry ####################################
 P0 ← (tag,ι)=> new_(P) …← ({tag},ι)
-# P0 ← (tag,ι)=> new_(P) …← ({tag},ι) |>(record)
 P ← ι⇒
 	: ι===∅||ι===null? ‽(js2`P(${ι})`)
 	: P ∋ (ι)? ι
@@ -19,16 +18,9 @@ P ← ι⇒
 	: type==='string' && T.RegExp(ι)? _regex_native_string(ι)	
 	: ‽('P',ι)
 ;`see`; P.prototype = Tag()
-;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @.map(ι=> Tag(tag,ι) ) }
+;`see`; P.prototype.Tag = λ(tag){ tag+='' ;↩ @ ≫(ι=> Tag(tag,ι) ) }
 P.prototype.exec0 = λ(in_){ t ← seq( @._(in_,0) ).next_ι ;↩ t&&t.ι }
 P.prototype.parse = λ(in_){↩ @.skip(P.not(P.any1)) .exec0(in_) }
-
-# γ.𐅭𐅪𐅰𐅮𐅬 = Set()
-# log(𐅭𐅪𐅰𐅮𐅬.map(ι=> simple_hash(ι)+' '+ζ_inspect(ι).replace(/\n/g,' ') ).join('\n'))
-# _record ← (ι,in_,i)=> 𐅭𐅪𐅰𐅮𐅬.add(in_)
-
-# _record ← (ι,in_,i)=> γ.𐅬𐅜𐅝𐅃𐅋 && log([ simple_hash(𐅋𐅩𐅩𐅝𐅝(ι)),simple_hash(in_),i,ι.tag ].join(' ')) ;𐅋𐅩𐅩𐅝𐅝← npm`circular-json@0.4.0`.stringify
-# record ← ι=>{ t ← ι._ ;ι._ = λ(…a){ _record(@,…a) ;↩ t.call(@,…a) } ;↩ ι }
 
 ################################## app prelude #################################
 win ← (i,ι)⇒ { ,span_to:i ,ι }
@@ -36,7 +28,7 @@ win ← (i,ι)⇒ { ,span_to:i ,ι }
 ################################### root ish ###################################
 P.any1 = P0('any1',{ ,_:λ*(in_,i){ if( i<in_.‖ ) yield win(i+1,in_[i]) } })
 
-_seq ← ι=> P0('seq',{ ,ι ,_:( !ι.‖? P.of([]) : ι[0].chain(a=> _seq(ι.slice(1)).map(r=>[a,…r])) )‘._ .f })
+_seq ← ι=> P0('seq',{ ,ι ,_:( !ι.‖? P.of([]) : ι[0].chain(a=> _seq(ι.slice(1)) ≫(r=>[a,…r])) )‘._ .f })
 _alt ← ι=> P0('¦',{ ,ι ,_:λ*(in_,i){ for(p← of @.ι) yield* p._(in_,i) } })
 P.prototype.| = λ(b){↩ P(Set(@,b)) }
 P.if = ι=> P.not(P.not(ι))
@@ -48,8 +40,8 @@ P.prototype.chain = λ(f){↩ P0('chain',{
 	,ι:@ ,f
 	,_:λ*(in_,i){ for(t← of @.ι._(in_,i)) yield* P(@.f(t.ι))._(in_,t.span_to) }
 	}) }
-P.prototype.map = λ(f){↩ @.chain( (ι=> P.of(f(ι))) …← ({f}) ) …←({tag:'map'}) }
-P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) …←({tag:'filter'}) }
+P.prototype[≫] = (ι,f)=> ι.chain(f ≫ (P.of))
+P.prototype.filter = λ(f){↩ @.chain( (ι=> f(ι)? P.of(ι) : P.∅) …← ({f}) ) }
 P.filter = f=> P.any1.filter(f)
 P.prototype.catch = λ(f){↩ P0('catch',{
 	,ι:@ ,f
@@ -61,25 +53,26 @@ _graph_thunk ← f=> P0('graph_thunk',{
 	,ι:f
 	,_(in_,i){ Tfun(@.ι) &&( @.ι = P(@.ι()) ) ;↩ (0,@.ι)._(in_,i) }
 	})
+# P.prototype.memo = λ(){ ι←@ ;↩ P0('memo',{ ,ι ,_:memoize_proc(ι‘._.f) }) }
 P.prototype.× = λ(for_,sort){sort||(sort='desc') ;↩ P0('×',{
 	,ι:@ ,for_ ,sort
 	,_:λ*(in_,i){
 		if( !@.for_[1] ) ↩ yield win(i,[])
-		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.sort) ]).map(([x,xs])=>[x,…xs])
+		rest ← P([ ,@.ι ,@.ι.×(@.for_.map(ι=> max(0,ι-1)),@.sort) ]) ≫(([x,xs])=>[x,…xs])
 		yield* ( @.for_[0]? rest : P(Set(…(@.sort==='desc'? [rest,P([])] : @.sort==='asc'? [P([]),rest] : ‽ ))))._(in_,i) }
 	}) }
-P.prototype‘['?'] .get= λ(){↩ @.×([0,1]).map(..0) }
+P.prototype‘['?'] .get= λ(){↩ @.×([0,1]) ≫(..0) }
 P.prototype‘['*'] .get= λ(){↩ @.×([0,∞]) }
 P.prototype‘['+'] .get= λ(){↩ @.×([1,∞]) }
-P.prototype‘['??'] .get= λ(){↩ @.×([0,1],'asc').map(..0) }
+P.prototype‘['??'] .get= λ(){↩ @.×([0,1],'asc') ≫(..0) }
 P.prototype‘['*?'] .get= λ(){↩ @.×([0,∞],'asc') }
 P.prototype‘['+?'] .get= λ(){↩ @.×([1,∞],'asc') }
-P.prototype.skip = λ(p){↩ P([@,p]).map(..0) }
-P.prototype.then = λ(p){↩ P([@,p]).map(..1) }
-P.prototype.join   = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).*  ]).map(([ι,ιs])=> [ι,…ιs]) }
-P.prototype.join?  = λ(s){↩ P([ ,@ ,P([s,@]).map(..1).*? ]).map(([ι,ιs])=> [ι,…ιs]) }
-P.prototype.join2  = λ(s){↩ P([ ,s ,P([@,s]).map(..0).*  ]).map(..1) }
-P.prototype.join2? = λ(s){↩ P([ ,s ,P([@,s]).map(..0).*? ]).map(..1) }
+P.prototype.skip = λ(p){↩ P([@,p]) ≫(..0) }
+P.prototype.then = λ(p){↩ P([@,p]) ≫(..1) }
+P.prototype.join   = λ(s){↩ P([ ,@ ,P([s,@]) ≫(..1).*  ]) ≫(([ι,ιs])=> [ι,…ιs]) }
+P.prototype.join?  = λ(s){↩ P([ ,@ ,P([s,@]) ≫(..1).*? ]) ≫(([ι,ιs])=> [ι,…ιs]) }
+P.prototype.join2  = λ(s){↩ P([ ,s ,P([@,s]) ≫(..0).*  ]) ≫(..1) }
+P.prototype.join2? = λ(s){↩ P([ ,s ,P([@,s]) ≫(..0).*? ]) ≫(..1) }
 
 ##################### in_ :: String   data root & fast path ####################
 win1u ← (in_,i)=>{ t ← chr(ord(in_,i)) ;↩ win(i+t.‖,t) }

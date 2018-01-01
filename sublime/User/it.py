@@ -96,8 +96,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			sel = expand_empty_regions_to_fulllines(view,sel)
 			ends = [ι.end() for ι in sel]
 			r = json.loads(ζ(""" [ends,code] ← JSON.parse(ι)
-				γ.module = {if_main_do:=>∅}
-				γ.i = 0 ;γ.require = require
+				γ …←(ζ_builtins)
 				ends.map(end=>{
 					𐅦𐅯𐅦𐅞𐅜 ← [] ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
 					r ← catch_union2(=> ζ_eval( npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'') ) )
