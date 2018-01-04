@@ -1,4 +1,4 @@
-redo spotiman (make tags/lists of "these songs went together well once!" etc)
+redo data_spotify (make tags/lists of "these songs went together well once!" etc)
 	bookantt-like chart for tracking music one listens to (this would need to be automated)
 
 think about that and figure out what we want to do with this
@@ -23,8 +23,6 @@ think about that and figure out what we want to do with this
 	>			for playlists, tracks order:date group / size > 1 * { [1:] remove }
 	>			for playlists, tracks order:date uniq!
 	>			for playlists, tracks order:date uniq!:id
-
-rename to metaspotify?
 
 split playlist by is_✓
 

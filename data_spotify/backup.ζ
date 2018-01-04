@@ -1,12 +1,12 @@
 #!/usr/bin/env ζ
 spotify ← new (npm`spotify-web-api-node@2.5.0`)()
 async ← npm`async@2.6.0`
-APP ← '\x1b[34m[spotiman]\x1b[0m'
+APP ← '\x1b[34m[data_spotify]\x1b[0m'
 
 ################################################################################
-# link spotify.credentials with ~/.auth/spotiman
-spotify.setCredentials(φ`~/.auth/spotiman`.json)
-update_creds ← ι=>{ t ← spotify.getCredentials() ;ι.access_token &&( t.accessToken = ι.access_token ) ;ι.refresh_token &&( t.refreshToken = ι.refresh_token ) ;spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
+# link spotify.credentials with ~/.auth/data_spotify
+spotify.setCredentials(φ`~/.auth/data_spotify`.json)
+update_creds ← ι=>{ t ← spotify.getCredentials() ;ι.access_token &&( t.accessToken = ι.access_token ) ;ι.refresh_token &&( t.refreshToken = ι.refresh_token ) ;spotify.setCredentials(φ`~/.auth/data_spotify`.json = t) }
 
 say_progress ← (=>{ i←0 ;↩ =>{ i++ ;i%10===0 && console.log(APP,'working @ page #'+i) } })()
 

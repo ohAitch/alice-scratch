@@ -21,7 +21,7 @@ ls -Alo /Applications/Utilities > "ls/$(ζ 'Time().ymdhms') %2FApplications%2FUt
 ls -Alo ~/Applications > "ls/$(ζ 'Time().ymdhms') ~%2FApplications"
 { echo '# brew leaves'; brew leaves; echo $'\n# brew cask list'; brew cask list; echo $'\n# npm -g ls'; npm -g ls --depth=0; } > "ls/$(ζ 'Time().ymdhms') package manager ls"
 
-~/code/scratch/spotiman/backup.ζ
+~/code/scratch/data_spotify/backup.ζ
 
 brew update
 
