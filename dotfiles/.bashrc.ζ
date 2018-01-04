@@ -13,7 +13,7 @@ E.__prompt = (E,history_1)=>{t←; E ← E |0
 	# ideal:
 	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
 	# t ← bind( D(sh`$$`), [#Q φ.cwd #Q], { 'ℍ.‖':2 }).ℍ; t[0]!==t[1] && out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
-	last_cwd ← @device('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
+	last_cwd ← @device0('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	postrun('hash -r')
 	}
 
@@ -29,7 +29,7 @@ E.x = =>{ E ← process.env.? |0
 	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
 	E===0? postrun('exit') :( process.exitCode = E ) }
 
-E.pb = => _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); cn.log('copied:',ι) })
+E.pb = => _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); log('copied:',ι) })
 _pastebin_id ← => Π(yes=>
 	process.stdin.pin((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
@@ -47,7 +47,7 @@ E.ps2 = =>{
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(Adobe Crash Reporter|Adobe Desktop Service|AdobeCRDaemon|AdobeIPCBroker|Android File Transfer Agent|Arq|Arq Agent|Audacity|BetterTouchTool|CCXProcess|CIJScannerRegister|Core Sync|Creative Cloud|GitHub Desktop|Google Chrome|iBooks|Image Capture Extension|Karabiner|Keybase|LastPass|LaunchControl|NoSleep|Path Finder|Preview|RescueTime|SlimBatteryMonitor|Spotify|Steam|TotalSpaces2|TotalSpacesCrashWatcher|iTerm|Signal|Signal Helper|Sublime Text|Activity Monitor).app/`)
 		._.sortBy(ETIME).reverse()
 		.join('\n')+'\n'
-	cn.log(r) }
+	log(r) }
 
 E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
@@ -79,10 +79,10 @@ E['‡'].cant_pool = ✓
 ################## personal concepts ### for interactive mode ##################
 E.im_resize = (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
-	mv ← (a,b)=>{ a===b? 0 : dry? cn.log(sh`mv ${a} ${b}`) : φ(b).BAD_exists()? ‽ : fs.renameSync(a,b) }
+	mv ← (a,b)=>{ a===b? 0 : dry? log(sh`mv ${a} ${b}`) : φ(b).∃? ‽ : fs.renameSync(a,b) }
 	a.filter(.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
-		# cn.log('got',ι,t&&t[1])
+		# log('got',ι,t&&t[1])
 		if (!t) ↩
 		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong, but slightly better semantic?
 		# also see https://www.npmjs.com/package/exif-parser
@@ -129,7 +129,7 @@ E.run_project.cant_pool = ✓
 E.d = (a='.')=>{
 	# would be neat if this was .Trash aware
 	sum ← 0
-	q ← (ι,fl)=> cn.log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
+	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
 	fs.readdirSync(a).map(fl=>{
 		if( φ(fl).is_dir ){
 			o ← process.stderr.write; process.stderr.write = =>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o

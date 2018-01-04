@@ -8,7 +8,7 @@ APP ← '\x1b[34m[spotiman]\x1b[0m'
 spotify.setCredentials(φ`~/.auth/spotiman`.json)
 update_creds ← ι=>{ t ← spotify.getCredentials() ;ι.access_token &&( t.accessToken = ι.access_token ) ;ι.refresh_token &&( t.refreshToken = ι.refresh_token ) ;spotify.setCredentials(φ`~/.auth/spotiman`.json = t) }
 
-say_progress ← (=>{ i←0 ;↩ =>{ i++ ;i%10===0 && cn.log(APP,'working @ page #'+i) } })()
+say_progress ← (=>{ i←0 ;↩ =>{ i++ ;i%10===0 && console.log(APP,'working @ page #'+i) } })()
 
 depaginate ← (f,cbₐ)=>{ # see googleapis usage for a more up to date version of this function
 	r ← [] ;async.doWhilst(
@@ -37,12 +37,12 @@ module.if_main_do((…a)=>{
 			go_to( spotify.createAuthorizeURL(['playlist-read-private','playlist-read-collaborative','playlist-modify-public','playlist-modify-private','user-library-read','user-library-modify']) )
 		break ;case 'auth2':
 			spotify.authorizationCodeGrant(a[1]).then(.body).then(update_creds)
-			.then(=> cn.log(APP,'auth done') )
+			.then(=> console.log(APP,'auth done') )
 		break ;case '':
 			spotify.refreshAccessToken().then(.body).then(update_creds)
-			.then(get_my_tracks).then(ι=>{ φ`~/file/.archive/spotify/${Time().ymdhms}.json`.ι = ι ;cn.log(APP,'backup done') })
+			.then(get_my_tracks).then(ι=>{ φ`~/file/.archive/spotify/${Time().ymdhms}.json`.ι = ι ;console.log(APP,'backup done') })
 		} })
 
-# process.on('uncaughtException',e=>{ cn.log('top-level error:',e,e.stack) ;‽(e) })
+# process.on('uncaughtException',e=>{ console.log('top-level error:',e,e.stack) ;‽(e) })
 
 # doesn't include any of the data about who owned the tags, aaa

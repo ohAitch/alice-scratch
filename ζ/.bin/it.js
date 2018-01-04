@@ -68,6 +68,7 @@ T.boxed.ι = 𐅯Set('Boolean','String','Number')
 // prefix hook . does not require parens around the right side, but can only do side effects
 E.𐅯𐅮𐅦𐅬𐅂 = f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f ;return 𐅭𐅩𐅝𐅋𐅩 } ;var 𐅭𐅩𐅝𐅋𐅩 = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } })
 
+//############### postfix ###############
 // def(Function.prototype,'‘@',{ ,get(){↩ @.call.bind(@) } })
 // def(Function.prototype,'flip_',{ ,get(){↩ (a,b)=> @(b,a) } })
 var 𐅯𐅬𐅫𐅋𐅃 = [] ;var t = { [Symbol.iterator]:𐅯𐅬𐅫𐅋𐅃[Symbol.iterator].bind(𐅯𐅬𐅫𐅋𐅃) }
@@ -118,9 +119,11 @@ Property.prototype[γ["|>"]] (ι=> new Property(ι,"f")) .get= function(){return
 Property.prototype.bind = function(ι){ ι instanceof Property || _interrobang_()
 	this .host= { get(){return ι.get.call(this) } ,set(ι){return ι.set.call(this,ι) } ,enumerable:ι.enumerable }
 	return this }
-Property.prototype[γ["|>"]] (ι=> new Property(ι,"thunk")) .set= function(ι){ var _id = this._id
-	var get = Tfun(ι)? function(){return this[_id] = ι.call(this) } : T.Promise(ι)? ()=> ι.ι : _interrobang_()
+var thunk_s = ff=> function(ι){ var _id = this._id
+	var get = Tfun(ι)? ff(ι,_id) : T.Promise(ι)? ()=> ι.ι : _interrobang_()
 	this .host= { configurable:true ,get ,set(ι){ this[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[_id] .host= { value:ι ,writable:true } } } }
+Property.prototype[γ["|>"]] (ι=> new Property(ι,"thunk")) .set= thunk_s((ι,_id)=> function(){return this[_id] = ι.call(this) })
+Property.prototype[γ["|>"]] (ι=> new Property(ι,"f1ι")) .set= thunk_s((ι,_id)=> function(){ var r= ι.call(this) ;r!==undefined &&( this[_id] = r ) ;return r })
 
 //################################## requires ###################################
 ;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_u'],['lodash','_l'],['highland','_h']
@@ -135,10 +138,6 @@ E [γ['…←']] ({γ})
 var lazy_fn = f=>{var t; return function(){return (t||(t=f())).apply(this,arguments) } } // takes a thunk which returns a function. acts like said returned function, always.
 // so Bad
 
-// E.js_tokenize = code=>{
-// 	tok ← npm`babylon@6.14.1`.parse(code,{allowReturnOutsideFunction:✓}).tokens
-// 	↩ _u.zip( tok.map(ι=> code.slice(ι.start,ι.end)) ,tok.windows(2).map(([a,b])=> code.slice(a.end,b.start) ) ).….filter(ι=>ι) }
-// E.uses_this = f=> (f+'').match(/\bthis\b/) && js_tokenize('('+f+')').includes('this')? 'maybe' : ✗
 E.__name = name=>(𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .value= name
 E.alt_ws = ι=> 𐅯Set(... (ι+'').split(' ')._.sortBy(ι=> -ι["‖"]) )
 E.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
@@ -201,10 +200,10 @@ E.ζ_compile = lazy_fn(()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;v
 		.replace(/⇒(\s*([:{]))?/g,(ˣ,x,ι)=> '=>'+({ ':':'0?0' ,'{':'0?0:' }[ι]||_interrobang_())+x )
 		.replace(𐅭𐅦𐅫𐅩𐅝||(𐅭𐅦𐅫𐅩𐅝= re`(^|(?!${word})[^\s\)]\s*)(=>(?:\s*=>)*)`.g ),(ˣ,t,ι)=> t+'()=>'["×"](ι.match(/=>/g)["‖"]))
 		.replace(/↩ ?/g,'return ')
-		.replace(/(^|[^])\^/g,(ˣ,ι)=> ι+(ι==='b'? '^' : '**') )
+		.replace(/([^]|^)\^/g,(ˣ,ι)=> ι==='b'? '^' : ι+'**' )
 		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ var t = '_'+random_id.greek(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
-		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X) // ! eventually, remove the thing with two underscores next to each other __
+		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
 		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]|𐅯).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
@@ -260,6 +259,7 @@ var memo_frp = (names,within,f)=>{
 	dir.φ`${a} ${random_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
 E.memoize_persist = f=>{
 	// may race condition but is unlikely & relatively harmless
+	// it would be lovely if this s could use data from their previous versions
 	var store = φ`/tmp/ζpersist_${simple_hash(f)}` ;var store_ι = store.json||{}
 	return (...a)=>{ var t = store_ι[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[simple_hash(a)] ;return t["∃"]? t.ι : ( t.ι = f(...a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
 E.memoize_proc = f=>{ var cache = new Map() ;return ((...ι)=> cache['has…'](...ι)? cache['get…'](...ι) : cache['set…'](...ι,f(...ι)) ) [γ['…←']] ({cache}) }
@@ -268,10 +268,9 @@ E.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι)
 // WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 // this does
 E.memoize_tick = f=>{ f = memoize_proc(f) ;var cache = f.cache ;return (ι=>{ var t = ι+'' ;process.nextTick(()=> cache.delete(t) ) ;return f(ι) }) [γ['…←']] ({cache}) }
-// ? frp will remove the last use(s) of @device
-E.thisdevice = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property(ι,"json"))
+// ? frp will remove the last use(s) of @device0
+E.thisdevice0 = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property(ι,"json"))
 E.thisproc = ι=> 𐅜𐅩𐅭𐅦𐅰[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[ι+''] ;var 𐅜𐅩𐅭𐅦𐅰 = {}
-E.slot_persist = thisdevice
 
 // ;[#p ersist_here ~/code/declare/npm]
 var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -280,7 +279,7 @@ var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	if(! version ){ sfx`ack` ;version = shᵥ`npm show ${ι} version`+'' ;return 'npm`'+abs_name()+'`' ;return }
 	var cache = φ`~/.npm/${name}/${version}` ;var final = cache.φ`/node_modules/${name}`+(sub||'')
 	try{ return require(final) }catch(e){ e.code==='MODULE_NOT_FOUND' || _interrobang_(e) }
-	cache.BAD_exists() || shᵥ`cd ~ ;npm cache add ${abs_name()}`
+	cache["∃"] || shᵥ`cd ~ ;npm cache add ${abs_name()}`
 	var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = undefined
 	return require(final) }
 E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;var 𐅪𐅰 = memoize_proc(_npm) // such a hack. takes 300ns because of the template string +='' hack ;80ns without
@@ -291,6 +290,7 @@ E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
 		return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 		})() ) )[ord(ι)]).X).join('') ;var 𐅩𐅩𐅩𐅝𐅋;
 
+//########## parsers and such ###########
 E.regex_parse_0 = lazy_fn(()=>{var t; // status: output format unrefined
 	var P = require('./parsimmon2.js')
 	var dehex = ι=> chr(parseInt(ι,16))
@@ -371,6 +371,8 @@ E.JSON_pretty = (ι,replacer)=>{
 				return (t=a+ι.join(', ')+b)["‖"] <= wrap_width? t : a+'\n'+T+ι.join(',\n'+T)+'\n'+b
 				} }
 	return show(ι) }
+
+//#######################################
 var cartesian_str =(𐅭𐅞)=>𐅭𐅞.reduce((a,b)=>{ var r = [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;return r } ,[''])
 var genex_simple = ι=>{ var P = require('parsimmon')
 	var unit = P.lazy(()=> P.alt( P.noneOf('()|') ,P.string('(').then(s_or).skip(P.string(')')).map(ι=>0?0:{T:'capture',ι}) ) )
@@ -414,9 +416,9 @@ E[γ["|>"]] (ι=> new Property(ι,"random_id")) .thunk=()=>{
 E.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 process.stdio = [ process.stdin,process.stdout,process.stderr ]
-E._pisces__on_exits = f=> (𐅰𐅞𐅜𐅯𐅨||(𐅰𐅞𐅜𐅯𐅨= require('signal-exit') ))((i,sig)=>{
+E._pisces__on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) }) ;var 𐅰𐅞𐅜𐅯𐅨;
+	f(i,sig) }) ;var 𐅃𐅬𐅩𐅮𐅦;
 
 var 𐅯𐅩𐅪𐅨𐅃 = function*(θ){ for(;θ.i<θ.l["‖"];) yield θ.l[θ.i++] }
 E.seq = ι=>{
@@ -545,11 +547,11 @@ assign_properties_in_E_informal({
 })
 var 𐅯𐅜𐅝𐅃𐅋 = { emit(...a){return this.host.emit(this.id,...a) } ,on(f){ this.host.on(this.id,f) ;return this } }
 𐅯𐅜𐅝𐅃𐅋[γ["|>"]] (ι=> new Property(ι,"Π")) [γ['…←']] ({ get(){return Π(yes=> this.host.once(this.id,yes)) } })
-Promise.prototype[γ["|>"]] = (ι,f)=> ι===Promise.prototype? f(ι) : ι.status? f(ι.ι) : ι.then(f)
-Promise.prototype[γ["|>"]] (ι=> new Property(ι,"status")) .thunk= function(){var get;
+Promise.prototype[γ["|>"]] (ι=> new Property(ι,"status")) .f1ι= function(){var get;
 	if(get= b_util&&b_util.getPromiseDetails ){ var [r,ι] = get(this) ;r = [undefined,true,false][r] ;if( r!==undefined ){ [this.status,this.ι] = [r,ι] ;return r } }
 	else{ var t = r=> ι=>{ [this.status,this.ι] = [r,ι] ;return this.status } ;this.then(t(true),t(false)) ;t(undefined)(undefined) ;return this.status } }
-Promise.prototype[γ["|>"]] (ι=> new Property(ι,"ι")) .thunk= function(){ if( this.status!==undefined ) return this.ι }
+Promise.prototype[γ["|>"]] (ι=> new Property(ι,"ι")) .f1ι= function(){ if( this.status!==undefined ) return this.ι }
+// Promise.prototype[|>] = (ι,f)=> ι===Promise.prototype? f(ι) : ι.status? f(ι.ι) : ι.then(f) # breaks things
 
 var TimerCons = function(a,b){this.a=a;this.b=b} ;TimerCons.prototype = { clear:function(){this.a.clear();this.b.clear()} ,ref:function(){this.a.ref();this.b.ref()} ,unref:function(){this.a.unref();this.b.unref()} }
 assign_properties_in_E_informal({
@@ -590,18 +592,9 @@ E.search_graph = (ι,f)=>{ var r=[] ;walk_graph(ι,ι=> ι!==undefined && ι!==n
 
 E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;return t[0] + t[1]*1e-9 }
 E.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = function(){return util.inspect(this) } ;return r }
-var fmt = function(a,b){ var t = this.__local? npm`moment@2.18.1`(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString() ;t = t.slice(a,b) ;if( !this.__local && b > 10) t += 'Z' ;return t }
 assign_properties_in_E_informal({
 'Date.prototype.local':{get(){return new Date(this) [γ['…←']] ({__local:true})}}
 ,'Date.prototype.i':{get(){return +this / 1e3}}
-,'Date.prototype.ym':      {get(){return fmt.call(this,0,'YYYY-MM'["‖"])}}
-,'Date.prototype.ymd':     {get(){return fmt.call(this,0,'YYYY-MM-DD'["‖"])}}
-,'Date.prototype.ymdh':    {get(){return fmt.call(this,0,'YYYY-MM-DDTHH'["‖"])}}
-,'Date.prototype.ymdhm':   {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm'["‖"])}}
-,'Date.prototype.ymdhms':  {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss'["‖"])}}
-,'Date.prototype.ymdhmss': {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
-,'Date.prototype.iso':     {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
-,'Date.prototype.hms':     {get(){return fmt.call(this,'YYYY-MM-DDT'["‖"],'YYYY-MM-DDTHH:mm:ss'["‖"])}}
 })
 
 E.cmd_log_loc = cmd=>{
@@ -618,7 +611,7 @@ E.os_daemon = (cmd,opt)=>{ cmd+='' ;var {once} = opt||{}
 		,StandardOutPath  :t.out
 		,StandardErrorPath:t.err
 		}
-	var job_path = φ`~/Library/LaunchAgents/${job.Label}.plist` ;job_path.BAD_exists() ||( job_path.ι = job ) ;_almost_equal_to_( job_path.plist ,job ) || _interrobang_()
+	var job_path = φ`~/Library/LaunchAgents/${job.Label}.plist` ;job_path["∃"] ||( job_path.ι = job ) ;_almost_equal_to_( job_path.plist ,job ) || _interrobang_()
 	return { cmd ,job_path ,restart(){ var t = this.job_path ;shᵥ`launchctl unload ${t} &>/dev/null ;launchctl load ${t}` } } }
 os_daemon[γ["|>"]] (ι=> new Property(ι,"this")) .thunk=()=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w)
 
@@ -711,8 +704,9 @@ assign_properties_in_E_informal({
 ,'RegExp.prototype.y':{get(){return RegExp(this.source,this.flags.replace(/y/,'')+'y') }}
 })
 
-E.js = E.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
-E.js2 = E.py2 = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+E.js = E.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι ).join('') }
+E.ζjs = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ζ_compile(ι) ).join('') }
+E.ζ = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
@@ -808,14 +802,13 @@ E[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
 		get url(){return encodeURI('file:'+this.root('/')) }, // ! should this be part of root
 		get is_dir(){return !!catch_ι(()=> fs.statSync(this._ι).isDirectory()) },
 		get name(){return path.basename(this._ι) },
-		BAD_exists(){return existsSync(this._ι) },
 		TMP_children(){return this._ι [γ["|>"]] (function Λ(ι){return φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t)['map…'](Λ) : [ι] }) },
 		TMP_parents(){ var r = [this.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;return r.slice(1) },
 		root(x){switch(arguments.length){default: _interrobang_()
 			case 0: return this._ι[0]==='/'? '/' : '.'
 			case 1: return new Φ( x==='/'? path.resolve(this._ι) : x==='.'? path.relative(x,this._ι) : _interrobang_('not yet implemented: nonstandard roots') )
 			}},
-		ensure_dir(){ this.φ`..`.BAD_exists() || mkdir_p(this.φ`..`+'') ;return this },
+		ensure_dir(){ this.φ`..`["∃"] || mkdir_p(this.φ`..`+'') ;return this },
 
 		// get ι(){↩},
 		set ι(ι){
@@ -883,6 +876,7 @@ E[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
 		get size(){return fs.statSync(this._ι).size },
 		get ['‖'](){return fs.statSync(this._ι).size },
 		}
+	Φ.prototype[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))['∃'] [γ['…←']]({ get(){return existsSync(this._ι) } ,set(ι){ ι===this["∃"] ||( this.ι = ι?'':undefined ) } })
 	function Φs(ι){this._ι = ι} ;Φs.prototype = {
 		inspect(ˣ,opts){return opts.stylize('φ','special')+util.inspect(this._ι,opts)},
 		get name_TMP(){return this._ι.map(ι=> new Φ(ι).name)}, // fs.readdirSync
@@ -933,10 +927,11 @@ E.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,';∅')
 //######################## ζ.user (scratch/it.ζ) (user.) ########################
 // deprecated section but valid code
 
-sb.𐅰𐅂𐅫𐅯𐅯 = ()=> sb.tab.active.ι
-
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
+process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
+
+sb.𐅰𐅂𐅫𐅯𐅯 = ()=> sb.tab.active.ι
 E[γ["|>"]] (ι=> new Property(ι,"anon")) .get=()=> random_id.greek(5)
 E[γ["|>"]] (ι=> new Property(ι,"now")) .get=()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }
 E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
@@ -950,6 +945,18 @@ E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
 // Number_toFixed ← λ(θ,ι){ θ = round(θ / 10**-ι) * 10**-ι ;↩ ι>0? θ.toFixed(ι) : θ+'' }
 // E.pretty_time_num = ι=> new Number(ι) …← ({inspect:λ(ˣ,opt){ P ← 20 ;ι←@ ;[ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']) ;↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
 // E.pretty_time_num = ι=> Unit(ι,'s')
+
+var fmt = function(a,b){ var t = this.__local? npm`moment@2.18.1`(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString() ;t = t.slice(a,b) ;if( !this.__local && b > 10) t += 'Z' ;return t }
+assign_properties_in_E_informal({
+'Date.prototype.ym':      {get(){return fmt.call(this,0,'YYYY-MM'["‖"])}}
+,'Date.prototype.ymd':     {get(){return fmt.call(this,0,'YYYY-MM-DD'["‖"])}}
+,'Date.prototype.ymdh':    {get(){return fmt.call(this,0,'YYYY-MM-DDTHH'["‖"])}}
+,'Date.prototype.ymdhm':   {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm'["‖"])}}
+,'Date.prototype.ymdhms':  {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss'["‖"])}}
+,'Date.prototype.ymdhmss': {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
+,'Date.prototype.iso':     {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
+,'Date.prototype.hms':     {get(){return fmt.call(this,'YYYY-MM-DDT'["‖"],'YYYY-MM-DDTHH:mm:ss'["‖"])}}
+})
 
 var Unit = (ι,u)=>0?0: {ι,u}
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"valueOf")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(){return this.ι } )
@@ -998,7 +1005,7 @@ var sh_inspect = ι=>{var t;
 E.log = (...ι)=>{ ι = ι["‖"]===1? ι[0] : ι ;log.ι(ι) ;return ι }
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
 
-//################################### ζ infra ###################################
+//################ repl #################
 E._double_dagger__repl_start = ()=> ζ_repl_start({
 	prompt:'\x1b[30m\x1b[100m‡\x1b[0m '
 	// i know how to make the good repl for ct. i want to, but im tired
@@ -1028,8 +1035,9 @@ E.ζ_repl_start = opt=>{ opt = { compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[
 			}
 		if( error ) this._domain.emit('error' ,error.err || error)
 		else{
-			if( T.Promise(ι) ) this.context[γ["|>"]] (ι=> new Property(ι,"__")) .thunk= ι
-			else if( ι!==undefined ) this.context.__ = ι
+			// if( T.Promise(ι) ) @.context‘.__ .f1ι= ι
+			// else
+			if( ι!==undefined ) this.context.__ = ι
 			try{ var t = ζ_inspect(ι,{ colors:this.outputStream.isTTY }) }catch(e){ var t = '<repl inspect failed>:\n'+(e&&e.stack) }
 			this.outputStream.write(t && t+'\n') }
 		this.displayPrompt()
@@ -1047,18 +1055,14 @@ E.ζ_repl_start = opt=>{ opt = { compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[
 E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
 
 //################################### prelude ###################################
-φ`~/code/declare/module.ζ`.BAD_exists() &&
-	require(φ`~/code/declare/module.ζ`+'').patch(E)
-
-//#################################### trash ####################################
-E.cn = {} ;cn.log = (...ι)=> process.stdout.write(ι.map(ι=> ζ_inspect(ι,{ colors:process.stdout.isTTY })).join(' ')+'\n')
+φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').patch(E)
 
 //#################################### main #####################################
 E.ζ_builtins = { require ,module:{ exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }
 E.ζ_main = ({a})=>{var ι;
 	a[0]==='--fresh' && a.shift()
 	if( !a["‖"] ) ζ_repl_start()
-	else if( ι=a[0] ,φ(ι).BAD_exists() || ι.re`^\.?/` ){ process.argv = [process.argv[0],...a] ;var t = φ(ι).root('/')+'' ;var o=Module._cache;var m=Module._resolveFilename(t,undefined,true);var oι=o[m] ;o[m] = undefined ;Module._load(t,undefined,true) ;o[m] = oι }
+	else if( ι=a[0] ,φ(ι)["∃"] || ι.re`^\.?/` ){ process.argv = [process.argv[0],...a] ;var t = φ(ι).root('/')+'' ;var o=Module._cache;var m=Module._resolveFilename(t,undefined,true);var oι=o[m] ;o[m] = undefined ;Module._load(t,undefined,true) ;o[m] = oι }
 	else {
 		γ [γ['…←']](ζ_builtins) ;γ.a = a ;var code = a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0]
 		sh_inspect( ζ_eval(returnfix_compile(do_end_undefined_thing(code))) )

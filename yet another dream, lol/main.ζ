@@ -28,7 +28,7 @@ for (ι← of φ`*`){ sc ← image_scale({by:'nearest neighbor'}); A ← sc(ι,1
 
 sharp ← npm`sharp@0.17.2`
 t ← sharp('2017-03-08T21:48:39Z.png'); t.metadata().then(({width,height})=>
-	t.clone().resize(width/2,null,{kernel:'cubic',interpolator:'nearest'}).toBuffer().then(ι=> sharp(ι).resize(width,null,{kernel:'nearest',interpolator:'nearest'}).raw().toBuffer().then(a=> t.clone().raw().toBuffer().then(b=> cn.log('they are',a.equals(b),global.a=a,global.b=b) )) ))
+	t.clone().resize(width/2,null,{kernel:'cubic',interpolator:'nearest'}).toBuffer().then(ι=> sharp(ι).resize(width,null,{kernel:'nearest',interpolator:'nearest'}).raw().toBuffer().then(a=> t.clone().raw().toBuffer().then(b=> log('they are',a.equals(b),global.a=a,global.b=b) )) ))
 
 sharp ← npm`sharp@0.17.2`
 t ← sharp('2017-03-08T21:48:39Z.png'); t.metadata().then(({width,height})=> t.resize(width/2,null,{kernel:'cubic',interpolator:'nearest'}).resize(width,null,{kernel:'nearest',interpolator:'nearest'}).toFile('#out.png') )

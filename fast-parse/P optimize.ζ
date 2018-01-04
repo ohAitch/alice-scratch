@@ -1,0 +1,68 @@
+# i am being pretty despair about this optimization task
+
+# things many of you could do to help:
+# find a parser like JSON.parse plus a simple efficient parsimmon thing to compare perf data against, maybe? as a loose reference point
+
+
+P ← require(φ`~/code/scratch/fast-parse/parser`+'').list
+lang ← require_new(φ`~/code/scratch/fast-parse/lang.ζ`)
+
+# walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
+# 	clone ← _u.once(=>{ ι = Tag() …← (ι) })
+# 	# ifΔ is weird. why?
+# 	ifΔ! ← (a,f=Object.is)=>{ for(k← in a) f(ι[k],a[k]) ||( clone() ,ι[k] = a[k] ) ;↩ ι }
+# 	if( ι.ι ) ι = ifΔ!({ ι: Tarr(ι.ι)? ι.ι.map(me) : me(ι.ι) })
+# 	ι = f(ι,{ifΔ!})
+# 	} ;↩ ι })
+# P_walk ← (p,f)
+
+Function.prototype‘.means .get= λ(){ ι ← @+'' ;↩ ι===(..1)+'' ? Tag('.',1) : ∅ }
+is_map ← ι=>{t← ;↩ ι.tag==='chain' && (t= ι.f['≫']) && t.‖===2 && t[1]===P.of }
+
+root ← lang.𐅪𐅨s_s
+is_map(root)
+root.f['≫'][0].means
+ι ← root.ι
+ι.tag==='seq'
+ι ← ι.ι[1]
+ι.tag==='×'
+ι.sort==='asc'
+≈( ι.for_ ,[0,∞] )
+is_map(ι.ι)
+ι ← ι.ι.ι.ι[0]
+ι.tag==='chain'
+ι.ι
+
+‡ hmm
+‡ well, i cant see this
+‡ i dont know how id change it
+‡ next: see this?
+‡ goodness, seeing already
+
+normalize_to_axioms_regex ← ι=> walk_regex(ι,(ι,{ifΔ!})=>{
+	# these seem redundant. why?
+	is_null ← ι=> Tstr(ι)? ✗ : ( (ι.≈`¦` || ι.≈`seq`) && ι.ι.every(is_null) ) || ( ι.≈`not` && is_bottom(ι.ι) )
+	is_bottom ← ι=> Tstr(ι)? ✗ : ( ι.≈`¦` && ι.ι.every(is_bottom) ) || ( ι.≈`seq` && ι.ι.some(is_bottom) ) || ( ι.≈`not` && is_null(ι.ι) )
+
+	is_1not ← ι=> Tstr(ι)? ✗ : ι.≈`seq` && ι.ι.‖===2 && ι.ι[0].≈ && ι.ι[0].≈`not` && ι.ι[1].≈ && ι.ι[1].≈`any`
+	ι_1not ← .ι[0].ι
+
+	if( is_1not(ι) && is_1not(ι_1not(ι)) ){
+		ι = ι_1not(ι_1not(ι))
+		# if( length(ι)===1 ) ↩ ι ;else
+		↩ Tag(`seq`,[ Tag(`not`,Tag(`not`,ι)) ,Tag(`any`,∅) ])
+		}
+
+	if( ι.≈`seq` ) ι = ifΔ!( { ι: ι.ι.map…(ι=> ι.tag && ι.≈`seq`? ι.ι : [ι] ) } ,≈ )
+
+	if( (ι.≈`¦`||ι.≈`seq`) && ι.ι.‖===1 ) ↩ ι.ι[0]
+
+	if( is_null(ι) ) ↩ Tag(`seq`,[])
+	# if( is_bottom(ι) ) ↩ Tag(`not`,Tag(`seq`,[]))
+
+	if( ι.≈`^$` ) ↩ $({ ,'^':'(?<![^])' ,'$':'(?![^])' ,'^m':'(?<![^\n\r])' ,'$m':'(?![^\n\r])' }[ι.ι])
+	↩ ι })
+
+$0 ← ι=> normalize_to_axioms_regex(parse_regex(ι))
+𐅋𐅝𐅃𐅃𐅮 ← memoize_proc($0)
+$ ← ι=>{ ι= ι |>(𐅋𐅝𐅃𐅃𐅮) ;↩ _l.cloneDeep(ι) …← ({tag:ι.tag}) } # aka parse_normalize_regex_memoized

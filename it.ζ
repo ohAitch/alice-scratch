@@ -1,3 +1,11 @@
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+
 ################################## see : data ##################################
 ⧫. Tag ==>{
 	𐅝𐅯𐅩𐅝𐅞 ← {}
@@ -43,7 +51,7 @@
 	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
 ⧫. github_remote_origin ==> file=>{
 	ι ← φ(file).root('/')
-	root ← ι ;while( root+''!=='/' && !root.φ`.git`.BAD_exists() ) root = root.φ`..`
+	root ← ι ;while( root+''!=='/' && !root.φ`.git`.∃ ) root=root .φ`..`
 	if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
 	ι = (ι+'').slice((root+'/').‖)
 	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
@@ -51,25 +59,25 @@
 	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
 
 ######################### net incl context device,proc #########################
-# ⧫. lock ==>{
-# 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
-# 	locks ← {}
-# 	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
-# 	♓_on_exits(=> _u.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
-# 	un ← id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
-# 	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx').then(
-# 		,fd=>( locks[id] = ✓ ,fs_close(fd).then(=> =>un(id) ) )
-# 		,e=>{ T.Error(e) || ‽ ;opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
-# 			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
-# 			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
-# 			} )
-# 	lock.∃ = id=> fs_open(𐅨𐅯(id),'r').then(
-# 		,fd=>( fs.close(fd) ,✓ )
-# 		,e=> e.code==='ENOENT'? ✗ : Π(e) )
-# 	↩ lock }
+⧫. lock ==>{
+	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
+	locks ← {}
+	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
+	♓_on_exits(=> _u.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
+	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx').then(
+		,fd=>( locks[id] = ✓ ,fs_close(fd).then(=> =>lock.un(id) ) )
+		,e=>{ T.Error(e) || ‽ ;opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
+			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
+			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
+			} )
+	lock.un = id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
+	lock.∃ = id=> fs_open(𐅨𐅯(id),'r').then(
+		,fd=>( fs.close(fd) ,✓ )
+		,e=> e.code==='ENOENT'? ✗ : Π(e) )
+	↩ lock }
 
 ⧫. stream4 ==>{ E ← {}
-	E.send_json = memoize_weak(s=>{ ;t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .fbind })
+	E.send_json = memoize_weak(s=>{ ;t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .f })
 	E.as_json = memoize_weak(s=>{ ;t ← npm`split2@2.2.0`(ι=>{ try{↩ JSON.parse(ι) }catch(e){ @.emit('error',e) } }) ;s.pipe(t) ;↩ t.P`data` })
 	↩ E }
 
@@ -77,43 +85,77 @@
 	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
 	E.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
-	net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅯𐅩𐅞𐅫𐅫||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅭𐅝𐅯𐅨𐅋||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
 	↩ E }
 
-⧫. Π ==>{ ↩ ι⇒
-	: Tfun(ι) && /^(yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
-	: T.Error(ι)? Promise.reject(ι)
+⧫. Π ==> ι⇒
+	: Tfun(ι) && /^(re|yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
+	: T.Error(ι)? Πx(ι)
 	: Promise.resolve(ι)
-	}
+⧫. Πx ==> ι=> Promise.reject(ι)
+⧫. Πand ==> (…ι)=> Promise.all(ι)
+⧫. Πor ==> (…ι)=> Promise.race(ι)
+
+⧫. @deviceΠ = => ι=>{ start ← Tfun(ι)
+	φ_on_E ← ι=> Π(re=>{ 𐅪 ← ι.∃? re() : npm`chokidar@1.7.0`.watch(ι+'',{persistent:✓}).on('all',=> ι.∃ &&( 𐅪.close() ,re() )) })
+	id ← !start? ι : random_id.greek(9)
+	𐅞 ← @device0('Π'+id)
+	re ← (ι=>{ 𐅞.ι = ι }) …←({ ,id ,toString:=>r+'.re' })
+	r ← { ,id ,re ,toString:=>ζjs`@deviceΠ(${id})` } !>(‘.Π .get==> φ_on_E(𐅞.o).then(=> 𐅞.ι))
+	start && ι(re)
+	↩ r }
 
 ############################### friend glue : ui ###############################
+⧫. electron_window_for ==>{
+	# interaction with previous versions: unsolved
+	𐅰𐅃𐅬𐅦𐅜electron ← {
+		,init:=> _electron__start_my().Π
+		,ι: @device0`𐅰𐅃𐅬𐅦𐅜electron`
+		# @proc alive_at: time of last message received from
+		# @proc path_to
+		,path_init:=> !𐅩.ι.ι? Πx() :( 𐅩.path_to = net1.open_send(𐅩.ι.ι[1]) !>(.then(ι=> Πor(ι.Π`close`,ι.Π`end`).then(=> 𐅩.path_to = ∅ ) ,=>∅)) )
+		,path_to:∅
+		} ;𐅩 ← 𐅰𐅃𐅬𐅦𐅜electron
+	send_to_my ← ι=>{
+		𐅯 ← => 𐅩.path_init() !>(.then(s=> stream4.send_json(s)(ι) ,=>∅))
+		𐅯().catch(=>{
+			lock('𐅂𐅂𐅪𐅯𐅩 electron init').then(
+				,un=> 𐅩.init().then(ι=>{ un() ;𐅩.ι.ι = ι ;𐅯().catch(=>∅) })
+				,=> /* retry once */ (=> 𐅯().catch(=>∅) ).in(1/*holy shit cheating*/)
+				)
+			}) }
+	↩ id=> code=> send_to_my({ ,id ,code }) }
 ⧫. _electron__start_my ==>{
 	# ! requires modules using /usr/local/bin/node 's ABI ;currently electron matches but this will break
-	start_el_app ← code=>{
+	start_el_app ← (code,…a)=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
-		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})()`
+		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})(${a.join(',')})`
 		require('child_process').spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',fs.openSync(t.out,'a+'),fs.openSync(t.err,'a+')] })
-		|> (ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
+		|>(ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
 		}
-	start_my ← => start_el_app(=>{ el ← require('electron') ;el.app.Π`ready`|>(=>{
-		send ← (w,ι)=> w.webContents.executeJavaScript(ι+';0')
+	↩ => @deviceΠ(re=> start_el_app(re=>{ el ← require('electron') ;el.app.Π`ready`.then(=>{
+		el.app.on('window-all-closed',=> el.app.hide() )
+		el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png')
+		# el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
+		# el ← require('electron')
+		# eval_main ← f=> el.ipcRenderer.send('eval_main',f+'')
+		# eval_main(me=> me.Π`ready-to-show`.then(=> me.show()))
+		# eval_main(=> el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png') )
 		on_msg ← ({,id,code})=>{ w ← 𐅮𐅭𐅰𐅂𐅮‘[id]
+			send ← ι=> w.ι.webContents.executeJavaScript(ι+';0')
 			if(! w.ι ){
-				w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ })
-				w.ι.loadURL('about:blank')
-				w.ι.Π`closed`.then(=> w.∃ = ✗ )
-				send(w.ι,` require('/usr/local/bin/ζ')(global) `) }
-			send(w.ι,code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
-		net1.device_listen()|>(H=>{
-			H.on('connection',s=> stream4.as_json(s).on(on_msg) )
-			@device`app_𐅝𐅝𐅦𐅃𐅫`.ι = H.at
-			})
-		})})
-	↩ start_my }
+				t ← w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ }) # !>(𐅦)
+				t.loadURL('about:blank')
+				t.Π`closed`.then(=> w.∃ = ✗ )
+				send(` require('/usr/local/bin/ζ')(global) ;γ.el = require('electron') `)
+				t.Π`ready-to-show`.then(=> t.show()) }
+			send(code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
+		net1.device_listen().then(H=>{ H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
+		})},re) ) }
 
 ⧫. notify ==> ι=>{
 	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
-	net1.device_listen().then(H=>{
+	↩ net1.device_listen().then(H=>{
 	r ← H.just_first_json()
 	hsᵥ`hs.notify.new(
 		function(x) ;x:withdraw() ;simple_send(${H.at},{ at=x:actualDeliveryDate() }) end
@@ -125,7 +167,7 @@
 
 ⧫. sfx ==> (ss,…ιs)=>{ ι ← ss[0]
 	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get()|>(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
+	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get().then(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
 	}
 
 ################################## friend glue #################################
@@ -239,7 +281,33 @@
 
 ################################## user.alias ##################################
 ⧫. p ==> λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
-⧫ .ps ==> Object.getOwnPropertyDescriptors
+⧫. ps ==> Object.getOwnPropertyDescriptors
 
-############################### to be deprecated ###############################
-⧫. multiline ==> ι=>{ ι = (ι+'').split('\n').slice(1,-1) ;t ← ι.map(.re`^\t*`[0].‖)._.min() ;ι = ι.map(.slice(t)) ;↩ (ι[0]==='' && ι[-1]===''? ι.slice(1,-1) : ι).join('\n') }
+################################### see : new ##################################
+⧫. see ==>{
+	my_identity ← simple_flesh(['see.ζ','default'])
+	see ← ι=> electron_window_for(my_identity)(`see_render(${JSON.stringify(ι)})`)
+	↩ see }
+⧫. see_render ==>{
+	############### prelude ##############
+	nk ← npm`numeric@1.2.6` ######### COPIED #########
+	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) ) ######### COPIED #########
+	style ← ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
+	eval_html ← ι=> document.createElement('div') …←({ innerHTML:(ι+'').trim() }).childNodes[0]
+	# sad alice: you could refactor these utils
+
+	######################################
+	wh ← [700,100]
+	see_freqs ← ι=>
+		document.body.appendChild( eval_html(`
+			<svg style=";fill:darkred ;background:#2a2626 ;width:${wh[0]} ;height:${wh[1]}">
+				<g transform="scale(${wh[0]},${wh[1]})">
+				${norm∞(ι).map((ι,i,L)=>
+					`<rect class="bar" transform="translate(${i/L.‖},${1-ι})" width="${1/L.‖ - 1/wh[0]}" height="${ι}">
+						</rect>` ).join('')}
+					</g> </svg> `) )
+
+	style` body{ ;background:#2a2626 } `
+	# style` .bar { ;fill:darkred } `
+	
+	↩ ι=> ι.frequencies? see_freqs(ι.frequencies) : ‽ }

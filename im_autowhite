@@ -9,7 +9,7 @@ shᵥexit ← (ss,…ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(
 
 ################################### requires ###################################
 t ← (shᵥ`convert -list configure ;:`+'').re`LIB_VERSION_NUMBER (.+)`[1].split(',').map(ι=> ('00'+ι).slice(-2)).join('')
-t >= '06080504' ||( cn.log(APP,'error: imagemagick version',t,' < 06080504'), ‽ )
+t >= '06080504' ||( console.log(APP,'error: imagemagick version',t,' < 06080504'), ‽ )
 
 percent ← 1 // percent pixels closest to white
 
@@ -20,9 +20,9 @@ get_average ← (a,b)=>{ a = get_channel_mean(a); b = get_channel_mean(b); ↩ a
 tmp ← φ`/tmp/im_autowhite_${random_id(9)}`; tmp.φ`foo`.ι = ''; process.on('exit',=> shᵥ`rm -rf ${tmp} ;:`); τ ← tmp.φ.bind(tmp)
 
 main ← ι=>{
-	shᵥexit`convert -quiet ${ι} +repage ${τ`A`}` ||( cn.log(APP,'error: file',ι,'is not an image'), ‽ )
+	shᵥexit`convert -quiet ${ι} +repage ${τ`A`}` ||( console.log(APP,'error: file',ι,'is not an image'), ‽ )
 	cspace ← (shᵥ`identify -ping -verbose ${τ`A`}`+'').re`Colorspace: (.+)`[1]
-	;(cspace==='sRGB' || cspace==='Grey') ||( cn.log(APP,'error: file',ι,'is not sRGB or Grey'), ‽ )
+	;(cspace==='sRGB' || cspace==='Grey') ||( console.log(APP,'error: file',ι,'is not sRGB or Grey'), ‽ )
 
 	_('RGB').map(ι=> shᵥ`convert ${τ`A`} -channel ${ι} -separate ${τ(ι)} ;:`)
 
@@ -40,6 +40,6 @@ APP ← '\x1b[34m[im_autowhite]\x1b[0m'
 module.if_main_do((…a)=>{
 	if (a.‖===1) main(a[0])
 	else a.forEach((ι,i,l)=>{
-		shᵥexit`[ -f ${ι} ]` &&( cn.log(APP,'['+(i+1)+'/'+l.‖+']',ι), main(ι) )
+		shᵥexit`[ -f ${ι} ]` &&( console.log(APP,'['+(i+1)+'/'+l.‖+']',ι), main(ι) )
 		})
 	})

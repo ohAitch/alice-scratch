@@ -8,8 +8,8 @@ me←;
 friend←;
 
 server
-	.on('your_name',name=>{ me = { name, addrs:[] }; cn.log('my name',name) })
-	.on('they_are',ι=>{ friend = ι; cn.log('they_are',ι) })
+	.on('your_name',name=>{ me = { name, addrs:[] }; console.log('my name',name) })
+	.on('they_are',ι=>{ friend = ι; console.log('they_are',ι) })
 
 server.emit('talk_to','7ctvbp999d')
 

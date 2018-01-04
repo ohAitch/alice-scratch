@@ -128,7 +128,7 @@ entities_decode ← typeof(window)==='undefined'? npm`html-entities@1.2.0`.AllHt
 
 ######################## fun with fraction approximation #######################
 wu ← npm`wu@2.1.0`
-Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && cn.log(Time(),'mapping @',i,'/',l.‖), f(ι,i,l) )) }
+Array.prototype.maplog = λ(f){↩ @.map((ι,i,l)=>( i%(l. length / 100 |0)===0 && log(Time(),'mapping @',i,'/',l.‖), f(ι,i,l) )) }
 gcd ← (a,b)=> b>0? gcd(b, a%b) : a
 reduced ← (a,b)=>{ t ← gcd(a,b) ;↩ [a/t,b/t] }
 bits ← ι=> log2(ι[0]*ι[1])
@@ -141,7 +141,7 @@ score ← (ι,approx)=> ((ι[0]*ι[1]) / (approx[0]*approx[1])) * (1/error(ι,ap
 best_approx ← x=>{ size_x ← x[0]*x[1] ;↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
 
 to ← 1e5
-bench(=> cn.log(
+bench(=> log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
 
@@ -311,13 +311,6 @@ done = done.map(..0)
 todo = todo._.sortBy(.‖)
 ;[code,…done,…todo]
 
-################### this is silly and i shd probably toss it ###################
-enc_id ← (=>{
-	safe ← memoize_proc(ι=> catch_ι(=> (0,eval)(`'use strict' ;var ${ι} = 0 ;1`)))
-	ESC_ ← ι=> […Buffer.from(ι).toString('hex')].map(ι=> […'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'][parseInt(ι,16)]).join('')
-	ESC ← ι=> (/^[♈-♓🔅🔆🔒‡⧫§]$/u.test(ι)? unicode_names : ESC_)(ι)
-	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : ESC(ι) ).join('') ) })()
-
 ##################################### with #####################################
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
 ;(=>{ bar ← 5 ;↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
@@ -335,3 +328,6 @@ r ← '7|28|10000|0|0|38|19.916465826189473|0|0|2|0|1109|140|0|3|0|1|8|1|0|1|1|1
 require('crypto').createHash('md5').update(r).digest().toString('hex')
 b ← '4866525ce4fc2a3331806600943bb995'
 ;[r,b].map(ι=> Buffer.from(ι).toString('base64')).join('|')
+
+################################## i dont know #################################
+reboot_self ← __filename=>{ t ← shₐ2({ ,stdio:process.stdio ,detached:✓ })`${__filename}` ;t.unref() ;t.stdio.forEach(ι=> ι&&ι.unref&&ι.unref() ) ;process.exit() }

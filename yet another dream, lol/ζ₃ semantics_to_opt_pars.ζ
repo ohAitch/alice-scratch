@@ -139,7 +139,7 @@ vmζ_parse ← code=>{
 			// break; foo() -> warning
 			i ← ι.ι.findIndex(.type==='break_fn')
 			dead ← i===-1? [] : ι.ι.splice(i+1,∞)
-			if (dead.some(interesting)) cn.log('[warning]','you have interesting dead code',dead)
+			if (dead.some(interesting)) log('[warning]','you have interesting dead code',dead)
 			// seq[ι] -> ι
 			if (ι.ι.‖===1) ι = ι.ι[0]
 			}
@@ -166,7 +166,7 @@ vmζ_runInContext ← (ast,global_)=>{
 		: ι.type==='closure'? λ ζwrap(…a){↩ compile(vmζ_runInContext(
 			τ('call',{ o:ζwrap.ι, self:τι('js_data',@), a:a.map(ι=> τι('js_data',ι)) })
 			,global_ )) } …← ({ι})
-		:( ι = τι('<not_compiled>',ι), cn.log(ι), ι )
+		:( ι = τι('<not_compiled>',ι), log(ι), ι )
 
 	eval_ ← ι⇒
 		: ι.type==='seq'? ι.ι.map(eval_)[-1]

@@ -14,6 +14,8 @@
 
 # the clickable search results are currently implemented in a horrifying way, because we are not properly associating data across multiple contexts that make it hard to share data. with the right builtins, this is easily resolveable.
 
+# mix sbᵥ and js- with data flow, it is practical
+
 #################################### prelude ###################################
 import sublime,sublime_plugin
 from sublime import Region
@@ -86,10 +88,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			r = json.loads(ζ("""
 				γ.i = 0 ;γ.require = require
 				JSON.parse(ι).map(ι=>{
-					𐅦𐅯𐅦𐅞𐅜 ← [] ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
+					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
 					r ← catch_union2(=> ζ_eval(ι))
-					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
-					}) """,E(ι)))
+					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
+					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r }) """,E(ι)))
 			for i in range(len(sel))[::-1]:
 				view.replace(edit ,sel[i] ,r[i])
 		else:
@@ -98,10 +100,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			r = json.loads(ζ(""" [ends,code] ← JSON.parse(ι)
 				γ …←(ζ_builtins)
 				ends.map(end=>{
-					𐅦𐅯𐅦𐅞𐅜 ← [] ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
+					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
 					r ← catch_union2(=> ζ_eval( npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'') ) )
-					↩ […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
-					}) """,E([ ends ,view.substr(Region(0,ends[-1])) ])))
+					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
+					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r }) """,E([ ends ,view.substr(Region(0,ends[-1])) ])))
 			for i in range(len(sel))[::-1]:
 				ι = sel[i]
 				view.insert(edit ,*
@@ -186,7 +188,6 @@ class _2(sublime_plugin.EventListener):
 	# like, knowing that `now` returns e.g. `2017-10-09T07:20Z` and thus `2017-10-09T07:20Z` can synonymize `now`
 	def on_query_completions(self,view,prefix,locations):
 		ι = prefix
-		if ι == 'c': return [[ι,'cn.log(']]
 		if ι in ['day','now','anon']:
 			return (json.loads(ζ('t ← γ[ι] ;(Tarr(t)? t : [t]).map(r=> [ι,r])',ι)),sublime.INHIBIT_WORD_COMPLETIONS)
 

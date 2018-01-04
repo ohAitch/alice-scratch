@@ -2,7 +2,7 @@
 APP ← '\x1b[34m[keyrc]\x1b[0m'
 KB ← '/Applications/Karabiner.app/Contents/Library/bin/karabiner'
 
-// -------------------------------------------------------------------------- //
+################################################################################
 char16hex ← ι=> ('000'+ord(ι).toString(16)).slice(-4)
 take_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ ι.slice(0,i) }
 drop_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
@@ -12,7 +12,7 @@ _alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`mess
 
 multiline ← ι=> lines(ι+'').map(.replace(/^\t*/,'')).join('\n')
 
-// -------------------------------------------------------------------------- //
+################################################################################
 M ← λ(a,b,c){ r ← {trigger:a, output:b}; c && (r.if = c); ↩ r }
 M2 ← λ(a,b,c){ r ← {name:a, identifier:a, autogen:b}; c && (r.only = c); ↩ r }
 transpose_str ← ι=> _.zip(…ι.split('\n').map(ι=>[…ι])).map(.join('')).join('\n')
@@ -112,17 +112,17 @@ show_private_xml ← λ(mappings){t←;
 		appdef: _(appdefs).map((ι,k)⇒ {appname:k, equal:ι}),
 		}} }
 
-// -------------------------------------------------------------------------- //
+################################################################################
 regen ← (opt={})=>{
 	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …_(φ`~/.keyrc.json`.json||{}).values()])
 	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι // file:/~/Library/Application%20Support/Karabiner/private.xml
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		// if( φ`/Applications/PowerKey.app`.BAD_exists() ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		// if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
-// ---------------------------------- main ---------------------------------- //
+##################################### main #####################################
 # i think this was being affected by the ζ.if_main_do bug and is now okay
 // module.if_main_do((…a)=>{
 // switch( a[0] ){
@@ -134,10 +134,10 @@ regen ← (opt={})=>{
 // 		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
 // 		restart_and_keep_alive(__filename)
 // 	break; case 'test':
-// 		cn.log(parse_keyrc(φ(a[1]).text))
+// 		console.log(parse_keyrc(φ(a[1]).text))
 // 	} })
 
-// -------------------------------------------------------------------------- //
+################################################################################
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
 	fi ← 'notsave.KEY_once_'+random_id(9)
