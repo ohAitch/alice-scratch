@@ -1,19 +1,19 @@
 E ← module.exports
 
 ############################# terminal_do_script ‽ #############################
-E['·'] = =>{ postrun(φ`/tmp/__·`.text); φ`/tmp/__·`.ι = ∅ }
+E['·'] = =>{ postrun(φ`/tmp/__·`.text) ;φ`/tmp/__·`.ι = ∅ }
 
 ################################# bash prompt ‽ ################################
 # !! mixes prelude and personal concepts !!
-E.__prompt = (E,history_1)=>{t←; E ← E |0
+E.__prompt = (E,history_1)=>{t← ;E ← E |0
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
-	red ← ι=> '\x1b[31m'+ι+'\x1b[0m'; green ← ι=> '\x1b[32m'+ι+'\x1b[0m'; goX ← ι=> '\x1b['+ι+'G'
-	cmd && fs.appendFileSync(φ`~/.archive_bash`+'', JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
+	red ← ι=> '\x1b[31m'+ι+'\x1b[0m' ;green ← ι=> '\x1b[32m'+ι+'\x1b[0m' ;goX ← ι=> '\x1b['+ι+'G'
+	cmd && fs.appendFileSync(φ`~/.archive_bash`+'' ,JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	out( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
 	# ideal:
 	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
-	# t ← bind( D(sh`$$`), [#Q φ.cwd #Q], { 'ℍ.‖':2 }).ℍ; t[0]!==t[1] && out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
-	last_cwd ← @device0('last_cwd_'+process.env.$); if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`); last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
+	# t ← bind( D(sh`$$`) ,[#Q φ.cwd #Q] ,{ 'ℍ.‖':2 }).ℍ ;t[0]!==t[1] && out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
+	last_cwd ← @device0('last_cwd_'+process.env.$) ;if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) out(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) ;last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	postrun('hash -r')
 	}
 
@@ -24,12 +24,12 @@ out ← ι=> process.stdout.write(ι)
 _home_link ← ι=> (ι+'').replace(re`^${process.env.HOME}(?=/|$)`,'~')
 
 set_term_title ← ι=> out('\x1b]0;'+ι+'\x07')
-this_term_is_frontmost ← =>{ t ← random_id(25); set_term_title(t); r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0]; set_term_title(''); ↩ r }
+this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
 E.x = =>{ E ← process.env.? |0
-	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail`, osaᵥ`terminal: activate`))
+	this_term_is_frontmost() || (E===0? sfx`done` : (sfx`fail` ,osaᵥ`terminal: activate`))
 	E===0? postrun('exit') :( process.exitCode = E ) }
 
-E.pb = => _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι); ι = 'http://alice.sh/txt#'+ι; p(ι); log('copied:',ι) })
+E.pb = => _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι) ;ι = 'http://alice.sh/txt#'+ι ;p(ι) ;log('copied:',ι) })
 _pastebin_id ← => Π(yes=>
 	process.stdin.pin((e,ι)=>{
 		t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
@@ -37,11 +37,11 @@ _pastebin_id ← => Π(yes=>
 E.pb.cant_pool = ✓
 
 E.ps2 = =>{
-	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)`; ↩ [pid|0, Time(d).i] }); t ← ιs.map(..1)._.min(); t += t < Time().i - 2*3600? 30*60 : 20; ↩ ιs.filter(..1 < t)._.map(0); }
+	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)` ;↩ [pid|0 ,Time(d).i] }) ;t ← ιs.map(..1)._.min() ;t += t < Time().i - 2*3600? 30*60 : 20 ;↩ ιs.filter(..1 < t)._.map(0) }
 	bad ← startup_procs().∪([])
 	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
 	CMD ← .slice(h.search('COMMAND'))
-	ETIME ← .slice(h.search('PID')+'PID'.‖ + 1, h.search('ELAPSED')+'ELAPSED'.‖)
+	ETIME ← .slice(h.search('PID')+'PID'.‖ + 1 ,h.search('ELAPSED')+'ELAPSED'.‖)
 	r ← h+'\n'+r
 		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
 		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(Adobe Crash Reporter|Adobe Desktop Service|AdobeCRDaemon|AdobeIPCBroker|Android File Transfer Agent|Arq|Arq Agent|Audacity|BetterTouchTool|CCXProcess|CIJScannerRegister|Core Sync|Creative Cloud|GitHub Desktop|Google Chrome|iBooks|Image Capture Extension|Karabiner|Keybase|LastPass|LaunchControl|NoSleep|Path Finder|Preview|RescueTime|SlimBatteryMonitor|Spotify|Steam|TotalSpaces2|TotalSpacesCrashWatcher|iTerm|Signal|Signal Helper|Sublime Text|Activity Monitor).app/`)
@@ -53,15 +53,15 @@ E.diff = (base,edit)=>{
 	if( φ(base).is_dir ){
 		a ← Set(…fs.readdirSync(base)) # ! should walk all subfiles
 		b ← Set(…fs.readdirSync(edit))
-		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`+''==='0' )
-		↩ [ ['\x1b[30;47m=\x1b[0m',same], ['\x1b[30;42m+\x1b[0m',b.-(a)], ['\x1b[30;41m-\x1b[0m',a.-(b)], ['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
+		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null ;echo $?`+''==='0' )
+		↩ [ ['\x1b[30;47m=\x1b[0m',same] ,['\x1b[30;42m+\x1b[0m',b.-(a)] ,['\x1b[30;41m-\x1b[0m',a.-(b)] ,['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
 		t = t.split('\n')
 		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _u.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
-		iG ← []; iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
+		iG ← [] ;iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
 		t = iG.map(.map(i=> [t[i],i]))
-		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop(); while (ι[0][0]==='') ι.shift() })
+		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop() ;while (ι[0][0]==='') ι.shift() })
 		process.exitCode = t.‖ ?1:0
 		↩ t.map(.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
 			.join('\n')+'\n')
@@ -74,24 +74,24 @@ E['sb[-1]'] = => sb.tab[-1].ι
 
 ################## personal concepts ### for interactive mode ##################
 E.im_resize = (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
-E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()
+E.im_dateify = (…a)=>{ dry ← a[0]==='-d' ;dry && a.shift()
 	mv ← (a,b)=>{ a===b? 0 : dry? log(sh`mv ${a} ${b}`) : φ(b).∃? ‽ : fs.renameSync(a,b) }
 	a.filter(.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
 		# log('got',ι,t&&t[1])
 		if (!t) ↩
-		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong, but slightly better semantic?
+		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong ,but slightly better semantic?
 		# also see https://www.npmjs.com/package/exif-parser
-		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '', φ(ι).φ`../PANO/tmp`.ι = ∅), 'PANO/') : '')+t+'.jpg')
+		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '' ,φ(ι).φ`../PANO/tmp`.ι = ∅) ,'PANO/') : '')+t+'.jpg')
 		}) }
 
 ########################### build/release/run project ##########################
 get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
 
 # E.build = ...
-E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )); ι||(ι = φ.cwd.φ`any`)
+E.run_project = E.run = (ι,isTTY)=>{t← ;catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )) ;ι||(ι = φ.cwd.φ`any`)
 	if( !process.stdout.isTTY )
-		{ isTTY && ‽; terminal_do_script(sh`…${sh.clear}; cd ${φ(get_filename(ι)).φ`..`}; run_project ${JSON.stringify(ι)} ✓;
+		{ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(get_filename(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓;
 			x
 			`) }
 	else{
@@ -101,18 +101,18 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(=> Tstr(ι) &&( ι = JSON
 		sfx`ack`
 
 		build ← fs.readdirSync(project+'').find(.re`^build\.`)
-		package_ ← !!( t=project.φ`package.json`.json, t && t.version )
+		package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
 		run ← fs.readdirSync(project+'').find(.re`^run\.`)
 		;(build || package_ || run) || ‽
 
-		a ← => build && shₐ2({stdio:process.stdio})`cd ${project}; ${build}`
+		a ← => build && shₐ2({stdio:process.stdio})`cd ${project} ;${build}`
 		b ← =>{if( package_ ){
 			p ← project.φ`package.json`.json
 			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
-			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch'), project.φ`package.json`.json = p )
-			shₐ2({stdio:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
+			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch') ,project.φ`package.json`.json = p )
+			shₐ2({stdio:process.stdio})`cd ${project} ;npm --cache-min=Infinity -g i .`
 			}}
-		c ← => run && shₐ2({stdio:process.stdio})`cd ${project}; ${run}`
+		c ← => run && shₐ2({stdio:process.stdio})`cd ${project} ;${run}`
 
 		# sh⚓exit
 		# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
@@ -120,82 +120,3 @@ E.run_project = E.run = (ι,isTTY)=>{t←; catch_union(=> Tstr(ι) &&( ι = JSON
 		;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
 		} }
 E.run_project.cant_pool = ✓
-
-############################ single-purpose commands ###########################
-E.d = (a='.')=>{
-	# would be neat if this was .Trash aware
-	sum ← 0
-	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
-	fs.readdirSync(a).map(fl=>{
-		if( φ(fl).is_dir ){
-			o ← process.stderr.write; process.stderr.write = =>{}; try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout }; process.stderr.write = o
-			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
-		else b ← φ(fl).‖
-		sum += b; q(b,fl) })
-	q(sum,a)
-
-	progress_bar ← (L,at)=>( L -= 2, at = floor(at*L), '['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
-	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
-	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
-	}
-
-# E.email = =>{
-# 	sfx`ack`
-# 	sb.tab.active.ι.split(/\n{3,}/g).map(λ(ι){[a,b,…c] ← ι.split('\n'); c = c.join('\n'); ↩ ('mailto:'+a+'?subject='+b+'&body='+c).replace(/\n/g,'%0A')})
-# 		.map(go_to.X)
-# 	osaᵥ`chrome: activate`
-# 	}
-
-E.ct = E.chrome_tabs = λ(i){
-	nice_ ← λ(title,url){t ← new String(title+' '+url); t.sourcemap = {title:[0,title.‖], url:[(title+' ').‖,(title+' '+url).‖]}; ↩ nice_url(t)}
-	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
-	if (i){ i = i|0; t ← nice_(title[0][i],url[0][i]); p(t); ↩ t+'\n<copied>\n' }
-	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n'); sb.tab.push(t) }
-	}
-
-E.bookmarks = ι=>{
-	# ! should use nice_url
-	use_chrome ← ✓
-	safari_bookmarks ← ι=>{
-		my_walk ← ι⇒
-			: Tarr(ι)? ι.map…(my_walk)
-			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
-			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{name:ι.URIDictionary.title, ι:ι.URLString}]
-			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{name:ι.Title, ιs:ι.Children.map…(ι=> my_walk(ι))}]
-			: {name:'', ι:JSON.stringify(ι)}
-		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
-	chrome_bookmarks ← ι=>{
-		ι = φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children
-		my_walk_a ← .map(ι=> my_walk(ι))
-		my_walk ← ι=> ι.children? {name:ι.name, ιs:my_walk_a(ι.children)} : ι.url? {name:ι.name, ι:ι.url} : {name:'', ι:JSON.stringify(ι)}
-		↩ my_walk_a(ι) }
-	ι = (use_chrome? chrome_bookmarks : safari_bookmarks)(ι)
-	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' && (ι.ι = ∅))
-	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : (!ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι))
-	sb.tab.push(ι) }
-
-# E.push = ι=>{
-# 	moment ← npm`moment@2.14.1`
-
-# 	day_of_year ← .dayOfYear()-1
-# 	label_fmt ← ι=> ('...'+ι).slice(-3)
-
-# 	data ← φ`~/.scratch/a.json`.json || (φ`~/.scratch/a.json`.ι = {}); set_data = (k,ι)=>( data[k] = ι, φ`~/.scratch/a.json`.ι = data )
-
-# 	label_now ← => label_fmt(day_of_year(moment()))
-# 	starts ← data.starts.map(ι=> moment.utc(ι))
-# 	labels ← 180..map(ι=> label_fmt(day_of_year(moment(starts[0]).add(ι,'days'))) )
-
-# 	ι && set_data(ι,!data[ι])
-
-# 	color_now ← ι=> '\x1b[43m'+ι+'\x1b[0m'
-# 	starts_f ← starts.map(ι=> ι.format('YYYY')+'-'+label_fmt(day_of_year(ι)))
-# 	↩ '5×5 pushups: '+starts_f[0]+'::->'+' ; '+'many knee pushups: '+starts_f[1]+'::->'+'\n'+
-# 		labels.chunk(floor(80/4)).map(ι=>{ r ← _.zip(…ι.map(ι=>{ t ← [ι, data[ι]?' ✓ ':' · ']; ι===label_now() && (t = t.map(color_now)); ↩ t })); ↩ r.map(.join(' ')).join('\n') }).join('\n')+'\n' }
-
-E.kp = E.keypresses = =>{
-	diy_stdin ← f=>{ process.stdin.setRawMode(✓); process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
-	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
-	o←; diy_stdin(ι=>{ sfx`nacksoft`; if (!o) o = hrtime(); else out(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
-	}
-E.keypresses.cant_pool = ✓

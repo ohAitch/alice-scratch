@@ -8,7 +8,7 @@ take_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ �
 drop_while ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ ι.slice(i) }
 split_with ← λ(l,f){ i←0; for(ι← of l) if (f(ι)) i++; else break; ↩ [l.slice(0,i), l.slice(i)] }
 
-_alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` //! design better, then rename to alert
+_alert ← (a,b,c)=> osaₐ`system events: display alert ${a} …${b && osa`message ${b}`} …${c && osa`giving up after ${c}`}` # ! design better, then rename to alert
 
 multiline ← ι=> lines(ι+'').map(.replace(/^\t*/,'')).join('\n')
 
@@ -86,7 +86,7 @@ show_private_xml ← λ(mappings){t←;
 		compile_trigger ← ι=>{ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← ι=>{t←; ↩0,
 			(t=/^\] ([^]*)$/.exec(ι))? compile_keystring(t[1]).ι :
-			// (t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
+			# (t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 			(t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
 				_(ι).map(ι=> _(char16hex(ι)).map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
 		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),∅) )
@@ -97,12 +97,12 @@ show_private_xml ← λ(mappings){t←;
 	↩ {root: {
 		item:[
 			M2( 'notsave.2touch', [
-				// …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc'].map(ι=>`
+				# …['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc'].map(ι=>`
 				…['iBooks|preview','Chrome','sublime tExt','path Finder','Github desktop','Terminal','Vlc','Discord','Spotify'].map(ι=>`
 				${ι.re`[A-Z]`[0].toLowerCase()} ; `+js`${ι.toLowerCase().split(/\|/g)}.map(ι=> go_to('app',ι))` ),
 				…[1,2,3,4,5].map(ι=>`
 				${ι} ] ^${ι} `),
-				// ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
+				# ☝☝ should be like @notsave.2touch and then you can say ☝☝${ι}
 				].map(compile_key_line) ),
 			M2( t='notsave.power_key', builtin_keys.-(text_keys).map(ι=> `${/^F[^n]$/.exec(ι)? 'Fn'+ι : ι} ${/^[⌥⇧⌘][RL]$/.exec(ι)? ι[0] : ι}` ).map(compile_key_line).map(ι=> ι+','+shell(sh`${KB} disable ${t}`)) ),
 			…onces.map(ι=>M2( ι.if, [compile_mapping(_(ι).omit('if')).ι+','+shell(sh`${KB} disable ${ι.if}`)] )),
@@ -115,27 +115,27 @@ show_private_xml ← λ(mappings){t←;
 ################################################################################
 regen ← (opt={})=>{
 	ι ← show_private_xml([…parse_keyrc(φ`~/.keyrc`.text), …_(φ`~/.keyrc.json`.json||{}).values()])
-	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι // file:/~/Library/Application%20Support/Karabiner/private.xml
+	φ`~/Library/Application Support/Karabiner/private.xml`.ι = ι # file:/~/Library/Application%20Support/Karabiner/private.xml
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		// if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		# if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
 ##################################### main #####################################
 # i think this was being affected by the ζ.if_main_do bug and is now okay
-// module.if_main_do((…a)=>{
-// switch( a[0] ){
-// 	default:
-// 		npm`chokidar@1.7.0`.watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
-// 			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
-// 			})
-// 	break; case 'start':
-// 		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
-// 		restart_and_keep_alive(__filename)
-// 	break; case 'test':
-// 		console.log(parse_keyrc(φ(a[1]).text))
-// 	} })
+# module.if_main_do((…a)=>{
+# switch( a[0] ){
+# 	default:
+# 		npm`chokidar@1.7.0`.watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
+# 			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
+# 			})
+# 	break; case 'start':
+# 		require('set-input-source')(__dirname+'/node_modules/unicode-hex-input-fix')
+# 		restart_and_keep_alive(__filename)
+# 	break; case 'test':
+# 		console.log(parse_keyrc(φ(a[1]).text))
+# 	} })
 
 ################################################################################
 module.exports.KEY_once = λ(trigger,f,…a){
@@ -158,22 +158,26 @@ module.exports.robot_key_tap = λ(ι){t←; c←;
 		# hurrah, .typeString works now! if you want to use it
 		npm`robotjs_head_2017-12-01@0.4.8`.keyTap(ι,c) } }
 
-// mild todo:
-// right command is maybe problematic
-// if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
-// 2d regexes would be wonderful for parsing .keyrc
-// remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
+# mild todo:
+# right command is maybe problematic
+# if desired, more than just KeyToKey and SimultaneousKeyPresses: https://github.com/tekezo/Karabiner/tree/master/src/core/kext/RemapFunc
+# 2d regexes would be wonderful for parsing .keyrc
+# remap the keyboard brightness keys to sync up with the main brightness keys, and then you can reuse the keyboard brightness keys
 
-// todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it × even if it's a VK_OPEN_URL_*
+# todo: append ',KeyCode::VK_NONE' to the end of an autogen entry to make it × even if it's a VK_OPEN_URL_*
 
-// https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/Tabs
-// https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/MediaStrategies
-// ⌘ + F8	Set Focused Browser tab as Active Player (effectively directing your commands to that tab)
-// ⌘ + F6	Focus Active Player (Shows the tab currently controlled by BeardedSpice)
-// ⌘ + F11	Show Track information (shows a notification with info about the currently playing tab)
+# https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/Tabs
+# https://github.com/beardedspice/beardedspice/tree/master/BeardedSpice/MediaStrategies
+# ⌘ + F8	Set Focused Browser tab as Active Player (effectively directing your commands to that tab)
+# ⌘ + F6	Focus Active Player (Shows the tab currently controlled by BeardedSpice)
+# ⌘ + F11	Show Track information (shows a notification with info about the currently playing tab)
 
-// faster applescript http://stackoverflow.com/a/3757178/322866 ? or with background python program, i dont care really
+# faster applescript http://stackoverflow.com/a/3757178/322866 ? or with background python program, i dont care really
 
-//! wtf is it needing to be build *twice* before changes happen?
+# ! wtf is it needing to be build *twice* before changes happen?
 
-// could be useful: Split the window however you like! Create new panes, delete panes, move and clone views from pane to pane. http://github.com/SublimeText/Origami
+# could be useful: Split the window however you like! Create new panes, delete panes, move and clone views from pane to pane. http://github.com/SublimeText/Origami
+
+########### inject into ζ/it ###########
+# E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/it.ζ`).robot_key_tap(ι)
+# E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/it.ζ`).KEY_once(…a)

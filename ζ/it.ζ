@@ -22,7 +22,6 @@ def0 ← Object.defineProperty
 E.def = (o,name,ι)=>{
 	γ.𐅰𐅯𐅭𐅨𐅝&&log('def',o,name.@@toPrimitive(),ι)
 	↩ def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι)) }
-slot0 ← (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
 E.𐅯Set = (…ι)=> new Set(ι)
 
 #################################### prelude ###################################
@@ -410,6 +409,7 @@ E.⋯ = ι=> _l.range(ι)
 E.≈ = _l.isEqual
 E.≉ = (a,b)=> ! ≈(a,b)
 E.zip_min = (a,b)=> _l.zip( a.‖>b.‖? a.slice(0,b.‖) : a , a.‖<b.‖? b.slice(0,a.‖) : b )
+E.Δset = (a,b)=> new Map([ ,… a.-(b).map(ι=>[ι,-1]) ,… b.-(a).map(ι=>[ι,1]) ]) # assume uniq
 assign_properties_in_E_informal({
 ,'(Array|Set|Map).prototype._':{ get(){↩ _u(@)} }
 
@@ -462,8 +462,10 @@ assign_properties_in_E_informal({
 
 ,'(Array|Buffer|String|Set).prototype.count':λ(){ r ← new Map() ;for (t← of @) r.set(t ,(r.has(t)? r.get(t) : 0)+1 ) ;↩ r }
 ,'(Array|Buffer|String|Set).prototype.group':λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t← of @){ ;t2 ← f(t) ;t3 ← r.get(t2) ||( r.set(t2,t3=Set()) ,t3 ) ;t3.add(t) } ;↩ r }
-,'(Array|Buffer|String|Set).prototype.group_uniq':λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t← of @) r.set(f(t),t) ;↩ r }
+,'(Array|Buffer|String|Set).prototype.group_uniq': λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (ι← of @){ t ← f(ι) ;r.has(t) && ‽ ;r.set(t,ι) } ;↩ r }
+,'(Array|Buffer|String|Set).prototype.group_uniq_reduce':λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t← of @) r.set(f(t),t) ;↩ r }
 
+# ! what is this? what does it do?
 ,'Map.prototype.zip':λ(…a){ a.unshift(@) ;r ← new Map() ;a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].×(a.‖) ;t[i] = ι ;r.set(k,t) })) ;↩ r }
 
 ,'(Array|Buffer|String).prototype.chunk':λ(L){↩ _l.range(0,@.‖,L).map(i=> @.slice(i,i+L)) }
@@ -582,20 +584,6 @@ os_daemon‘.this .thunk==> process.env.anon_tns7w && os_daemon(process.env.anon
 
 module.__proto__.if_main_do = λ(f){ !@.parent && f(…process.argv.slice(2)) }
 
-E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/it.ζ`).robot_key_tap(ι)
-E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/it.ζ`).KEY_once(…a)
-
-normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)) ;↩ ι }
-diff_Set ← (a,b)=>{
-	[a,b].every(T.Set) || ‽
-	# [a,b] *.count zip **|0 *-
-	↩ normalize_count(new Map(Map.prototype.zip.call(…[b,a].map(.count())).map(([a,b],i)=>[i ,(a||0) - (b||0)])))
-		!>( ‘.name …← ({ value:a.name ,enumerable:✗ }) ) }
-E.Δ_Sets = (…a)=>{ f ← a.pop()
-	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
-	f()
-	↩ _l.zip(start,a).map(a=> diff_Set(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
-
 E.falsy = ι=> ι===∅||ι===null||ι===✗
 E.or∅ = (a,b)=> a!==∅? a : b
 
@@ -622,7 +610,6 @@ E.easy_template = (=>{
 	↩ f=> λ(ss,…ιs){↩ f.call(@,read(ss,ιs),show) }
 	})()
 
-E.clipboard = slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
 E.sb = λ self(){↩ self.𐅰𐅂𐅫𐅯𐅯() } # let user use sb as callable
 sb‘.tab .get==>{
 	r ← sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -640,12 +627,10 @@ E.sbᵥ = (ss,…ιs)=>{
 	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	t ← JSON.parse(fs_ipc_emit(34289,ι)) ;t===null &&( t = ∅ ) ;↩ t }
 E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
-
 # sublime/sb
 # 	tab
 # 	view
 
-# would like to embed regex in [] and have that be ok ;ie re`[${/[a-z]/}]` = /[a-z]/
 E.re = (ι,…ιs)=>(
 	is_template0(ι,ιs)
 		? simple_template(ι,ιs,[(…a)=>re(…a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
@@ -670,10 +655,8 @@ E.ζjs = (ss,…ιs)=>{ ENC ← JSON.stringify ;↩ simple_template(ss,ιs).map(
 E.ζ = (ss,…ιs)=>{ ENC ← ι=> ι===∅? '∅' : JSON.stringify(ι) ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = (ss,…ιs)=>{ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
-sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
-ellipsify ← ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.slice(100).‖?'…':'')
 
-if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ellipsify(ι.stderr+'')) …← (_u(ι).pick('status','stdout','stderr')) }
+if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ι.stderr.slice(0,100)) …← (_u(ι).pick('status','stdout','stderr')) }
 E.shᵥ = (ss,…ιs)=>{ code ← sh(ss,…ιs)
 	# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	ι ← require('child_process').spawnSync(code,{shell:✓})
@@ -698,8 +681,6 @@ E.osa = (ss,…ιs)=>{t←;
 	↩ ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
 E.osaᵥ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;↩ applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
 E.osaₐ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;shₐ`osascript -ss -e ${ι}` }
-
-E.terminal_do_script = (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } # ~/.bashrc.ζ :: E['·']
 
 # such hack
 json2_read ← ι=>{ r ← JSON.parse(ι) ;(λ Λ(ι,k,o){if( ι.type==='Buffer' ){

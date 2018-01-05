@@ -2,7 +2,7 @@
 
 ################################# data : parse #################################
 ⧫. regex_set ==> ι=>{
-	# ! low quality, scrap
+	# ! low quality ,scrap
 	ι = (ι+'').replace(/\n$/,'')
 	t←[] ;[…[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι) ;t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
 	x ← ι=>{ ι = chr(ι) ;↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
@@ -30,8 +30,8 @@
 ################################# data : color #################################
 ⧫. color ==>{
 	color ← npm`color@2.0.1`
-	color.interpolate_0 = (c,x)=>{ x *= c.‖; i ← x|0; r ← x-i; ↩ c[i%c.‖].mix(c[(i+1)%c.‖], 1-r) }
-	color.prototype‘.i .get= λ(){ ι ← @.rgb().color; ↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
+	color.interpolate_0 = (c,x)=>{ x *= c.‖ ;i ← x|0 ;r ← x-i ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,1-r) }
+	color.prototype‘.i .get= λ(){ ι ← @.rgb().color ;↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
 	↩ color }
 
 ############################## data : friend glue ##############################
@@ -49,6 +49,9 @@
 	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
 	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
 	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+
+⧫. _slot0 ==> (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
+⧫. clipboard ==> _slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
 
 ######################### net incl context device,proc #########################
 ⧫. lock ==>{
@@ -221,7 +224,7 @@
 	############################ go to specific chrome ###########################
 	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
 	# 	# System Events got an error: osascript is not allowed assistive access
-	# 	# compile_mapping(M('c','; '+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	# 	# compile_mapping(M('c',' ;'+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
 	#  
 	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
 
@@ -311,3 +314,63 @@
 	# style` .bar { ;fill:darkred } `
 	
 	↩ ι=> ι.frequencies? see_freqs(ι.frequencies) : ‽ }
+
+##################################### <new> ####################################
+⧫. terminal_do_script ==>{
+	sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
+	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } } # ~/.bashrc.ζ :: E['·']
+
+################################ <new> .bashrc.ζ ###############################
+# todo: manage modules so that these aren't put in ζγ by default
+⧫. inject_bash ==> alt_ws`ct bookmarks d keypresses`
+
+⧫. ct ==> i=>{
+	nice_ ← (title,url)=>{ t ← new String(title+' '+url) ;t.sourcemap = { ,title:[0,title.‖] ,url:[(title+' ').‖,(title+' '+url).‖] } ;↩ nice_url(t) }
+	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
+	if( i ){ i = i|0 ;t ← nice_(title[0][i],url[0][i]) ;p(t) ;↩ t+'\n<copied>\n' }
+	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n') ;sb.tab.push(t) }
+	}
+
+⧫. bookmarks ==> ι=>{
+	# ! should use nice_url
+	use_chrome ← ✓
+	safari_bookmarks ← ι=>{
+		my_walk ← ι⇒
+			: Tarr(ι)? ι.map…(my_walk)
+			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
+			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{ ,name:ι.URIDictionary.title ,ι:ι.URLString }]
+			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{ ,name:ι.Title ,ιs:ι.Children.map…(ι=> my_walk(ι)) }]
+			: { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
+	chrome_bookmarks ← ι=>{
+		ι = φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children
+		my_walk_a ← .map(ι=> my_walk(ι))
+		my_walk ← ι=> ι.children? { ,name:ι.name ,ιs:my_walk_a(ι.children) } : ι.url? { ,name:ι.name ,ι:ι.url } : { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ my_walk_a(ι) }
+	ι = ( use_chrome? chrome_bookmarks : safari_bookmarks )(ι)
+	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' &&( ι.ι = ∅ ))
+	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
+	sb.tab.push(ι) }
+
+⧫. d ==> (a='.')=>{
+	# would be neat if this was .Trash aware
+	sum ← 0
+	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
+	fs.readdirSync(a).map(fl=>{
+		if( φ(fl).is_dir ){
+			o ← process.stderr.write ;process.stderr.write = =>{} ;try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout } ;process.stderr.write = o
+			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
+		else b ← φ(fl).‖
+		sum += b ;q(b,fl) })
+	q(sum,a)
+
+	progress_bar ← (L,at)=>( L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
+	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
+	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
+	}
+
+⧫. keypresses ==> (=>{
+	diy_stdin ← f=>{ process.stdin.setRawMode(✓) ;process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
+	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
+	o← ;diy_stdin(ι=>{ sfx`nacksoft` ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
+	}) …←({ cant_pool:✓ })

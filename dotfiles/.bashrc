@@ -5,12 +5,12 @@
 alias Z=ζ; alias Zlog=ζlog # ! temporary while terminal unicode is broken
 
 # in theory if ζ isn't up this should wait a bit
-eval "$(ζ ' _(require_new(φ`~/.bashrc.ζ`)).pairs().map(([name,ι])=>{
+eval "$(ζ ' [ ,…γ.inject_bash.map(id=>[id,γ[id]]) ,…_u.pairs(require_new(φ`~/.bashrc.ζ`)) ].map(([id,ι])=>{
 	φpostrun ← "/tmp/postrun_"+random_id(9)
-	↩ name+sh`(){
+	↩ id+sh`(){
 		ζ ${ι.cant_pool && "--fresh"} ${js` [process.env.?,process.env.$,…a] = a
 			γ.postrun = ι=> φ(${φpostrun}).text = ι
-			require_new(φ("~/.bashrc.ζ"))[${name}](…a)
+			;( γ[${id}] || require_new(φ("~/.bashrc.ζ"))[${id}] )(…a)
 			`} $? $$ "$@"; E=$?
 		[ -e ${φpostrun} ] && { eval -- "$(cat ${φpostrun})"; E=$?; rm ${φpostrun}; }
 		return $E; }` }).join("\n") ')"

@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ
-################# SHAMEFUL COPY file:/~/code/scratch/scratch.ζ #################
+################# SHAMEFUL COPY file:/~/code/scratch/it.ζ #################
 device_listen ← (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 
 ###################################### log #####################################
@@ -18,6 +18,11 @@ Map.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← util
 require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{ pid:${@.pid} …}` }
 
 ###################################### lib #####################################
+Δ_Sets ← (…a)=>{ f ← a.pop()
+	# wtf
+	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
+	f()
+	↩ _l.zip(start,a).map(a=> Δset(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 # eval_in_new_worker ← code=>{ ... ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
 eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code ;↩ require('child_process').spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !> (ι=> ♓_on_exits(=>ι.kill())) /*memory leak*/ }
 eval_in_worker ← (=>{

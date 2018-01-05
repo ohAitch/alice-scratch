@@ -22,7 +22,6 @@ var def0 = Object.defineProperty
 E.def = (o,name,ι)=>{
 	γ.𐅰𐅯𐅭𐅨𐅝&&log('def',o,name[Symbol.toPrimitive](),ι)
 	return def0(o,name,_u({configurable:true,enumerable:true}).assign(ι)) }
-var slot0 = (get,set)=>{ var t = {} ;def(t,'ι',{get,set}) ;return t }
 E.𐅯Set = (...ι)=> new Set(ι)
 
 //################################### prelude ###################################
@@ -410,6 +409,7 @@ E._midline_horizontal_ellipsis_ = ι=> _l.range(ι)
 E._almost_equal_to_ = _l.isEqual
 E._not_almost_equal_to_ = (a,b)=> ! _almost_equal_to_(a,b)
 E.zip_min = (a,b)=> _l.zip( a["‖"]>b["‖"]? a.slice(0,b["‖"]) : a , a["‖"]<b["‖"]? b.slice(0,a["‖"]) : b )
+E.Δset = (a,b)=> new Map([ ... a["-"](b).map(ι=>[ι,-1]) ,... b["-"](a).map(ι=>[ι,1]) ]) // assume uniq
 assign_properties_in_E_informal({
 '(Array|Set|Map).prototype._':{ get(){return _u(this)} }
 
@@ -462,8 +462,10 @@ assign_properties_in_E_informal({
 
 ,'(Array|Buffer|String|Set).prototype.count':function(){ var r = new Map() ;for (var t of this) r.set(t ,(r.has(t)? r.get(t) : 0)+1 ) ;return r }
 ,'(Array|Buffer|String|Set).prototype.group':function(f){ f||(f = ι=>ι) ;var r = new Map() ;for (var t of this){ ;var t2 = f(t) ;var t3 = r.get(t2) ||( r.set(t2,t3=𐅯Set()) ,t3 ) ;t3.add(t) } ;return r }
-,'(Array|Buffer|String|Set).prototype.group_uniq':function(f){ f||(f = ι=>ι) ;var r = new Map() ;for (var t of this) r.set(f(t),t) ;return r }
+,'(Array|Buffer|String|Set).prototype.group_uniq': function(f){ f||(f = ι=>ι) ;var r = new Map() ;for (var ι of this){ var t = f(ι) ;r.has(t) && _interrobang_() ;r.set(t,ι) } ;return r }
+,'(Array|Buffer|String|Set).prototype.group_uniq_reduce':function(f){ f||(f = ι=>ι) ;var r = new Map() ;for (var t of this) r.set(f(t),t) ;return r }
 
+// ! what is this? what does it do?
 ,'Map.prototype.zip':function(...a){ a.unshift(this) ;var r = new Map() ;a.forEach((ι,i)=> ι.forEach((ι,k)=>{ var t = r.get(k) || [undefined]["×"](a["‖"]) ;t[i] = ι ;r.set(k,t) })) ;return r }
 
 ,'(Array|Buffer|String).prototype.chunk':function(L){return _l.range(0,this["‖"],L).map(i=> this.slice(i,i+L)) }
@@ -582,20 +584,6 @@ os_daemon[γ["|>"]] (ι=> new Property(ι,"this")) .thunk=()=> process.env.anon_
 
 module.__proto__.if_main_do = function(f){ !this.parent && f(...process.argv.slice(2)) }
 
-E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/it.ζ`).robot_key_tap(ι)
-E.KEY_once = (...a)=> require_new(φ`~/code/scratch/keyrc/it.ζ`).KEY_once(...a)
-
-var normalize_count = ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)) ;return ι }
-var diff_Set = (a,b)=>{
-	[a,b].every(T.Set) || _interrobang_()
-	// [a,b] *.count zip **|0 *-
-	return normalize_count(new Map(Map.prototype.zip.call(...[b,a].map((𐅭𐅞)=>𐅭𐅞.count())).map(([a,b],i)=>[i ,(a||0) - (b||0)])))
-		[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [γ['…←']] ({ value:a.name ,enumerable:false }) ) }
-E.Δ_Sets = (...a)=>{ var f = a.pop()
-	var start = a.map(ι=> T.Set(ι)? new Set(ι) : _interrobang_())
-	f()
-	return _l.zip(start,a).map(a=> diff_Set(...a)).filter((𐅭𐅞)=>𐅭𐅞["‖"]).map(ι=>0?0: { Δ:ι }) }
-
 E.falsy = ι=> ι===undefined||ι===null||ι===false
 E.orundefined = (a,b)=> a!==undefined? a : b
 
@@ -622,7 +610,6 @@ E.easy_template = (()=>{
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-E.clipboard = slot0( ()=> shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
 E.sb = function self(){return self.𐅰𐅂𐅫𐅯𐅯() } // let user use sb as callable
 sb[γ["|>"]] (ι=> new Property(ι,"tab")) .get=()=>{
 	var r = sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
@@ -640,12 +627,10 @@ E.sbᵥ = (ss,...ιs)=>{
 	var ENC = JSON.stringify ;var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
 	var t = JSON.parse(fs_ipc_emit(34289,ι)) ;t===null &&( t = undefined ) ;return t }
 E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
-
 // sublime/sb
 // 	tab
 // 	view
 
-// would like to embed regex in [] and have that be ok ;ie re`[${/[a-z]/}]` = /[a-z]/
 E.re = (ι,...ιs)=>(
 	is_template0(ι,ιs)
 		? simple_template(ι,ιs,[(...a)=>re(...a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
@@ -670,10 +655,8 @@ E.ζjs = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs)
 E.ζ = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 E.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
-sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
-var ellipsify = ι=> util_inspect_autodepth(ι.slice(0,100))+(ι.slice(100)["‖"]?'…':'')
 
-var if_sh_err = (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ellipsify(ι.stderr+'')) [γ['…←']] (_u(ι).pick('status','stdout','stderr')) }
+var if_sh_err = (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ι.stderr.slice(0,100)) [γ['…←']] (_u(ι).pick('status','stdout','stderr')) }
 E.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
 	// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	var ι = require('child_process').spawnSync(code,{shell:true})
@@ -698,8 +681,6 @@ E.osa = (ss,...ιs)=>{var t;
 	return ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
 E.osaᵥ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
 E.osaₐ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;shₐ`osascript -ss -e ${ι}` }
-
-E.terminal_do_script = (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } // ~/.bashrc.ζ :: E['·']
 
 // such hack
 var json2_read = ι=>{ var r = JSON.parse(ι) ;(function Λ(ι,k,o){if( ι.type==='Buffer' ){
