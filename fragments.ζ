@@ -182,7 +182,7 @@ youtube.video.from({ id:'rHjUHnG7WOQ' })
 
 ################################################################################
 global key command: chrome bookmarks?
-really why dont you have sublime's command autocomplete yet
+really why dont you have sublime s command autocomplete yet
 [ …fi`/Applications/Sublime Text.app/Contents/MacOS/Packages/Default.sublime-package/Default.sublime-commands`.ι, …φ`~/Library/Application Support/Sublime Text 3/Packages/User/Default.sublime-commands`.json ]
 
 def(E,'fi',=>{
@@ -251,7 +251,7 @@ Tarr_1 ← ι=>{ t ← __global(ι) ;↩ t && ι instanceof t.Array }
 	↩ λ(time){ t ← {time, ι:@} ;↩ time < hrtime()? (t.ι.in(), =>{}) : (qu.enq(t), ensure(), =>{t.ι = ∅}) } }),
 E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
 E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png` ;_sc(…a,t) ;_alert('uploading to imgur','...',1.5) ;ι ← _imgur(t) ;go_to(ι) ;p(googl(ι)+'#imgur') ;shᵥ`rm ${t}` }
-del(){ for v in "$@" ;do v="$(realpath "$v")" ;ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v" ;rm -f "$(dirname "$v")/.DS_STORE" ;done ;}
+# del(){ for v in "$@" ;do v="$(realpath "$v")" ;ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v" ;rm -f "$(dirname "$v")/.DS_STORE" ;done ;}
 im_pdf_to_png__bad() { for v in "$@" ;do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png" ;done ;}
 convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
 ff_crop(){ ffmpeg -i file:"$1" -ss "$2" -t "$3" -async 1 file:"${1%.*} cut".mp4 ;}
@@ -331,3 +331,37 @@ b ← '4866525ce4fc2a3331806600943bb995'
 
 ################################## i dont know #################################
 reboot_self ← __filename=>{ t ← shₐ2({ ,stdio:process.stdio ,detached:✓ })`${__filename}` ;t.unref() ;t.stdio.forEach(ι=> ι&&ι.unref&&ι.unref() ) ;process.exit() }
+
+################################################################################
+E.lenient_json_parse = (=>{
+	P ← require('./parsimmon2.js')
+
+	whitespace ← P(/\s*/m)
+	escapes ← { ,b:'\b' ,f:'\f' ,n:'\n' ,r:'\r' ,t:'\t' }
+	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/ ,(ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
+	comma_sep ← (parser)=> P.sepBy(parser ,token(P(',')))
+	token ← p=> p.skip(whitespace)
+
+	l_null ← token(P('null')).map(=> null)
+	l_t ← token(P('true')).map(=> ✓)
+	l_f ← token(P('false')).map(=> ✗)
+	l_str ← token(P(/"((?:\\.|.)*?)"/ ,1)).map(un_escape).desc('string')
+	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
+
+	json ← P.lazy(=> whitespace.then(P.alt( object ,array ,l_str ,l_num ,l_null ,l_t ,l_f )) )
+	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
+	pair ← P.seq(l_str.skip(token(P(':'))) ,json)
+	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _u.object(ι))
+	↩ ι=> json.parse(ι).value })()
+
+################################## friend glue #################################
+E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
+E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
+# E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
+	# λ(ι,tab){tab = tab!==∅? 'tab '+(tab+1) : 'active tab'
+	# 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10) ;fst ← 1 ;while ((r=chromeᵥ("if( window.jQuery){"+ι+"} else {"+(fst? (fst=0 ,"t ← document.createElement('script') ;t.src = 'https://code.jquery.com/jquery-3.1.1.min.js' ;document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null) ;↩ r}
+	# # probably add a random_id(10) call to '#applescript_hack'
+	# 	t ← "t ← document.querySelectorAll('#applescript_hack')[0] ;t && t.parentNode.removeChild(t) ;ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+") ;t ← document.createElement('div') ;t.id = 'applescript_hack' ;t.style = 'display:none;' ;t.textContent = JSON.stringify(ι) ;t2 ← document.querySelectorAll('head')[0] ;t2.insertBefore(t,t2.firstChild) ;∅"
+	# 	chrome_simple_js_ᵥ(t,tab)
+	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
+	# 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }

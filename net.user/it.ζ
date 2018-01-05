@@ -19,7 +19,7 @@ max ← Math.max; min ← Math.min
 #################################### prelude ###################################
 has_prop ← (o,m)=> Object.getOwnPropertyDescriptor(o,m) !== ∅
 
-css ← ι=>{ t ← document.createElement('style'); t.innerHTML = ι; document.head.appendChild(t) }
+style ← ι=>{ t ← document.createElement('style'); t.innerHTML = ι+''; document.head.appendChild(t) }
 mk_script ← ι=>{ t ← document.createElement('script'); Object.assign(t,ι); document.getElementsByTagName('head')[0].appendChild(t) }
 
 # util_inspect_autodepth(    at_url\('.*?'\)    .map(ι=> [ι,RegExp('^'+ι.replace(/\./g,'\\.').replace(/\*/g,'.*')+'$')])._.object()) shit i broke this
@@ -47,7 +47,7 @@ has_prop(window,'rate') || def(window,'rate',{ get(){↩ get_viaudeo().playbackR
 when_at ← [ ,'scholtek.com','xkcd.com','egscomics.com','strongfemaleprotagonist.com','smbc-comics.com','kongregate.com','gunnerkrigg.com','konggames.com' ]
 host2 ← location.host.split('.').slice(-2).join('.')
 if( when_at.some(ι=> host2===ι) )
-	css('* { image-rendering:pixelated; }')
+	style`* { image-rendering:pixelated; }`
 
 has_prop(window,'my') ||( window.my = =>{
 	window.global ||( window.global = window )
@@ -57,7 +57,7 @@ has_prop(window,'my') ||( window.my = =>{
 
 ################################################################################
 if( ['*github.com','*githubusercontent.com'].some(at_url) )
-	css('pre, .tab-size { tab-size:2 !important; }')
+	style`pre, .tab-size { tab-size:2 !important; }`
 
 if( at_url('imgur.com') ){
 	$('#imagelist').parent().remove()

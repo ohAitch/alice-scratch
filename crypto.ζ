@@ -23,19 +23,16 @@
 # assume key.‖ ⊂ 2..40
 
 ###################################### 1.3 #####################################
+{nk,norm1,mean} ← numeric2
 # ⁘ write a vec_distance thing i guess http://www.numericjs.com/
 
 ################ prelude ###############
-nk ← npm`numeric@1.2.6`
 buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
 bits ← ι=>{ if( Tarr(ι) ) ↩ ι ;ι = buffer(ι) ;↩ […ι].map…(ι=> 8..map(i=> (ι & 1<<i) >>i)) }
 Ox ← ι=>{ι+='' ;↩ Buffer.from(ι,'hex') }
 Ob ← ι=>{ι+='' ;↩ […ι].map(ι=> ι==='0'?0:1) }
 b8 ← ι=> Buffer.from([ι])
 xor_repeat ← (a,b)=>{ ;if( b.‖ > a.‖ ) #swap a b ;r ← Buffer.alloc(a.‖) ;for( i←0;i<r.‖;i++ ) r[i] = a[i] b^ b[i % b.‖] ;↩ r }
-norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
-norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
-mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
 
 ########################################
 texts ← memoize_persist(=> [

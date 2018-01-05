@@ -1,22 +1,3 @@
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-
-################################## see : data ##################################
-⧫. Tag ==>{
-	𐅝𐅯𐅩𐅝𐅞 ← {}
-	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
-		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
-		r ← [ opt.stylize(@.tag,'regexp') ]
-		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
-		↩ r.join(' ') }
-	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
-	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
-
 ################################# data : basic #################################
 
 ################################# data : parse #################################
@@ -34,6 +15,17 @@
 	}
 
 ################################## data : time #################################
+
+################################ data : numeric ################################
+⧫. numeric2 ==>{
+	nk ← npm`numeric@1.2.6`
+	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
+	norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
+	mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
+	norm∞_affine_sorted_E ← ι=>( nk.subeq(ι,ι[0]) ,nk.diveq(ι,ι[-1]) )
+	↩ {,nk,norm∞,norm1,mean,norm∞_affine_sorted_E} }
+⧫. normal_PDF ==> x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
+⧫. normal_CDF ==> x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
 
 ################################# data : color #################################
 ⧫. color ==>{
@@ -170,6 +162,8 @@
 	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get().then(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
 	}
 
+⧫. style ==> ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
+
 ################################## friend glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
 	ENC ← ι⇒
@@ -255,8 +249,8 @@
 		}
 	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
 		# ! should gather most of this information periodically async & record it. should use FRP.
-		hint_screen ← {'sublime text':2 ,'path finder':3 ,'github desktop':4}
-		isnt_standalone ← {ibooks:1 ,preview:1}
+		hint_screen ← { ,'sublime text':2 ,'path finder':3 ,'github desktop':4 }
+		isnt_standalone ← { ,ibooks:1 ,preview:1 }
 		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
 		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
 		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
@@ -283,20 +277,26 @@
 ⧫. p ==> λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
 ⧫. ps ==> Object.getOwnPropertyDescriptors
 
-################################### see : new ##################################
+################################## see : data ##################################
+⧫. Tag ==>{
+	𐅝𐅯𐅩𐅝𐅞 ← {}
+	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
+		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
+		r ← [ opt.stylize(@.tag,'regexp') ]
+		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
+		↩ r.join(' ') }
+	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
+	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
+
+################################## see : <new> #################################
 ⧫. see ==>{
 	my_identity ← simple_flesh(['see.ζ','default'])
 	see ← ι=> electron_window_for(my_identity)(`see_render(${JSON.stringify(ι)})`)
 	↩ see }
 ⧫. see_render ==>{
-	############### prelude ##############
-	nk ← npm`numeric@1.2.6` ######### COPIED #########
-	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) ) ######### COPIED #########
-	style ← ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
+	{nk,norm∞} ← numeric2
 	eval_html ← ι=> document.createElement('div') …←({ innerHTML:(ι+'').trim() }).childNodes[0]
-	# sad alice: you could refactor these utils
 
-	######################################
 	wh ← [700,100]
 	see_freqs ← ι=>
 		document.body.appendChild( eval_html(`

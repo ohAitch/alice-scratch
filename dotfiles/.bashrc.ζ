@@ -72,10 +72,6 @@ E.rm_empty_dirs = => shᵥ`find . -type d -empty -delete`
 
 E['sb[-1]'] = => sb.tab[-1].ι
 
-####################################### ζ ######################################
-E.D = E.diesis = E['‡'] = =>{ ‡_repl_start() }
-E['‡'].cant_pool = ✓
-
 ################## personal concepts ### for interactive mode ##################
 E.im_resize = (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 E.im_dateify = (…a)=>{ dry ← a[0]==='-d'; dry && a.shift()

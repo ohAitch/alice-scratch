@@ -135,13 +135,10 @@ E.require_new = ι=> (𐅃𐅜𐅞𐅰𐅯||(𐅃𐅜𐅞𐅰𐅯= npm`require-u
 E …← ({γ})
 
 #################################### ζ infra ###################################
-lazy_fn ← f=>{t←; ↩ λ(){↩ (t||(t=f())).apply(@,arguments) } } # takes a thunk which returns a function. acts like said returned function, always.
-# so Bad
-
 E.__name = name=> ‘.name !>(.enumerable= ✗) .value= name
 E.alt_ws = ι=> Set(… (ι+'').split(' ')._.sortBy(ι=> -ι.‖) )
 E.lines = ι=>{ t ← ( ι.raw? ι.raw[0] : ι ).split('\n') ;↩ t.slice( t[0].trim()?0:1 ,t.‖ - (t[-1].trim()?0:1) ) }
-E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
+E‘.ζ_compile .thunk==>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
 	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<|𐅃𐅭op<)`
 	word ← re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	ζ_parse ← E.ζ_parse = (=>{
@@ -207,14 +204,15 @@ E.ζ_compile = lazy_fn(=>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩�
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
 		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]|𐅯).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
-	↩ memoize_tick(code=>{
+	ζ_compile ← memoize_tick(code=>{
 		t ← code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t # ! it is a clumsy hack to put this on all of these code paths
 		↩ ζ_parse(t).map(ι⇒
 			: ι.T==='comment'? ι.ι.replace(/^#/,'//')
 			: ι.T? ι.ι
 			: ζ_compile_nonliteral(ι)
-			).join('') }) })
-ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g ,(ι,name,s,eq)⇒ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
+			).join('') })
+	ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g ,(ι,name,s,eq)⇒ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
+	↩ ζ_compile }
 
 if( require.extensions && !require.extensions['.ζ'] )(=>{
 	require.extensions['.ζ'] = (module,ι)=> module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι)
@@ -222,7 +220,7 @@ if( require.extensions && !require.extensions['.ζ'] )(=>{
 	})()
 
 #################################### ζ infra ###################################
-Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(i=> [i,ι[i]]) # ??? those are non-reflected entries
+Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(i=> [i,ι[i]]) # ??? those are non-reflected entries .but i think i can just deprecate this b4 i need to solve it
 define_properties_in ← (o,names,ι)=>{ t ← o ;for(i← of names.slice(0,-1)) t = (t[i] ||( t[i] = {} )) ;t[names[names.length-1]] = ι ;↩ o }
 assign_properties_in ← (o,ι)=> Reflect_ownEntries(ι).forEach(([i,ι])=> Tfun(ι)? ι(o,i) : assign_properties_in(o[i] ||( o[i] = {} ),ι) )
 sym_eval ← ι=>{t←; ↩ (t= ι.match(/^@@(.*)/))? Symbol[t[1]] : ι }
@@ -240,14 +238,21 @@ module.exports = to=> patched.has(to) || ( log('\x1b[34m[ζ]\x1b[0m patching') ,
 
 #################################### prelude ###################################
 E.protos = λ*(ι){ for(;!( ι===null || ι===∅ ) ;ι = Object.getPrototypeOf(ι)) yield ι }
-buf36 ← lazy_fn(=> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode)
+
+𐅞𐅪 ← {} ;𐅞𐅪‘.buf36 .thunk==> npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode
+
 E.simple_flesh = ι=>{
 	if( Tfun(ι) )↩ T(ι)+ι
-	t ← [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_u.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;↩ r } } ]
+	t ← [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) ↩ ι ;else{ r←{} ;_l.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;↩ r } } ]
 	# try{
 	↩ JSON.stringify(…t) }
 	# }catch(e){ e.message==='Converting circular structure to JSON' || ‽(e) ;↩ npm`circular-json@0.4.0`.stringify(ι) } }
-E.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> ('0'.×(12)+buf36(ι)).slice(-12)) ;𐅭𐅋𐅫𐅭𐅂←; # best hash is murmurhash.v3.128
+E.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) |> (ι=> ('0'.×(12)+𐅞𐅪.buf36(ι)).slice(-12)) ;𐅭𐅋𐅫𐅭𐅂←; # deprecated
+E‘.simple_hash2 .thunk==>{
+	bigintstr_to_buf ← ι=>{ ;ι ← npm`big-integer@1.6.26`(ι) ;r ← Buffer.alloc(8) ;r.writeUInt32BE( +ι.shiftLeft(-32) ,0 ) ;r.writeUInt32BE( +ι.and(2^32-1) ,4 ) ;↩ r }
+	buf36 ← npm`base-x@1.0.4`([…/[0-9a-z]/].join('')).encode
+	farmhash_stable_64 ← npm`farmhash@2.0.4`.fingerprint64 ≫ (bigintstr_to_buf)
+	↩ simple_flesh ≫ (Buffer.from) ≫ (farmhash_stable_64) ≫ (buf36) ≫ (.padStart(13,'0').slice(1)) }
 
 memo_frp ← (names,within,f)=>{
 	dir ← φ`~/file/.cache/memo_frp/${names}`
@@ -286,12 +291,12 @@ E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;𐅪𐅰 ← memoize
 
 E.unicode_names = ι=> […ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (=>{
-		unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _u.values(npm('unicode@0.6.1/category/'+ι)) )
+		unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _l.values(npm('unicode@0.6.1/category/'+ι)) )
 		↩ unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 		})() ) )[ord(ι)]).X).join('') ;𐅩𐅩𐅩𐅝𐅋←;
 
 ########### parsers and such ###########
-E.regex_parse_0 = lazy_fn(=>{t←; # status: output format unrefined
+E‘.regex_parse_0 .thunk==>{t←; # soon to be deprecated
 	P ← require('./parsimmon2.js')
 	dehex ← ι=> chr(parseInt(ι,16))
 	ESCAPE ← P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex) ,P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex) ,P(/u([0-9a-fA-F]{4})/,1).map(dehex) ,P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
@@ -310,10 +315,9 @@ E.regex_parse_0 = lazy_fn(=>{t←; # status: output format unrefined
 		]).map(([ι,for_])=> !for_? ι : {T:'times' ,ι ,for:for_} )
 	s2 ← P.alt( P('^').T`begin` ,P('$').T`end` ,TIMES )
 	OR_or_SEQ ← P.sep_by(s2.many().T`seq` ,'|').map(ι=> ι.‖ > 1? P.T('or',ι) : ι[0])
-	# t1 ← regex_parse_0(/^(foo)(?:bep){2,7}\baz(?:\\b.ar|[a-c-e()}][^\s]|b|baz(?=gremlin)(?!groblem)|)*/i)
-	↩ ι⇒ {ι:OR_or_SEQ.parse(ι.source) ,flags:ι.flags} })
-E.applescript = {
-	parse: lazy_fn(=>{
+	↩ ι⇒ {ι:OR_or_SEQ.parse(ι.source) ,flags:ι.flags} }
+E‘.applescript .thunk=⇒ {
+	,parse: (=>{
 	  P ← require('./parsimmon2.js')
 	  ws ← ι=> ws_.then(ι).skip(ws_) ;ws_ ← P(/[ \t\n\r]*/)
 	  value ← P(=> P.alt(false_,true_,number,object,array,string,raw) )
@@ -326,51 +330,9 @@ E.applescript = {
 	  _char ← P(/[\n\t\x20-\x21\x23-\x5B\x5D-\u{10FFFF}]|\\(["\\\/bfnrt]|u[0-9a-fA-F]{4})/u).map(ι=> ι[0]!=='\\'? ι : {'"':'"','\\':'\\','/':'/',b:'\b',f:'\f',n:'\n',r:'\r',t:'\t'}[ι[1]] || chr(parseInt(ι.slice(2),16)) )
 	  string ← P('"').then( _char.many().map(.join('')) ).skip(P('"'))
 	  raw ← P(/[^,}"]+/).or(string.map_js((ι,[i0,i1],l)=> l.slice(i0,i1))).many().map(ι=>{ ι=ι.join('') ;↩ ι==='missing value'? ∅ : {T:'raw',ι} })
-	  ↩ ι=> ι===''? ∅ : ws(value).parse(ι) }),
-	print: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : Tarr(ι)? '{'+ι.map(applescript.print.X).join(',')+'}' : ‽,
+	  ↩ ι=> ι===''? ∅ : ws(value).parse(ι) })()
+	,print: ι=> Tnum(ι)? ι+'' : Tstr(ι)? '"'+ι.replace(/["\\]/g,'\\$&')+'"' : Tarr(ι)? '{'+ι.map(applescript.print.X).join(',')+'}' : ‽
 	}
-# E.lenient_json_parse = (=>{
-# 	P ← require('./parsimmon2.js')
-
-# 	whitespace ← P(/\s*/m)
-# 	escapes ← { ,b:'\b' ,f:'\f' ,n:'\n' ,r:'\r' ,t:'\t' }
-# 	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/ ,(ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
-# 	comma_sep ← (parser)=> P.sepBy(parser ,token(P(',')))
-# 	token ← p=> p.skip(whitespace)
-
-# 	l_null ← token(P('null')).map(=> null)
-# 	l_t ← token(P('true')).map(=> ✓)
-# 	l_f ← token(P('false')).map(=> ✗)
-# 	l_str ← token(P(/"((?:\\.|.)*?)"/ ,1)).map(un_escape).desc('string')
-# 	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
-
-# 	json ← P.lazy(=> whitespace.then(P.alt( object ,array ,l_str ,l_num ,l_null ,l_t ,l_f )) )
-# 	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
-# 	pair ← P.seq(l_str.skip(token(P(':'))) ,json)
-# 	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _u.object(ι))
-# 	↩ ι=> json.parse(ι).value })()
-E.JSON_pretty = (ι,replacer)=>{
-	seen ← []
-	T ← '  ' # tab
-	wrap_width ← 140
-	indent_show ← ι=> show(ι).replace(/\n/g,'\n'+T)
-	show ← ι=>{t←;
-		if( ι===∅||ι===null) ↩ 'null'
-		replacer && (ι = replacer(ι))
-		while (ι.toJSON) ι = ι.toJSON()
-		switch (typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι)) {
-			case 'string': case '[object String]': ↩ JSON.stringify(ι)
-			case 'boolean': case '[object Boolean]': case 'number': case '[object Number]': ↩ ι+''
-			case 'function': ↩ 'null'
-			default:
-				!seen.includes(ι) || ‽(TypeError('Converting circular structure to JSON'))
-				seen.push(ι)
-				if( Tarr(ι)) { [a,b] ← '[]' ;ι = ι.map(indent_show) ;for (i←0;i<ι.‖;i++) ι[i]===∅ && (ι[i] = 'null') }
-				else { [a,b] ← '{}' ;ι = _u.pairs(ι).filter(ι=> !(ι[1]===∅ || Tfun(ι[1]))).map(ι=> show(ι[0])+': '+indent_show(ι[1])) }
-				seen.pop()
-				↩ (t=a+ι.join(', ')+b).‖ <= wrap_width? t : a+'\n'+T+ι.join(',\n'+T)+'\n'+b
-				} }
-	↩ show(ι) }
 
 ########################################
 cartesian_str ← .reduce((a,b)=>{ r ← [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;↩ r } ,[''])
@@ -386,15 +348,15 @@ genex ← λ Λ(ι){↩0,
 	ι.T==='escape'? ‽ :
 	ι.T==='or'? ι.ι.map…(Λ) :
 	ι.T==='seq'? cartesian_str(ι.ι.map(Λ)) :
-	# ι.T==='times'? # Λ(ι.ι).map…(x=> _u.range(ι.for[0],ι.for[1]+1).map(i=> x.×(i)) ) :
+	# ι.T==='times'? # Λ(ι.ι).map…(x=> _l.range(ι.for[0],ι.for[1]+1).map(i=> x.×(i)) ) :
 	# 	ιs ← Λ(ι.ι)
 	ι.T==='set'? ι.ι.map…(ι=>
-		Tarr(ι)? _u.range(ord(ι[0]),ord(ι[1])+1).map(chr) :
+		Tarr(ι)? _l.range(ord(ι[0]),ord(ι[1])+1).map(chr) :
 		ι.T==='escape'? ‽ :
 			[ι] ):
 		‽(ι) }
 
-E …← (_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
+E …←(_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
 E.bench = (f,opt={})=>{ var {TH=0.4} = opt
 	# ! really should include a confidence interval or smth
 	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r,'s')
@@ -405,7 +367,7 @@ E.bench1 = f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
 E.GET_L = (ι,within)=> memo_frp(['GET -L' ,ι+''] ,within ,=> shᵥ`curl -sL ${ι}`)
 # ! some requests have short responses ;will need more intelligent caching for those 'cause the filesystem can't take too much
 # ! curl error code 6 means can't resolve & is crashing things maybe
-E.random = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _u.sample(ι) }
+E.random = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _l.sample(ι) }
 E‘.random_id .thunk==>{
 	t ← αβ=> (L=> L.map(=> random(αβ)).join('')) …← ({αβ})
 	random_id ← t([…/[0-9a-z]/])
@@ -444,7 +406,7 @@ seq.prototype‘.clone .get= λ(){ t← seq(@.l) ;t.i= @.i ;↩ t }
 # ok,,,, the cloneability property desired here is fundamentally impossible
 # yay
 
-E.⋯ = ι=> _u.range(ι)
+E.⋯ = ι=> _l.range(ι)
 E.≈ = _l.isEqual
 E.≉ = (a,b)=> ! ≈(a,b)
 E.zip_min = (a,b)=> _l.zip( a.‖>b.‖? a.slice(0,b.‖) : a , a.‖<b.‖? b.slice(0,a.‖) : b )
@@ -490,7 +452,10 @@ assign_properties_in_E_informal({
 ,'Array.prototype.trim':λ(ι){ a ← @[0]===ι ;b ← @[-1]===ι ;↩ !(a||b)? @ : @.slice( a?1:0 ,b?-1:@.‖ )}
 
 ,'String.prototype.×':String.prototype.repeat
-,'Array.prototype.×':λ(x){↩ x<=0? [] : x.map…(=> @) }
+,'Array.prototype.×':λ(x){↩ 0?0
+	: Tnum(x)? x<=0? [] : x.map…(=> @)
+	: Tarr(x)? @.map…(a=> x.map(b=> [a,b] ))
+	: ‽ }
 ,'Buffer.prototype.×':λ(x){↩ Buffer.concat(x<=0? [] : x.map(=> @)) }
 
 ,'Set.prototype.join':λ(ι){↩ […@].join(ι) }
@@ -501,7 +466,7 @@ assign_properties_in_E_informal({
 
 ,'Map.prototype.zip':λ(…a){ a.unshift(@) ;r ← new Map() ;a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].×(a.‖) ;t[i] = ι ;r.set(k,t) })) ;↩ r }
 
-,'(Array|Buffer|String).prototype.chunk':λ(L){↩ _u.range(0,@.‖,L).map(i=> @.slice(i,i+L)) }
+,'(Array|Buffer|String).prototype.chunk':λ(L){↩ _l.range(0,@.‖,L).map(i=> @.slice(i,i+L)) }
 ,'(Array|Buffer|String).prototype.windows':λ(L){↩ (@.‖-L+1).map(i=> @.slice(i,i+L)) }
 ,'(Array|Buffer|String).prototype.-1':{get(){↩ @.‖<1? ∅ : @[@.‖-1] },set(ι){ @.‖<1 || (@[@.‖-1] = ι) }}
 ,'(Array|Buffer|String).prototype.-2':{get(){↩ @.‖<2? ∅ : @[@.‖-2] },set(ι){ @.‖<2 || (@[@.‖-2] = ι) }}
@@ -521,7 +486,7 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.filter!':λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
 ,'Set.prototype.pop':λ(){ t ← @[0] ;@.delete(t) ;↩ t }
 ,'Set.prototype.0':{get(){↩ seq(@).next_ι }}
-,'(Array|Set).prototype.-eq':λ(…a){ t ← _u([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _u.values(t).… }
+,'(Array|Set).prototype.-eq':λ(…a){ t ← _u([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _l.values(t).… }
 
 ,'Map.prototype.⁻¹uniq':{get(){↩ new Map([…@.entries()].map(([a,b])=>[b,a])) }}
 ,'Map.prototype.⁻¹':{get(){↩ […@.keys()].group(ι=> @.get(ι)) }}
@@ -620,10 +585,6 @@ module.__proto__.if_main_do = λ(f){ !@.parent && f(…process.argv.slice(2)) }
 E.robot_key_tap = ι=> require_new(φ`~/code/scratch/keyrc/it.ζ`).robot_key_tap(ι)
 E.KEY_once = (…a)=> require_new(φ`~/code/scratch/keyrc/it.ζ`).KEY_once(…a)
 
-E.normal_PDF = x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
-E.normal_CDF = x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
-E.invert_specific = f=> fι=>{ ι ← 0 ;while( f(ι) > fι ) ι += 0.01 ;↩ ι }
-
 normalize_count ← ι=>{ ι.forEach((ι,i,l)=> ι===0 && l.delete(i)) ;↩ ι }
 diff_Set ← (a,b)=>{
 	[a,b].every(T.Set) || ‽
@@ -633,7 +594,7 @@ diff_Set ← (a,b)=>{
 E.Δ_Sets = (…a)=>{ f ← a.pop()
 	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
 	f()
-	↩ _u.zip(start,a).map(a=> diff_Set(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
+	↩ _l.zip(start,a).map(a=> diff_Set(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 
 E.falsy = ι=> ι===∅||ι===null||ι===✗
 E.or∅ = (a,b)=> a!==∅? a : b
@@ -647,7 +608,7 @@ E.or∅ = (a,b)=> a!==∅? a : b
 # s is interned ,so use it as a memoization key for things
 E.is_template0 = (ss,ιs)=> ss && Tarr(ss.raw) && ss.raw.‖-1 === ιs.‖
 E.is_template = ([ss,…ιs])=> is_template0(ss,ιs)
-tmpl_flatten ← (raw2,ιs2)=> _u.zip(raw2,ιs2).….slice(0,-1).filter(ι=> ι!=='')
+tmpl_flatten ← (raw2,ιs2)=> _l.zip(raw2,ιs2).….slice(0,-1).filter(ι=> ι!=='')
 E.simple_template = (ss,ιs,filter)=>{ is_template0(ss,ιs) || ‽
 	if( Tarr(filter) ){ [root,join] ← filter ;filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : ∅ }
 	filter_special ← ι=> falsy(ι)? '' : ι+''
@@ -739,18 +700,6 @@ E.osaᵥ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;↩ applescript.parse(shᵥ`osa
 E.osaₐ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;shₐ`osascript -ss -e ${ι}` }
 
 E.terminal_do_script = (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } # ~/.bashrc.ζ :: E['·']
-E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
-E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
-# E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
-	# λ(ι,tab){tab = tab!==∅? 'tab '+(tab+1) : 'active tab'
-	# 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10) ;fst ← 1 ;while ((r=chromeᵥ("if( window.jQuery){"+ι+"} else {"+(fst? (fst=0 ,"t ← document.createElement('script') ;t.src = 'https://code.jquery.com/jquery-3.1.1.min.js' ;document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null) ;↩ r}
-	# # probably add a random_id(10) call to '#applescript_hack'
-	# 	t ← "t ← document.querySelectorAll('#applescript_hack')[0] ;t && t.parentNode.removeChild(t) ;ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+") ;t ← document.createElement('div') ;t.id = 'applescript_hack' ;t.style = 'display:none;' ;t.textContent = JSON.stringify(ι) ;t2 ← document.querySelectorAll('head')[0] ;t2.insertBefore(t,t2.firstChild) ;∅"
-	# 	chrome_simple_js_ᵥ(t,tab)
-	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
-	# 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
-
-E.which = memoize_proc((…a)=> !is_template(a)? which`${a[0]}` : catch_ι(=> shᵥ`which …${sh(…a)}`+'')) # ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
 
 # such hack
 json2_read ← ι=>{ r ← JSON.parse(ι) ;(λ Λ(ι,k,o){if( ι.type==='Buffer' ){
@@ -1005,19 +954,42 @@ sh_inspect ← ι=>{t←;
 E.log = (…ι)=>{ ι = ι.‖===1? ι[0] : ι ;log.ι(ι) ;↩ ι }
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
 
+E.JSON_pretty = (ι,replacer)=>{
+	seen ← []
+	tab ← '  '
+	wrap_width ← 140
+	indent_show ← ι=> show(ι).replace(/\n/g,'\n'+tab)
+	show ← ι=>{t←;
+		if( ι===∅||ι===null ) ↩ 'null'
+		replacer && (ι = replacer(ι))
+		while( ι.toJSON ) ι = ι.toJSON()
+		switch( typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι) ){
+			case 'string': case '[object String]': ↩ JSON.stringify(ι)
+			case 'boolean': case '[object Boolean]': case 'number': case '[object Number]': ↩ ι+''
+			case 'function': ↩ 'null'
+			default:
+				!seen.includes(ι) || ‽(TypeError('Converting circular structure to JSON'))
+				seen.push(ι)
+				if( Tarr(ι)) { [a,b] ← '[]' ;ι = ι.map(indent_show) ;for (i←0;i<ι.‖;i++) ι[i]===∅ && (ι[i] = 'null') }
+				else { [a,b] ← '{}' ;ι = _l.toPairs(ι).filter(ι=> !(ι[1]===∅ || Tfun(ι[1]))).map(ι=> show(ι[0])+': '+indent_show(ι[1])) }
+				seen.pop()
+				↩ (t=a+ι.join(', ')+b).‖ <= wrap_width? t : a+'\n'+tab+ι.join(',\n'+tab)+'\n'+b
+				} }
+	↩ show(ι) }
+
 ################# repl #################
-E.‡_repl_start = => ζ_repl_start({
-	,prompt:'\x1b[30m\x1b[100m‡\x1b[0m '
+ζ_repl_start ← =>{
 	# i know how to make the good repl for ct. i want to, but im tired
-	,compile:ι=>{t←;
+	diesis_compile ← ι=>{t←;
 		lock ← 0?0
 			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
 		lock===ι || log('⛓  '+lock)
-		↩ lock } })
-E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b[0m ' } …← (opt)
-	↩ (f=> f.call( require('repl').start({ ,useGlobal:✓ ,prompt:opt.prompt }) ))(λ(){
+		↩ lock }
+	# @2018-01-04 current priority is to work on seeing first; merging w ζ_repl_start
+	# '\x1b[30m\x1b[42mζ\x1b[0m '
+	↩ (f=> f.call( require('repl').start({ ,useGlobal:✓ ,prompt:'\x1b[30m\x1b[100m‡\x1b[0m ' }) ))(λ(){
 	@.In = [] ;@.Out = []
 	super_ ← @.completer ;@.completer = λ(line,cb){ line.trim()===''? cb(∅,[]) : super_.call(@,line,cb) }
 	@.removeAllListeners('line').on('line',λ(line){
@@ -1025,7 +997,7 @@ E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b
 		@.context.E = @.context
 		if( @.bufferedCommand ){ ι ← @.history ;ι.reverse() ;t ← ι.pop() ;ι[-1] += '\n'+t ;ι.reverse() }
 		code ← @.bufferedCommand+line
-		code = opt.compile(code) # ! hacks are fun
+		code = diesis_compile(code)
 		if( ζ_verify_syntax(code) ){ @.bufferedCommand = code+'\n' ;@.outputStream.write('    ') ;↩ }
 		try{ ι ← (0,eval)(ζ_compile(code)) }catch(e){ error ← e }
 		@.bufferedCommand = ''
@@ -1035,9 +1007,8 @@ E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b
 			}
 		if( error ) @._domain.emit('error' ,error.err || error)
 		else{
-			# if( T.Promise(ι) ) @.context‘.__ .f1ι= ι
-			# else
-			if( ι!==∅ ) @.context.__ = ι
+			if( T.Promise(ι) ) @.context‘.__ .f1ι= ι
+			else if( ι!==∅ ) @.context.__ = ι
 			try{ t ← ζ_inspect(ι,{ colors:@.outputStream.isTTY }) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
 			@.outputStream.write(t && t+'\n') }
 		@.displayPrompt()
@@ -1049,7 +1020,7 @@ E.ζ_repl_start = opt=>{ opt = { ,compile:ι=>ι ,prompt:'\x1b[30m\x1b[42mζ\x1b
 		})
 	delete @.context._ ;@.context._ = _u
 	↩ @
-	}) } ;𐅩𐅞𐅋𐅦𐅩←;
+	}) }
 
 ################################### new tools ##################################
 E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` …←({ι}) +''
@@ -1072,4 +1043,3 @@ E.ζ_main = ({a})=>{ι←;
 module.if_main_do((…a)=>ζ_main({a}))
 # inject as .bashrc
 # 	sh` ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;} `
-
