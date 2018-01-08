@@ -141,7 +141,7 @@ score ← (ι,approx)=> ((ι[0]*ι[1]) / (approx[0]*approx[1])) * (1/error(ι,ap
 best_approx ← x=>{ size_x ← x[0]*x[1] ;↩ […wu(list_approx(x[0]/x[1])).takeWhile(ι=> ι[0]*ι[1] < size_x)]._.max(ι=> score(x,ι)) }
 
 to ← 1e5
-bench(=> log(
+⧗(=> log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
 
@@ -159,9 +159,9 @@ http://developer.chrome.com/extensions/extension
 http://developer.chrome.com/extensions/tabs
 http://developer.chrome.com/extensions/windows
 
-################################### databases ##################################
+############################## data : friend glue ##############################
 google_youtube ← npm`googleapis@18.0.0`.youtube('v3')
-google_depaginate ← (f,opt)=> Π(yes=>{ r ← [] ;q ← ι=>{ r.push(…ι.items) ;if (r.‖ < ι.pageInfo.totalResults) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1) ;else yes(r) } ;f(opt).then(q) })
+google_depaginate ← (f,opt)=> Π(yes=>{ r ← [] ;q ← ι=>{ r.push(…ι.items) ;if( r.‖ < ι.pageInfo.totalResults ) (=> f({ pageToken:ι.nextPageToken } …← (opt)).then(q) ).in(0.1) ;else yes(r) } ;f(opt).then(q) })
 yt_auth ← φ`~/.auth/_`.json['google.youtube']
 youtube ← {
 	video:{ from:({id,part='contentDetails,id,liveStreamingDetails,localizations,recordingDetails,snippet,statistics,status,topicDetails'})=>
@@ -202,6 +202,27 @@ def(E,'fi',=>{
 		↩ [#Q {}.ι #Q].def({ get /*,set(ι){ ‽ }*/ }).o
 		}
 	↩ fi })
+
+E.lenient_json_parse = (=>{
+	P ← require('./parsimmon2.js')
+
+	whitespace ← P(/\s*/m)
+	escapes ← { ,b:'\b' ,f:'\f' ,n:'\n' ,r:'\r' ,t:'\t' }
+	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/ ,(ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
+	comma_sep ← (parser)=> P.sepBy(parser ,token(P(',')))
+	token ← p=> p.skip(whitespace)
+
+	l_null ← token(P('null')).map(=> null)
+	l_t ← token(P('true')).map(=> ✓)
+	l_f ← token(P('false')).map(=> ✗)
+	l_str ← token(P(/"((?:\\.|.)*?)"/ ,1)).map(un_escape).desc('string')
+	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
+
+	json ← P.lazy(=> whitespace.then(P.alt( object ,array ,l_str ,l_num ,l_null ,l_t ,l_f )) )
+	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
+	pair ← P.seq(l_str.skip(token(P(':'))) ,json)
+	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _u.object(ι))
+	↩ ι=> json.parse(ι).value })()
 
 ################################################################################
 # duti -s com.google.Chrome chrome-extension
@@ -329,31 +350,6 @@ require('crypto').createHash('md5').update(r).digest().toString('hex')
 b ← '4866525ce4fc2a3331806600943bb995'
 ;[r,b].map(ι=> Buffer.from(ι).toString('base64')).join('|')
 
-################################## i dont know #################################
-reboot_self ← __filename=>{ t ← shₐ2({ ,stdio:process.stdio ,detached:✓ })`${__filename}` ;t.unref() ;t.stdio.forEach(ι=> ι&&ι.unref&&ι.unref() ) ;process.exit() }
-
-################################################################################
-E.lenient_json_parse = (=>{
-	P ← require('./parsimmon2.js')
-
-	whitespace ← P(/\s*/m)
-	escapes ← { ,b:'\b' ,f:'\f' ,n:'\n' ,r:'\r' ,t:'\t' }
-	un_escape ← (str)=> str.replace(/\\(u[0-9a-fA-F]{4}|[^u])/ ,(ˣ,escape)=> escape[0]==='u'? chr(parseInt(escape.slice(1),16)) : escapes[escape[0]] || escape[0] )
-	comma_sep ← (parser)=> P.sepBy(parser ,token(P(',')))
-	token ← p=> p.skip(whitespace)
-
-	l_null ← token(P('null')).map(=> null)
-	l_t ← token(P('true')).map(=> ✓)
-	l_f ← token(P('false')).map(=> ✗)
-	l_str ← token(P(/"((?:\\.|.)*?)"/ ,1)).map(un_escape).desc('string')
-	l_num ← token(P(/-?(0|[1-9][0-9]*)([.][0-9]+)?([eE][+-]?[0-9]+)?/)).map(Number).desc('number')
-
-	json ← P.lazy(=> whitespace.then(P.alt( object ,array ,l_str ,l_num ,l_null ,l_t ,l_f )) )
-	array ← token(P('[')).then(comma_sep(json)).skip(token(P(']')))
-	pair ← P.seq(l_str.skip(token(P(':'))) ,json)
-	object ← token(P('{')).then(comma_sep(pair)).skip(token(P('}'))).map(ι=> _u.object(ι))
-	↩ ι=> json.parse(ι).value })()
-
 ################################## friend glue #################################
 E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …${window+1}'s tab …${tab+1} javascript ${ζ_compile(ι)}`
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
@@ -365,3 +361,43 @@ E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${w
 	# 	chrome_simple_js_ᵥ(t,tab)
 	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
 	# 	↩ JSON.parse(chrome_simple_osaᵥ(t,tab) || '""') }
+
+########################################
+open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
+
+################################## i dont know #################################
+reboot_self ← __filename=>{ t ← shₐ2({ ,stdio:process.stdio ,detached:✓ })`${__filename}` ;t.unref() ;t.stdio.forEach(ι=> ι&&ι.unref&&ι.unref() ) ;process.exit() }
+
+####################### misc little-used .bashrc material ######################
+im_size(){ for v in "$@" ;do [ -f "$v" ] && { identify -format "%f %wx%h" "$v" ;echo ;} ;done ;}
+im_to_png(){ for v in "$@" ;do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v" ;} ;done ;}
+im_to_jpg(){ for v in "$@" ;do [[ $v = *.jpg ]] || { convert "$v" jpg:"${v%.*}.jpg" && rm "$v" ;} ;done ;}
+# im_to_png(){ ζ ' a.map(ι=> ι.re`\.png$` || shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`) ;' "$@" ;}
+im_to_grey(){ for v in "$@" ;do convert "$v" -colorspace gray "$v" ;done ;}
+im_concat(){
+	local tile=$(ζ '!!ι.re`^(\d+x\d*|x\d+)$`' "$1" && { echo "$1" ;shift ;} || echo x1)
+	local out="${@: -1}" ;if ! [ -e "$out" ] ;then set -- "${@:1:$(($#-1))}" ;else while [ -e "$out" ] ;do out="${out%.*}~.${out##*.}" ;done ;fi
+	montage -mode concatenate -tile "$tile" "$@" "$out" ;}
+im_rotate_jpg(){ jpegtran -rotate 90 -outfile "$1" "$1" ;}
+ff_to_audio(){ ffmpeg -i file:"$1" -vn file:"${1%.*}".mp3 ;}
+# ff_ogg_to_mp3(){ ffmpeg -i "$1" -codec:v copy -codec:a libmp3lame -q:a 2 ../q/"${1%.ogg}.mp3" ;}
+im_autowhite(){ ~/code/scratch/im_autowhite "$@" ;}
+
+comic_rotate(){
+	mkdir '#rotated' ;for v in * ;do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated' ;done
+	cd '#rotated' ;find . -type f -print0 | while IFS= read -r -d $'\0' t ;do convert -rotate 270 "$t" "$t" ;done ;}
+cache_imgurs(){ for v in "$@" ;do local o=~/file/.cache/imgur/"$v" ;[ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v" ;done ;}
+youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1" ;}
+youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1" ;}
+cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2" ;}
+ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort ;}
+nom=user@74.207.242.236
+nom(){ ssh "$nom" ;}
+
+⧫. pb ==>{
+	_pastebin_id ← => Π(yes=>
+		process.stdin.pin((e,ι)=>{
+			t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
+			yes( (t+'').replace(/.*\//,'') ) }) )
+	↩ (=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι) ;ι = 'http://alice.sh/txt#'+ι ;p(ι) ;log('copied:',ι) }) )
+		…←({ cant_pool:✓ }) }

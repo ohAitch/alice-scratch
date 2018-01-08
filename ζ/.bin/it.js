@@ -92,7 +92,7 @@ postfix['≪'] = (...ι)=> γ['≫'](...ι.reverse())
 // postfix['#obj='] = (a,b)=> [a,b].map(obj_hash) |> (ι=> _u.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
 
 //############## Property ###############
-// still v limited
+// minimal
 E.Property = function(o,_id){ ;this.o = o ;this._id = _id }
 def(Property.prototype,'ι',{ get(){return this.o[this._id] } ,set(ι){ this.o[this._id] = ι } })
 def(Property.prototype,'∃',{ get(){return Object.prototype.hasOwnProperty.call(this.o,this._id) } ,set(ι){ !ι? delete this.o[this._id] : this["∃"] ||( this.ι = undefined ) } })
@@ -135,10 +135,10 @@ E [γ['…←']] ({γ})
 
 //################################### ζ infra ###################################
 E.__name = name=>(𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .value= name
-E.alt_ws = ι=> 𐅯Set(... (ι+'').split(' ')._.sortBy(ι=> -ι["‖"]) )
+E.alt_ws = ι=> 𐅯Set(... (ι+'').split(/\s+/)._.sortBy(ι=> -ι["‖"]) )
 E.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
 E[γ["|>"]] (ι=> new Property(ι,"ζ_compile")) .thunk=()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
-	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<|𐅃𐅭op<)`
+	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
 	var word = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	var ζ_parse = E.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
@@ -356,13 +356,6 @@ var genex = function Λ(ι){return 0,
 		_interrobang_(ι) }
 
 E [γ['…←']](_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-E.bench = (f,opt={})=>{ var {TH=0.4} = opt
-	// ! really should include a confidence interval or smth
-	var r=0 ;var I=1 ;var hr=hrtime() ;var R = ()=> Unit(hrtime(hr) / r,'s')
-	var t=f() ;r++
-	if( T.Promise(t) ) return Π(yes=>{ t.then(function Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
-	else{ for(;hrtime(hr) < TH;){ for(var i=0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;return R() } }
-E.bench1 = f=>{ var hr = hrtime() ;f() ;return Unit(hrtime(hr),'s') }
 E.GET_L = (ι,within)=> memo_frp(['GET -L' ,ι+''] ,within ,()=> shᵥ`curl -sL ${ι}`)
 // ! some requests have short responses ;will need more intelligent caching for those 'cause the filesystem can't take too much
 // ! curl error code 6 means can't resolve & is crashing things maybe
@@ -376,7 +369,7 @@ E[γ["|>"]] (ι=> new Property(ι,"random_id")) .thunk=()=>{
 
 E.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
-process.stdio = [ process.stdin,process.stdout,process.stderr ]
+process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
 E._pisces__on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
 	f(i,sig) }) ;var 𐅃𐅬𐅩𐅮𐅦;
@@ -430,7 +423,6 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.some':function(f){return [...this].some(f) }
 ,'(Set|Map).prototype.every':function(f){return [...this].every(f) }
 
-// ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++){ t ← f(@[i],i,@) ;for (j←0;j<t.‖;j++) r.push(t[j]) } ;↩ r }
 ,'Array.prototype.map…':function(f){ var r = [] ;for(var i=0;i<this["‖"];i++) r.push(...f(this[i],i,this)) ;return r }
 // ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':function(f){return this.map(f)['…'] }
@@ -475,10 +467,14 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String).prototype.-3':{get(){return this["‖"]<3? undefined : this[this["‖"]-3] },set(ι){ this["‖"]<3 || (this[this["‖"]-3] = ι) }}
 ,'(Array|Buffer|String).prototype.-4':{get(){return this["‖"]<4? undefined : this[this["‖"]-4] },set(ι){ this["‖"]<4 || (this[this["‖"]-4] = ι) }}
 
-,'(Array|Set).prototype.∪':function(...a){return new Set([this,...a]['map…'](ι=> [...ι])) } // why not .… ?
+,'(Array|Set).prototype.∪':function(...a){return new Set([this,...a]['…']) }
 ,'(Array|Set).prototype.∩':function(...a){ var r = new Set(this) ;for(var x of a){ x = T.Set(x)? x : new Set(x) ;for(var ι of r) x.has(ι) || r.delete(ι) } ;return r }
-,'(Array|Set).prototype.-':function(...a){ var r = new Set(this) ;for(var t of a) for(var ι of t) r.delete(ι) ;return r }
+,'(Array|Set).prototype.-':function(...a){return new Set(this)["-!"](...a) }
 ,'(Array|Set).prototype.⊕':function(b){var a=this ;return a["-"](b)["∪"](b["-"](a)) }
+,'(Array|Set).prototype.∪!':function(...a){ for(var b of a) for(var ι of b) this.add(ι) ;return this }
+// ,'(Array|Set).prototype.∩!':λ(…a){
+,'(Array|Set).prototype.-!':function(...a){ for(var t of a) for(var ι of t) this.delete(ι) ;return this }
+// ,'(Array|Set).prototype.⊕!':λ(…a){
 
 ,'Map.prototype.has…':function(...as){var ι=this ;as["‖"]>=1||_interrobang_() ;var _1 = as.pop() ;for(var a of as){ if(!ι.has(a))return ;ι = ι.get(a) } ;return ι.has(_1) }
 ,'Map.prototype.get…':function(...as){var ι=this ;for(var a of as){ if(!ι.has(a))return ;ι = ι.get(a) } ;return ι }
@@ -548,7 +544,7 @@ var t; Object.getPrototypeOf(( t=setTimeout(()=>{},0) ,clearTimeout(t) ,t )) [γ
 E.walk = (ι,f,k,o)=>( Tprim(ι)||_u(ι).forEach((ι,k,o)=> walk(ι,f,k,o)) ,ι!==undefined && ι!==null && f(ι,k,o) ,ι )
 E.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι) ,_u(ι).forEach(ι=> walk_graph(ι,f,seen)) ,seen.pop() ,ι!==undefined && ι!==null && f(ι) ,ι )
 E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι) ,seen.push(ι) ,_u(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)) ,seen.pop() ,fᵇ(ι) ,ι )
-E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) )
+E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) ) // has 1 use
 E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (()=>{ for (var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;return f(ι) })()
 E.search_obj = (ι,f)=>{ var r=[] ;walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)) ;return r }
 E.search_graph = (ι,f)=>{ var r=[] ;walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)) ;return r }
@@ -560,8 +556,7 @@ E.search_graph = (ι,f)=>{ var r=[] ;walk_graph(ι,ι=> ι!==undefined && ι!==n
 E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;return t[0] + t[1]*1e-9 }
 E.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = function(){return util.inspect(this) } ;return r }
 assign_properties_in_E_informal({
-'Date.prototype.local':{get(){return new Date(this) [γ['…←']] ({__local:true})}}
-,'Date.prototype.i':{get(){return +this / 1e3}}
+'Date.prototype.i':{get(){return +this / 1e3}}
 })
 
 E.cmd_log_loc = cmd=>{
@@ -610,27 +605,6 @@ E.easy_template = (()=>{
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-E.sb = function self(){return self.𐅰𐅂𐅫𐅯𐅯() } // let user use sb as callable
-sb[γ["|>"]] (ι=> new Property(ι,"tab")) .get=()=>{
-	var r = sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
-	r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
-	;[...r,r.active].filter(ι=>ι).map((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"ι")) .host={ enumerable:false,
-		get(){return sbᵥ` view = deserialize(${this}) ;view.substr(Region(0,view.size())) ` },
-		set(ι){ sb_editᵥ(this)` view.replace(edit,Region(0,view.size()),${ι}) ` },
-		} )
-	r[γ["|>"]] (ι=> new Property(ι,"push")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false ) .ι = function(ι){ shₐ`${ζ_inspect(ι)} |`` open -a 'Sublime Text.app' -f` ;this.length = 0 ;(()=> this [γ['…←']] (sb.tab) ).in(0.02) } // ! wtf async/sync mix
-	return r }
-
-var fs_ipc_emit = (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;return shᵥ`curl -s -X PUT localhost:${port}`+'' } // net.Socket
-
-E.sbᵥ = (ss,...ιs)=>{
-	var ENC = JSON.stringify ;var ι = simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	var t = JSON.parse(fs_ipc_emit(34289,ι)) ;t===null &&( t = undefined ) ;return t }
-E.sb_editᵥ = view=>(ss,...ιs)=>{ sbᵥ`edit(${view},${py(ss,...ιs)})` }
-// sublime/sb
-// 	tab
-// 	view
-
 E.re = (ι,...ιs)=>(
 	is_template0(ι,ιs)
 		? simple_template(ι,ιs,[(...a)=>re(...a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
@@ -662,6 +636,7 @@ E.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
 	var ι = require('child_process').spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
 	return ι.stdout [γ['…←']] ({ toString(...a){ var ι = Buffer.prototype.toString.call(this,...a) ;return a["‖"]? ι : ι.replace(/\n$/,'') } }) }
+E.shᵥexit = (ss,...ιs)=>{ var r = catch_union(()=>shᵥ(ss,...ιs)); return T.Error(r)? r.status===0 : true }
 var _shₐ = (ss,ιs,opt={})=>{
 	if( ss["‖"]===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && _interrobang_() ;opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;return shₐ2(opt) }
 	else{ var code = sh(ss,...ιs)
@@ -672,6 +647,7 @@ var _shₐ = (ss,ιs,opt={})=>{
 		return ι } }
 E.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
+E.shₐi = shₐ2({stdio:process.stdio})
 
 E.osa = (ss,...ιs)=>{var t;
 	var ι = simple_template(ss,ιs)
@@ -854,18 +830,6 @@ E.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,';∅')
 // e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') )
 // e && Tstr(e.stack) &&( e.stack = e.stack.replace(/    at 𐅩𐅝𐅋𐅬𐅪[^]*/,'    at <eval>') )
 
-//######################## ζ.user (scratch/it.ζ) (user.) ########################
-// deprecated section but valid code
-
-process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
-
-process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
-
-sb.𐅰𐅂𐅫𐅯𐅯 = ()=> sb.tab.active.ι
-E[γ["|>"]] (ι=> new Property(ι,"anon")) .get=()=> random_id.greek(5)
-E[γ["|>"]] (ι=> new Property(ι,"now")) .get=()=>{ var t = Time() ;return [t.ymdhm,t.ymdhms,t.ymdhmss] }
-E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
-
 //##################################### see #####################################
 ;(γ['…←'])(util.inspect.styles,{ null:'grey' ,quote:'bold' })
 ;[process,module].map((𐅭𐅞)=>𐅭𐅞.inspect = function(){return '{'+Object.getOwnPropertyNames(this).map(ι=> ι+':').join(', ')+'}' }) // ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
@@ -878,7 +842,8 @@ E[γ["|>"]] (ι=> new Property(ι,"day")) .get=()=> Time().local.ymd
 
 var fmt = function(a,b){ var t = this.__local? npm`moment@2.18.1`(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString() ;t = t.slice(a,b) ;if( !this.__local && b > 10) t += 'Z' ;return t }
 assign_properties_in_E_informal({
-'Date.prototype.ym':      {get(){return fmt.call(this,0,'YYYY-MM'["‖"])}}
+'Date.prototype.local':{get(){return new Date(this) [γ['…←']] ({__local:true})}}
+,'Date.prototype.ym':      {get(){return fmt.call(this,0,'YYYY-MM'["‖"])}}
 ,'Date.prototype.ymd':     {get(){return fmt.call(this,0,'YYYY-MM-DD'["‖"])}}
 ,'Date.prototype.ymdh':    {get(){return fmt.call(this,0,'YYYY-MM-DDTHH'["‖"])}}
 ,'Date.prototype.ymdhm':   {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm'["‖"])}}
@@ -886,9 +851,10 @@ assign_properties_in_E_informal({
 ,'Date.prototype.ymdhmss': {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
 ,'Date.prototype.iso':     {get(){return fmt.call(this,0,'YYYY-MM-DDTHH:mm:ss.SSS'["‖"])}}
 ,'Date.prototype.hms':     {get(){return fmt.call(this,'YYYY-MM-DDT'["‖"],'YYYY-MM-DDTHH:mm:ss'["‖"])}}
+,'Date.prototype.day_s':{get(){return ((Time().i/86400)+'').split('.')[γ["|>"]](([a,b])=> [a,b.slice(0,4)].join('.')) }}
 })
 
-var Unit = (ι,u)=>0?0: {ι,u}
+E.Unit = (ι,u)=>0?0: {ι,u}
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"valueOf")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(){return this.ι } )
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"inspect")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(ˣ,opt){return util.inspect(this.ι,opt)+' '+opt.stylize(this.u,'number') } )
 assign_properties_in_E_informal({
@@ -908,9 +874,10 @@ var promise_watch = ι=>{ if(! ι.id ){
 var stylize = ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;var r ;return r }
 E.ζ_inspect = (ι,opt={})=>0?0
 	: ι===undefined? ''
-	: T.truefalse(ι)? stylize(opt)(ι?'✓':'✗','boolean' )
+	: T.truefalse(ι)? stylize(opt)(ι?'✓':'✗' ,'boolean')
 	: Tstr(ι)? ι
-	: Tnum(ι)? stylize(opt)(Object.is(ι,-0)? '-0' : ι===Infinity? '∞' : ι===-Infinity? '-∞'
+	: Tnum(ι)? stylize(opt)(0?0
+		: Object.is(ι,-0)? '-0' : ι===Infinity? '∞' : ι===-Infinity? '-∞'
 		: Number.isSafeInteger(ι)? ''+ι
 		: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
 		,'number')
@@ -929,11 +896,12 @@ var sh_inspect = ι=>{var t;
 	: ι===undefined? {}
 	: Tstr(ι)? {out:ι}
 	: T.truefalse(ι)? {code:ι?0:1}
-	: (t=catch_union(()=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
+	: ( t= catch_union(()=> JSON.stringify(ι)) ,!T.Error(t) )? {out:t}
 	: {out:ι+''} )}
 
-E.log = (...ι)=>{ ι = ι["‖"]===1? ι[0] : ι ;log.ι(ι) ;return ι }
+E.log = (...ι)=>( log.ι(ι["‖"]===1?ι[0]:ι) ,ι[-1] )
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
+E.log2 = (...ι)=> log( Time().day_s [γ["|>"]](t=>0?0:{inspect:()=>t}) ,...ι ) // log2rue
 
 E.JSON_pretty = (ι,replacer)=>{
 	var seen = []
@@ -958,12 +926,14 @@ E.JSON_pretty = (ι,replacer)=>{
 				} }
 	return show(ι) }
 
+process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
+
 //################ repl #################
 var ζ_repl_start = ()=>{
 	// i know how to make the good repl for ct. i want to, but im tired
 	var diesis_compile = ι=>{var t;
 		var lock = 0?0
-			: ['ct','chrome_tabs','ps2','d','bookmarks']["∪"]([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
+			: ['ct','chrome_tabs','ps2','d','bookmarks']["∪"]([]).has(ι)? ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
 		lock===ι || log('⛓  '+lock)
@@ -1000,11 +970,13 @@ var ζ_repl_start = ()=>{
 		if( is_line ){ this.bufferedCommand = '' ;this.displayPrompt() } else this.close()
 		})
 	delete this.context._ ;this.context._ = _u
-	return this
-	}) }
+	return this }) }
 
 //################################## new tools ##################################
 E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
+
+//#################################### user #####################################
+process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
 //################################### prelude ###################################
 φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').patch(E)

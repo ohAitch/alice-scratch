@@ -34,25 +34,6 @@
 	color.prototype‘.i .get= λ(){ ι ← @.rgb().color ;↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
 	↩ color }
 
-############################## data : friend glue ##############################
-⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
-
-⧫. github_url ==> ι=>{
-	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
-	fm ← ι=> 'L'+(ι+1)
-	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
-⧫. github_remote_origin ==> file=>{
-	ι ← φ(file).root('/')
-	root ← ι ;while( root+''!=='/' && !root.φ`.git`.∃ ) root=root .φ`..`
-	if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
-	ι = (ι+'').slice((root+'/').‖)
-	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
-	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
-	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
-
-⧫. _slot0 ==> (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
-⧫. clipboard ==> _slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
-
 ######################### net incl context device,proc #########################
 ⧫. lock ==>{
 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
@@ -167,6 +148,67 @@
 
 ⧫. style ==> ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
 
+############################## friend glue : data ##############################
+⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
+
+⧫. github_url ==> ι=>{
+	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
+	fm ← ι=> 'L'+(ι+1)
+	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+⧫. github_remote_origin ==> file=>{
+	ι ← φ(file).root('/')
+	root ← ι ;while( root+''!=='/' && !root.φ`.git`.∃ ) root=root .φ`..`
+	if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
+	ι = (ι+'').slice((root+'/').‖)
+	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
+	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
+	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+
+⧫. _slot0 ==> (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
+⧫. clipboard ==> _slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
+
+⧫. chrome_tabs ==> i=>{
+	nice_ ← (title,url)=>{ t ← new String(title+' '+url) ;t.sourcemap = { ,title:[0,title.‖] ,url:[(title+' ').‖,(title+' '+url).‖] } ;↩ nice_url(t) }
+	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
+	if( i ){ i = i|0 ;t ← nice_(title[0][i],url[0][i]) ;p(t) ;↩ t+'\n<copied>\n' }
+	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n') ;sb.tab.push(t) }
+	}
+
+⧫. bookmarks ==> ι=>{
+	# ! should use nice_url
+	use_chrome ← ✓
+	safari_bookmarks ← ι=>{
+		𐅜𐅫 ← ι⇒
+			: Tarr(ι)? ι.map…(𐅜𐅫)
+			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
+			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{ ,name:ι.URIDictionary.title ,ι:ι.URLString }]
+			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{ ,name:ι.Title ,ιs:ι.Children.map…(𐅜𐅫) }]
+			: { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ 𐅜𐅫(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
+	chrome_bookmarks ← ι=>{
+		𐅜𐅫 ← ι=> ι.children? { ,name:ι.name ,ιs:ι.children.map(𐅜𐅫) } : ι.url? { ,name:ι.name ,ι:ι.url } : { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children.map(𐅜𐅫) }
+	ι = ( use_chrome? chrome_bookmarks : safari_bookmarks )(ι)
+	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
+	sb.tab.push(ι) }
+
+⧫. p ==> (ι=> fs.fstatSync(0).isFIFO()? shₐi`pbcopy`|>(=>∅) : ι===∅? clipboard.ι : ( clipboard.ι = ι ) ) …←({ cant_pool:✓ })
+
+⧫. sb ==>{
+	sb ← ((…a)=> fs.fstatSync(0).isFIFO()? shₐi`open -a 'Sublime Text.app' -f` |>(=>∅) : a.‖===0? sb.tab.active.ι : shₐi`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${a}` |>(=>∅) )
+		…←({ cant_pool:✓ })
+	sb‘.tab .get= =>{
+		r ← sbᵥ`[serialize(ι) for ι in [ι.view() for ι in sublime.windows() for ι in ι.sheets()] if ι]`
+		r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
+		;[…r,r.active].filter(ι=>ι).map(‘.ι .host={ enumerable:✗,
+			get(){↩ sbᵥ` view = deserialize(${@}) ;view.substr(Region(0,view.size())) ` },
+			set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
+			} )
+		r‘.push !>( .enumerable= ✗ ) .ι = λ(ι){ shₐ`${ζ_inspect(ι)} |`` open -a 'Sublime Text.app' -f` ;@.length = 0 ;(=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
+		↩ r }
+	↩ sb}
+⧫[ 'sb[-1]'] ==> => sb.tab[-1].ι
+
 ################################## friend glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
 	ENC ← ι⇒
@@ -202,83 +244,15 @@
 		}
 	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
 
-################################ automatic input ###############################
+⧫. sbᵥ ==> (ss,…ιs)=>{
+	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	φ`/tmp/sb𐅰𐅯𐅜𐅂𐅝`.ι = ι ;↩ JSON.parse(shᵥ`curl -s -X PUT localhost:34289`+'') |>(ι=> ι===null? ∅ : ι) }
+⧫. sb_editᵥ ==> view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
 
-#################################### user.ui ###################################
-⧫.go_to ==> (…a)=>{ # synonyms? ,go_to ,open ,search
-	opt ← !Tprim(a[-1])? a.pop() : {}
-	type ← a.‖===1? ∅ : a.shift()
-	ι ← a[0]
-	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
-
-	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
-	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
-
-	in_app && (in_app = in_app.toLowerCase())
-
-	focus || sfx`ack`
-
-	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
-	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
-
-	############################ go to specific chrome ###########################
-	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
-	# 	# System Events got an error: osascript is not allowed assistive access
-	# 	# compile_mapping(M('c',' ;'+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
-	#  
-	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
-
-	if( !type){ !new_ || ‽
-		if( !is_url(ι)) ι = searchify(ι)
-		if( !in_app && ι.re`^file:`){
-			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
-			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
-			if( φ(file).is_dir) in_app = 'path finder'
-			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
-			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
-			else in_app = 'sublime text'
-			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
-			}
-		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
-		else{
-			in_app ||( in_app = 'chrome' )
-			if( in_app==='chrome'){
-				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
-					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
-			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
-			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
-			}
-		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
-		}
-	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
-		# ! should gather most of this information periodically async & record it. should use FRP.
-		hint_screen ← { ,'sublime text':2 ,'path finder':3 ,'github desktop':4 }
-		isnt_standalone ← { ,ibooks:1 ,preview:1 }
-		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
-		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
-		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
-		}
-	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
-	else if( type==='path'){ ( !new_ && focus )||‽
-		# ! i think this might be a pretty badly designed type
-		new_ = ✓
-		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
-			# in_app = 'sublime text'
-			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
-			ι = φ('~/file/'+ι)
-			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
-		if( in_app==='terminal'){
-			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
-			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
-			available ← Set(here).∩(unbusy())[0]
-			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
-		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
-		}
-	else ‽ }
-
-################################## user.alias ##################################
-⧫. p ==> λ(ι){ t ← clipboard ;↩ arguments.length===0? t.ι :( t.ι = ι ) }
-⧫. ps ==> Object.getOwnPropertyDescriptors
+⧫. terminal_do_script ==>{
+	sh.clear = String.raw`/usr/bin/clear && printf %s $'\e[3J'`
+	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } } # ~/.bashrc.ζ :: E['·']
+⧫[ '·'] ==> =>{ t ← φ`/tmp/__·` ;postrun(t.text) ;t.ι = ∅ }
 
 ################################## see : data ##################################
 ⧫. Tag ==>{
@@ -290,6 +264,31 @@
 		↩ r.join(' ') }
 	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
 	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
+
+⧫. d ==> (a='.')=>{
+	# would be neat if this was .Trash aware
+	sum ← 0
+	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
+	fs.readdirSync(a).map(fl=>{
+		if( φ(fl).is_dir ){
+			o ← process.stderr.write ;process.stderr.write = =>{} ;try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout } ;process.stderr.write = o
+			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
+		else b ← φ(fl).‖
+		sum += b ;q(b,fl) })
+	q(sum,a)
+
+	progress_bar ← (L,at)=>( L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
+	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
+	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
+	}
+
+⧫. ⧗ ==> (f,opt={})=>{ var {TH=0.4} = opt
+	# ! really should include a confidence interval or smth
+	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r ,'s')
+	t←f() ;r++
+	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
+	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;↩ R() } }
+⧫. ⧗1 ==> f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
 
 ################################## see : <new> #################################
 ⧫. see ==>{
@@ -316,61 +315,3 @@
 	↩ ι=> ι.frequencies? see_freqs(ι.frequencies) : ‽ }
 
 ##################################### <new> ####################################
-⧫. terminal_do_script ==>{
-	sh.clear = "/usr/bin/clear && printf %s $'\\e[3J'"
-	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } } # ~/.bashrc.ζ :: E['·']
-
-################################ <new> .bashrc.ζ ###############################
-# todo: manage modules so that these aren't put in ζγ by default
-⧫. inject_bash ==> alt_ws`ct bookmarks d keypresses`
-
-⧫. ct ==> i=>{
-	nice_ ← (title,url)=>{ t ← new String(title+' '+url) ;t.sourcemap = { ,title:[0,title.‖] ,url:[(title+' ').‖,(title+' '+url).‖] } ;↩ nice_url(t) }
-	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
-	if( i ){ i = i|0 ;t ← nice_(title[0][i],url[0][i]) ;p(t) ;↩ t+'\n<copied>\n' }
-	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n') ;sb.tab.push(t) }
-	}
-
-⧫. bookmarks ==> ι=>{
-	# ! should use nice_url
-	use_chrome ← ✓
-	safari_bookmarks ← ι=>{
-		my_walk ← ι⇒
-			: Tarr(ι)? ι.map…(my_walk)
-			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
-			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{ ,name:ι.URIDictionary.title ,ι:ι.URLString }]
-			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{ ,name:ι.Title ,ιs:ι.Children.map…(ι=> my_walk(ι)) }]
-			: { ,name:'' ,ι:JSON.stringify(ι) }
-		↩ my_walk(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
-	chrome_bookmarks ← ι=>{
-		ι = φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children
-		my_walk_a ← .map(ι=> my_walk(ι))
-		my_walk ← ι=> ι.children? { ,name:ι.name ,ιs:my_walk_a(ι.children) } : ι.url? { ,name:ι.name ,ι:ι.url } : { ,name:'' ,ι:JSON.stringify(ι) }
-		↩ my_walk_a(ι) }
-	ι = ( use_chrome? chrome_bookmarks : safari_bookmarks )(ι)
-	walk(ι,ι=> ι.ι === 'http://transparent-favicon.info/favicon.ico' &&( ι.ι = ∅ ))
-	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
-	sb.tab.push(ι) }
-
-⧫. d ==> (a='.')=>{
-	# would be neat if this was .Trash aware
-	sum ← 0
-	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
-	fs.readdirSync(a).map(fl=>{
-		if( φ(fl).is_dir ){
-			o ← process.stderr.write ;process.stderr.write = =>{} ;try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout } ;process.stderr.write = o
-			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
-		else b ← φ(fl).‖
-		sum += b ;q(b,fl) })
-	q(sum,a)
-
-	progress_bar ← (L,at)=>( L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
-	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
-	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
-	}
-
-⧫. keypresses ==> (=>{
-	diy_stdin ← f=>{ process.stdin.setRawMode(✓) ;process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
-	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
-	o← ;diy_stdin(ι=>{ sfx`nacksoft` ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
-	}) …←({ cant_pool:✓ })

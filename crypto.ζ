@@ -28,7 +28,7 @@
 
 ################ prelude ###############
 buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
-bits ← ι=>{ if( Tarr(ι) ) ↩ ι ;ι = buffer(ι) ;↩ […ι].map…(ι=> 8..map(i=> (ι & 1<<i) >>i)) }
+bits ← ι=> Tarr(ι)? ι : […buffer(ι)].map…(ι=> 8..map(i=> (ι & 1<<i) >>i))
 Ox ← ι=>{ι+='' ;↩ Buffer.from(ι,'hex') }
 Ob ← ι=>{ι+='' ;↩ […ι].map(ι=> ι==='0'?0:1) }
 b8 ← ι=> Buffer.from([ι])

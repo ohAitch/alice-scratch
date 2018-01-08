@@ -19,9 +19,7 @@ E ← new Proxy({},{ # exports
 	})
 
 def0 ← Object.defineProperty
-E.def = (o,name,ι)=>{
-	γ.𐅰𐅯𐅭𐅨𐅝&&log('def',o,name.@@toPrimitive(),ι)
-	↩ def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι)) }
+E.def = (o,name,ι)=> def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι))
 E.𐅯Set = (…ι)=> new Set(ι)
 
 #################################### prelude ###################################
@@ -92,7 +90,7 @@ postfix['≪'] = (…ι)=> γ['≫'](…ι.reverse())
 # postfix['#obj='] = (a,b)=> [a,b].map(obj_hash) |> (ι=> _u.zip(…ι)).every(([a,b])=> a[0](a[1],b[1]))
 
 ############### Property ###############
-# still v limited
+# minimal
 E.Property = λ(o,_id){ ;this.o = o ;this._id = _id }
 def(Property.prototype,'ι',{ ,get(){↩ @.o[@._id] } ,set(ι){ @.o[@._id] = ι } })
 def(Property.prototype,'∃',{ ,get(){↩ Object.prototype.hasOwnProperty.call(@.o,@._id) } ,set(ι){ !ι? delete @.o[@._id] : @.∃ ||( @.ι = ∅ ) } })
@@ -135,10 +133,10 @@ E …← ({γ})
 
 #################################### ζ infra ###################################
 E.__name = name=> ‘.name !>(.enumerable= ✗) .value= name
-E.alt_ws = ι=> Set(… (ι+'').split(' ')._.sortBy(ι=> -ι.‖) )
+E.alt_ws = ι=> Set(… (ι+'').split(/\s+/)._.sortBy(ι=> -ι.‖) )
 E.lines = ι=>{ t ← ( ι.raw? ι.raw[0] : ι ).split('\n') ;↩ t.slice( t[0].trim()?0:1 ,t.‖ - (t[-1].trim()?0:1) ) }
 E‘.ζ_compile .thunk==>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
-	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉]|𐅃op<|𐅃𐅭op<)`
+	word_extra ← re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
 	word ← re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	ζ_parse ← E.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
@@ -356,13 +354,6 @@ genex ← λ Λ(ι){↩0,
 		‽(ι) }
 
 E …←(_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-E.bench = (f,opt={})=>{ var {TH=0.4} = opt
-	# ! really should include a confidence interval or smth
-	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r,'s')
-	t←f() ;r++
-	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
-	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;↩ R() } }
-E.bench1 = f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
 E.GET_L = (ι,within)=> memo_frp(['GET -L' ,ι+''] ,within ,=> shᵥ`curl -sL ${ι}`)
 # ! some requests have short responses ;will need more intelligent caching for those 'cause the filesystem can't take too much
 # ! curl error code 6 means can't resolve & is crashing things maybe
@@ -376,7 +367,7 @@ E‘.random_id .thunk==>{
 
 E.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
-process.stdio = [ process.stdin,process.stdout,process.stderr ]
+process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
 E.♓_on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
 	f(i,sig) }) ;𐅃𐅬𐅩𐅮𐅦←;
@@ -430,7 +421,6 @@ assign_properties_in_E_informal({
 ,'(Set|Map).prototype.some':λ(f){↩ […@].some(f) }
 ,'(Set|Map).prototype.every':λ(f){↩ […@].every(f) }
 
-# ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++){ t ← f(@[i],i,@) ;for (j←0;j<t.‖;j++) r.push(t[j]) } ;↩ r }
 ,'Array.prototype.map…':λ(f){ r ← [] ;for(i←0;i<@.‖;i++) r.push(…f(@[i],i,@)) ;↩ r }
 # ,'Buffer.prototype.map…':λ(f){↩ Buffer.concat(@.map(f)) }
 ,'(Set|Map|Number).prototype.map…':λ(f){↩ @.map(f).… }
@@ -475,10 +465,14 @@ assign_properties_in_E_informal({
 ,'(Array|Buffer|String).prototype.-3':{get(){↩ @.‖<3? ∅ : @[@.‖-3] },set(ι){ @.‖<3 || (@[@.‖-3] = ι) }}
 ,'(Array|Buffer|String).prototype.-4':{get(){↩ @.‖<4? ∅ : @[@.‖-4] },set(ι){ @.‖<4 || (@[@.‖-4] = ι) }}
 
-,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].map…(ι=> […ι])) } # why not .… ?
+,'(Array|Set).prototype.∪':λ(…a){↩ new Set([@,…a].…) }
 ,'(Array|Set).prototype.∩':λ(…a){ r ← new Set(@) ;for(x← of a){ x = T.Set(x)? x : new Set(x) ;for(ι← of r) x.has(ι) || r.delete(ι) } ;↩ r }
-,'(Array|Set).prototype.-':λ(…a){ r ← new Set(@) ;for(t← of a) for(ι← of t) r.delete(ι) ;↩ r }
+,'(Array|Set).prototype.-':λ(…a){↩ new Set(@).-!(…a) }
 ,'(Array|Set).prototype.⊕':λ(b){a←@ ;↩ a.-(b).∪(b.-(a)) }
+,'(Array|Set).prototype.∪!':λ(…a){ for(b← of a) for(ι← of b) @.add(ι) ;↩ @ }
+# ,'(Array|Set).prototype.∩!':λ(…a){
+,'(Array|Set).prototype.-!':λ(…a){ for(t← of a) for(ι← of t) @.delete(ι) ;↩ @ }
+# ,'(Array|Set).prototype.⊕!':λ(…a){
 
 ,'Map.prototype.has…':λ(…as){ι←@ ;as.‖>=1||‽ ;_1 ← as.pop() ;for(a← of as){ if(!ι.has(a))↩ ;ι = ι.get(a) } ;↩ ι.has(_1) }
 ,'Map.prototype.get…':λ(…as){ι←@ ;for(a← of as){ if(!ι.has(a))↩ ;ι = ι.get(a) } ;↩ ι }
@@ -548,7 +542,7 @@ t←; Object.getPrototypeOf(( t=setTimeout(=>{},0) ,clearTimeout(t) ,t )) …←
 E.walk = (ι,f,k,o)=>( Tprim(ι)||_u(ι).forEach((ι,k,o)=> walk(ι,f,k,o)) ,ι!==∅ && ι!==null && f(ι,k,o) ,ι )
 E.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι) ,_u(ι).forEach(ι=> walk_graph(ι,f,seen)) ,seen.pop() ,ι!==∅ && ι!==null && f(ι) ,ι )
 E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι) ,seen.push(ι) ,_u(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)) ,seen.pop() ,fᵇ(ι) ,ι )
-E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) )
+E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) ) # has 1 use
 E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (=>{ for (k← in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;↩ f(ι) })()
 E.search_obj = (ι,f)=>{ r←[] ;walk(ι,(ι,k,o)=> ι!==∅ && ι!==null && f(ι,k,o) && r.push(ι)) ;↩ r }
 E.search_graph = (ι,f)=>{ r←[] ;walk_graph(ι,ι=> ι!==∅ && ι!==null && f(ι) && r.push(ι)) ;↩ r }
@@ -560,7 +554,6 @@ E.search_graph = (ι,f)=>{ r←[] ;walk_graph(ι,ι=> ι!==∅ && ι!==null && f
 E.hrtime = λ(ι){ t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;↩ t[0] + t[1]*1e-9 }
 E.Time = λ(ι){ r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = λ(){↩ util.inspect(@) } ;↩ r }
 assign_properties_in_E_informal({
-,'Date.prototype.local':{get(){↩ new Date(@) …← ({__local:✓})}}
 ,'Date.prototype.i':{get(){↩ +@ / 1e3}}
 })
 
@@ -610,27 +603,6 @@ E.easy_template = (=>{
 	↩ f=> λ(ss,…ιs){↩ f.call(@,read(ss,ιs),show) }
 	})()
 
-E.sb = λ self(){↩ self.𐅰𐅂𐅫𐅯𐅯() } # let user use sb as callable
-sb‘.tab .get==>{
-	r ← sbᵥ`[serialize(ι) for ι in (ι.view() for ι in sublime.windows() for ι in ι.sheets()) if ι]`
-	r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
-	;[…r,r.active].filter(ι=>ι).map(‘.ι .host={ enumerable:✗,
-		get(){↩ sbᵥ` view = deserialize(${@}) ;view.substr(Region(0,view.size())) ` },
-		set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
-		} )
-	r‘.push !>( .enumerable= ✗ ) .ι = λ(ι){ shₐ`${ζ_inspect(ι)} |`` open -a 'Sublime Text.app' -f` ;@.length = 0 ;(=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
-	↩ r }
-
-fs_ipc_emit ← (port,ι)=>{ φ`/tmp/fs_ipc_${port}`.ι = ι ;↩ shᵥ`curl -s -X PUT localhost:${port}`+'' } # net.Socket
-
-E.sbᵥ = (ss,…ιs)=>{
-	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
-	t ← JSON.parse(fs_ipc_emit(34289,ι)) ;t===null &&( t = ∅ ) ;↩ t }
-E.sb_editᵥ = view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
-# sublime/sb
-# 	tab
-# 	view
-
 E.re = (ι,…ιs)=>(
 	is_template0(ι,ιs)
 		? simple_template(ι,ιs,[(…a)=>re(…a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
@@ -662,6 +634,7 @@ E.shᵥ = (ss,…ιs)=>{ code ← sh(ss,…ιs)
 	ι ← require('child_process').spawnSync(code,{shell:✓})
 	if_sh_err('shᵥ',code,ι)
 	↩ ι.stdout …← ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a) ;↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
+E.shᵥexit = (ss,...ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.status===0 : ✓ }
 _shₐ ← (ss,ιs,opt={})=>{
 	if( ss.‖===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽ ;opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;↩ shₐ2(opt) }
 	else{ code ← sh(ss,…ιs)
@@ -672,6 +645,7 @@ _shₐ ← (ss,ιs,opt={})=>{
 		↩ ι } }
 E.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
 E.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
+E.shₐi = shₐ2({stdio:process.stdio})
 
 E.osa = (ss,…ιs)=>{t←;
 	ι ← simple_template(ss,ιs)
@@ -854,18 +828,6 @@ E.do_end_undefined_thing = .replace(/;\s*$/,';∅')
 # e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') )
 # e && Tstr(e.stack) &&( e.stack = e.stack.replace(/    at 𐅩𐅝𐅋𐅬𐅪[^]*/,'    at <eval>') )
 
-######################### ζ.user (scratch/it.ζ) (user.) ########################
-# deprecated section but valid code
-
-process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
-
-process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
-
-sb.𐅰𐅂𐅫𐅯𐅯 = => sb.tab.active.ι
-E‘.anon .get==> random_id.greek(5)
-E‘.now .get==>{ t ← Time() ;↩ [t.ymdhm,t.ymdhms,t.ymdhmss] }
-E‘.day .get==> Time().local.ymd
-
 ###################################### see #####################################
 ;(…←)(util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
 ;[process,module].map(.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
@@ -878,6 +840,7 @@ E‘.day .get==> Time().local.ymd
 
 fmt ← λ(a,b){ t ← @.__local? npm`moment@2.18.1`(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString() ;t = t.slice(a,b) ;if( !@.__local && b > 10) t += 'Z' ;↩ t }
 assign_properties_in_E_informal({
+,'Date.prototype.local':{get(){↩ new Date(@) …← ({__local:✓})}}
 ,'Date.prototype.ym':      {get(){↩ fmt.call(@,0,'YYYY-MM'.‖)}}
 ,'Date.prototype.ymd':     {get(){↩ fmt.call(@,0,'YYYY-MM-DD'.‖)}}
 ,'Date.prototype.ymdh':    {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH'.‖)}}
@@ -886,9 +849,10 @@ assign_properties_in_E_informal({
 ,'Date.prototype.ymdhmss': {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.‖)}}
 ,'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.‖)}}
 ,'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.‖,'YYYY-MM-DDTHH:mm:ss'.‖)}}
+,'Date.prototype.day_s':{get(){↩ ((Time().i/86400)+'').split('.')|>(([a,b])=> [a,b.slice(0,4)].join('.')) }}
 })
 
-Unit ← (ι,u)⇒ {ι,u}
+E.Unit = (ι,u)⇒ {ι,u}
 	!>( ‘.valueOf !>(.enumerable= ✗) .ι=λ(){↩ @.ι } )
 	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
 assign_properties_in_E_informal({
@@ -900,7 +864,7 @@ assign_properties_in_E_informal({
 # ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ @.toString = @.inspect = λ(){↩ @.join('\n') } ;↩ @ }}
 })
-E.util_inspect_autodepth = (ι,opt={})=>{ γ.𐅦𐅦𐅝𐅨𐅫 = opt; opt.L || (opt.L = 1e7) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
+E.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e7) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
 𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
 promise_watch ← ι=>{ if(! ι.id ){
 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
@@ -908,9 +872,10 @@ promise_watch ← ι=>{ if(! ι.id ){
 stylize ← ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;r← ;↩ r }
 E.ζ_inspect = (ι,opt={})⇒
 	: ι===∅? ''
-	: T.✓✗(ι)? stylize(opt)(ι?'✓':'✗','boolean' )
+	: T.✓✗(ι)? stylize(opt)(ι?'✓':'✗' ,'boolean')
 	: Tstr(ι)? ι
-	: Tnum(ι)? stylize(opt)(Object.is(ι,-0)? '-0' : ι===∞? '∞' : ι===-∞? '-∞'
+	: Tnum(ι)? stylize(opt)(0?0
+		: Object.is(ι,-0)? '-0' : ι===∞? '∞' : ι===-∞? '-∞'
 		: Number.isSafeInteger(ι)? ''+ι
 		: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
 		,'number')
@@ -929,11 +894,12 @@ sh_inspect ← ι=>{t←;
 	: ι===∅? {}
 	: Tstr(ι)? {out:ι}
 	: T.✓✗(ι)? {code:ι?0:1}
-	: (t=catch_union(=> JSON.stringify(ι)) ,!T.Error(t))? {out:t}
+	: ( t= catch_union(=> JSON.stringify(ι)) ,!T.Error(t) )? {out:t}
 	: {out:ι+''} )}
 
-E.log = (…ι)=>{ ι = ι.‖===1? ι[0] : ι ;log.ι(ι) ;↩ ι }
+E.log = (…ι)=>( log.ι(ι.‖===1?ι[0]:ι) ,ι[-1] )
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
+E.log2 = (…ι)=> log( ,Time().day_s |>(t⇒{inspect:=>t}) ,…ι ) # log2rue
 
 E.JSON_pretty = (ι,replacer)=>{
 	seen ← []
@@ -958,12 +924,14 @@ E.JSON_pretty = (ι,replacer)=>{
 				} }
 	↩ show(ι) }
 
+process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
+
 ################# repl #################
 ζ_repl_start ← =>{
 	# i know how to make the good repl for ct. i want to, but im tired
 	diesis_compile ← ι=>{t←;
 		lock ← 0?0
-			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? 'require_new(φ`~/.bashrc.ζ`).'+ι+'()'
+			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
 			: ι
 		lock===ι || log('⛓  '+lock)
@@ -1000,11 +968,13 @@ E.JSON_pretty = (ι,replacer)=>{
 		if( is_line ){ @.bufferedCommand = '' ;@.displayPrompt() } else @.close()
 		})
 	delete @.context._ ;@.context._ = _u
-	↩ @
-	}) }
+	↩ @ }) }
 
 ################################### new tools ##################################
 E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` …←({ι}) +''
+
+##################################### user #####################################
+process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
 
 #################################### prelude ###################################
 φ`~/code/declare/module.ζ`.∃ && require(φ`~/code/declare/module.ζ`+'').patch(E)

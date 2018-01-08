@@ -1,6 +1,6 @@
 import sublime, sublime_plugin
 from sublime import Region
-import threading, http.server, json, os, codecs, re, weakref
+import threading,http.server,json,os,codecs,re,weakref
 # from itertools import *
 
 PORT = 34289
@@ -8,7 +8,7 @@ PORT = 34289
 #################################### helper ####################################
 tce_r = None
 def eval_(ι,vars):
-	vars = dict(list({ 'sublime':sublime, 'json':json, 're':re, 'Region':Region, 'View_from':View_from, 'edit':edit, 'serialize':serialize, 'deserialize':deserialize, }.items()) + list(vars.items()))
+	vars = dict(list({ 'sublime':sublime ,'json':json ,'re':re ,'Region':Region ,'View_from':View_from ,'edit':edit ,'serialize':serialize ,'deserialize':deserialize }.items()) + list(vars.items()))
 	ι = ι.strip(); ι = re.sub('(\n|;|$)',r'=r\1',ι[::-1],1)[::-1]; exec(ι,vars); return vars.get('r')
 	# if it does this [re.sub('(\n|;|$)] (and the vars?) it should replace views with id objects
 	# and it doesnt
@@ -26,7 +26,7 @@ def View_from(ι): return\
 def edit(view,code): View_from(view).run_command("tc_eval",{'ι':code}); return tce_r
 def serialize(ι): #! COPIED from ζ ! and then edited ! so dirty
 	if ι is None: return ι
-	if isinstance(ι,sublime.View): return { "type":'sublime.View', "id":ι.id() }
+	if isinstance(ι,sublime.View): return { "type":'sublime.View' ,"id":ι.id() }
 	else: return 'error_ls1w8idny'
 def deserialize(ι):
 	if ι["type"] == 'sublime.View': return View_from(ι["id"])
@@ -36,14 +36,14 @@ def deserialize(ι):
 class server_h(http.server.BaseHTTPRequestHandler):
 	def log_request(self,code='-',size='-'): pass
 	def do_PUT(self):
-		ι = codecs.open('/tmp/fs_ipc_'+str(PORT),'r','utf8').read()
+		ι = codecs.open('/tmp/sb𐅰𐅯𐅜𐅂𐅝','r','utf8').read()
 		r = eval_(ι,{})
 		self.send_response(200)
 		self.wfile.write(bytes(json.dumps(r)+'    \n','UTF-8'))
-server = http.server.HTTPServer(('localhost',PORT),server_h)
-def t():
+sk = http.server.HTTPServer(('localhost',PORT),server_h)
+def 𐅋𐅜𐅰𐅩𐅃():
 	APP = '[external eval]'
-	try: print(APP,'server starting'); server.serve_forever()
+	try: print(APP,'server starting'); sk.serve_forever()
 	except: print(APP,'server shutting down')
-threading.Thread(target=t, daemon=True).start()
-def plugin_unloaded(): server.socket.close()
+threading.Thread(target=𐅋𐅜𐅰𐅩𐅃 ,daemon=True).start()
+def plugin_unloaded(): sk.socket.close()

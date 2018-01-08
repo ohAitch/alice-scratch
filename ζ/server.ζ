@@ -2,11 +2,6 @@
 ################# SHAMEFUL COPY file:/~/code/scratch/it.ζ #################
 device_listen ← (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 
-###################################### log #####################################
-# APP ← '\x1b[34m[ζ eval pool]\x1b[0m'
-log ← (…a)=> φ(__dirname).φ`log.txt`.text = φ(__dirname).φ`log.txt`.text + [Time(),…a].map(ι=> Tstr(ι)? ι : util.inspect(ι)).join(' ')+'\n'
-log2 ← ι=> ι.map(ι=> ι.Δ && log('Δ',ι.Δ) )
-
 #################################### prelude ###################################
 on_off ← =>{ ι ← [] ;↩ { ,on(…a){ [ee,m,f]←a ;ee.on(m,f) ;ι.push(a) } ,off(){ ι.map(([ee,m,f])=> ee.removeListener(m,f)) ;ι = [] } } }
 Set.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ) ;delete @.inspect ;↩ r }
@@ -38,9 +33,10 @@ eval_in_worker ← (=>{
 		.on('unbusy',λ(){ busy.delete(@) ;free.add(@) })
 	;(=>{ t ← free.pop() ;free.map(.kill()) ;free = Set() ;t && free.add(t) }).every(10*60)
 	↩ code=>{
-		log2(Δ_Sets(busy,free,=>{ # cleanup
+		Δ_Sets(busy,free,=>{ # cleanup
 			;[busy,free].forEach(.filter!(.connected))
-			free.‖ || free.add(make())    }))
+			free.‖ || free.add(make())    })
+		.map(ι=> ι.Δ && log2('Δ',ι.Δ) )
 		♓ ← free.pop() ;busy.add(♓) ;♓.send([['eval',code]]) ;↩ ♓ }
 	})()
 procify ← (a,code)=> 'a ← '+JSON.stringify(a)+' ;on_off ← '+on_off+' ;('+((=>{ ♓ ← process
@@ -52,8 +48,8 @@ procify ← (a,code)=> 'a ← '+JSON.stringify(a)+' ;on_off ← '+on_off+' ;('+(
 
 ################################################################################
 module.if_main_do(=>{
-	on_ready ← =>{ log('server ready') ;shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
-	♓_on_exits(=>{ log('server exiting') ;shᵥ`ln -sf it.js ${__dirname}/.bin/ζλ` })
+	on_ready ← =>{ log2('server ready') ;shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ` }
+	♓_on_exits(=>{ log2('server exiting') ;shᵥ`ln -sf it.js ${__dirname}/.bin/ζλ` })
 	H ← device_listen(2113)
 	H.then(.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{t←;
 		worker← ;ended←;
@@ -86,7 +82,6 @@ module.if_main_do(=>{
 
 # old issue: always eats the entire stdin handed to it instead of only eating it on-demand, because i couldn't figure out how to replace stdin in the worker
 # new issue: ignores stdin because it's complicated on the node side
-# (old code: fs.fstatSync(0).isFIFO()? read_stdin(t) : t() )
 
 #################################### ‡ todo ####################################
 # ! important features:

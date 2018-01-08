@@ -25,7 +25,7 @@ start(hs.pathwatcher.new(__filename, function(files)
 ------------ clock -----------
 time_bar = hs.menubar.new():priority(hs.menubar.priorities['system']) -- :setClickCallback(function() Z(nil,'shᵥ`open /System/Library/PreferencePanes/DateAndTime.prefPane`') end)
 ds = {'𐑕𐑩𐑯','𐑥𐑵𐑯','𐑑𐑧𐑮','𐑢𐑴𐑛𐑧𐑯','𐑔𐑷𐑮','𐑓𐑮𐑦𐑜','𐑕𐑨𐑑'}
-function update_time() local now = os.time(); time_bar:setTitle(ds[os.date('%w')+1]..' '..os.date('-%m-%d %H%M',now):lower()..'⁝'..os.date('!%H%M',now)..' Z'..'⁝'..string.gsub((now//60*60)..'','(.*)(...)(...)','%1 %2 %3')) end
+function update_time() local now = os.time(); time_bar:setTitle(ds[os.date('%w')+1]..' '..os.date('-%m-%d %H%M',now):lower()..'⁝'..os.date('!%H%M',now)..' Z'..'⁝'..string.match((os.time()/86400)..'','..........')) end
 tb_timer = nil
 loop = function() update_time(); tb_timer = hs.timer.doAfter(60 - os.time()%60,loop) end; loop()
 start(hs.caffeinate.watcher.new(function (ev) if ev == hs.caffeinate.watcher.systemDidWake then update_time() end end))
@@ -54,25 +54,30 @@ start(hs.distributednotifications.new(function(name,object,data)
 		,'bitu*04280CC0'
 		,'brtg*04280CC0'
 		,'brtu*04280CC0'
+		,'CalAgentAliveNotification'
 		,'com.apple.AmbientLightSensorHID'
 		,'com.apple.AOSAccounts'
 		,'com.apple.AOSKit'
 		,'com.apple.appstore'
 		,'com.apple.backup'
-		,'com.apple.bookmarks'
 		,'com.apple.Bluetooth'
 		,'com.apple.bluetooth.status'
+		,'com.apple.bookmarks'
 		,'com.apple.calendar'
+		,'com.apple.CalendarPersistence'
 		,'com.apple.carbon.core.DirectoryNotification'
 		,'com.apple.Carbon.TISNotifyEnabledNonKeyboardInputSourcesChanged'
 		,'com.apple.CFNetwork'
 		,'com.apple.HIToolbox'
 		,'com.apple.IOBluetooth'
 		,'com.apple.iTunes.libraryChanged'
+		,'com.apple.iTunes.playerInfo'
 		,'com.apple.iTunes.prefsChanged'
 		,'com.apple.launchpad'
 		,'com.apple.LaunchServices'
 		,'com.apple.locationmenu.menuchanged'
+		,'com.apple.logoutCancelled'
+		,'com.apple.logoutInitiated'
 		,'com.apple.MCX'
 		,'com.apple.mds'
 		,'com.apple.MultitouchSupport'
@@ -84,8 +89,10 @@ start(hs.distributednotifications.new(function(name,object,data)
 		,'com.apple.SecurityAgent'
 		,'com.apple.shieldWindow'
 		,'com.apple.softwareupdate.note.RecommendedUpdateCountChanged'
+		,'com.apple.sound.settingsChangedNotification'
 		,'com.apple.suggestions'
 		,'com.apple.systemBeep'
+		,'com.apple.unmountassistant'
 		,'com_apple_CoreText_FontManagerScanCompletedWithNoChangesNotification'
 		,'HelpBookRegistrationDidChange'
 		,'HPDHelpDataIsTerminating'
@@ -95,14 +102,17 @@ start(hs.distributednotifications.new(function(name,object,data)
 		,'NOTIFICATIONTITLE_ADCS'
 		,'NSFontCollectionDidChange_private'
 		,'NSPersistentUIBitmapEncryptionKeyDidChange'
+		,'NSServicesChangedNotification'
 		,'PDSharedPaymentWebServiceDidChangeNotification'
 		,'QLSharedPreviewPanelWillOpenNotification'
+		,'QueueStoppedNotification'
 		,'SUScanDidFinishDistributedNotification'
 		,'UAZoomFocusDidChangeNotification'
 		,'UniversalAccessDomainCloseViewSettingsDidChangeNotification'
 		,'VSActiveSubscriptionsDidChangeNotification'
 
 		,'BetterTouchToolInstanceStarted'
+		,'BRContainerListDidChangeDistributedNotification'
 		,'BTTReadyNotification'
 		,'kKBFUSEMount'
 		,'SUSoftwareUpdateDaemonStarted'
@@ -143,7 +153,6 @@ start(hs.distributednotifications.new(function(name,object,data)
 
 ------------------------------
 -- hs.console.clearConsole()
--- hs.reload()
 
 
 -- http://www.hammerspoon.org/Spoons/ very neat, look at

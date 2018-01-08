@@ -1,0 +1,350 @@
+################################## user.alias ##################################
+⧫. ps ==> Object.getOwnPropertyDescriptors
+⧫. ct ==> chrome_tabs
+
+⧫. sb_completions ==>{ 𐅜𐅝 ← {
+,anon:=> [random_id.greek(5)]
+,now:=> Time() |>(t=>[ t.ymdhm,t.ymdhms,t.ymdhmss ])
+,day:=> [Time().local.ymd]
+} ;↩ ι=> 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ }
+
+#################################### user.ui ###################################
+⧫. go_to ==> (…a)=>{ # synonyms? ,go_to ,open ,search
+	opt ← !Tprim(a[-1])? a.pop() : {}
+	type ← a.‖===1? ∅ : a.shift()
+	ι ← a[0]
+	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
+
+	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
+	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
+
+	in_app && (in_app = in_app.toLowerCase())
+
+	focus || sfx`ack`
+
+	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
+	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
+
+	############################ go to specific chrome ###########################
+	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
+	# 	# System Events got an error: osascript is not allowed assistive access
+	# 	# compile_mapping(M('c',' ;'+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	#  
+	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if( !type){ !new_ || ‽
+		if( !is_url(ι)) ι = searchify(ι)
+		if( !in_app && ι.re`^file:`){
+			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
+			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
+			if( φ(file).is_dir) in_app = 'path finder'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
+			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
+			else in_app = 'sublime text'
+			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
+			}
+		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if( in_app==='chrome'){
+				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
+					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
+			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
+			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			}
+		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
+		}
+	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
+		# ! should gather most of this information periodically async & record it. should use FRP.
+		hint_screen ← { ,'sublime text':2 ,'path finder':3 ,'github desktop':4 }
+		isnt_standalone ← { ,ibooks:1 ,preview:1 }
+		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
+		}
+	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
+	else if( type==='path'){ ( !new_ && focus )||‽
+		# ! i think this might be a pretty badly designed type
+		new_ = ✓
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
+			# in_app = 'sublime text'
+			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
+		if( in_app==='terminal'){
+			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
+			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
+			available ← Set(here).∩(unbusy())[0]
+			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
+		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
+		}
+	else ‽ }
+
+################################### user.art ###################################
+⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
+
+⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''
+	# very nice google maps urls
+	# if url ≈ google.com/maps/
+	# fetch short url:
+	# 	# @2016-08-18 wait-click $('#searchbox-hamburger')
+	# 	wait-click $('[guidedhelpid="searchbox_hamburger"]')
+	# 	wait-click $('[jsaction="settings.share"]')
+	# 	wait-check $('#share-short-url')
+	# 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
+	# 	return t
+	# 	$('.modal-container').click()
+	# wait-check: if not $`${ι}:checked` ;ι.click() ;wait for $`${ι}:checked`
+	# wait-click: wait for ι.‖ ;ι.click()
+	# decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
+
+	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' # ! bad hack
+
+	apply_regexes ← ι2=> lines(ι2).forEach(t=>{ [a,b] ← t.trim().split(/  +/g) ;ι = ι.replace(RegExp(a),b) })
+	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
+	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {,type:'text',ι}) ,(ι.match(URL)||[]).map(ι⇒ {,type:'url',ι}))._.flatten(✓).filter(ι=> !(ι === ∅ || (ι.type === 'text' && ι.ι === '')))
+
+	# ι = parse_alicetext(ι).map(ι=>{t←; ι.type==='url' && (t=Uri(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+'') ;↩ ι})._.map('ι').join('')
+
+	if (sourcemap && sourcemap.title && sourcemap.url && (t=Uri(ι.slice(…sourcemap.url)),
+		t.domain() in {'github.com':0} ||
+		t.domain()+t.path()==='google.com/search'
+		)) ι = ι.slice(…sourcemap.url)
+	
+	ι = ι.replace(/%CE%B6/g,'ζ')
+	apply_regexes`
+	\bhttp://         https://
+	\b(https://)www\.   $1
+	\b(https://)(?:mail\.)?(google\.com/mail/)u/0/[?&]?#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
+	 - Gmail( https://google\.com/mail/)                $1
+	 - [\w.]+@gmail\.com( https://google\.com/mail/)    $1
+	Fwd: (.* https://google\.com/mail/)                 $1
+	\b(https://)en\.(?:m\.)?(wikipedia\.org/)           $1$2
+	\b(https://)youtube\.com/watch[?&]v=([\w-_]+)       $1youtu.be/$2
+	\b(https://youtu\.be/[\w-_]+)[?&]feature=youtu\.be  $1
+	\b(https://youtu\.be/[\w-_]+)&(\S*)$                $1?$2
+	 - YouTube( https://youtu\.be/)                     $1
+	 \([oO]fficial [vV]ideo\)( https://youtu\.be/)      $1
+	\b(https://)smile\.(amazon\.com/)                   $1$2
+	\b(https://docs\.google\.com/document/d/[\w_-]+)/edit(?:[?&]ts=\w+)?$  $1
+	\b(https://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
+	 - Google Docs( https://docs\.google\.com/)         $1
+	\b(https://dropbox\.com/\S*)[?&]dl=0$               $1
+	\b(https://)facebook(\.com/)                        $1fb$2
+	\b(https://fb\.com/)profile\.php\?id=               $1
+	\(\d+\) (.* https://fb\.com/)                       $1
+	 - Wikipedia, the free encyclopedia( https://wikipedia\.org/)  $1
+	 - Album on Imgur( https://imgur\.com/)             $1
+	 - Google Maps( https://google\.com/maps/)          $1
+	`
+
+	ι = parse_alicetext(ι).map(ι=>{t←;
+		if (ι.type === 'url') {
+			u ← Uri(ι.ι)
+			switch (u.domain()) { default: ↩ ι
+				break ;case 'amazon.com':
+					u.removeSearch(['sa-no-redirect','keywords','qid','ie','s','sr','tag','linkCode','camp','creative','creativeASIN'])
+					u.filename().re`^ref=[\w_]+$` && u.filename('')
+					if (t=u.resource().re`^/(?:[\w-]+/)?(?:dp|gp)/(?:product/)?(\w+)/?$`) {ι.ι = 'https://amzn.com/'+t[1] ;↩ ι}
+				break ;case 'fb.com': u.removeSearch(['fref','hc_location','_rdr','pnref'])
+				break ;case 'google.com': if(_.isEqual( u.segment(),['search'] )){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']) ;u.hasSearch('q') && u.removeSearch('oq') }
+				} ;ι.ι = u+'' }
+		↩ ι}).map(.ι).join('')
+
+	apply_regexes`
+	: \d{5,}: Amazon(?:Smile)?: Books( https://amzn.com/)        $1
+	`
+
+	ι = parse_alicetext(ι).map(ι=>{t←;
+		if (ι.type === 'url') {
+			u ← Uri(ι.ι)
+			if( ι.ι.re`\)$` && u.hash()==='' ) ι.ι += '#'
+			}
+		↩ ι}).map(.ι).join('')
+
+	#################################### todo ####################################
+	# http://smile.amazon.com/gp/product/0300078153
+	# Seeing like a State https://amzn.com/0300078153
+
+	# https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+	# https://goo.gl/0nrUfP
+
+	# generalize the “fix & to ?” to many different things
+
+	# http://www.ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# A Big Little Idea Called Legibility https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility
+	# https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
+
+	# decodeURI('https://www.google.com/search?q=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&oq=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0')
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2
+	# https://www.google.com/search?q=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2&oq=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2
+
+	↩ ι }
+
+################################### user.bash ##################################
+# some ex .bashrc material
+# mixes user and prelude spaces
+# todo: refactor this a lot
+# manage modules so that these aren't put in ζγ by default
+
+⧫. im_resize ==> (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
+⧫. im_dateify ==> (…a)=>{ dry ← a[0]==='-d' ;dry && a.shift()
+	mv ← (a,b)=>{ a===b? 0 : dry? log(js`mv(${a},${b})`) : φ(b).∃? ‽ : fs.renameSync(a,b) }
+	a.filter(.re`\.jpg$`).map(ι=>{
+		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
+		if (!t) ↩
+		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong ,but slightly better semantic?
+		# also see https://www.npmjs.com/package/exif-parser
+		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '' ,φ(ι).φ`../PANO/tmp`.ι = ∅) ,'PANO/') : '')+t+'.jpg')
+		}) }
+
+⧫. keypresses ==> (=>{
+	diy_stdin ← f=>{ process.stdin.setRawMode(✓) ;process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
+	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
+	o← ;diy_stdin(ι=>{ sfx`nacksoft` ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
+	}) …←({ cant_pool:✓ })
+
+################ prelude ###############
+⧫. x ==>{
+	set_term_title ← ι=> process.stdout.write('\x1b]0;'+ι+'\x07')
+	this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
+	↩ =>{ E ← process.env.? |0
+		this_term_is_frontmost() ||( E===0? sfx`done` : (sfx`fail` ,osaᵥ`terminal: activate`) )
+		E===0? postrun('exit') :( process.exitCode = E ) } }
+
+⧫. diff ==> (base,edit)=>{
+	if( φ(base).is_dir ){
+		a ← Set(…fs.readdirSync(base)) # ! should walk all subfiles
+		b ← Set(…fs.readdirSync(edit))
+		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null ;echo $?`+''==='0' )
+		↩ [ ['\x1b[30;47m=\x1b[0m',same] ,['\x1b[30;42m+\x1b[0m',b.-(a)] ,['\x1b[30;41m-\x1b[0m',a.-(b)] ,['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
+	}else{
+		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
+		t = t.split('\n')
+		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _u.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
+		iG ← [] ;iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
+		t = iG.map(.map(i=> [t[i],i]))
+		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop() ;while (ι[0][0]==='') ι.shift() })
+		process.exitCode = t.‖ ?1:0
+		↩ t.map(.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
+			.join('\n')+'\n')
+			.join('\x1b[90m'+'-'.×(30)+'\x1b[0m'+'\n')
+	} }
+
+##### prelude ### interactive mode #####
+⧫. ps2 ==> =>{
+	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)` ;↩ [pid|0 ,Time(d).i] }) ;t ← ιs.map(..1)._.min() ;t += t < Time().i - 2*3600? 30*60 : 20 ;↩ ιs.filter(..1 < t)._.map(0) }
+	bad ← startup_procs().∪([])
+	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
+	CMD ← .slice(h.search('COMMAND'))
+	ETIME ← .slice(h.search('PID')+'PID'.‖ + 1 ,h.search('ELAPSED')+'ELAPSED'.‖)
+	r ← h+'\n'+r
+		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
+		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(Adobe Crash Reporter|Adobe Desktop Service|AdobeCRDaemon|AdobeIPCBroker|Android File Transfer Agent|Arq|Arq Agent|Audacity|BetterTouchTool|CCXProcess|CIJScannerRegister|Core Sync|Creative Cloud|GitHub Desktop|Google Chrome|iBooks|Image Capture Extension|Karabiner|Keybase|LastPass|LaunchControl|NoSleep|Path Finder|Preview|RescueTime|SlimBatteryMonitor|Spotify|Steam|TotalSpaces2|TotalSpacesCrashWatcher|iTerm|Signal|Signal Helper|Sublime Text|Activity Monitor).app/`)
+		._.sortBy(ETIME).reverse()
+		.join('\n')+'\n'
+	log(r) }
+
+⧫. rm_empty_dirs ==> => shᵥ`find . -type d -empty -delete`
+
+⧫. l ==> (…a)=>{ shₐi`CLICOLOR_FORCE=1 ls -AGC ${a}` }
+⧫. f ==> (ι='.')=>{ go_to('path',ι) }
+⧫. ar ==> (…a)=>{ shₐi`tar -c ${a} | xz -v > "$(basename ${a[0]}).tar.xz"` }
+⧫[ '/'] ==> (a,b)=>{
+	out ← ι=> sb.tab.push(`/ ${b||a}\n\n${ι}`)
+	if( shᵥexit`man -- ${a} &>/tmp/𐅜𐅪𐅭𐅫𐅰` )
+		out(shᵥ`cat /tmp/𐅜𐅪𐅭𐅫𐅰 | col -bfx`+'')
+	else out( (=>{switch( a.re`^-h[012]$` ){
+		case '-h0': ↩ [sh`~/.archive_*`]
+		case '-h1': ↩ [sh`./notes{,/.archive}`]
+		case '-h2': ↩ [sh`./notes/.archive/.sublime`]
+		default:
+		shᵥ`rm -rf /tmp/sublime ;:`
+		φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι })
+		↩ [ ,sh`code{,/scratch{/dotfiles/{.keyrc,.bashrc,.menu-keyrc},/sublime/User/.sb-keyrc}} /tmp/sublime` ,sh`notes` ] }})()
+		.map(ι=> shᵥ`cd ~/file ; ag --ignore '*.min.*' --ignore 'package-lock.json' --ignore 'public/lib/' -- ${b||a} …${ι} ;:`+'').join('\n') ) }
+
+⧫. run_project ==> ((ι,isTTY)=>{t← ;catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )) ;ι||(ι = φ.cwd.φ`any`)
+	get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
+
+	if( !process.stdout.isTTY )
+		{ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(get_filename(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓;
+			x
+			`) }
+	else{
+		is_project ← ι=> !ι.is_dir? ✗ : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
+		
+		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
+		sfx`ack`
+
+		build ← fs.readdirSync(project+'').find(.re`^build\.`)
+		package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
+		run ← fs.readdirSync(project+'').find(.re`^run\.`)
+		;(build || package_ || run) || ‽
+
+		a ← => build && shₐi`cd ${project} ;${build}`
+		b ← =>{if( package_ ){
+			p ← project.φ`package.json`.json
+			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
+			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch') ,project.φ`package.json`.json = p )
+			shₐi`cd ${project} ;npm --cache-min=Infinity -g i .`
+			}}
+		c ← => run && shₐi`cd ${project} ;${run}`
+
+		# sh⚓exit
+		# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
+		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
+		;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
+		} }) …←({ cant_pool:✓ })
+
+########################################
+⧫. on_module_build𐅃𐅋𐅃𐅬𐅫 ==> =>{ # build .bashrc
+	inject_bash ← alt_ws`ct chrome_tabs bookmarks sb p sb[-1] moon
+		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar /`
+	t ← String.raw`
+	ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;}
+
+	alias Z=ζ ;alias Zlogic=ζlogic ;alias Zdata=ζdata # ! temporary while terminal unicode is broken
+
+	################ prelude ###############
+	[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
+	[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
+
+	##### prelude ### interactive mode #####
+	export PROMPT_COMMAND='𐅩𐅝𐅜𐅂𐅞 $? "$(history 1)" || PROMPT_COMMAND=pwd' ;export PS1=$'\[\e[90m\]>\[\e[0m\] '
+	shopt -s no_empty_cmd_completion
+	unset HISTFILE
+	export HISTCONTROL=ignoreboth:erasedups
+	…(){ eval "$(cat)" ;}
+	alias http-server='http-server -c-1'
+	alias ζlogic='cd ~/Library/Caches/ζ.logic/'
+	alias ζdata='cd ~/Library/Caches/ζ.persist.0/'
+	` + inject_bash.map(id=>{ 𐅫 ← `/tmp/postrun_${random_id(9)}` ;↩ sh`…${id}(){
+		ζ ${γ[id].cant_pool && '--fresh'} ${js` [process.env.?,process.env.$,…a] = a
+			γ.postrun = ι=> φ(${𐅫}).text = ι
+			γ[${id}](…a)
+			`} $? $$ "$@" ;E=$?
+		[ -e ${𐅫} ] && { eval -- "$(cat ${𐅫})" ;E=$? ;rm ${𐅫} ;}
+		return $E ;}` }).join('\n')
+	φ`~/.bashrc_𐅮𐅬𐅦𐅫𐅦`.text = t }
+################ prelude ###############
+⧫. 𐅩𐅝𐅜𐅂𐅞 ==> (E,history_1)=>{t← ;E ← E |0
+	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
+	cmd && fs.appendFileSync(φ`~/.archive_bash`+'' ,JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
+	postrun('hash -r')
+	𐅮𐅬𐅜𐅞𐅪pre_prompt(E) }
+
+################# user #################
+⧫. 𐅮𐅬𐅜𐅞𐅪pre_prompt ==> E=>{
+	_home_link ← ι=> (ι+'').replace(re`^${process.env.HOME}(?=/|$)`,'~') # should instead be a function that compresses all of the standard symlinks
+	red ← ι=> '\x1b[31m'+ι+'\x1b[0m' ;green ← ι=> '\x1b[32m'+ι+'\x1b[0m' ;goX ← ι=> '\x1b['+ι+'G'
+	process.stdout.write( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
+	# ideal:
+	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
+	# t ← bind( D(sh`$$`) ,[#Q φ.cwd #Q] ,{ 'ℍ.‖':2 }).ℍ ;t[0]!==t[1] && process.stdout.write(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
+	last_cwd ← @device0('last_cwd_'+process.env.$) ;if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) process.stdout.write(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) ;last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
+	}
+
+##################################### <new> ####################################

@@ -7,7 +7,7 @@ Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
 𐅬Tag ← (…ι)⇒{ ,tag:ι[0] ,inspect:=>Tag(…ι) }
 
 ################# entry ################
-# ⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,f,i)=>{ f===𐅪𐅨s_s &&( γ.𐅬𐅜𐅝𐅃𐅋 = ✓ ) ;r← ;log('bench',i,bench(=> r = ι && f.parse(ι) )) ;↩ r },ι)
+# ⧫. parse_lang ==> ι=> [words,tree.*,𐅪𐅨s_s].fold((ι,f,i)=>{ f===𐅪𐅨s_s &&( γ.𐅬𐅜𐅝𐅃𐅋 = ✓ ) ;r← ;log('⧗',i,⧗(=> r = ι && f.parse(ι) )) ;↩ r },ι)
 ⧫. parse_lang ==> ι=>
 	[words,tree.*,𐅪𐅨s_s]
 	.fold((ι,f)=> ι && f.parse(ι) ,ι)
