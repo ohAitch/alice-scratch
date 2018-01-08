@@ -11,29 +11,22 @@ var _u = require('underscore') // lodash is better than underscore except for _(
 
 //################################### ζ infra ###################################
 var γ = global
-var E_ = {}
-var patched = new Set([E_,γ])
-var E = new Proxy({},{ // exports
-	set(           ˣ,id,ι){ [...patched].forEach(o=> o[id] = ι    ) ;return true },
-	defineProperty(ˣ,id,ι){ [...patched].forEach(o=> def0(o,id,ι) ) ;return true },
-	})
+γ.γ = γ
 
 var def0 = Object.defineProperty
-E.def = (o,name,ι)=>{
-	γ.𐅰𐅯𐅭𐅨𐅝&&log('def',o,name[Symbol.toPrimitive](),ι)
-	return def0(o,name,_u({configurable:true,enumerable:true}).assign(ι)) }
-E.𐅯Set = (...ι)=> new Set(ι)
+γ.def = (o,name,ι)=> def0(o,name,_u({configurable:true,enumerable:true}).assign(ι))
+γ.𐅯Set = (...ι)=> new Set(ι)
 
 //################################### prelude ###################################
-E._interrobang_ = (...a)=>{ throw a["‖"]===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : ζ_inspect(ι)).join(' ')) }
-E.catch_union = f=>{ try{ var r = f() ;var bad = T.Error(r) ;if( !bad) return r }catch(e){ var r = e ;T.Error(r) || _interrobang_() ;return r } ;bad && _interrobang_() }
-E.catch_union2 = f=>{ try{return f() }catch(e){return e } }
-E.catch_ι = f=>{ try{ var r = f() ;var bad = r===undefined ;if( !bad) return r }catch(e){} ;bad && _interrobang_() }
-E.catch_ = f=> function(){ try{ return f.apply(this,arguments) }catch(e){ '__catchable' in e || _interrobang_(e) ;return e.__catchable } }
-E.return_ = ι=>{ throw {__catchable:ι} }
-E.new_ = ι=> Object.create( ι? ι.prototype || ι : null )
+γ._interrobang_ = (...a)=>{ throw a["‖"]===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : ζ_inspect(ι)).join(' ')) }
+γ.catch_union = f=>{ try{ var r = f() ;var bad = T.Error(r) ;if( !bad) return r }catch(e){ var r = e ;T.Error(r) || _interrobang_() ;return r } ;bad && _interrobang_() }
+γ.catch_union2 = f=>{ try{return f() }catch(e){return e } }
+γ.catch_ι = f=>{ try{ var r = f() ;var bad = r===undefined ;if( !bad) return r }catch(e){} ;bad && _interrobang_() }
+γ.catch_ = f=> function(){ try{ return f.apply(this,arguments) }catch(e){ '__catchable' in e || _interrobang_(e) ;return e.__catchable } }
+γ.return_ = ι=>{ throw {__catchable:ι} }
+γ.new_ = ι=> Object.create( ι? ι.prototype || ι : null )
 
-E.T = ι=>{var t;
+γ.T = ι=>{var t;
 	if( (t= typeof ι)!=='object' ) return t==='boolean'? '✓✗' : t ;if( ι===null ) return 'null'
 	if( Object.getPrototypeOf(ι)===Object.prototype ) return 'object'
 	for( t of is_l ) if( t[1](ι) ) return t[0]
@@ -59,20 +52,20 @@ Object.assign(T,_u(is_l).object(),{
 	,'-0': ι=> ι===0 && 1/ι < 0
 	,NaN: Number.isNaN
 	})
-Object.assign(E,{ Tstr:T.string ,Tnum:T.number ,Tfun:T.function ,Tarr:T.Array ,Tprim:T.primitive })
+Object.assign(γ,{ Tstr:T.string ,Tnum:T.number ,Tfun:T.function ,Tarr:T.Array ,Tprim:T.primitive })
 T.primitive.ι = 𐅯Set('undefined','boolean','number','string','symbol','null')
 T.boxed.ι = 𐅯Set('Boolean','String','Number')
 
 //################################### ζ infra ###################################
 // prefix hook . does not require parens around the right side, but can only do side effects
-E.𐅯𐅮𐅦𐅬𐅂 = f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f ;return 𐅭𐅩𐅝𐅋𐅩 } ;var 𐅭𐅩𐅝𐅋𐅩 = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } })
+γ.𐅯𐅮𐅦𐅬𐅂 = f=>{ 𐅭𐅩𐅝𐅋𐅩.f = f ;return 𐅭𐅩𐅝𐅋𐅩 } ;var 𐅭𐅩𐅝𐅋𐅩 = def({ f:undefined },'ι',{ set(ι){ this.f(ι) } })
 
 //############### postfix ###############
 // def(Function.prototype,'‘@',{ ,get(){↩ @.call.bind(@) } })
 // def(Function.prototype,'flip_',{ ,get(){↩ (a,b)=> @(b,a) } })
 var 𐅯𐅬𐅫𐅋𐅃 = [] ;var t = { [Symbol.iterator]:𐅯𐅬𐅫𐅋𐅃[Symbol.iterator].bind(𐅯𐅬𐅫𐅋𐅃) }
-E.postfix = new Proxy(t,{set(ˣ,id,ι,self){var t; id+='' ;𐅯𐅬𐅫𐅋𐅃.push(id)
-	;(E[id] = ι)[Symbol.toPrimitive] = (ι=>()=>ι)(Symbol(id))
+γ.postfix = new Proxy(t,{set(ˣ,id,ι,self){var t; id+='' ;𐅯𐅬𐅫𐅋𐅃.push(id)
+	;(γ[id] = ι)[Symbol.toPrimitive] = (ι=>()=>ι)(Symbol(id))
 	var wrap = f=>0?0: { enumerable:false ,get:(ι=>()=>ι)( function(){return f.call(undefined,this,...arguments) } ) ,set(f){ def(this,ι,wrap(f)) } }
 	def(Object.prototype,ι,wrap(ι))
 	return true }})
@@ -93,7 +86,7 @@ postfix['≪'] = (...ι)=> γ['≫'](...ι.reverse())
 
 //############## Property ###############
 // minimal
-E.Property = function(o,_id){ ;this.o = o ;this._id = _id }
+γ.Property = function(o,_id){ ;this.o = o ;this._id = _id }
 def(Property.prototype,'ι',{ get(){return this.o[this._id] } ,set(ι){ this.o[this._id] = ι } })
 def(Property.prototype,'∃',{ get(){return Object.prototype.hasOwnProperty.call(this.o,this._id) } ,set(ι){ !ι? delete this.o[this._id] : this["∃"] ||( this.ι = undefined ) } })
 def(Property.prototype,'host',{ get(){return Object.getOwnPropertyDescriptor(this.o,this._id) } ,set(ι){ Object.defineProperty(this.o,this._id,ι) } }) // not a real setter. funky!
@@ -108,7 +101,7 @@ def(Property.prototype,'set',{
 	set(ι){ this["∃"] = true ;this.host = {set:ι} }
 	// ,get(){ h ← @.host ;↩ h && 'get' in h? h.set : (ι=> @.host = {value:ι}) }
 	})
-E.𐅯𐅭𐅝𐅨𐅮 = new Proxy({},{get(ˣ,id){return new Property(𐅋𐅨𐅦𐅨𐅭,id) }}) ;γ.𐅋𐅨𐅦𐅨𐅭 = undefined
+γ.𐅯𐅭𐅝𐅨𐅮 = new Proxy({},{get(ˣ,id){return new Property(𐅋𐅨𐅦𐅨𐅭,id) }}) ;γ.𐅋𐅨𐅦𐅨𐅭 = undefined
 
 Property.prototype["map!"] = function(f){ this.ι = f(this.ι,this._id,this.o) ;return this }
 Property.prototype.Δ = function(f){
@@ -126,21 +119,20 @@ Property.prototype[γ["|>"]] (ι=> new Property(ι,"f1ι")) .set= thunk_s((ι,_i
 
 //################################## requires ###################################
 ;[ ['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_u'],['lodash','_l'],['highland','_h']
-	].map(([ι,n])=> E[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[n||ι] .thunk=()=> require(ι) )
+	].map(([ι,n])=> γ[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[n||ι] .thunk=()=> require(ι) )
 var path = require('path')
 var fs = require('fs')
-E._ = _u
-E.require_new = ι=> (𐅃𐅜𐅞𐅰𐅯||(𐅃𐅜𐅞𐅰𐅯= npm`require-uncached@1.0.3` ))( (ι+'').replace(/^\.(?=\/)/,φ.cwd) ) ;var 𐅃𐅜𐅞𐅰𐅯;
-E [γ['…←']] ({γ})
+γ._ = _u
+γ.require_new = ι=> (𐅃𐅜𐅞𐅰𐅯||(𐅃𐅜𐅞𐅰𐅯= npm`require-uncached@1.0.3` ))( (ι+'').replace(/^\.(?=\/)/,φ.cwd) ) ;var 𐅃𐅜𐅞𐅰𐅯;
 
 //################################### ζ infra ###################################
-E.__name = name=>(𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .value= name
-E.alt_ws = ι=> 𐅯Set(... (ι+'').split(/\s+/)._.sortBy(ι=> -ι["‖"]) )
-E.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
-E[γ["|>"]] (ι=> new Property(ι,"ζ_compile")) .thunk=()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
+γ.__name = name=>(𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"name")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .value= name
+γ.alt_ws = ι=> 𐅯Set(... (ι+'').split(/\s+/)._.sortBy(ι=> -ι["‖"]) )
+γ.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
+γ[γ["|>"]] (ι=> new Property(ι,"ζ_compile")) .thunk=()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
 	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
 	var word = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
-	var ζ_parse = E.ζ_parse = (()=>{
+	var ζ_parse = γ.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
 		var ident = P(re`(?![0-9])${word}+|@`)
 		var comment = re`(//.*|/\*[^]*?(\*/|$)|#[\s#].*)+`
@@ -232,22 +224,22 @@ var properties_tree_formalify = ι=>
 			,name.split('.').map(sym_eval)
 			,(o,i)=> Tfun(ι)? o[i] = ι : def0(o,i,ι)
 			) ,{})
-var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι) ;[...patched].forEach(o=> assign_properties_in(o,ι)) }
-module.exports = to=> patched.has(to) || ( log('\x1b[34m[ζ]\x1b[0m patching') ,log(Error('<stack>')) ,patched.add(to) ,assign_properties_in(to,E_) )
+var assign_properties_in_E_informal = ι=>{ ι = properties_tree_formalify(ι) ;assign_properties_in(γ,ι) }
+module.exports = to=> to===γ || _interrobang_('no longer patching other γs')
 
 //################################### prelude ###################################
-E.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
+γ.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
 
 var 𐅞𐅪 = {} ;𐅞𐅪[γ["|>"]] (ι=> new Property(ι,"buf36")) .thunk=()=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode
 
-E.simple_flesh = ι=>{
+γ.simple_flesh = ι=>{
 	if( Tfun(ι) )return T(ι)+ι
 	var t = [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_l.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;return r } } ]
 	// try{
 	return JSON.stringify(...t) }
 	// }catch(e){ e.message==='Converting circular structure to JSON' || ‽(e) ;↩ npm`circular-json@0.4.0`.stringify(ι) } }
-E.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> ('0'["×"](12)+𐅞𐅪.buf36(ι)).slice(-12)) ;var 𐅭𐅋𐅫𐅭𐅂; // deprecated
-E[γ["|>"]] (ι=> new Property(ι,"simple_hash2")) .thunk=()=>{
+γ.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> ('0'["×"](12)+𐅞𐅪.buf36(ι)).slice(-12)) ;var 𐅭𐅋𐅫𐅭𐅂; // deprecated
+γ[γ["|>"]] (ι=> new Property(ι,"simple_hash2")) .thunk=()=>{
 	var bigintstr_to_buf = ι=>{ ;var ι = npm`big-integer@1.6.26`(ι) ;var r = Buffer.alloc(8) ;r.writeUInt32BE( +ι.shiftLeft(-32) ,0 ) ;r.writeUInt32BE( +ι.and(2**32-1) ,4 ) ;return r }
 	var buf36 = npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode
 	var farmhash_stable_64 = npm`farmhash@2.0.4`.fingerprint64 [γ["≫"]] (bigintstr_to_buf)
@@ -261,20 +253,20 @@ var memo_frp = (names,within,f)=>{
 		if( t ) return dir.φ(t).json2.ι }
 	var a = Time().iso ;var ι = f() ;var b = Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
-E.memoize_persist = f=>{
+γ.memoize_persist = f=>{
 	// may race condition but is unlikely & relatively harmless
 	// it would be lovely if this s could use data from their previous versions
 	var store = φ`/tmp/ζpersist_${simple_hash(f)}` ;var store_ι = store.json||{}
 	return (...a)=>{ var t = store_ι[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[simple_hash(a)] ;return t["∃"]? t.ι : ( t.ι = f(...a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
-E.memoize_proc = f=>{ var cache = new Map() ;return ((...ι)=> cache['has…'](...ι)? cache['get…'](...ι) : cache['set…'](...ι,f(...ι)) ) [γ['…←']] ({cache}) }
-E.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι) ) return cache.get(ι) ;Tprim(ι) && _interrobang_() ;var r = f(ι) ;cache.set(ι,r) ;return r }) [γ['…←']] ({cache}) }
+γ.memoize_proc = f=>{ var cache = new Map() ;return ((...ι)=> cache['has…'](...ι)? cache['get…'](...ι) : cache['set…'](...ι,f(...ι)) ) [γ['…←']] ({cache}) }
+γ.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι) ) return cache.get(ι) ;Tprim(ι) && _interrobang_() ;var r = f(ι) ;cache.set(ι,r) ;return r }) [γ['…←']] ({cache}) }
 // resource management is a thing & i havent thought about it enough
 // WeakMap doesn't fix memoization resource management when keys are Tprim or equality isn't ===
 // this does
-E.memoize_tick = f=>{ f = memoize_proc(f) ;var cache = f.cache ;return (ι=>{ var t = ι+'' ;process.nextTick(()=> cache.delete(t) ) ;return f(ι) }) [γ['…←']] ({cache}) }
+γ.memoize_tick = f=>{ f = memoize_proc(f) ;var cache = f.cache ;return (ι=>{ var t = ι+'' ;process.nextTick(()=> cache.delete(t) ) ;return f(ι) }) [γ['…←']] ({cache}) }
 // ? frp will remove the last use(s) of @device0
-E.thisdevice0 = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property(ι,"json"))
-E.thisproc = ι=> 𐅜𐅩𐅭𐅦𐅰[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[ι+''] ;var 𐅜𐅩𐅭𐅦𐅰 = {}
+γ.thisdevice0 = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`[γ["|>"]] (ι=> new Property(ι,"json"))
+γ.thisproc = ι=> 𐅜𐅩𐅭𐅦𐅰[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[ι+''] ;var 𐅜𐅩𐅭𐅦𐅰 = {}
 
 // ;[#p ersist_here ~/code/declare/npm]
 var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
@@ -286,16 +278,16 @@ var _npm = ι=>{var [ˣ,name,version,sub] = ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 	cache["∃"] || shᵥ`cd ~ ;npm cache add ${abs_name()}`
 	var a;var b; (a=cache.φ`package.json`).ι = {description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = undefined
 	return require(final) }
-E.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;var 𐅪𐅰 = memoize_proc(_npm) // such a hack. takes 300ns because of the template string +='' hack ;80ns without
+γ.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;var 𐅪𐅰 = memoize_proc(_npm) // such a hack. takes 300ns because of the template string +='' hack ;80ns without
 
-E.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
+γ.unicode_names = ι=> [...ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (()=>{
 		var unicode_data = 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ')['map…'](ι=> _l.values(npm('unicode@0.6.1/category/'+ι)) )
 		return unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
 		})() ) )[ord(ι)]).X).join('') ;var 𐅩𐅩𐅩𐅝𐅋;
 
 //########## parsers and such ###########
-E[γ["|>"]] (ι=> new Property(ι,"regex_parse_0")) .thunk=()=>{var t; // soon to be deprecated
+γ[γ["|>"]] (ι=> new Property(ι,"regex_parse_0")) .thunk=()=>{var t; // soon to be deprecated
 	var P = require('./parsimmon2.js')
 	var dehex = ι=> chr(parseInt(ι,16))
 	var ESCAPE = P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex) ,P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex) ,P(/u([0-9a-fA-F]{4})/,1).map(dehex) ,P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
@@ -315,7 +307,7 @@ E[γ["|>"]] (ι=> new Property(ι,"regex_parse_0")) .thunk=()=>{var t; // soon t
 	var s2 = P.alt( P('^').T`begin` ,P('$').T`end` ,TIMES )
 	var OR_or_SEQ = P.sep_by(s2.many().T`seq` ,'|').map(ι=> ι["‖"] > 1? P.T('or',ι) : ι[0])
 	return ι=>0?0: {ι:OR_or_SEQ.parse(ι.source) ,flags:ι.flags} }
-E[γ["|>"]] (ι=> new Property(ι,"applescript")) .thunk=()=>0?0: {
+γ[γ["|>"]] (ι=> new Property(ι,"applescript")) .thunk=()=>0?0: {
 	parse: (()=>{
 	  var P = require('./parsimmon2.js')
 	  var ws = ι=> ws_.then(ι).skip(ws_) ;var ws_ = P(/[ \t\n\r]*/)
@@ -355,34 +347,34 @@ var genex = function Λ(ι){return 0,
 			[ι] ):
 		_interrobang_(ι) }
 
-E [γ['…←']](_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-E.GET_L = (ι,within)=> memo_frp(['GET -L' ,ι+''] ,within ,()=> shᵥ`curl -sL ${ι}`)
+γ [γ['…←']](_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
+γ.GET_L = (ι,within)=> memo_frp(['GET -L' ,ι+''] ,within ,()=> shᵥ`curl -sL ${ι}`)
 // ! some requests have short responses ;will need more intelligent caching for those 'cause the filesystem can't take too much
 // ! curl error code 6 means can't resolve & is crashing things maybe
-E.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _l.sample(ι) }
-E[γ["|>"]] (ι=> new Property(ι,"random_id")) .thunk=()=>{
+γ.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _l.sample(ι) }
+γ[γ["|>"]] (ι=> new Property(ι,"random_id")) .thunk=()=>{
 	var t = αβ=> (L=> L.map(()=> random(αβ)).join('')) [γ['…←']] ({αβ})
 	var random_id = t([.../[0-9a-z]/])
 	random_id.braille = t([...re`[⠁-⣿]`]) // [⠀-⣿]
 	random_id.greek = t([...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
 	return random_id }
 
-E.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
-E.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
+γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
+γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
-E._pisces__on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
+γ._pisces__on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
 	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
 	f(i,sig) }) ;var 𐅃𐅬𐅩𐅮𐅦;
 
 var 𐅯𐅩𐅪𐅨𐅃 = function*(θ){ for(;θ.i<θ.l["‖"];) yield θ.l[θ.i++] }
-E.seq = ι=>{
+γ.seq = ι=>{
 	var r = new_(seq)
 	if( Tarr(ι) ){ ;r.ι = 𐅯𐅩𐅪𐅨𐅃(r) ;r.i = 0 ;r.l = ι }
 	else if( !ι.next ) r.ι = ι[Symbol.iterator]()
 	else r.ι = ι
 	return r }
 // seq.cartesian = (…ι)=>{ ... }
-// E.cartesian = (…ι)=> […seq.cartesian(…ι)]
+// γ.cartesian = (…ι)=> […seq.cartesian(…ι)]
 seq.prototype = {
 	ι:undefined ,i:undefined ,l:undefined
 	,map:function*(f){ for(var t of this.ι) yield f(t) }
@@ -398,11 +390,11 @@ seq.prototype[γ["|>"]] (ι=> new Property(ι,"clone")) .get= function(){ var t=
 // ok,,,, the cloneability property desired here is fundamentally impossible
 // yay
 
-E._midline_horizontal_ellipsis_ = ι=> _l.range(ι)
-E._almost_equal_to_ = _l.isEqual
-E._not_almost_equal_to_ = (a,b)=> ! _almost_equal_to_(a,b)
-E.zip_min = (a,b)=> _l.zip( a["‖"]>b["‖"]? a.slice(0,b["‖"]) : a , a["‖"]<b["‖"]? b.slice(0,a["‖"]) : b )
-E.Δset = (a,b)=> new Map([ ... a["-"](b).map(ι=>[ι,-1]) ,... b["-"](a).map(ι=>[ι,1]) ]) // assume uniq
+γ._midline_horizontal_ellipsis_ = ι=> _l.range(ι)
+γ._almost_equal_to_ = _l.isEqual
+γ._not_almost_equal_to_ = (a,b)=> ! _almost_equal_to_(a,b)
+γ.zip_min = (a,b)=> _l.zip( a["‖"]>b["‖"]? a.slice(0,b["‖"]) : a , a["‖"]<b["‖"]? b.slice(0,a["‖"]) : b )
+γ.Δset = (a,b)=> new Map([ ... a["-"](b).map(ι=>[ι,-1]) ,... b["-"](a).map(ι=>[ι,1]) ]) // assume uniq
 assign_properties_in_E_informal({
 '(Array|Set|Map).prototype._':{ get(){return _u(this)} }
 
@@ -541,30 +533,30 @@ var t; Object.getPrototypeOf(( t=setTimeout(()=>{},0) ,clearTimeout(t) ,t )) [γ
 	clear(){ this._repeat? clearInterval(this) : clearTimeout(this) }
 	})
 
-E.walk = (ι,f,k,o)=>( Tprim(ι)||_u(ι).forEach((ι,k,o)=> walk(ι,f,k,o)) ,ι!==undefined && ι!==null && f(ι,k,o) ,ι )
-E.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι) ,_u(ι).forEach(ι=> walk_graph(ι,f,seen)) ,seen.pop() ,ι!==undefined && ι!==null && f(ι) ,ι )
-E.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι) ,seen.push(ι) ,_u(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)) ,seen.pop() ,fᵇ(ι) ,ι )
-E.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) ) // has 1 use
-E.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (()=>{ for (var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;return f(ι) })()
-E.search_obj = (ι,f)=>{ var r=[] ;walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)) ;return r }
-E.search_graph = (ι,f)=>{ var r=[] ;walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)) ;return r }
+γ.walk = (ι,f,k,o)=>( Tprim(ι)||_u(ι).forEach((ι,k,o)=> walk(ι,f,k,o)) ,ι!==undefined && ι!==null && f(ι,k,o) ,ι )
+γ.walk_graph = (ι,f,seen=[])=> !( Tprim(ι) || seen.includes(ι) ) && ( seen.push(ι) ,_u(ι).forEach(ι=> walk_graph(ι,f,seen)) ,seen.pop() ,ι!==undefined && ι!==null && f(ι) ,ι )
+γ.walk_both_obj = (ι,fᵃ,fᵇ,fseen,seen=[])=> fseen && seen.includes(ι)? fseen(ι) : !( Tprim(ι) || Tfun(ι) || seen.includes(ι) ) && ( fᵃ(ι) ,seen.push(ι) ,_u(ι).forEach(ι=> walk_both_obj(ι,fᵃ,fᵇ,fseen,seen)) ,seen.pop() ,fᵇ(ι) ,ι )
+γ.walk_fold = (ι,f,k,o)=> Tprim(ι)? ι : Tarr(ι)? ( ι = ι.map((ι,k,o)=> walk_fold(ι,f,k,o)) ,f(ι,k,o) ) : ( ι = _u(ι).map((ι,k,o)=> [k,walk_fold(ι,f,k,o)])._.object() ,f(ι,k,o) ) // has 1 use
+γ.walk_obj_edit = (ι,f)=> Tprim(ι) || Tfun(ι)? ι : Tarr(ι)? ι.map(ι=> walk_obj_edit(ι,f)) : (()=>{ for (var k in ι) if( Object.prototype.hasOwnProperty.call(ι,k)) ι[k] = walk_obj_edit(ι[k],f) ;return f(ι) })()
+γ.search_obj = (ι,f)=>{ var r=[] ;walk(ι,(ι,k,o)=> ι!==undefined && ι!==null && f(ι,k,o) && r.push(ι)) ;return r }
+γ.search_graph = (ι,f)=>{ var r=[] ;walk_graph(ι,ι=> ι!==undefined && ι!==null && f(ι) && r.push(ι)) ;return r }
 // the right name for walk is going to be along the lines of
 // f /@ x       x.map(f)
 // f //@ x      postwalk(x,f) # MapAll
 // it could be a data structure that you can fmap over
 
-E.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;return t[0] + t[1]*1e-9 }
-E.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = function(){return util.inspect(this) } ;return r }
+γ.hrtime = function(ι){ var t = arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;return t[0] + t[1]*1e-9 }
+γ.Time = function(ι){ var r = arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = function(){return util.inspect(this) } ;return r }
 assign_properties_in_E_informal({
 'Date.prototype.i':{get(){return +this / 1e3}}
 })
 
-E.cmd_log_loc = cmd=>{
+γ.cmd_log_loc = cmd=>{
 	var id = φ(cmd).name+'.'+simple_hash(cmd) ;return { id
 		,out:φ`~/Library/Caches/ζ.logic/${id}.out`.ensure_dir()+''
 		,err:φ`~/Library/Caches/ζ.logic/${id}.err`.ensure_dir()+''
 		} }
-E.os_daemon = (cmd,opt)=>{ cmd+='' ;var {once} = opt||{}
+γ.os_daemon = (cmd,opt)=>{ cmd+='' ;var {once} = opt||{}
 	var t = cmd_log_loc(cmd)
 	var job = {
 		[once?'RunAtLoad':'KeepAlive']:true
@@ -579,8 +571,8 @@ os_daemon[γ["|>"]] (ι=> new Property(ι,"this")) .thunk=()=> process.env.anon_
 
 module.__proto__.if_main_do = function(f){ !this.parent && f(...process.argv.slice(2)) }
 
-E.falsy = ι=> ι===undefined||ι===null||ι===false
-E.orundefined = (a,b)=> a!==undefined? a : b
+γ.falsy = ι=> ι===undefined||ι===null||ι===false
+γ.orundefined = (a,b)=> a!==undefined? a : b
 
 //##### metaprogramming → runtime macros built on top of template literals ######
 // to design this correctly ,(ss,…ιs) => (s,…a) or maybe (`s${a}`) lol no
@@ -589,23 +581,23 @@ E.orundefined = (a,b)=> a!==undefined? a : b
 // 	scratch.txt
 // 	ζ/it.ζ
 // s is interned ,so use it as a memoization key for things
-E.is_template0 = (ss,ιs)=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
-E.is_template = ([ss,...ιs])=> is_template0(ss,ιs)
+γ.is_template0 = (ss,ιs)=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
+γ.is_template = ([ss,...ιs])=> is_template0(ss,ιs)
 var tmpl_flatten = (raw2,ιs2)=> _l.zip(raw2,ιs2)['…'].slice(0,-1).filter(ι=> ι!=='')
-E.simple_template = (ss,ιs,filter)=>{ is_template0(ss,ιs) || _interrobang_()
+γ.simple_template = (ss,ιs,filter)=>{ is_template0(ss,ιs) || _interrobang_()
 	if( Tarr(filter) ){ var [root,join] = filter ;filter = ι=> Tarr(ι)? ι.map(ι=> root`${ι}`).join(join) : falsy(ι)? '' : undefined }
 	var filter_special = ι=> falsy(ι)? '' : ι+''
 	var ι = tmpl_flatten( ss.raw.map((𐅭𐅞)=>𐅭𐅞.replace(/\\(?=\$\{|`)/g,'')) ,ιs.map(ι=>0?0:{raw:ι}) )
 	for(var i=0;i<ι["‖"]-1;i++) if( Tstr(ι[i]) && !Tstr(ι[i+1])) ι[i] = ι[i].replace(/…$/,()=>{ ι[i+1] = filter_special(ι[i+1].raw) ;i++ ;return '' })
 	filter &&( ι = ι.map(ι=> Tstr(ι)? ι : orundefined(filter(ι.raw),ι) ) )
 	return ι }
-E.easy_template = (()=>{
+γ.easy_template = (()=>{
 	var read = (ss,ιs)=> tmpl_flatten(ss.raw,ιs.map(ι=>[ι]))
 	var show = ι=>{ var raw = [''] ;var ιs = [] ;ι.forEach(ι=> Tstr(ι)? raw[-1]+=ι : (ιs.push(ι) ,raw.push('')) ) ;return [{raw},...ιs] }
 	return f=> function(ss,...ιs){return f.call(this,read(ss,ιs),show) }
 	})()
 
-E.re = (ι,...ιs)=>(
+γ.re = (ι,...ιs)=>(
 	is_template0(ι,ιs)
 		? simple_template(ι,ιs,[(...a)=>re(...a).source,'']).map(ι=> !Tstr(ι)? 𐅋𐅨𐅨𐅜𐅦(ι.raw) : ι).join('')
 		: 𐅋𐅨𐅨𐅜𐅦(ι)
@@ -624,19 +616,19 @@ assign_properties_in_E_informal({
 ,'RegExp.prototype.y':{get(){return RegExp(this.source,this.flags.replace(/y/,'')+'y') }}
 })
 
-E.js = E.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι ).join('') }
-E.ζjs = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ζ_compile(ι) ).join('') }
-E.ζ = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+γ.js = γ.py = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι ).join('') }
+γ.ζjs = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ζ_compile(ι) ).join('') }
+γ.ζ = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
-E.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+γ.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 var if_sh_err = (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ι.stderr.slice(0,100)) [γ['…←']] (_u(ι).pick('status','stdout','stderr')) }
-E.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
+γ.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
 	// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	var ι = require('child_process').spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
 	return ι.stdout [γ['…←']] ({ toString(...a){ var ι = Buffer.prototype.toString.call(this,...a) ;return a["‖"]? ι : ι.replace(/\n$/,'') } }) }
-E.shᵥexit = (ss,...ιs)=>{ var r = catch_union(()=>shᵥ(ss,...ιs)); return T.Error(r)? r.status===0 : true }
+γ.shᵥexit = (ss,...ιs)=>{ var r = catch_union(()=>shᵥ(ss,...ιs)); return T.Error(r)? r.status===0 : true }
 var _shₐ = (ss,ιs,opt={})=>{
 	if( ss["‖"]===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && _interrobang_() ;opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;return shₐ2(opt) }
 	else{ var code = sh(ss,...ιs)
@@ -645,18 +637,18 @@ var _shₐ = (ss,ιs,opt={})=>{
 		var ι = require('child_process').spawn(code,{shell:true} [γ['…←']] (_u(opt).pick('stdio','detached')))
 			.on('exit',status=>{ if_sh_err('shₐ',code,{status} [γ['…←']] (ι)) })
 		return ι } }
-E.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
-E.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
-E.shₐi = shₐ2({stdio:process.stdio})
+γ.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
+γ.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
+γ.shₐi = shₐ2({stdio:process.stdio})
 
-E.osa = (ss,...ιs)=>{var t;
+γ.osa = (ss,...ιs)=>{var t;
 	var ι = simple_template(ss,ιs)
 	// ! this is such a mess
 	if( Tstr(ι[0]) && (t=ι[0].re`^(?!tell )([\w ]+):`)){ ι[0] = ι[0].slice(t[0]["‖"]) ;ι = [osa`tell app ${t[1]};` ,...ι ,' ;end tell'] }
 	if( !Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0]["‖"]) ;ι = [osa`tell app ${ι.shift().raw};` ,...ι ,' ;end tell'] }
 	return ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
-E.osaᵥ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
-E.osaₐ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;shₐ`osascript -ss -e ${ι}` }
+γ.osaᵥ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;return applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
+γ.osaₐ = (ss,...ιs)=>{ var ι = osa(ss,...ιs) ;shₐ`osascript -ss -e ${ι}` }
 
 // such hack
 var json2_read = ι=>{ var r = JSON.parse(ι) ;(function Λ(ι,k,o){if( ι.type==='Buffer' ){
@@ -666,7 +658,7 @@ var json2_read = ι=>{ var r = JSON.parse(ι) ;(function Λ(ι,k,o){if( ι.type=
 var json2_show = ι=> JSON_pretty(ι,ι=>{var t;
 	if( Buffer.isBuffer(ι)) return ι.equals(Buffer.from(t=ι+''))? {type:'Buffer' ,utf8:t} : {type:'Buffer' ,base64:ι.toString('base64')}
 	return ι})
-E[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
+γ[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
 	// https://www.npmjs.com/package/glob-to-regexp
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g ,encodeURIComponent.X) : ι
 	φ["⁻¹"] = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi ,decodeURIComponent.X) : ι
@@ -819,12 +811,12 @@ E[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
 var comp2 = ι=> `'use strict';undefined;\n`+ζ_compile(ι)
 var mem_sc = memoize_tick(ι=> new vm.Script(ι) )
 var ζ_verify_syntax = ι=>{ ι = comp2(ι) ;try{ mem_sc(ι) }catch(e){ if( e instanceof SyntaxError ) return e } }
-E.ζ_eval = ι=>{ ι = comp2(ι) ;return mem_sc.cache[ι]? mem_sc(ι).runInThisContext() : (0,eval)(ι) }
+γ.ζ_eval = ι=>{ ι = comp2(ι) ;return mem_sc.cache[ι]? mem_sc(ι).runInThisContext() : (0,eval)(ι) }
 
-E.returnfix_compile = (()=>{return ι=>{var t; return bad(ι) && !bad(t='(=>{'+ι+'})()')? t : ι }
+γ.returnfix_compile = (()=>{return ι=>{var t; return bad(ι) && !bad(t='(=>{'+ι+'})()')? t : ι }
 	function bad(ι){var t; return (t= ζ_verify_syntax(ι)) && t.message==='Illegal return statement' }
 	})()
-E.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,';∅')
+γ.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,';∅')
 
 // i cut this out temporarily:
 // e && Tstr(e.stack) &&( e.stack = e.stack.replace(/^([^]*)at repl:(.*)[^]*?$/,'$1at <repl:$2>') )
@@ -837,8 +829,8 @@ E.do_end_undefined_thing =(𐅭𐅞)=>𐅭𐅞.replace(/;\s*$/,';∅')
 γ[ι].inspect = function(d,opt){return opt.stylize(ι,'quote') }
 })
 // Number_toFixed ← λ(θ,ι){ θ = round(θ / 10**-ι) * 10**-ι ;↩ ι>0? θ.toFixed(ι) : θ+'' }
-// E.pretty_time_num = ι=> new Number(ι) …← ({inspect:λ(ˣ,opt){ P ← 20 ;ι←@ ;[ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']) ;↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
-// E.pretty_time_num = ι=> Unit(ι,'s')
+// γ.pretty_time_num = ι=> new Number(ι) …← ({inspect:λ(ˣ,opt){ P ← 20 ;ι←@ ;[ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']) ;↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
+// γ.pretty_time_num = ι=> Unit(ι,'s')
 
 var fmt = function(a,b){ var t = this.__local? npm`moment@2.18.1`(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : this.toISOString() ;t = t.slice(a,b) ;if( !this.__local && b > 10) t += 'Z' ;return t }
 assign_properties_in_E_informal({
@@ -854,7 +846,7 @@ assign_properties_in_E_informal({
 ,'Date.prototype.day_s':{get(){return ((Time().i/86400)+'').split('.')[γ["|>"]](([a,b])=> [a,b.slice(0,4)].join('.')) }}
 })
 
-E.Unit = (ι,u)=>0?0: {ι,u}
+γ.Unit = (ι,u)=>0?0: {ι,u}
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"valueOf")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(){return this.ι } )
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"inspect")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(ˣ,opt){return util.inspect(this.ι,opt)+' '+opt.stylize(this.u,'number') } )
 assign_properties_in_E_informal({
@@ -866,13 +858,13 @@ assign_properties_in_E_informal({
 // ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ this.toString = this.inspect = function(){return this.join('\n') } ;return this }}
 })
-E.util_inspect_autodepth = (ι,opt={})=>{ γ.𐅦𐅦𐅝𐅨𐅫 = opt; opt.L || (opt.L = 1e7) ;var last; for(var i=1;;i++){ var r = util.inspect(ι,{ maxArrayLength:opt.L/3 |0 ,depth:i } [γ['…←']] (opt)) ;if( r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last ;last = r } }
+γ.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e7) ;var last; for(var i=1;;i++){ var r = util.inspect(ι,{ maxArrayLength:opt.L/3 |0 ,depth:i } [γ['…←']] (opt)) ;if( r===last || r["‖"] > opt.L) return last===undefined? '<too large>' : last ;last = r } }
 var 𐅯𐅦 = (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
 var promise_watch = ι=>{ if(! ι.id ){
 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
 	var hr = hrtime() ;ι.then(x=>{ var x = ζ_inspect(x) ;hrtime(hr) < 5 && x["‖"] && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;return ι.id } ;var 𐅩𐅞𐅋𐅦𐅩=0
 var stylize = ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;var r ;return r }
-E.ζ_inspect = (ι,opt={})=>0?0
+γ.ζ_inspect = (ι,opt={})=>0?0
 	: ι===undefined? ''
 	: T.truefalse(ι)? stylize(opt)(ι?'✓':'✗' ,'boolean')
 	: Tstr(ι)? ι
@@ -899,11 +891,11 @@ var sh_inspect = ι=>{var t;
 	: ( t= catch_union(()=> JSON.stringify(ι)) ,!T.Error(t) )? {out:t}
 	: {out:ι+''} )}
 
-E.log = (...ι)=>( log.ι(ι["‖"]===1?ι[0]:ι) ,ι[-1] )
+γ.log = (...ι)=>( log.ι(ι["‖"]===1?ι[0]:ι) ,ι[-1] )
 log.ι = ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n')
-E.log2 = (...ι)=> log( Time().day_s [γ["|>"]](t=>0?0:{inspect:()=>t}) ,...ι ) // log2rue
+γ.log2 = (...ι)=> log( Time().day_s [γ["|>"]](t=>0?0:{inspect:()=>t}) ,...ι ) // log2rue
 
-E.JSON_pretty = (ι,replacer)=>{
+γ.JSON_pretty = (ι,replacer)=>{
 	var seen = []
 	var tab = '  '
 	var wrap_width = 140
@@ -945,7 +937,7 @@ var ζ_repl_start = ()=>{
 	var super_ = this.completer ;this.completer = function(line,cb){ line.trim()===''? cb(undefined,[]) : super_.call(this,line,cb) }
 	this.removeAllListeners('line').on('line',function(line){
 		this.context.rl = this
-		this.context.E = this.context
+		this.context.E = this.context // ! what?
 		if( this.bufferedCommand ){ var ι = this.history ;ι.reverse() ;var t = ι.pop() ;ι[-1] += '\n'+t ;ι.reverse() }
 		var code = this.bufferedCommand+line
 		code = diesis_compile(code)
@@ -973,17 +965,17 @@ var ζ_repl_start = ()=>{
 	return this }) }
 
 //################################## new tools ##################################
-E.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
+γ.simple_as_file = ι=> φ`/tmp/asf_${simple_hash(ι)}` [γ['…←']]({ι}) +''
 
 //#################################### user #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
 //################################### prelude ###################################
-φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').patch(E)
+φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').patch(γ)
 
 //#################################### main #####################################
-E.ζ_builtins = { require ,module:{ exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }
-E.ζ_main = ({a})=>{var ι;
+γ.ζ_builtins = { require ,module:{ exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }
+γ.ζ_main = ({a})=>{var ι;
 	a[0]==='--fresh' && a.shift()
 	if( !a["‖"] ) ζ_repl_start()
 	else if( ι=a[0] ,φ(ι)["∃"] || ι.re`^\.?/` ){ process.argv = [process.argv[0],...a] ;var t = φ(ι).root('/')+'' ;var o=Module._cache;var m=Module._resolveFilename(t,undefined,true);var oι=o[m] ;o[m] = undefined ;Module._load(t,undefined,true) ;o[m] = oι }
