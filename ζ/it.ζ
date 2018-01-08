@@ -680,42 +680,42 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 	open ← λ(ι,ifdne,f){
 		ensure_exists(ι,ifdne) ;Lc ← new Φ(ι).‖
 		fd ← fs.openSync(ι,'r+') ;f({
-			get L(){↩ Lc},
-			read(i,L){t ← Buffer.allocUnsafe(L) ;fs.readSync(fd,t,0,L,i) === L || ‽ ;↩ t},
-			write(ι,i){L ← fs.writeSync(fd,ι,i) ;Lc = max(Lc ,L+i)},
-			truncate(L){fs.ftruncateSync(fd,L) ;Lc = min(Lc,L)},
-			indexOf_skipping(from,to,step,find,skip){fl←@
+			,get L(){↩ Lc}
+			,read(i,L){t ← Buffer.allocUnsafe(L) ;fs.readSync(fd,t,0,L,i) === L || ‽ ;↩ t}
+			,write(ι,i){L ← fs.writeSync(fd,ι,i) ;Lc = max(Lc ,L+i)}
+			,truncate(L){fs.ftruncateSync(fd,L) ;Lc = min(Lc,L)}
+			,indexOf_skipping(from,to,step,find,skip){fl←@
 				if( from<0) from += fl.L ;if( to<0) to += fl.L ;from = min(max(0 ,from ),fl.L-1) ;to = min(max(-1 ,to ),fl.L)
 				if( !(step===-1 && from>to)) ‽('TODO')
 				d ← fl.read(to+1,from-to)
 				for(i←from;i>to;i+=step) {if( d[i-(to+1)]===find) ↩ i ;else if( chr(d[i-(to+1)]).match(skip)) ;else ↩ ∅}
-				},
+				}
 			}) ;fs.closeSync(fd)}
 	globmatch ← (glob,ι)=> ι.re`^…${[…glob].map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`
 	φ‘.cwd .host= { ,get:=> new Φ(process.cwd()) ,set:ι=> φ(ι+'')._ι !>(mkdir_p) !>(process.chdir) }
 	normHs ← λ(ι){ if( ≈( ι,['~'] ) ) ↩ [process.env.HOME] ;Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;↩ ι }
 	λ Φ(ι){@._ι = ι} ;Φ.prototype = {
-		φ,
-		toString(){↩ @._ι },
-		toJSON(){↩ {type:'φ' ,ι:@._ι} },
-		inspect(ˣ,opts){↩ opts.stylize('φ','special')+opts.stylize(util_inspect_autodepth(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') },
-		get nlink(){↩ fs.statSync(@._ι).nlink },
-		get mtime(){↩ fs.statSync(@._ι).mtime },
-		get birthtime(){↩ fs.statSync(@._ι).birthtime },
-		get url(){↩ encodeURI('file:'+@.root('/')) }, # ! should this be part of root
-		get is_dir(){↩ !!catch_ι(=> fs.statSync(@._ι).isDirectory()) },
-		get name(){↩ path.basename(@._ι) },
-		TMP_children(){↩ @._ι |> (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) },
-		TMP_parents(){ r ← [@.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;↩ r.slice(1) },
-		root(x){switch(arguments.length){default: ‽
+		,φ
+		,toString(){↩ @._ι }
+		,toJSON(){↩ {type:'φ' ,ι:@._ι} }
+		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+opts.stylize(util_inspect_autodepth(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
+		,get nlink(){↩ fs.statSync(@._ι).nlink }
+		,get mtime(){↩ fs.statSync(@._ι).mtime }
+		,get birthtime(){↩ fs.statSync(@._ι).birthtime }
+		,get url(){↩ encodeURI('file:'+@.root('/')) } # ! should this be part of root
+		,get is_dir(){↩ !!catch_ι(=> fs.statSync(@._ι).isDirectory()) }
+		,get name(){↩ path.basename(@._ι) }
+		,TMP_children(){↩ @._ι |> (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) }
+		,TMP_parents(){ r ← [@.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;↩ r.slice(1) }
+		,root(x){switch(arguments.length){default: 
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
 			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
-			}},
-		ensure_dir(){ @.φ`..`.∃ || mkdir_p(@.φ`..`+'') ;↩ @ },
-		get dir_ensure(){ @.∃ || mkdir_p(@+'') ;↩ @ },
+			}}
+		,ensure_dir(){ @.φ`..`.∃ || mkdir_p(@.φ`..`+'') ;↩ @ }
+		,get dir_ensure(){ @.∃ || mkdir_p(@+'') ;↩ @ }
 
-		# get ι(){↩},
-		set ι(ι){
+		# ,get ι(){↩}
+		,set ι(ι){
 			if( @.is_dir) ‽('TODO')
 			if( ι===∅||ι===null){ catch_union(=> fs.unlinkSync(@._ι) ) ;↩ }
 			e ← path.extname(@._ι)
@@ -726,14 +726,14 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 				Tstr(ι)? ι :
 				ι instanceof Buffer? ι :
 				JSON_pretty(ι)
-			write_file(@._ι,ι) },
-		get buf(){↩ read_file(@._ι) || Buffer.alloc(0) },
-		set buf(ι){ write_file(@._ι,ι) },
-		get base64(){↩ Buffer.from(@.text,'base64') },
-		# set base64(ι){},
-		get text(){↩ (read_file(@._ι) || '')+'' },
-		set text(ι){ write_file(@._ι,ι) },
-		get lines(){↩ λ(…ιs){
+			write_file(@._ι,ι) }
+		,get buf(){↩ read_file(@._ι) || Buffer.alloc(0) }
+		,set buf(ι){ write_file(@._ι,ι) }
+		,get base64(){↩ Buffer.from(@.text,'base64') }
+		# ,set base64(ι){}
+		,get text(){↩ (read_file(@._ι) || '')+'' }
+		,set text(ι){ write_file(@._ι,ι) }
+		,get lines(){↩ λ(…ιs){
 			d ← ((read_file(@._ι)||'\n')+'').replace(/\n$/,'').split('\n')
 			if( ιs.‖ > 1) ↩ ιs.map(ι=> Tnum(ι)? d[ι] : d.slice(ι.re`^(\d+):$`[1]|0).join('\n')+'\n')
 			else if( ιs.‖ === 0){
@@ -741,50 +741,49 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 					map(…a){↩ d.map(…a)},
 					} }
 			else ‽('TODO')
-			}},
-		set lines(ι){ write_file(@._ι, ι.join('\n')+'\n') },
-		get json(){↩ JSON.parse(read_file(@._ι) || 'null') },
-		set json(ι){ write_file(@._ι, JSON_pretty(ι)) },
-		get json2(){↩ json2_read(@.text) },
-		set json2(ι){ @.text = json2_show(ι) },
-		get ini(){↩ npm`ini@1.3.4`.parse(@.text) },
-		# set ini(ι){},
-		# get csv(){↩},
-		set csv(ι){ t ← φ`/tmp/csv_${random_id(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${@.root('/')+''}).buf = ι })`}` },
-		# get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') },
-		set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:✓}).end({pretty:✓}) },
-		get plist(){t←; buf ← @.buf ;↩ 0?0
+			}}
+		,set lines(ι){ write_file(@._ι, ι.join('\n')+'\n') }
+		,get json(){↩ JSON.parse(read_file(@._ι) || 'null') }
+		,set json(ι){ write_file(@._ι, JSON_pretty(ι)) }
+		,get json2(){↩ json2_read(@.text) }
+		,set json2(ι){ @.text = json2_show(ι) }
+		,get ini(){↩ npm`ini@1.3.4`.parse(@.text) }
+		# ,set ini(ι){}
+		# ,get csv(){↩}
+		,set csv(ι){ t ← φ`/tmp/csv_${random_id(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${@.root('/')+''}).buf = ι })`}` }
+		# ,get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') }
+		,set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:✓}).end({pretty:✓}) }
+		,get plist(){t←; buf ← @.buf ;↩ 0?0
 			# in case bplist-parser has bugs, this is available:
 			# : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
 			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist_${random_id(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
 			: npm`plist@2.1.0`.parse(@.text)
-			},
-		set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) },
-		get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
+			}
+		,set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) }
+		,get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
 			if( ιs.‖) ‽('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')
 			↩ {
-			push(…a){a.map(λ(ι){
+			,push(…a){a.map(λ(ι){
 				d.push(ι)
 				open(_ι,'[]',λ(fl){
 					i ← fl.indexOf_skipping(-1,-1e4,-1,ord(']'),/[ \n\t]/) || ‽('bad file')
 					is_0 ← fl.indexOf_skipping(i-1,-1e4,-1,ord('['),/[ \n\t]/)!==∅
 					fl.write((is_0?'':',')+JSON.stringify(ι,∅,'  ')+']',i)
 					})
-				})},
-			filter(f){↩ d.filter(f)},
-			get length(){↩ d.‖},
-			get ['‖'](){↩ d.‖},
-			} }},
-
-		get size(){↩ fs.statSync(@._ι).size },
-		get ['‖'](){↩ fs.statSync(@._ι).size },
+				})}
+			,filter(f){↩ d.filter(f)}
+			,get length(){↩ d.‖}
+			,get ['‖'](){↩ d.‖}
+			} }}
+		,get size(){↩ fs.statSync(@._ι).size }
+		,get ['‖'](){↩ fs.statSync(@._ι).size }
 		}
 	Φ.prototype‘['∃'] …←({ ,get(){↩ existsSync(@._ι) } ,set(ι){ ι===@.∃ ||( @.ι = ι?'':∅ ) } })
 	λ Φs(ι){@._ι = ι} ;Φs.prototype = {
-		inspect(ˣ,opts){↩ opts.stylize('φ','special')+util.inspect(@._ι,opts)},
-		get name_TMP(){↩ @._ι.map(ι=> new Φ(ι).name)}, # fs.readdirSync
-		get φs(){↩ @._ι.map(ι=> new Φ(ι))}, # [φ]
+		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+util.inspect(@._ι,opts)}
+		,get name_TMP(){↩ @._ι.map(ι=> new Φ(ι).name)} # fs.readdirSync
+		,get φs(){↩ @._ι.map(ι=> new Φ(ι))} # [φ]
 		}
 	λ φ(ss,…ιs){
 		head ← @ instanceof Φ && @._ι
