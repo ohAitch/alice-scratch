@@ -73,7 +73,7 @@
 ⧫. Πor ==> (…ι)=> Promise.race(ι)
 
 ⧫. @deviceΠ = => ι=>{ start ← Tfun(ι)
-	φ_on_E ← ι=> Π(re=>{ 𐅪 ← ι.∃? re() : npm`chokidar@1.7.0`.watch(ι+'',{persistent:✓}).on('all',=> ι.∃ &&( 𐅪.close() ,re() )) })
+	φ_on_E ← ι=> Π(re=>{ 𐅪 ← ι.∃? re() : npm`chokidar@2.0.0`.watch(ι+'',{persistent:✓}).on('all',=> ι.∃ &&( 𐅪.close() ,re() )) })
 	id ← !start? ι : random_id.greek(9)
 	𐅞 ← @device0('Π'+id)
 	re ← (ι=>{ 𐅞.ι = ι }) …←({ ,id ,toString:=>r+'.re' })

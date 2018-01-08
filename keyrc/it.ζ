@@ -127,7 +127,7 @@ regen ← (opt={})=>{
 # module.if_main_do((…a)=>{
 # switch( a[0] ){
 # 	default:
-# 		npm`chokidar@1.7.0`.watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
+# 		npm`chokidar@2.0.0`.watch(φ`~/.keyrc`+'').on('all',(ev,ι)=>{
 # 			try{ regen() }catch(e){ _alert('[keyrc] build error:',e.stack) }
 # 			})
 # 	break; case 'start':

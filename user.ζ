@@ -212,7 +212,7 @@
 	this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
 	↩ =>{ E ← process.env.? |0
 		this_term_is_frontmost() ||( E===0? sfx`done` : (sfx`fail` ,osaᵥ`terminal: activate`) )
-		E===0? postrun('exit') :( process.exitCode = E ) } }
+		/*E===0? postrun('exit') :*/;( process.exitCode = E ) } }
 
 ⧫. diff ==> (base,edit)=>{
 	if( φ(base).is_dir ){

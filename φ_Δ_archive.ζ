@@ -19,7 +19,7 @@
 
 # fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
 # 	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(=> fsʷ.removeListener(fl,f) ); ↩ }
-# 	fsʷ._events[fl] || npm`chokidar@1.7.0`.watch(fl,{ ,ignoreInitial:✓ ,alwaysStat:✓ })
+# 	fsʷ._events[fl] || npm`chokidar@2.0.0`.watch(fl,{ ,ignoreInitial:✓ ,alwaysStat:✓ })
 # 		.on('error',λ(ι){ console.error('[fs_watch] wat '+ι) })
 # 		.on('all',λ(ev,ι,stat){ t ← {'addDir':'add','unlinkDir':'unlink'}; type ← t[ev]||ev; fsʷ.emit(fl, ι, {type, dir: !!t[ev], stat, time: type==='unlink'? new Date() : stat.ctime}) })
 # 	})
@@ -41,7 +41,7 @@
 # E.has_doi = φι=>{
 # 	is_doi ← re`(doi:|doi\.org/) *…${npm`doi-regex@0.1.4`().source}`.i
 # 	↩ Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(✗) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
-# npm`chokidar@1.7.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
+# npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
 # 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
 # 		has_doi(ι).then(t=>{ if (t) {
 # 			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
@@ -50,7 +50,7 @@
 # 		} })
 
 ############# so let's add another fucked up bit, and kill DS_Store ############
-npm`chokidar@1.7.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
+npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
 	log2( ,Time().ymdhmss,'#DS_Store',ι )
 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'')
 	if (φ(ι).name === '.DS_Store')

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// hey, if you're gonna break this, keep a previous stable version ready this time. weve spent entirely too much time rescuing our configurations.
+// hey, if you're gonna break this, keep a previous stable version ready this time. ive spent entirely too much time rescuing our state
 
 // odd synonym: k, name(, id)(, i?), 𐑯𐑱𐑥
 // ι = it
@@ -159,6 +159,7 @@ var fs = require('fs')
 	var id_num = alt_ws`0 1 2 3 4`
 	var ζ_compile_nonliteral = ι=> ι
 		.replace(/ifΔ!/g,'ifΔbang')
+		.replace(/\b([0-9]+(?:\.[0-9]+)?)d/g,(ˣ,ι)=> `(${ι}*86400)` )
 		.replace(/(=>|[=←:(,?]) *(?!\.\.\.)(‘?\.)/g,(ˣ,a,b)=> a+'(𐅭𐅞)=>𐅭𐅞'+b )
 		.replace(𐅃𐅪𐅜𐅫𐅮||(𐅃𐅪𐅜𐅫𐅮= re`‘\.(${word}+)`.g ),(ˣ,ι)=> js`|> (ι=> new Property(ι,${ι}))` )
 		.replace(/‘(?=\[)/g ,`|> (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))` )
@@ -230,15 +231,13 @@ module.exports = to=> to===γ || _interrobang_('no longer patching other γs')
 //################################### prelude ###################################
 γ.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
 
-var 𐅞𐅪 = {} ;𐅞𐅪[γ["|>"]] (ι=> new Property(ι,"buf36")) .thunk=()=> npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode
-
 γ.simple_flesh = ι=>{
 	if( Tfun(ι) )return T(ι)+ι
 	var t = [ ι,(i,ι)=>{ if( Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_l.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;return r } } ]
 	// try{
 	return JSON.stringify(...t) }
 	// }catch(e){ e.message==='Converting circular structure to JSON' || ‽(e) ;↩ npm`circular-json@0.4.0`.stringify(ι) } }
-γ.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> ('0'["×"](12)+𐅞𐅪.buf36(ι)).slice(-12)) ;var 𐅭𐅋𐅫𐅭𐅂; // deprecated
+γ.simple_hash = ι=> (𐅭𐅋𐅫𐅭𐅂||(𐅭𐅋𐅫𐅭𐅂= npm`xxhash@0.2.4`.hash64 ))(Buffer.from(simple_flesh(ι)),0x594083e1) [γ["|>"]] (ι=> ('0'["×"](12)+(𐅦𐅪𐅮𐅬𐅬||(𐅦𐅪𐅮𐅬𐅬= npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode ))(ι)).slice(-12)) ;var 𐅭𐅋𐅫𐅭𐅂;var 𐅦𐅪𐅮𐅬𐅬; // deprecated
 γ[γ["|>"]] (ι=> new Property(ι,"simple_hash2")) .thunk=()=>{
 	var bigintstr_to_buf = ι=>{ ;var ι = npm`big-integer@1.6.26`(ι) ;var r = Buffer.alloc(8) ;r.writeUInt32BE( +ι.shiftLeft(-32) ,0 ) ;r.writeUInt32BE( +ι.and(2**32-1) ,4 ) ;return r }
 	var buf36 = npm`base-x@1.0.4`([.../[0-9a-z]/].join('')).encode
@@ -253,11 +252,16 @@ var memo_frp = (names,within,f)=>{
 		if( t ) return dir.φ(t).json2.ι }
 	var a = Time().iso ;var ι = f() ;var b = Time().iso
 	dir.φ`${a} ${random_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
-γ.memoize_persist = f=>{
+var 𐅭𐅜𐅞𐅫𐅪 = (slot,f)=>{ var obj = slot.ι||{} ;return (...a)=>{
 	// may race condition but is unlikely & relatively harmless
 	// it would be lovely if this s could use data from their previous versions
-	var store = φ`/tmp/ζpersist_${simple_hash(f)}` ;var store_ι = store.json||{}
-	return (...a)=>{ var t = store_ι[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[simple_hash(a)] ;return t["∃"]? t.ι : ( t.ι = f(...a) ,store.json = store_ι ,store_ι = store.json ,t.ι ) } }
+	// wow 𐅭𐅜𐅞𐅫𐅪 is a haack
+	var ι = obj[γ["|>"]] (o=>( 𐅋𐅨𐅦𐅨𐅭 = o ,𐅯𐅭𐅝𐅨𐅮 ))[simple_hash(a)]
+	var fc = ()=>( ι.ι = f(...a) ,slot.ι = obj ,obj = slot.ι ,ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? ι.ι.ι.ι : ι.ι )
+	return !ι["∃"]? fc() : ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? (ι.ι.ι.forget_at < Time().i? ( ι["∃"] = false ,fc() ) : ι.ι.ι.ι) : ι.ι } }
+γ.memoize_persist = f=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`[γ["|>"]] (ι=> new Property(ι,"json")))
+memoize_persist.return𐅃 = ι=> Tag('𐅰𐅝𐅋𐅫𐅪',ι)
+γ.memoize_persist_for = (Δ,f)=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`[γ["|>"]] (ι=> new Property(ι,"json")), f [γ["≫"]] (ι=> memoize_persist.return𐅃({ forget_at:Time().i+Δ ,ι }) ) )
 γ.memoize_proc = f=>{ var cache = new Map() ;return ((...ι)=> cache['has…'](...ι)? cache['get…'](...ι) : cache['set…'](...ι,f(...ι)) ) [γ['…←']] ({cache}) }
 γ.memoize_weak = f=>{ var cache = new WeakMap() ;return (ι=>{ if( cache.has(ι) ) return cache.get(ι) ;Tprim(ι) && _interrobang_() ;var r = f(ι) ;cache.set(ι,r) ;return r }) [γ['…←']] ({cache}) }
 // resource management is a thing & i havent thought about it enough
@@ -520,6 +524,7 @@ assign_properties_in_E_informal({
 ,'Function.prototype.every':function(time,opt){opt||(opt={}) ;var r = setInterval(this,max(0,time)*1e3) ;return !opt.leading? r : new TimerCons(this.in(0),r) }
 // ,'Function.prototype.Π':λ(){ ... }
 })
+γ.proc_keep_alive = _.once(()=> setInterval(()=>undefined,1e9) )
 
 ;[Set,Map].map(Seq=>
 	Object.getPrototypeOf( new Seq().entries() ) [γ['…←']] ({
@@ -707,6 +712,7 @@ var json2_show = ι=> JSON_pretty(ι,ι=>{var t;
 			case 1: return new Φ( x==='/'? path.resolve(this._ι) : x==='.'? path.relative(x,this._ι) : _interrobang_('not yet implemented: nonstandard roots') )
 			}},
 		ensure_dir(){ this.φ`..`["∃"] || mkdir_p(this.φ`..`+'') ;return this },
+		get dir_ensure(){ this["∃"] || mkdir_p(this+'') ;return this },
 
 		// get ι(){↩},
 		set ι(ι){
@@ -971,7 +977,7 @@ var ζ_repl_start = ()=>{
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
 //################################### prelude ###################################
-φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').patch(γ)
+φ`~/code/declare/module.ζ`["∃"] && require(φ`~/code/declare/module.ζ`+'').put_γ()
 
 //#################################### main #####################################
 γ.ζ_builtins = { require ,module:{ exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }
