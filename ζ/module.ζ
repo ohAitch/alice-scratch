@@ -1,0 +1,75 @@
+#!/usr/bin/env ζ
+# pipe module data so that we can use modules effortlessly
+
+# ! this is all just an ... elaboration
+# part of the elaboration is for the sake of planned expansion
+# so um, think about this?
+
+# ;[ ,φ`~/code/scratch/it.ζ`+'' ,φ`~/code/scratch/user.ζ`+'' ]
+# .map…(path=> require(path).map((ι,id)⇒{ ,id ,ι ,from:path })).group_uniq(.id).map(..1)
+# !>(.map(({id,ι})=> γ‘[id] .thunk= (0,eval)('('+ι+')') ))
+
+##################################### state ####################################
+# @device0`⧫_local_module_src`.ι = [ ,φ`~/code/scratch/it.ζ`+'' ,φ`~/code/scratch/user.ζ`+'' ]
+# os_daemon(φ`~/code/declare/module.ζ`+'').restart()
+
+################################## app prelude #################################
+φwatch1 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✗,ignoreInitial:✓}).on('all',cb) !>(cb)
+φwatch2 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✓,ignoreInitial:✓}).on('all',cb) !>(cb)
+src ← @device0`⧫_local_module_src`
+ιlock ← @device0`⧫_local_module_codelock0`
+
+/*#########################*/ module.if_main_do(=>{ ############################
+# watching local module data
+# when publish on save,:
+proc_keep_alive()
+
+watch_local_module_source ← from=> φwatch2(from,=>{
+	ι ← catch_union(=>{ t ← {} ;old ← γ.⧫ ;γ.⧫ = new Proxy({},{set(ˣ,id,ι){ t[id] = ι ;↩ ✓ }}) ;require_new(from) ;γ.⧫ = old ;↩ t })
+	if( T.Error(ι) ){ log('unconsider and tell user about it',from,ι) ;↩ }
+	ι ← _u(ι).map((ι,id)⇒ { ,id ,ι:ι+'' ,from } )
+	t ← (ιlock.ι||[])._.filter(.from!==from)
+	ι ← […ι,…t]
+	t ← _u(ι).groupBy(.id) |> (_u.values) .filter(.‖ > 1) ; t.‖ &&( log('namespace collision',t.map(..0.id)) |>(ι=>‽(ι[0])) )
+	ιlock.ι = ι
+	})
+
+𐅯𐅦𐅮𐅰𐅬 ← [] ;𐅦𐅮𐅮𐅞𐅬 ← {}
+φwatch2(src.o,=>{ ι ← src.ι||[]
+	Δset(𐅯𐅦𐅮𐅰𐅬,ι) !>(=> 𐅯𐅦𐅮𐅰𐅬 = ι )
+	.map((δ,φι)⇒
+		: δ>0?( 𐅦𐅮𐅮𐅞𐅬[φι] = watch_local_module_source(φι) )
+		: 𐅦𐅮𐅮𐅞𐅬‘[φι] |>(ι=>{ ι.ι.close() ;ι.∃ = ✗ })
+		) })
+
+# sourcing from npm data
+# ‡ next. integrate w ζ.npm. see sb.tab.npm.
+
+})
+################################################################################
+exports.put_γ = =>{
+	γ.⧫ = new Proxy({},{set(ˣ,id,ι){ γ‘[id] .thunk= ι ;↩ ✓ }}) # proc local module
+	φwatch1(ιlock.o,=>{ ι ← ιlock.ι ;ι&&(
+		,ι.forEach(ι=> γ‘[ι.id] .thunk= ι.ι = (0,eval)('('+ι.ι+')') )
+		# ,γ.modules0 = ι # not actually used
+		,module.if_main_do(on_module_build𐅃𐅋𐅃𐅬𐅫) # hack
+		) } ) }
+
+#################################### theory ####################################
+# a module
+# returns an object
+# or returns several functions, all of which go in global, and any of those names should reference it
+# or it might monkeypatch things but that is not *that* much more complicated
+# or it might return things that other modules return
+# 	you could conceptualize this as it returning other modules
+# 	this is also not that much more complicated?
+
+# ⁘ name
+# when you want versions, you want the code s *users* to maintain them, right? in their damn lockfile
+# and dependencies - this is analyzed at runtime, maintained in quiet lockfiles?
+
+# that is,
+# require() is a loose handwaving function, so cache its output for repeatability
+# like Math.random() really
+
+# ⁘ modules: ✓ ✗ null ∅ ‖

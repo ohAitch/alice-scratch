@@ -975,7 +975,7 @@ process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',
 process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
 
 #################################### prelude ###################################
-φ`~/code/declare/module.ζ`.∃ && require(φ`~/code/declare/module.ζ`+'').put_γ()
+require(φ`~/code/scratch/ζ/module.ζ`+'').put_γ()
 
 ##################################### main #####################################
 γ.ζ_builtins = { ,require ,module:{ ,exports:{} ,if_main_do:module.__proto__.if_main_do } ,i:0 }

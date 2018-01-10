@@ -1,7 +1,7 @@
 {
   "name": "zeta-lang",
-  "version": "0.12.1933",
-  "description": "simple js utility library",
+  "version": "0.13.0",
+  "description": "unnamed set of tools",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {"preinstall": "ln -sf it.js .bin/ζλ", "postinstall": "./postinstall.sh"},
   "repository": {"type": "git", "url": "https://github.com/alice0meta/scratch.git"},
