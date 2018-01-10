@@ -17,7 +17,7 @@
 
 # log2 ← (…a)=> φ`/tmp/log.φ_Δ_archive`.text += a.join(' ')+'\n'
 
-# fsʷ ← new EventEmitter().on('newListener',λ(fl,f){
+# fsʷ ← new node.EventEmitter().on('newListener',λ(fl,f){
 # 	if (fl !== (fl=φ(fl)+'')){ fsʷ.on(fl,f); process.nextTick(=> fsʷ.removeListener(fl,f) ); ↩ }
 # 	fsʷ._events[fl] || npm`chokidar@2.0.0`.watch(fl,{ ,ignoreInitial:✓ ,alwaysStat:✓ })
 # 		.on('error',λ(ι){ console.error('[fs_watch] wat '+ι) })
@@ -45,7 +45,7 @@
 # 	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
 # 		has_doi(ι).then(t=>{ if (t) {
 # 			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
-# 			fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
+# 			node.fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
 # 			} })
 # 		} })
 
@@ -70,5 +70,5 @@ npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 ################################### yahh cron ##################################
 ;(=>{
 	t ← φ`~/code/scratch/daily.sh`+''
-	require('child_process').spawn(t,{,shell:✓,detached:✓,stdio:'ignore'}).unref()
+	node.child_process.spawn(t,{,shell:✓,detached:✓,stdio:'ignore'}).unref()
 	}).every(1e5)

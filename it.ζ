@@ -5,7 +5,7 @@
 	# ! low quality ,scrap
 	ι = (ι+'').replace(/\n$/,'')
 	t←[] ;[…[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι) ;t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
-	x ← ι=>{ ι = chr(ι) ;↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+	x ← ι=>{ ι = chr(ι) ;↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : node.util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
 	ι = t.map(ι=> ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) ).join('')
 	↩ ι }
 
@@ -36,6 +36,7 @@
 
 ######################### net incl context device,proc #########################
 ⧫. lock ==>{
+	fs ← node.fs ;util ← node.util
 	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
 	locks ← {}
 	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
@@ -58,10 +59,10 @@
 	↩ E }
 
 ⧫. net1 ==>{ E ← {}
-	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
-	E.device_listen = (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
-	net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
-	net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅭𐅝𐅯𐅨𐅋||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new node.net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
+	E.device_listen = (port=0)=>{ r ← new node.net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
+	node.net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
+	node.net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅭𐅝𐅯𐅨𐅋||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
 	↩ E }
 
 ⧫. Π ==> ι⇒
@@ -106,7 +107,7 @@
 	start_el_app ← (code,…a)=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
 		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})(${a.join(',')})`
-		require('child_process').spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',fs.openSync(t.out,'a+'),fs.openSync(t.err,'a+')] })
+		node.child_process.spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',fs.openSync(t.out,'a+'),fs.openSync(t.err,'a+')] })
 		|>(ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
 		}
 	↩ => @deviceΠ(re=> start_el_app(re=>{ el ← require('electron') ;el.app.Π`ready`.then(=>{
@@ -192,10 +193,10 @@
 	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
 	sb.tab.push(ι) }
 
-⧫. p ==> (ι=> fs.fstatSync(0).isFIFO()? shₐi`pbcopy`|>(=>∅) : ι===∅? clipboard.ι : ( clipboard.ι = ι ) ) …←({ cant_pool:✓ })
+⧫. p ==> (ι=> node.fs.fstatSync(0).isFIFO()? shₐi`pbcopy`|>(=>∅) : ι===∅? clipboard.ι : ( clipboard.ι = ι ) ) …←({ cant_pool:✓ })
 
 ⧫. sb ==>{
-	sb ← ((…a)=> fs.fstatSync(0).isFIFO()? shₐi`open -a 'Sublime Text.app' -f` |>(=>∅) : a.‖===0? sb.tab.active.ι : shₐi`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${a}` |>(=>∅) )
+	sb ← ((…a)=> node.fs.fstatSync(0).isFIFO()? shₐi`open -a 'Sublime Text.app' -f` |>(=>∅) : a.‖===0? sb.tab.active.ι : shₐi`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${a}` |>(=>∅) )
 		…←({ cant_pool:✓ })
 	sb‘.tab .get= =>{
 		r ← sbᵥ`[serialize(ι) for ι in [ι.view() for ι in sublime.windows() for ι in ι.sheets()] if ι]`
@@ -239,7 +240,7 @@
 			  t.close
 			end`
 		shᵥ`chmod +x ${t}`
-		require('child_process').spawn(t,{shell:✓,detached:✓,stdio:'ignore'}).unref()
+		node.child_process.spawn(t,{shell:✓,detached:✓,stdio:'ignore'}).unref()
 		# process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ })
 		}
 	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
@@ -251,7 +252,7 @@
 
 ⧫. terminal_do_script ==>{
 	sh.clear = String.raw`/usr/bin/clear && printf %s $'\e[3J'`
-	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } } # ~/.bashrc.ζ :: E['·']
+	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } }
 ⧫[ '·'] ==> =>{ t ← φ`/tmp/__·` ;postrun(t.text) ;t.ι = ∅ }
 
 ################################## see : data ##################################
@@ -260,7 +261,7 @@
 	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
 		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
 		r ← [ opt.stylize(@.tag,'regexp') ]
-		!ks('tag') && r.push( util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
+		!ks('tag') && r.push( node.util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
 		↩ r.join(' ') }
 	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
 	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
@@ -269,7 +270,7 @@
 	# would be neat if this was .Trash aware
 	sum ← 0
 	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
-	fs.readdirSync(a).map(fl=>{
+	node.fs.readdirSync(a).map(fl=>{
 		if( φ(fl).is_dir ){
 			o ← process.stderr.write ;process.stderr.write = =>{} ;try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout } ;process.stderr.write = o
 			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }

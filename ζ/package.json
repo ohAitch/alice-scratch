@@ -1,11 +1,10 @@
 {
   "name": "zeta-lang",
-  "version": "0.12.1876",
+  "version": "0.12.1933",
   "description": "simple js utility library",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {"preinstall": "ln -sf it.js .bin/ζλ", "postinstall": "./postinstall.sh"},
   "repository": {"type": "git", "url": "https://github.com/alice0meta/scratch.git"},
-  "dependencies": {"highland": "^2.11.1", "lodash": "^4.17.4", "parsimmon": "^0.9.2", "signal-exit": "^3.0.2", "underscore": "^1.8.3"},
   "main": "./.bin/it.js",
   "bin": {"ζ": "./.bin/it.js", "ζλ": "./.bin/ζλ"}
 }

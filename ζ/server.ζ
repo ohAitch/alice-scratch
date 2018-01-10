@@ -1,16 +1,16 @@
 #!/usr/bin/env ζ
 ################# SHAMEFUL COPY file:/~/code/scratch/it.ζ #################
-device_listen ← (port=0)=>{ r ← new net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
+device_listen ← (port=0)=>{ r ← new node.net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 
 #################################### prelude ###################################
 on_off ← =>{ ι ← [] ;↩ { ,on(…a){ [ee,m,f]←a ;ee.on(m,f) ;ι.push(a) } ,off(){ ι.map(([ee,m,f])=> ee.removeListener(m,f)) ;ι = [] } } }
-Set.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ) ;delete @.inspect ;↩ r }
-Map.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ) ;delete @.inspect ;↩ r }
+Set.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← node.util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ) ;delete @.inspect ;↩ r }
+Map.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← node.util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ) ;delete @.inspect ;↩ r }
 # vs ,you know
 # : Set { 'Type', 'Value' }
 # : Set( 'Type', 'Value' )
 
-require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{ pid:${@.pid} …}` }
+node.child_process.ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{ pid:${@.pid} …}` }
 
 ###################################### lib #####################################
 Δ_Sets ← (…a)=>{ f ← a.pop()
@@ -19,7 +19,7 @@ require('child_process').ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildPr
 	f()
 	↩ _l.zip(start,a).map(a=> Δset(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 # eval_in_new_worker ← code=>{ ... ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
-eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code ;↩ require('child_process').spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !> (ι=> ♓_on_exits(=>ι.kill())) /*memory leak*/ }
+eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code ;↩ node.child_process.spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !> (ι=> ♓_on_exits(=>ι.kill())) /*memory leak*/ }
 eval_in_worker ← (=>{
 	🏷busy ← Set() ;🏷free ← Set()
 	make ← => eval_in_new_worker('('+(=>{ ♓ ← process

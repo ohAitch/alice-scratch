@@ -32,7 +32,7 @@ mp3_id3 ← λ(fl){s ← sh_encode; fl = fs(fl).path
 		configurable:true}); ↩ r}
 // E.mp3_clean = λ(fl){
 // 	get id3 tags [artist, album, i, name] from file // mp3_id3(fl).$
-// 	read filename to look for [artist, album, i, name] // […(t=path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1), t]
+// 	read filename to look for [artist, album, i, name] // […(t=node.path.basename(ι,'.mp3')).match(/^(.*?)? - (?:(.*) - )?(?:(\d+) )?(.*)?/).slice(1), t]
 // 	if filename contained things id3 is missing: write those to id3 (and console.log)
 // 	if id3 contained things filename is missing: move the file (and console.log)
 // 	if mp3_info_to_basename(id3) !== filename: ↩ {conflict:true, file:, id3:}

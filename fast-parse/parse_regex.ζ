@@ -1,7 +1,7 @@
 #!/usr/bin/env ζ
 P ← require('./parser').string
 
-⋯inspect ← { ,inspect(ˣ,opt,tag){↩ util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+util.inspect(@.ι[1],opt) } }
+⋯inspect ← { ,inspect(ˣ,opt,tag){↩ node.util.inspect(@.ι[0],opt)+opt.stylize(@.tag,'regexp')+node.util.inspect(@.ι[1],opt) } }
 
 walk_regex ← (ι,f)=> ι |> (λ me(ι){ if( ι&&ι.tag ){
 	clone ← _u.once(=>{ ι = Tag() …← (ι) })

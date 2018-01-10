@@ -7,17 +7,17 @@
 
 #################################### prelude ###################################
 'use strict' ;require('module').wrapper[0] += `'use strict';` # enable strict mode everywhere
-_u ← require('underscore') # lodash is better than underscore except for _()
 
 #################################### ζ infra ###################################
 γ ← global
 γ.γ = γ
-
 def0 ← Object.defineProperty
 γ.def = (o,name,ι)=> def0(o,name,_u({,configurable:✓,enumerable:✓}).assign(ι))
 γ.𐅯Set = (…ι)=> new Set(ι)
 
 #################################### prelude ###################################
+γ._u = npm`underscore@1.8.3` # lodash is better than underscore except for _()
+
 γ.‽ = (…a)=>{ throw a.‖===1 && T.Error(a[0])? a[0] : Error(a.map(ι=> Tstr(ι)? ι : ζ_inspect(ι)).join(' ')) }
 γ.catch_union = f=>{ try{ r ← f() ;bad ← T.Error(r) ;if( !bad) ↩ r }catch(e){ r ← e ;T.Error(r) || ‽ ;↩ r } ;bad && ‽ }
 γ.catch_union2 = f=>{ try{↩ f() }catch(e){↩ e } }
@@ -117,13 +117,19 @@ thunk_s ← ff=> λ(ι){ _id ← @._id
 Property.prototype‘.thunk .set= thunk_s((ι,_id)=> λ(){↩ @[_id] = ι.call(@) })
 Property.prototype‘.f1ι .set= thunk_s((ι,_id)=> λ(){ r← ι.call(@) ;r!==∅ &&( @[_id] = r ) ;↩ r })
 
-################################### requires ###################################
-;[ ,['events','EventEmitter'],['fs'],['http'],['https'],['module','Module'],['net'],['os'],['querystring'],['readline'],['stream'],['util'],['vm'],['zlib'],['underscore','_u'],['lodash','_l'],['highland','_h']
-	].map(([ι,n])=> γ‘[n||ι] .thunk==> require(ι) )
-path ← require('path')
-fs ← require('fs')
+################################### module.ζ ###################################
+γ.node = {} ;𐅩𐅋 ← (a,b)=> node‘[a] .thunk==> require(b) ;npm`builtin-modules@2.0.0`.map(ι=>𐅩𐅋(ι,ι)) ;𐅩𐅋('EventEmitter','events') ;𐅩𐅋('Module','module')
+γ._l = npm`lodash@4.17.4`
 γ._ = _u
 γ.require_new = ι=> (𐅃𐅜𐅞𐅰𐅯||(𐅃𐅜𐅞𐅰𐅯= npm`require-uncached@1.0.3` ))( (ι+'').replace(/^\.(?=\/)/,φ.cwd) ) ;𐅃𐅜𐅞𐅰𐅯←;
+
+γ.npm = (…a)=>{ ι←a[0]+'' ;↩ ι.includes('@')? require(npm_init(…a)) : 'npm`'+ι+'@'+shᵥ`npm show ${ι} version`+'`' }
+npm_init ← (id_ver,sub='')=>{ id_ver+=''
+	𐅫 ← φ`/usr/local/lib/𐅪𐅩modu/${id_ver+'__'+process.versions.modules}/node_modules`
+	# to match ABI, https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
+	if(! 𐅫.∃ ) shᵥ`cd ${𐅫.dir_ensure.φ`..`} && npm --cache-min=Infinity install ${id_ver}`
+	↩ 𐅫.φ`${id_ver.split('@')[0]}`+sub }
+# in theory, log whenever somebody uses an outdated lib
 
 #################################### ζ infra ###################################
 γ.__name = name=> ‘.name !>(.enumerable= ✗) .value= name
@@ -197,18 +203,21 @@ fs ← require('fs')
 		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
 		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]|𐅯).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
 	ζ_compile ← memoize_tick(code=>{
-		t ← code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t # ! it is a clumsy hack to put this on all of these code paths
-		↩ ζ_parse(t).map(ι⇒
+		t ← code ;t = /^(\{|λ\s*\()/.test(t)? '0?0: '+t : t ;if( /^(\{|λ\s*\()/.test(t) ) t = '0?0: '+t
+			# ! it is a clumsy hack to put this on all of these code paths
+		r ← ζ_parse(t)
+		for(i←0;i<r.‖;i++) if( Tstr(r[i]) && r[i].endsWith('npm') && r[i+1].T==='template' && r[i+2].T==='template' && r[i+2].ι.includes('@') )
+			{ r[i] = r[i].replace(/npm$/,'') ;r[i+1] = `require(` ;r[i+2] = { ,T:'str',ι:`'${npm_init(r[i+2].ι)}'` } ; r[i+3] = `)` }
+		↩ r.map(ι⇒
 			: ι.T==='comment'? ι.ι.replace(/^#/,'//')
 			: ι.T? ι.ι
-			: ζ_compile_nonliteral(ι)
-			).join('') })
+			: ζ_compile_nonliteral(ι) ).join('') })
 	ζ_compile.⁻¹ = ι=> ι.replace(/\b(?:function|return|this)\b(?!['"])|\bvar \s*([\w_$Α-ΡΣ-Ωα-ω]+)(\s*)(=?)|\.\.\./g ,(ι,name,s,eq)⇒ {'function':'λ','return':'↩','this':'@','...':'…'}[ι] || (eq==='='? name+s+'←' : name+s+'←;') )
 	↩ ζ_compile }
 
 if( require.extensions && !require.extensions['.ζ'] )(=>{
-	require.extensions['.ζ'] = (module,ι)=> module._compile(ζ_compile(fs.readFileSync(ι,'utf8')),ι)
-	super_ ← require.extensions['.js'] ;require.extensions['.js'] = (module,ι)=>{ (path.extname(ι)==='' && fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
+	require.extensions['.ζ'] = (module,ι)=> module._compile(ζ_compile(node.fs.readFileSync(ι,'utf8')),ι)
+	super_ ← require.extensions['.js'] ;require.extensions['.js'] = (module,ι)=>{ (node.path.extname(ι)==='' && node.fs.readFileSync(ι,'utf8').re`#!/usr/bin/env ζ\s`? require.extensions['.ζ'] : super_)(module,ι) }
 	})()
 
 #################################### ζ infra ###################################
@@ -247,7 +256,7 @@ module.exports = to=> to===γ || ‽('no longer patching other γs')
 memo_frp ← (names,within,f)=>{
 	dir ← φ`~/file/.cache/memo_frp/${names}`
 	if( within ){
-		try{ t ← fs.readdirSync(dir+'') }catch(e){ e.code==='ENOENT' || ‽(e) ;t ← [] }
+		try{ t ← node.fs.readdirSync(dir+'') }catch(e){ e.code==='ENOENT' || ‽(e) ;t ← [] }
 		now ← Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
 		if( t ) ↩ dir.φ(t).json2.ι }
 	a ← Time().iso ;ι ← f() ;b ← Time().iso
@@ -257,11 +266,11 @@ memo_frp ← (names,within,f)=>{
 	# it would be lovely if this s could use data from their previous versions
 	# wow 𐅭𐅜𐅞𐅫𐅪 is a haack
 	ι ← obj‘[simple_hash(a)]
-	fc ← =>( ι.ι = f(…a) ,slot.ι = obj ,obj = slot.ι ,ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? ι.ι.ι.ι : ι.ι )
-	↩ !ι.∃? fc() : ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? (ι.ι.ι.forget_at < Time().i? ( ι.∃ = ✗ ,fc() ) : ι.ι.ι.ι) : ι.ι } }
-γ.memoize_persist = f=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`‘.json)
-memoize_persist.return𐅃 = ι=> Tag('𐅰𐅝𐅋𐅫𐅪',ι)
-γ.memoize_persist_for = (Δ,f)=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`‘.json, f ≫ (ι=> memoize_persist.return𐅃({ ,forget_at:Time().i+Δ ,ι }) ) )
+	fc ← =>( ι.ι = f(…a) ,slot.ι = obj ,obj = slot.ι ,ι.ι && ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? ι.ι.ι.ι : ι.ι )
+	↩ !ι.∃? fc() : ι.ι && ι.ι.tag==='𐅰𐅝𐅋𐅫𐅪'? (ι.ι.ι.forget_at < Time().i? ( ι.∃ = ✗ ,fc() ) : ι.ι.ι.ι) : ι.ι } }
+γ.memoize_persist = f=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`‘.json,f)
+# memoize_persist.return𐅃 = ι=> Tag('𐅰𐅝𐅋𐅫𐅪',ι)
+# γ.memoize_persist_for = (Δ,f)=> 𐅭𐅜𐅞𐅫𐅪(φ`/tmp/ζpersist_${simple_hash(f)}`‘.json, f ≫ (ι=> memoize_persist.return𐅃({ ,forget_at:Time().i+Δ ,ι }) ) )
 γ.memoize_proc = f=>{ cache ← new Map() ;↩ ((…ι)=> cache.has…(…ι)? cache.get…(…ι) : cache.set…(…ι,f(…ι)) ) …← ({cache}) }
 γ.memoize_weak = f=>{ cache ← new WeakMap() ;↩ (ι=>{ if( cache.has(ι) ) ↩ cache.get(ι) ;Tprim(ι) && ‽ ;r ← f(ι) ;cache.set(ι,r) ;↩ r }) …← ({cache}) }
 # resource management is a thing & i havent thought about it enough
@@ -272,29 +281,17 @@ memoize_persist.return𐅃 = ι=> Tag('𐅰𐅝𐅋𐅫𐅪',ι)
 γ.@device0 = ι=> φ`~/Library/Caches/ζ.persist.0/${ι+''}`‘.json
 γ.@proc = ι=> 𐅜𐅩𐅭𐅦𐅰‘[ι+''] ;𐅜𐅩𐅭𐅦𐅰 ← {}
 
-# ;[#p ersist_here ~/code/declare/npm]
-_npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
-	# in theory, log whenever somebody uses an outdated lib
-	abs_name ← => name+'@'+version
-	if(! version ){ sfx`ack` ;version = shᵥ`npm show ${ι} version`+'' ;↩ 'npm`'+abs_name()+'`' ;↩ }
-	cache ← φ`~/.npm/${name}/${version}` ;final ← cache.φ`/node_modules/${name}`+(sub||'')
-	try{ ↩ require(final) }catch(e){ e.code==='MODULE_NOT_FOUND' || ‽(e) }
-	cache.∃ || shᵥ`cd ~ ;npm cache add ${abs_name()}`
-	a←;b←; (a=cache.φ`package.json`).ι = {,description:'-',repository:1,license:'ISC'} ;(b=cache.φ`README`).ι = '' ;shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}` ;a.ι = b.ι = ∅
-	↩ require(final) }
-γ.npm = ι=> ((ι+='').includes('@')? 𐅪𐅰 : _npm)(ι) ;𐅪𐅰 ← memoize_proc(_npm) # such a hack. takes 300ns because of the template string +='' hack ;80ns without
-
 γ.unicode_names = ι=> […ι].map(memoize_persist(ι=>
 	(𐅩𐅩𐅩𐅝𐅋||(𐅩𐅩𐅩𐅝𐅋= (=>{
-		unicode_data ← 'Cc Cf Co Cs Ll Lm Lo Lt Lu Mc Me Mn Nd Nl No Pc Pd Pe Pf Pi Po Ps Sc Sk Sm So Zl Zp Zs'.split(' ').map…(ι=> _l.values(npm('unicode@0.6.1/category/'+ι)) )
-		↩ unicode_data.filter(ι=> !/^</.test(ι.name)).map(ι=> [parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_'])._.object()
+		unicode ← npm('unicode@10.0.0','/category') |>(_l.values) .map…(_l.values)
+		↩ unicode.filter(ι=> !/^</.test(ι.name)).map(ι=>[ parseInt(ι.value,16) ,'_'+ι.name.replace(/[- ]/g,'_').toLowerCase()+'_' ])._.object()
 		})() ) )[ord(ι)]).X).join('') ;𐅩𐅩𐅩𐅝𐅋←;
 
 ########### parsers and such ###########
 γ‘.regex_parse_0 .thunk==>{t←; # soon to be deprecated
 	P ← require('./parsimmon2.js')
-	dehex ← ι=> chr(parseInt(ι,16))
-	ESCAPE ← P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(dehex) ,P(/u\{([0-9a-fA-F]+)\}/,1).map(dehex) ,P(/u([0-9a-fA-F]{4})/,1).map(dehex) ,P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
+	𐅬𐅬 ← ι=> chr(parseInt(ι,16))
+	ESCAPE ← P('\\').then(P.alt( P(/x([0-9a-fA-F]{2})/,1).map(𐅬𐅬) ,P(/u\{([0-9a-fA-F]+)\}/,1).map(𐅬𐅬) ,P(/u([0-9a-fA-F]{4})/,1).map(𐅬𐅬) ,P(/./).map(ι=> '.[|^$()*+?{}\\/'.includes(ι)? ι : P.T('escape',ι) ) ))
 	s1 ← P.alt(
 		,P(/[^.()[\]^$|\\]/)
 		,ESCAPE
@@ -331,7 +328,7 @@ _npm ← ι=>{[ˣ,name,version,sub] ← ι.re`^(.*?)(?:@(.*?))?(/.*)?$`
 
 ########################################
 cartesian_str ← .reduce((a,b)=>{ r ← [] ;a.forEach(a=> b.forEach(b=> r.push(a+b))) ;↩ r } ,[''])
-genex_simple ← ι=>{ P ← require('parsimmon')
+genex_simple ← ι=>{ P ← npm`parsimmon@0.9.2`
 	unit ← P.lazy(=> P.alt( P.noneOf('()|') ,P.string('(').then(s_or).skip(P.string(')')).map(ι⇒{T:'capture',ι}) ) )
 	s_or ← P.sepBy(unit.many(),P.string('|')).map(ι=> ι.length > 1? {T:'or',ι:ι} : ι[0])
 	Λ ← ι=> ι.T==='or'? ι.ι.map(Λ) : ι.T==='capture'? Λ(ι.ι) : Tarr(ι)? cartesian_str(ι.map(Λ)) : [ι]
@@ -366,9 +363,9 @@ genex ← λ Λ(ι){↩0,
 γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
 process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
-γ.♓_on_exits = f=> (𐅃𐅬𐅩𐅮𐅦||(𐅃𐅬𐅩𐅮𐅦= require('signal-exit') ))((i,sig)=>{
+γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
 	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) }) ;𐅃𐅬𐅩𐅮𐅦←;
+	f(i,sig) })
 
 𐅯𐅩𐅪𐅨𐅃 ← λ*(θ){ for(;θ.i<θ.l.‖;) yield θ.l[θ.i++] }
 γ.seq = ι=>{
@@ -499,10 +496,10 @@ assign_properties_in_E_informal({
 ,'RegExp.prototype.@@iterator':λ*(){yield* genex(regex_parse_0(@)) }
 ,'RegExp.prototype.exec_at':λ(ι,i){ @.lastIndex = i ;↩ @.exec(ι) }
 
-,'stream.Readable.prototype.pin':λ(){↩ Π(yes=>{ t ← [] ;@.resume() ;@.on('data',ι=> t.push(ι) ).on('end',=> yes(Buffer.concat(t)) ) })}
-,'Buffer.prototype.pipe':λ(to,opt){ t ← new stream.Duplex() ;t.push(@) ;t.push(null) ;↩ t.pipe(to,opt) }
-,'EventEmitter.prototype.P':λ(id){id+='' ;↩ new_(𐅯𐅜𐅝𐅃𐅋) …← ({,host:@,id}) }
-,'EventEmitter.prototype.Π':λ(id){↩ @.P(id).Π }
+,'node.stream.Readable.prototype.pin':λ(){↩ Π(yes=>{ t ← [] ;@.resume() ;@.on('data',ι=> t.push(ι) ).on('end',=> yes(Buffer.concat(t)) ) })}
+,'Buffer.prototype.pipe':λ(to,opt){ t ← new node.stream.Duplex() ;t.push(@) ;t.push(null) ;↩ t.pipe(to,opt) }
+,'node.EventEmitter.prototype.P':λ(id){id+='' ;↩ new_(𐅯𐅜𐅝𐅃𐅋) …← ({,host:@,id}) }
+,'node.EventEmitter.prototype.Π':λ(id){↩ @.P(id).Π }
 })
 𐅯𐅜𐅝𐅃𐅋 ← { ,emit(…a){↩ @.host.emit(@.id,…a) } ,on(f){ @.host.on(@.id,f) ;↩@ } }
 𐅯𐅜𐅝𐅃𐅋‘.Π …← ({ ,get(){↩ Π(yes=> @.host.once(@.id,yes)) } })
@@ -551,7 +548,7 @@ t←; Object.getPrototypeOf(( t=setTimeout(=>{},0) ,clearTimeout(t) ,t )) …←
 # it could be a data structure that you can fmap over
 
 γ.hrtime = λ(ι){ t ← arguments.length===0? process.hrtime() : process.hrtime([ι|0,(ι-(ι|0))*1e9]) ;↩ t[0] + t[1]*1e-9 }
-γ.Time = λ(ι){ r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = λ(){↩ util.inspect(@) } ;↩ r }
+γ.Time = λ(ι){ r ← arguments.length===0? new Date() : ι instanceof Date? ι : new Date(Tnum(ι)? ι*1e3 : ι) ;r.toString = λ(){↩ node.util.inspect(@) } ;↩ r }
 assign_properties_in_E_informal({
 ,'Date.prototype.i':{get(){↩ +@ / 1e3}}
 })
@@ -627,10 +624,10 @@ assign_properties_in_E_informal({
 
 γ.sh = (ss,…ιs)=>{ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
-if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+ι.stderr.slice(0,100)) …← (_u(ι).pick('status','stdout','stderr')) }
+if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+(ι.stderr+'').slice(0,100)) …← (_u(ι).pick('status','stdout','stderr')) !>(ι=> ι.stderr+='' ) }
 γ.shᵥ = (ss,…ιs)=>{ code ← sh(ss,…ιs)
 	# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
-	ι ← require('child_process').spawnSync(code,{shell:✓})
+	ι ← node.child_process.spawnSync(code,{shell:✓})
 	if_sh_err('shᵥ',code,ι)
 	↩ ι.stdout …← ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a) ;↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
 γ.shᵥexit = (ss,...ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.status===0 : ✓ }
@@ -639,7 +636,7 @@ _shₐ ← (ss,ιs,opt={})=>{
 	else{ code ← sh(ss,…ιs)
 		# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
 		# ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
-		ι ← require('child_process').spawn(code,{shell:✓} …← (_u(opt).pick('stdio','detached')))
+		ι ← node.child_process.spawn(code,{shell:✓} …← (_u(opt).pick('stdio','detached')))
 			.on('exit',status=>{ if_sh_err('shₐ',code,{status} …← (ι)) })
 		↩ ι } }
 γ.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
@@ -665,17 +662,18 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 	↩ ι})
 γ‘.φ .thunk==>{
 	# https://www.npmjs.com/package/glob-to-regexp
+	fs ← node.fs
 	ENC ← ι=> ι.re`/`? ι.replace(/[\/%]/g ,encodeURIComponent.X) : ι
 	φ.⁻¹ = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi ,decodeURIComponent.X) : ι
 	φ.fd = {} ;φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(φ`/tmp/${random_id(20)}` …← ({ι}) +'','r') })
 
 	existsSync ← ι=> !T.Error(catch_union(=> fs.accessSync(ι)))
-	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') ↩ ;t ← path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;Λ(t) ;fs.mkdirSync(ι) } }
+	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') ↩ ;t ← node.path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;Λ(t) ;fs.mkdirSync(ι) } }
 	# walk ← λ*(root,files){root += '/'
 	# 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι) ;for (i←0;i<l.‖;i++){t ← ι+l[i] ;try{ fs.statSync(root+t).isDirectory()? (yield root+t ,yield* walk_(t+'/')) : (files && (yield root+t)) }catch(e){} }} catch(e){} }
 	# 	yield* walk_('') }
 	read_file ← λ(ι){ try{↩ fs.readFileSync(ι) }catch(e){ if( !(e.code==='ENOENT')) throw e } }
-	ensure_exists ← λ(ι,ifdne){ existsSync(ι) || ( mkdir_p(path.resolve(path.dirname(ι))) ,fs.writeFileSync(ι,ifdne) ) }
+	ensure_exists ← λ(ι,ifdne){ existsSync(ι) || ( mkdir_p(node.path.resolve(node.path.dirname(ι))) ,fs.writeFileSync(ι,ifdne) ) }
 	write_file ← λ(ι,data){ try{ fs.writeFileSync(ι,data) }catch(e){ if( !(e.code==='ENOENT')) throw e ;ensure_exists(ι,data) } }
 	open ← λ(ι,ifdne,f){
 		ensure_exists(ι,ifdne) ;Lc ← new Φ(ι).‖
@@ -704,12 +702,12 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 		,get birthtime(){↩ fs.statSync(@._ι).birthtime }
 		,get url(){↩ encodeURI('file:'+@.root('/')) } # ! should this be part of root
 		,get is_dir(){↩ !!catch_ι(=> fs.statSync(@._ι).isDirectory()) }
-		,get name(){↩ path.basename(@._ι) }
+		,get name(){↩ node.path.basename(@._ι) }
 		,TMP_children(){↩ @._ι |> (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) }
 		,TMP_parents(){ r ← [@.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;↩ r.slice(1) }
 		,root(x){switch(arguments.length){default: 
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
-			case 1: ↩ new Φ( x==='/'? path.resolve(@._ι) : x==='.'? path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
+			case 1: ↩ new Φ( x==='/'? node.path.resolve(@._ι) : x==='.'? node.path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
 			}}
 		,ensure_dir(){ @.φ`..`.∃ || mkdir_p(@.φ`..`+'') ;↩ @ }
 		,get dir_ensure(){ @.∃ || mkdir_p(@+'') ;↩ @ }
@@ -718,7 +716,7 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 		,set ι(ι){
 			if( @.is_dir) ‽('TODO')
 			if( ι===∅||ι===null){ catch_union(=> fs.unlinkSync(@._ι) ) ;↩ }
-			e ← path.extname(@._ι)
+			e ← node.path.extname(@._ι)
 			if( e==='.csv'){ @.csv = ι ;↩ }
 			if( e==='.xml'){ @.xml = ι ;↩ }
 			if( e==='.plist'){ @.plist = ι ;↩ }
@@ -761,7 +759,7 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 			}
 		,set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) }
 		,get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
-			if( ιs.‖) ‽('TODO')
+			if( ιs.‖ ) ‽('TODO')
 			d ← JSON.parse((read_file(_ι)||'[]')+'')
 			↩ {
 			,push(…a){a.map(λ(ι){
@@ -781,40 +779,40 @@ json2_show ← ι=> JSON_pretty(ι,ι=>{t←;
 		}
 	Φ.prototype‘['∃'] …←({ ,get(){↩ existsSync(@._ι) } ,set(ι){ ι===@.∃ ||( @.ι = ι?'':∅ ) } })
 	λ Φs(ι){@._ι = ι} ;Φs.prototype = {
-		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+util.inspect(@._ι,opts)}
+		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+node.util.inspect(@._ι,opts)}
 		,get name_TMP(){↩ @._ι.map(ι=> new Φ(ι).name)} # fs.readdirSync
 		,get φs(){↩ @._ι.map(ι=> new Φ(ι))} # [φ]
 		}
 	λ φ(ss,…ιs){
 		head ← @ instanceof Φ && @._ι
-		if( @ instanceof Φs) ‽('not yet implemented')
+		if( @ instanceof Φs ) ‽('not yet implemented')
 		tmpl ← is_template0(ss,ιs)
-		if( tmpl){ι ← simple_template(ss,ιs,[φ,'/']) ;if( ι.filter(Tstr).join('').re`\*|\{[^}]*?,`) {
+		if( tmpl){ι ← simple_template(ss,ιs,[φ,'/']) ;if( ι.filter(Tstr).join('').re`\*|\{[^}]*?,` ) {
 			ι.‖ <= 1 || ‽('not yet implemented * ** ${}',ι)
 			ι = normHs(ι)
 			ι = ι[0]
 			ι.includes('**') && ‽('not yet implemented ** ${}',ι)
 			r ← ['.']
-			if( ι[0]==='/') r = ['/']
+			if( ι[0]==='/' ) r = ['/']
 			ι.split('/').forEach(ι=>{
-				if( ι==='')↩;
+				if( ι==='' )↩;
 				r = r.map…(r=>{
-					if( ι === '.') ↩ [r]
-					if( ι === '..') ↩ [r==='.'? '..' : r.split('/').every(ι=>ι==='..')? r+'/..' : path.dirname(r)]
+					if( ι === '.' ) ↩ [r]
+					if( ι === '..' ) ↩ [r==='.'? '..' : r.split('/').every(ι=>ι==='..')? r+'/..' : node.path.dirname(r)]
 					↩ fs.readdirSync(r).filter(b=> globmatch(ι,b)).map(b=> r+'/'+b)
 					})
 				})
 			↩ new Φs(r) } }
-		else {ι ← ss ;if( ιs.‖ || Tarr(ι)) ‽('not yet implemented') ;if( ι instanceof Φs) ‽('not yet implemented')}
-		if( tmpl){ι = normHs(ι).map(ι=> !Tstr(ι)? ENC(ι.raw+'') : ι).join('')}
-		else if( ι instanceof Φ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
+		else {ι ← ss ;if( ιs.‖ || Tarr(ι)) ‽('not yet implemented') ;if( ι instanceof Φs ) ‽('not yet implemented')}
+		if( tmpl ){ι = normHs(ι).map(ι=> !Tstr(ι)? ENC(ι.raw+'') : ι).join('')}
+		else if( ι instanceof Φ ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
 		else {ι = (ι+'').replace(/^~(?=\/|$)/,process.env.HOME)}
-		↩ new Φ(path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
+		↩ new Φ(node.path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
 	↩ φ }
 
 ############################## api interpretation ##############################
 comp2 ← ι=> `'use strict';undefined;\n`+ζ_compile(ι)
-mem_sc ← memoize_tick(ι=> new vm.Script(ι) )
+mem_sc ← memoize_tick(ι=> new node.vm.Script(ι) )
 ζ_verify_syntax ← ι=>{ ι = comp2(ι) ;try{ mem_sc(ι) }catch(e){ if( e instanceof SyntaxError ) ↩ e } }
 γ.ζ_eval = ι=>{ ι = comp2(ι) ;↩ mem_sc.cache[ι]? mem_sc(ι).runInThisContext() : (0,eval)(ι) }
 
@@ -828,7 +826,7 @@ mem_sc ← memoize_tick(ι=> new vm.Script(ι) )
 # e && Tstr(e.stack) &&( e.stack = e.stack.replace(/    at 𐅩𐅝𐅋𐅬𐅪[^]*/,'    at <eval>') )
 
 ###################################### see #####################################
-;(…←)(util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
+;(…←)(node.util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
 ;[process,module].map(.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 ;['γ','Object'].map(ι=>{
 γ[ι].inspect = λ(d,opt){↩ opt.stylize(ι,'quote') }
@@ -848,27 +846,28 @@ assign_properties_in_E_informal({
 ,'Date.prototype.ymdhmss': {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.‖)}}
 ,'Date.prototype.iso':     {get(){↩ fmt.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.‖)}}
 ,'Date.prototype.hms':     {get(){↩ fmt.call(@,'YYYY-MM-DDT'.‖,'YYYY-MM-DDTHH:mm:ss'.‖)}}
-,'Date.prototype.day_s':{get(){↩ ((Time().i/86400)+'').split('.')|>(([a,b])=> [a,b.slice(0,4)].join('.')) }}
+,'Date.prototype.day':{get(){↩ @.i/86400 }}
+,'Date.prototype.day_s':{get(){↩ (@.day+'').replace(/^(.*\..{4}).*/,'$1') }}
 })
 
 γ.Unit = (ι,u)⇒ {ι,u}
 	!>( ‘.valueOf !>(.enumerable= ✗) .ι=λ(){↩ @.ι } )
-	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
+	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ node.util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
 assign_properties_in_E_informal({
 ,'Number.prototype.inspect':λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
 ,'Boolean.prototype.inspect':λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
 ,'Date.prototype.inspect':λ(d,opt){↩ opt.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')}
 # ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
 # ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
-# ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
+# ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(node.util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
 ,'Array.prototype.line':{get(){ @.toString = @.inspect = λ(){↩ @.join('\n') } ;↩ @ }}
 })
-γ.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e7) ;last←; for(i←1;;i++){ r ← util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
+γ.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e7) ;last←; for(i←1;;i++){ r ← node.util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
 𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
 promise_watch ← ι=>{ if(! ι.id ){
 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
 	hr ← hrtime() ;ι.then(x=>{ x ← ζ_inspect(x) ;hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;↩ ι.id } ;𐅩𐅞𐅋𐅦𐅩←0
-stylize ← ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;r← ;↩ r }
+stylize ← ({colors})=>{ node.util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;r← ;↩ r }
 γ.ζ_inspect = (ι,opt={})⇒
 	: ι===∅? ''
 	: T.✓✗(ι)? stylize(opt)(ι?'✓':'✗' ,'boolean')
@@ -885,7 +884,7 @@ stylize ← ({colors})=>{ util.inspect({inspect(d,opt){ r = opt.stylize }},{colo
 	: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && ⋯(ι.‖).every(t=> t in ι)
 		? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι.‖,opt)
 	: 𐅯𐅦(ι,opt)
-# EventEmitter.prototype.inspect
+# node.EventEmitter.prototype.inspect
 sh_inspect ← ι=>{t←;
 	Π ← ι=> Promise.resolve(ι) # COPY
 	↩ Π( 0?0
@@ -937,7 +936,7 @@ process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',
 		↩ lock }
 	# @2018-01-04 current priority is to work on seeing first; merging w ζ_repl_start
 	# '\x1b[30m\x1b[42mζ\x1b[0m '
-	↩ (f=> f.call( require('repl').start({ ,useGlobal:✓ ,prompt:'\x1b[30m\x1b[100m‡\x1b[0m ' }) ))(λ(){
+	↩ (f=> f.call( node.repl.start({ ,useGlobal:✓ ,prompt:'\x1b[30m\x1b[100m‡\x1b[0m ' }) ))(λ(){
 	@.In = [] ;@.Out = []
 	super_ ← @.completer ;@.completer = λ(line,cb){ line.trim()===''? cb(∅,[]) : super_.call(@,line,cb) }
 	@.removeAllListeners('line').on('line',λ(line){
@@ -983,7 +982,7 @@ process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH
 γ.ζ_main = ({a})=>{ι←;
 	a[0]==='--fresh' && a.shift()
 	if( !a.‖ ) ζ_repl_start()
-	else if( ι=a[0] ,φ(ι).∃ || ι.re`^\.?/` ){ process.argv = [process.argv[0],…a] ;t ← φ(ι).root('/')+'' ;o←Module._cache;m←Module._resolveFilename(t,∅,✓);oι←o[m] ;o[m] = ∅ ;Module._load(t,∅,✓) ;o[m] = oι }
+	else if( ι=a[0] ,φ(ι).∃ || ι.re`^\.?/` ){ process.argv = [process.argv[0],…a] ;t ← φ(ι).root('/')+'' ;o←node.Module._cache;m←node.Module._resolveFilename(t,∅,✓);oι←o[m] ;o[m] = ∅ ;node.Module._load(t,∅,✓) ;o[m] = oι }
 	else {
 		γ …←(ζ_builtins) ;γ.a = a ;code ← a.shift() ;[γ.a0,γ.a1] = a ;γ.ι = a[0]
 		sh_inspect( ζ_eval(returnfix_compile(do_end_undefined_thing(code))) )

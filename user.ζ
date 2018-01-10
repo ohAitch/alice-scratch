@@ -3,7 +3,7 @@
 ⧫. ct ==> chrome_tabs
 
 ⧫. sb_completions ==>{ 𐅜𐅝 ← {
-,anon:=> [random_id.greek(5)]
+,anon:=> [random_id.greek(4)]
 ,now:=> Time() |>(t=>[ t.ymdhm,t.ymdhms,t.ymdhmss ])
 ,day:=> [Time().local.ymd]
 } ;↩ ι=> 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ }
@@ -36,10 +36,10 @@
 		if( !is_url(ι)) ι = searchify(ι)
 		if( !in_app && ι.re`^file:`){
 			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
-			if( file[0]!=='/') file = require('path').normalize(require('path').join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
+			if( file[0]!=='/') file = node.path.normalize(node.path.join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
 			if( φ(file).is_dir) in_app = 'path finder'
-			else if( ['.pdf','.m4a','.epub','.mobi'].includes(require('path').extname(file)));
-			else if( ['.png','.jpg'].includes(require('path').extname(file))) in_app = '#ql'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(node.path.extname(file)));
+			else if( ['.png','.jpg'].includes(node.path.extname(file))) in_app = '#ql'
 			else in_app = 'sublime text'
 			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
 			}
@@ -191,7 +191,7 @@
 
 ⧫. im_resize ==> (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
 ⧫. im_dateify ==> (…a)=>{ dry ← a[0]==='-d' ;dry && a.shift()
-	mv ← (a,b)=>{ a===b? 0 : dry? log(js`mv(${a},${b})`) : φ(b).∃? ‽ : fs.renameSync(a,b) }
+	mv ← (a,b)=>{ a===b? 0 : dry? log(js`mv(${a},${b})`) : φ(b).∃? ‽ : node.fs.renameSync(a,b) }
 	a.filter(.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
 		if (!t) ↩
@@ -210,14 +210,15 @@
 ⧫. x ==>{
 	set_term_title ← ι=> process.stdout.write('\x1b]0;'+ι+'\x07')
 	this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
-	↩ =>{ E ← process.env.? |0
+	↩ (=>{ E ← process.env.? |0
 		this_term_is_frontmost() ||( E===0? sfx`done` : (sfx`fail` ,osaᵥ`terminal: activate`) )
-		/*E===0? postrun('exit') :*/;( process.exitCode = E ) } }
+		E===0? postrun('exit') : ( process.exitCode = E )
+		}) }
 
 ⧫. diff ==> (base,edit)=>{
 	if( φ(base).is_dir ){
-		a ← Set(…fs.readdirSync(base)) # ! should walk all subfiles
-		b ← Set(…fs.readdirSync(edit))
+		a ← Set(…node.fs.readdirSync(base)) # ! should walk all subfiles
+		b ← Set(…node.fs.readdirSync(edit))
 		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null ;echo $?`+''==='0' )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same] ,['\x1b[30;42m+\x1b[0m',b.-(a)] ,['\x1b[30;41m-\x1b[0m',a.-(b)] ,['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
@@ -267,37 +268,33 @@
 		.map(ι=> shᵥ`cd ~/file ; ag --ignore '*.min.*' --ignore 'package-lock.json' --ignore 'public/lib/' -- ${b||a} …${ι} ;:`+'').join('\n') ) }
 
 ⧫. run_project ==> ((ι,isTTY)=>{t← ;catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )) ;ι||(ι = φ.cwd.φ`any`)
-	get_filename ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
+	𐅫𐅰 ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
+	is_project ← ι=> !ι.is_dir? ✗ : node.fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(node.path.parse(ι).name) )
 
-	if( !process.stdout.isTTY )
-		{ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(get_filename(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓;
-			x
-			`) }
-	else{
-		is_project ← ι=> !ι.is_dir? ✗ : fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(require('path').parse(ι).name) )
-		
-		project ← φ(get_filename(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
-		sfx`ack`
+	if( !process.stdout.isTTY ){ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(𐅫𐅰(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓ ;x`) ;↩ }
 
-		build ← fs.readdirSync(project+'').find(.re`^build\.`)
-		package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
-		run ← fs.readdirSync(project+'').find(.re`^run\.`)
-		;(build || package_ || run) || ‽
+	project ← φ(𐅫𐅰(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
+	sfx`ack`
 
-		a ← => build && shₐi`cd ${project} ;${build}`
-		b ← =>{if( package_ ){
-			p ← project.φ`package.json`.json
-			t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
-			p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch') ,project.φ`package.json`.json = p )
-			shₐi`cd ${project} ;npm --cache-min=Infinity -g i .`
-			}}
-		c ← => run && shₐi`cd ${project} ;${run}`
+	build ← node.fs.readdirSync(project+'').find(.re`^build\.`)
+	package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
+	run ← node.fs.readdirSync(project+'').find(.re`^run\.`)
+	;(build || package_ || run) || ‽
 
-		# sh⚓exit
-		# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
-		child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
-		;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
-		} }) …←({ cant_pool:✓ })
+	a ← => build && shₐi`cd ${project} ;${build}`
+	b ← =>{if( package_ ){
+		p ← project.φ`package.json`.json
+		t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
+		p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch') ,project.φ`package.json`.json = p )
+		shₐi`cd ${project} ;npm --cache-min=Infinity -g i .`
+		}}
+	c ← => run && shₐi`cd ${project} ;${run}`
+
+	# sh⚓exit
+	# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
+	child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
+	;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
+	}) …←({ cant_pool:✓ })
 
 ########################################
 ⧫. on_module_build𐅃𐅋𐅃𐅬𐅫 ==> =>{ # build .bashrc
@@ -325,14 +322,14 @@
 		ζ ${γ[id].cant_pool && '--fresh'} ${js` [process.env.?,process.env.$,…a] = a
 			γ.postrun = ι=> φ(${𐅫}).text = ι
 			γ[${id}](…a)
-			`} $? $$ "$@" ;E=$?
-		[ -e ${𐅫} ] && { eval -- "$(cat ${𐅫})" ;E=$? ;rm ${𐅫} ;}
-		return $E ;}` }).join('\n')
+			`} $? $$ "$@" ;local r=$?
+		[ -e ${𐅫} ] && { local t="$(cat ${𐅫})" ;rm ${𐅫} ;eval -- "$t" ;r=$? ;}
+		return $r ;}` }).join('\n')
 	φ`~/.bashrc_𐅮𐅬𐅦𐅫𐅦`.text = t }
 ################ prelude ###############
 ⧫. 𐅩𐅝𐅜𐅂𐅞 ==> (E,history_1)=>{t← ;E ← E |0
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
-	cmd && fs.appendFileSync(φ`~/.archive_bash`+'' ,JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
+	cmd && node.fs.appendFileSync(φ`~/.archive_bash`+'' ,JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	postrun('hash -r')
 	𐅮𐅬𐅜𐅞𐅪pre_prompt(E) }
 

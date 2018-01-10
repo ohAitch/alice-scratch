@@ -200,7 +200,7 @@ index ← P.index = __index()
 
 // ---------------------------------- final --------------------------------- //
 
-Pretty_Typed ← λ(T,ι){ @.T = T; @.ι = ι }; Pretty_Typed.prototype.inspect = λ(d,opt){↩ @.T+':'+util.inspect(@.ι,opt) }
+Pretty_Typed ← λ(T,ι){ @.T = T; @.ι = ι }; Pretty_Typed.prototype.inspect = λ(d,opt){↩ @.T+':'+node.util.inspect(@.ι,opt) }
 P.T = (T,ι)=> new Pretty_Typed(T,ι)
 Parser.prototype.T = λ(ss,…ιs){↩ @.map(ι=> P.T(ss[0],ι) ) }
 

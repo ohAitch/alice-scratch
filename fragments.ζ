@@ -47,7 +47,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
 	to ← round((long.‖)/2) ;yield* _.shuffle([…long, …short.slice(0,to)]) ;yield* short.slice(to)
-	c ← {} ;for(;;){t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join('') ;if (c[t]) continue ;yield (c[t]=1, t)} })
+	c ← {} ;for(;;){ t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join('') ;if (c[t]) continue ;yield (c[t]=1, t) } })
 
 ###################################### ocr #####################################
 # # used up: alice0meta@gmail.com
@@ -55,7 +55,7 @@ namegen ← gen2fn(λ*(){
 # # 100 requests remaining on comely.naiad@gmail.com @ rtjM58zxK2
 # ocr() { curl -X POST http://api.ocrapiservice.com/1.0/rest/ocr -F 'apikey=rtjM58zxK2' -F 'language=en' -F "image=@$1" > "${1%.*}.txt" ;}
 tesseract ← npm`node-tesseract@0.2.7`
-φ`../ep/*`.map(λ(f){tesseract.process(sh`${f}`,λ(e,ι){fs(f+'.txt').$ = e? 'ERROR\n'+e : ι})})
+φ`../ep/*`.map(f=>{ tesseract.process(sh`${f}`,(e,ι)=>{ fs(f+'.txt').$ = e? 'ERROR\n'+e : ι }) })
 
 ################################ jquery ish misc ###############################
 E.poll = λ(f,cb,time){ r←{} ;(λ Λ(){ nxt ← => nxt=0 ;t ← f(nxt) ;r.done = !!t ;t? cb.P(∅,t).defer() : nxt? Λ.in(time) : Λ.defer() })() ;↩ r }
@@ -259,7 +259,7 @@ Tarr_1 ← ι=>{ t ← __global(ι) ;↩ t && ι instanceof t.Array }
 ι=> ι instanceof global.Array                      very slow??
 
 ##################################### cruft ####################################
-'Function.prototype.at':lazy('at',=>{priorityqueuejs ← require('priorityqueuejs')
+'Function.prototype.at':lazy('at',=>{priorityqueuejs ← npm`priorityqueuejs@1.0.0`
 	# https://github.com/Automattic/kue
 	# https://github.com/rschmukler/agenda
 	# robust to setTimeout taking extra time
@@ -290,7 +290,7 @@ formats include
 	pixels (grey)       
 	stdin               fd:0
 	FIFO                fd:0...
-	:executable         ,/^#!/ | try{fs.accessSync(ι,fs.X_OK) ;↩ ✓} catch(e){↩ ✗}
+	:executable         ,/^#!/ | try{node.fs.accessSync(ι,node.fs.X_OK) ;↩ ✓} catch(e){↩ ✗}
 	directory relative
 	directory absolute
 formats are Really stream formats
@@ -308,30 +308,6 @@ the formats are complicated to interact with, because
 ############################ which ports are in use ############################
 sudo lsof -PiTCP -sTCP:LISTEN
 
-############################ node:: analog to npm:: ############################
-# node::call === Function.prototype.call.un_this
-global_net ← memoize_persist(=> JSON.parse(shᵥ`node -e ${`(${(Tprim)=>{
-	global.node = {}
-	;['assert','async_hooks','buffer','child_process','cluster','console','constants','crypto','dgram','dns','domain','events','fs','http','https','inspector','module','net','os','path','process','punycode','querystring','readline','repl','stream','string_decoder','timers','tls','tty','url','util','v8','vm','zlib'].map(ι=> node[ι] = require(ι))
-
-	deref ← .reduce((o,id)=>o[id],global)
-	locs ← (=>{ ιs ← [] ;id ← Set() ;v_to_id ← new WeakMap() ;ENC ← JSON.stringify ;↩ { ,ιs(){↩ ιs} ,check(ι){
-		v ← Object.getOwnPropertyDescriptor(deref(ι.slice(0,-1)),ι[ι.length-1]).value
-		if(!( id.has(ENC(ι)) || Tprim(v) || v_to_id.has(v) )){ ;ιs.push(ι) ;id.add(ENC(ι)) ;v_to_id.set(v,ENC(ι)) }
-		} } })()
-	locs.check(['global'])
-
-	search1 ← => locs.ιs().forEach(loc=> Object.getOwnPropertyNames(deref(loc)).forEach(id=> locs.check([…loc,id]) ) )
-	do{ t ← locs.ιs().length ;search1() }while( t!==locs.ιs().length )
-	console.log(JSON.stringify(locs.ιs()))
-	}})(${Tprim})`}`+'') )()
-
-t ← _( global_net._.groupBy(.-1) ).mapObject(.map(.join('.')))
-[done,todo] ← _u(t).values().sort()._.partition(.‖===1)
-done = done.map(..0)
-todo = todo._.sortBy(.‖)
-;[code,…done,…todo]
-
 ##################################### with #####################################
 with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
 ;(=>{ bar ← 5 ;↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
@@ -346,7 +322,7 @@ with_ ← (o,f)=>{
 ι ← 'N3wyOHwxOTR8MHwwfDM4fDE5LjkxNjQ2NTgyNjE4OTQ3M3wwfDB8MnwwfDExMDl8MTQwfDB8M3wwfDF8OHwxfDB8MXwxfDF8MjI4fHRydWV8ZmFsc2V8dHJ1ZXwxNTEwOTcyMTc1NDkyfDB8MHx0cnVlfHRydWV8dHJ1ZXwxLDAsMCwwLDAsMCwwLDAsNSwxMCwxMCwyMCwyMCwxMSwxNiwyMCwxLDAsMCwwLDAsMSwwLDMsNiw1LDUsNSw1LDUsNSwxMHwtMSwtMSwtMSwtMSwtMSwtMSwtMSwtMQ==|YzI4NzJmYTg4MTZlY2IzNzhhNDU0MzI1ZmJjMjExMzc='
 ι.split('|')[0] |>(ι=> Buffer.from(ι,'base64')+'')
 r ← '7|28|10000|0|0|38|19.916465826189473|0|0|2|0|1109|140|0|3|0|1|8|1|0|1|1|1|228|true|false|true|1510972175492|0|0|true|true|true|1,0,0,0,0,0,0,0,5,10,10,20,20,11,16,20,1,0,0,0,0,1,0,3,6,5,5,5,5,5,5,10|-1,-1,-1,-1,-1,-1,-1,-1'
-require('crypto').createHash('md5').update(r).digest().toString('hex')
+node.crypto.createHash('md5').update(r).digest().toString('hex')
 b ← '4866525ce4fc2a3331806600943bb995'
 ;[r,b].map(ι=> Buffer.from(ι).toString('base64')).join('|')
 

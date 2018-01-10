@@ -84,7 +84,7 @@ _string ← ι=> P0('data',{
 P.⋯ = (a,b)=> P0('⋯',{
 	,a ,b
 	,_:λ*(in_,i){ ι ← ord(in_,i) ;if( i<in_.‖ && ord(a)<=ord(ι)&&ord(ι)<ord(b) ) yield win(i+1,ι) }
-	,inspect(ˣ,opt,tag){↩ util.inspect(@.a,opt)+tag+util.inspect(@.b,opt) }
+	,inspect(ˣ,opt,tag){↩ node.util.inspect(@.a,opt)+tag+node.util.inspect(@.b,opt) }
 	})
 _regex_native_string ← ι=> P0('regex',{
 	,ι
@@ -95,8 +95,8 @@ P.unicode_category = ι=> P0('category',{
 	,_:λ*(in_,i){ if( i<in_.‖ && 𐅪𐅝𐅭𐅩𐅞(@.ι,ord(in_,i)) ) yield win1u(in_,i) }
 	})
 	𐅪𐅝𐅭𐅩𐅞 ← memoize_persist((cat,ι)=> memoize_persist(cat=>
-		_u(npm`unicode@10.0.0/category`)
-		.filter((ˣ,type)=> type.re`^…${cat}$`)
+		_u(npm('unicode@10.0.0','/category'))
+		.filter((ι,type)=> type.re`^…${cat}$`)
 		.map…(ι=> _.keys(ι).map(ι=> ι|0) )
 		._.sortBy()
 		)(cat.source).includes(ord(ι)) )

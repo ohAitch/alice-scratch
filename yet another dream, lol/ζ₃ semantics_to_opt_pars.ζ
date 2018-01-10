@@ -39,11 +39,11 @@ pt ← {
 		if (opt._will_cache.has(@)) opt._cache.has(@) || opt._cache.set(@,opt._cache.‖)
 
 		ty ← opt.stylize(@.type,'special')
-		if(_.isEqual( _(@).keys(),['type','ι'] )) r = ty+' '+util.inspect(@.ι,opt)
+		if(_.isEqual( _(@).keys(),['type','ι'] )) r = ty+' '+node.util.inspect(@.ι,opt)
 		else{
 			t ← _(_(@).pairs()._.object()).omit('type')
 			if (@.found_by && @.ι) t.ι = {inspect(){↩ '...'}}
-			t = util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
+			t = node.util.inspect(t,opt); r = t[0]+ty+t.slice(1) }
 
 		↩ ((t=opt._cache.get(@))!==∅? opt.stylize('#'+t,'quote')+'=' : '')+r }
 	}

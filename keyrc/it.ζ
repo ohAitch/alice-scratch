@@ -81,7 +81,7 @@ show_private_xml ← λ(mappings){t←;
 		compile_keystring ← ι=>{
 			[md,ky] ← split_with(/FnF.|F.|.[LR]|./g.exec(ι), Mod)
 			if (md.‖ === 1 && ky.‖ === 0){ ky = [md[0]]; md = [] }else{ md.push(' ') }
-			if (!{1:1,2:1}[ky.‖]) ‽(APP+' invalid keystring: '+util.inspect(ι))
+			if (!{1:1,2:1}[ky.‖]) ‽(APP+' invalid keystring: '+node.util.inspect(ι))
 			↩ {cmd: {1:'__KeyToKey__', 2:'__SimultaneousKeyPresses__'}[ky.‖], ι: ky.map(Key).join(',')+','+md.map(Mod).join('|')+','} }
 		compile_trigger ← ι=>{ t ← compile_keystring(ι); ↩ t.cmd+' '+t.ι }
 		compile_output ← ι=>{t←; ↩0,
@@ -89,7 +89,7 @@ show_private_xml ← λ(mappings){t←;
 			# (t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${t[1]} &)`) :
 			(t=/^; ([^]+)$/.exec(ι))? shell(sh`PATH="/usr/local/bin:$PATH"; (ζλ ${ζ_compile(t[1])} &)`) :
 				_(ι).map(ι=> _(char16hex(ι)).map(ι=> compile_keystring('⌥L'+ι).ι))._.flatten().join('') }
-		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+util.inspect(ι)+' not found'),∅) )
+		compile_appdef ← ι=>( ι = ι.toLowerCase().re`^@(.+)$`[1].replace(/_/g,' '), appdef(ι)? ι : (_alert('[keyrc] warning','app '+node.util.inspect(ι)+' not found'),∅) )
 		if (ι.if){ if_ ← compile_appdef(ι.if); if (!if_) ↩ ∅ }
 		↩ {ι:compile_trigger(ι.trigger) + compile_output(ι.output), if:if_} }
 	[onces,mappings] ← mappings._.partition(ι=> /^notsave\.KEY_once_/.test(ι.if) )
@@ -119,7 +119,7 @@ regen ← (opt={})=>{
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		# if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		# if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; node.fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
 ##################################### main #####################################

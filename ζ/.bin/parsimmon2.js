@@ -200,7 +200,7 @@ var index = P.index = __index()
 
 // ---------------------------------- final --------------------------------- //
 
-var Pretty_Typed = function(T,ι){ this.T = T; this.ι = ι }; Pretty_Typed.prototype.inspect = function(d,opt){return this.T+':'+util.inspect(this.ι,opt) }
+var Pretty_Typed = function(T,ι){ this.T = T; this.ι = ι }; Pretty_Typed.prototype.inspect = function(d,opt){return this.T+':'+node.util.inspect(this.ι,opt) }
 P.T = (T,ι)=> new Pretty_Typed(T,ι)
 Parser.prototype.T = function(ss,...ιs){return this.map(ι=> P.T(ss[0],ι) ) }
 
