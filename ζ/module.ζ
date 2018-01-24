@@ -9,15 +9,23 @@
 # .map…(path=> require(path).map((ι,id)⇒{ ,id ,ι ,from:path })).group_uniq(.id).map(..1)
 # !>(.map(({id,ι})=> γ‘[id] .thunk= (0,eval)('('+ι+')') ))
 
+# now i know that a db is not the right choice for module propagation
+# also chokidar isnt bc persistent:✗ breaks it
+# so um.
+# looks like my best route is to build the net myself? with sockets and files and shit
+
 ##################################### state ####################################
 # @device0`⧫_local_module_src`.ι = [ ,φ`~/code/scratch/it.ζ`+'' ,φ`~/code/scratch/user.ζ`+'' ]
-# os_daemon(φ`~/code/declare/module.ζ`+'').restart()
+# os_daemon(φ`~/code/scratch/ζ/module.ζ`+'').restart()
 
 ################################## app prelude #################################
+proc_keep_alive ← _.once(=> setInterval(=>∅,1e9) )
+
 φwatch1 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✗,ignoreInitial:✓}).on('all',cb) !>(cb)
 φwatch2 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✓,ignoreInitial:✓}).on('all',cb) !>(cb)
 src ← @device0`⧫_local_module_src`
 ιlock ← @device0`⧫_local_module_codelock0`
+# 𐅋𐅝hash ← ι=> simple_hash(ι.ι)
 
 /*#########################*/ module.if_main_do(=>{ ############################
 # watching local module data

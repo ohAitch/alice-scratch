@@ -1,9 +1,8 @@
 #!/usr/bin/env ζ
-# conceptual: word s refer to the procedure-local database of words we know about
+# *wow* this is a sad way to do versions
 
 ############## app prelude #############
-# Ps ← require(φ`~/code/scratch/fast-parse/parser`+'')
-Ps ← require_new(φ`~/code/scratch/fast-parse/parser`)
+Ps ← require(φ`~/code/scratch/fast-parse/parser`+'')
 𐅬Tag ← (…ι)⇒{ ,tag:ι[0] ,inspect:=>Tag(…ι) }
 
 ################# entry ################
@@ -106,54 +105,5 @@ _2 ← ι=> alt_ws(ι).map_(ι=> 𐅯2(ι,[ᛟ2,ι,ᛟ2]) )
 𐅨𐅃_ ← memoize_proc( ops=>a=> P(ops.map_(op=> 𐅪Pa(op,a) )).chain(a=>Set( ,𐅨𐅃_(𐅮𐅜𐅯𐅜𐅫(ops))(a) ,P.of(a) )) )
 𐅪𐅨s_s ← 𐅨𐅃_(ops)(∅).join2?(ᛟ3)
 
-# next:
-# ‡ making parse_lang a lot more efficient
-# ⁘ you want to find the shortest substring that parses? you do this by iterating thru the file running 𐅪𐅨_ on unparsed chars & getting back parsed spans on success .i think this is a cheat but a good one
-
-##################################### to_js ####################################
-⧫. enc_id ==>{
-	safe ← ι=> catch_ι(=> (0,eval)(`'use strict' ;var ${ι} = 0 ;1`))
-	↩ memoize_proc(ι=> […ι].map(ι=> safe(ι)? ι : unicode_names(ι) ).join('') ) }
-
-𐅩 ← ι=> Tag('js',ι)
-ops_2 ← alt_ws`. ‘. ^ × / + - ∪ ∩ …← = ≠ <= >= < > ∈ ∋ & | !> |> ⇒ => ← :`
-ops_o ← alt_ws`() [] {} ‘[] if? if_ ! ↩ …`
-simple ← new Map([ ,'. .','^ **','× *','/ /','+ +','- -','= ===','≠ !==','<= <=','>= >=','< <','> >','& &&','| ||' ].map(.split(' ')))
-to_js ← ι⇒
-	: ι===∅? ι
-	: Tstr(ι)? 𐅩( ι.re`^[1-9][0-9]*$`? ι : enc_id(ι) )
-	: ι.tag==='string'? 𐅩(JSON.stringify(ι.ι))
-	: ι.tag==='()' || ι.tag==='[]' || ι.tag==='{}'? ι.ι.map(to_js) |>(t=>{
-		↩ t[0]===∅ && t.slice(1).every(.tag==='js')? t.slice(1).map(.ι).join(',')
-			|>(t=> [ι.tag[0],t,ι.tag[1]]).join(' ') |>(𐅩)
-		: Tag(ι.tag,t) })
-	: simple.has(ι.tag)? ι.ι.map(to_js) |>(t=>{
-		↩ t.every(.tag==='js')? 𐅩(t.map(.ι).join(' '+simple.get(ι.tag)+' '))
-		: Tag(ι.tag,t) })
-	: ι
-
-# lang ← require_new(φ`~/code/scratch/fast-parse/lang.ζ`)
-# ;`
-# [5 8 6]
-# ` |>(lang.parse)
-# |>(lang.to_js)
-# |>(ι=> ι.tag==='js'? (0,eval)(ι.ι) : ι)
-
 ################################################################################
-module.exports = { ,parse:parse_lang ,𐅪𐅨s_s ,to_js }
-
-module.if_main_do(=>{
-
-log( parse_lang(`a b c d e f g h`) )
-
-log( parse_lang(`
-a↩b …[]
-0? a← 5 : 0
-… ! ↩
-bar ← cmp_is ← (a,b,ι)=> => cmp.set…(as_op(a),as_op(b),ι)
-if( 'handle' ) 5 else 6? 7 : 8? 9 : 0
-! x + 8.{7} × b← c++,
-{{ 'saddlepoint' [] () {} }} ;↩ {P([5])}
-`) )
-
-})
+module.exports = { ,parse:parse_lang }

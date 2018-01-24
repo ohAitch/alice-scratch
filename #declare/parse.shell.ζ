@@ -1,0 +1,42 @@
+############################## (universal) prelude #############################
+which ← memoize_proc((…a)=> !is_template(a)? which`${a[0]}` : catch_ι(=> shᵥ`which …${sh(…a)}`+'')) # ! should use FRP to background-recompute hash values after certain amounts of time and discard hash values after certain amounts of time
+
+################################################################################
+exports['try #1'] = _.once(=>{
+
+_Tag ← Tag()
+R ← (tag,ι)=>{ if (!ι){ ι = tag ;tag = ∅ }
+	if (tag) ι.tag = tag
+	;(ι.inspect && ι.≈) || ι …← (_Tag)
+	↩ ι }
+
+k_is ← (ι,…a)=>( _(_(ι).omit(…a)).keys().‖ && ‽(a,_.keys(ι)), ✓ )
+
+parse_bash ← code=>{
+	rm_com ← ι=> ι.ι && ι.ι.every(ι=> k_is(ι,'Text') && Tstr(ι.Text) ) && ι.delete()
+	which`"\${GOPATH:-$HOME/go}"/bin/shfmt` || ‽
+	↩ shₐ`${code} |`` "\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`.stdio[1].pin().then(ι=>{
+		ι ← JSON.parse(ι+'')
+		k_is(ι,'StmtList')
+		ι ← ι.StmtList
+		rm_com([#Q ι.Last #Q])
+		k_is(ι,'Stmts')
+		ι ← ι.Stmts
+		ι ← walk_obj_edit(ι,ι=>{t←;
+			rm_com([#Q ι.Comments #Q])
+			if( ι.StmtList ){
+				k_is(ι,'StmtList','Type')
+				↩ R(`stmt:${ι.Type}`,{ι:ι.StmtList.Stmts}) }
+			if( ι.Cmd ){
+				k_is(_(ι).omit('Redirs','Negated'),'Cmd')
+				r ← R('Cmd',ι.Cmd)
+				ι.Negated &&( r = R('Negated',r) )
+				ι.Redirs &&( r = R('Redirs',{ι:[ r,ι.Redirs ]}) )
+				↩ r }
+			↩ ι })
+		↩ ι }) }
+
+# ;(async =>{t←; sb.tab.push([t= await parse_bash(φ`~/.bashrc`.text) ]); ↩ t })()
+
+↩ parse_bash
+})

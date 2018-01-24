@@ -19,7 +19,7 @@ node.child_process.ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{
 	f()
 	↩ _l.zip(start,a).map(a=> Δset(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 # eval_in_new_worker ← code=>{ ... ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
-eval_in_new_worker ← code=>{ code = js`require(${__dirname})(global);`+code ;↩ node.child_process.spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !> (ι=> ♓_on_exits(=>ι.kill())) /*memory leak*/ }
+eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code ;↩ node.child_process.spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !> (ι=> ♓_on_exits(=>ι.kill())) /*memory leak*/ }
 eval_in_worker ← (=>{
 	🏷busy ← Set() ;🏷free ← Set()
 	make ← => eval_in_new_worker('('+(=>{ ♓ ← process

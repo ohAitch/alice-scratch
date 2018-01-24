@@ -1,0 +1,47 @@
+in see.ζ obvs next todo is ,finding an ontologically simple object that i want to see better
+
+json is not simple
+
+like ... simple ML? crypto.ζ goes that way
+
+simple arithmetic? the cos thing goes that way
+https://google.com/search?q=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2
+
+simple discrete games? freecell goes that way
+
+simple fractals? fraksl goes that way
+	http://studio.sketchpad.cc/sp/pad/view/ro.9QgXWSPNwJxGJ/latest
+	nyx loves it and is good at it
+
+simple writing? clone flowstate
+
+
+freecell would be like
+
+########### a game "freecell" ##########
+initial state:
+	cards [base 13 0-c] × [base 2 red/black] × [base 2 round/pointy]
+	arrange as 8 maximally even stacks
+	shuffle
+	add 4 empty slots
+available cards:
+	slots
+	stacktops
+receiving positions for a card:
+	empty slot/stack
+	stacktops which = base+1 & ≠ .[red/black]
+	out if =0 or out has [ base-1 & = [ .[red/black] .[round/pointy] ] ]
+moves:
+	transfer a card from available to a receiving position
+win:
+	all slot & stack are empty
+
+
+
+
+################################# future seeing ################################
+hud (front) and hud (rear)
+# ,type:'desktop'
+https://electron.atom.io/docs/api/frameless-window/
+https://github.com/electron/electron/issues/1335
+https://gist.github.com/StickyCube/ed79421bc53cba38f5b74b060d3f15fa

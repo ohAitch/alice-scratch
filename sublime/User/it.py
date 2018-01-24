@@ -80,30 +80,29 @@ class open_context(sublime_plugin.TextCommand):
 
 class inline_eval_zeta(sublime_plugin.TextCommand):
 	def run(self,edit):
-		view = self.view ;sel = view.sel()
+		view = self.view
 		view.run_command("ensure_newline_at_eof")
-		if any([ view.substr(ι).strip() for ι in sel ]):
-			sel = expand_empty_regions_to_fulllines(view,sel)
+		sel = expand_empty_regions_to_fulllines(view,view.sel())
+		if any([ view.substr(ι).strip() for ι in view.sel() ]):
 			ι = [ view.substr(ι) for ι in sel ]
 			r = ζ("""
-				γ.i = 0 ;γ.require = require
 				JSON.parse(ι).map(ι=>{
-					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
+					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = single_if ≫ (ι=> 𐅦𐅯𐅦𐅞𐅜.push(ι))
 					r ← catch_union2(=> ζ_eval(ι))
 					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
-					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r }) """,E(ι))
+					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r })
+				|>(JSON.stringify) """,E(ι))
 			for i in range(len(sel))[::-1]:
 				view.replace(edit ,sel[i] ,r[i])
 		else:
-			sel = expand_empty_regions_to_fulllines(view,sel)
-			ends = [ι.end() for ι in sel]
+			ends = [ ι.end() for ι in sel ]
 			r = ζ(""" [ends,code] ← JSON.parse(ι)
-				γ …←(ζ_builtins)
 				ends.map(end=>{
-					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = 𐅦𐅯𐅦𐅞𐅜‘.push .f
+					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = single_if ≫ (ι=> 𐅦𐅯𐅦𐅞𐅜.push(ι))
 					r ← catch_union2(=> ζ_eval( npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'') ) )
 					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
-					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r }) """,E([ ends ,view.substr(Region(0,ends[-1])) ]))
+					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r })
+				|>(JSON.stringify) """,E([ ends ,view.substr(Region(0,ends[-1])) ]))
 			for i in range(len(sel))[::-1]:
 				ι = sel[i]
 				view.insert(edit ,*

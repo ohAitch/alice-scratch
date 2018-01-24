@@ -4,7 +4,7 @@
 # notify('φ_Δ_archive start')
 
 #################################### prelude ###################################
-Δ_as ← (s,f)=>{t←;ι←; last ← @device0('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f)|>(simple_hash)) )){ last.ι = t; ↩ ι } }
+Δ_as ← (s,f)=>{t←;ι←; last ← @device0('watcher_'+simple_hash([s,f])); if(!( last.ι===(t= (ι=s())|>(f)|>(simple_hash2)) )){ last.ι = t; ↩ ι } }
 
 ################################## φ_Δ_archive #################################
 
@@ -65,10 +65,14 @@ npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 	page ← `https://${u}.tumblr.com/`
 	t ← Δ_as(=> GET_L(page), ι=> (ι+'').match(re`\b(?:(https?|chrome|chrome-extension)://|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?`.g) .filter(ι=>{ ι=npm`urijs@1.18.12`(ι); ↩ ι.hostname()+'/'+ι.segment(0)===`${u}.tumblr.com/post` }) )
 	if( t ) notify(`Δ tumblr.${u}`).then(=> go_to(page))
-	}).every(1e3)
+	}).every(0.01d)
 
 ################################### yahh cron ##################################
 ;(=>{
 	t ← φ`~/code/scratch/daily.sh`+''
 	node.child_process.spawn(t,{,shell:✓,detached:✓,stdio:'ignore'}).unref()
-	}).every(1e5)
+	}).every(1.1d)
+
+################################## cronomatron #################################
+;(=> φ`~/file/pix/→ bg laptop`.TMP_children() ) ≫(ι=> random(ι) |>(imgur_from).then(ι=> set_newtab_bg(ι.link)))
+.every(0.01d)

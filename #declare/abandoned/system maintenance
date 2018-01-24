@@ -1,0 +1,17 @@
+fork 0c6ee5f2e380abb41253f62e05a01d5dd82a38f0/daily.sh
+
+watch for glob`{~/,~/{Desktop,Downloads,file}/**/}.DS_STORE`, rm it
+do daily: [ brew update ]
+do daily: [ ~/code/scratch/data_spotify/backup.ζ ]
+with Q = [over time sampled every 6hr]:
+	φ`{
+		, ~/Library/Preferences
+		, ~/Library/Fonts
+		, re`~/Library/Application Support/(?!Steam/)`
+		# , ~/Library/Application Support/Skype/alice0meta/main.db
+		# , ~/Library/Application Support/Google/Chrome/Default/History
+		# , ~/Library/Application Support/Google/Chrome/Default/Pepper Data/Shockwave Flash/WritableRoot/#SharedObjects
+		}` Q [compress] [filter by local optima by size] -> .mirror/*
+	φ`{ ~/{file,Downloads}/**, {/,~/}Applications/{,Utilities/}* }` Q [name] -> φ_name/*
+	(sh`brew leaves` sh`brew cask list` sh`npm -g ls --depth=0`) Q -> package/*
+	sh`defaults domains` [split ', '] [map #trace] sh`defaults export ${ι} -` Q -> defaults/*

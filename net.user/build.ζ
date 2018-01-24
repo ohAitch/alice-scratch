@@ -1,4 +1,0 @@
-#!/usr/bin/env ζ
-shᵥ`mkdir -p ${__dirname}/.bin`
-φ(__dirname).φ`.bin/it.js`.text = ζ_compile(φ(__dirname).φ`it.ζ`.text)
-shᵥ`cd ${__dirname}; browserify .bin/it.js -o .bin/bundle.js`

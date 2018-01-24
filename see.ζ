@@ -1,0 +1,35 @@
+# electron_window_for('glow')(=>{
+# 	‡ voroni
+# })
+# but
+# this structure
+is for separating initing and rendering
+# how to do this best?
+# this uh
+i think this brings versioning into the tangle
+‡ on new lib version, reboot
+# ? i think this is right
+distinguish between a new version of a thing and a different thing?
+by default, data flows
+sometimes this involves human checks
+but currently youre calling the event loop manually
+you have to build this out of machine
+# html_clear()
+
+see({frequencies:[,1,15,38,108,270,440,679,957,1176,1275,1352,100,250,696,441,249,107,33,12,1]})
+⧫. see ==>{
+	my_identity ← simple_flesh(['ζsee','default'])
+	see ← ι=> electron_window_for(my_identity)(`see_render(${JSON.stringify(ι)})`)
+	↩ see }
+⧫. see_render ==>{
+	style` body{ ;background:#2a2626 } `
+	wh ← [700,100]
+	see_freqs ← ι=>
+		document.body.appendChild( eval_html0(`
+			<svg style=";fill:darkred ;background:#2a2626 ;width:${wh[0]} ;height:${wh[1]}">
+				<g transform="scale(${wh[0]},${wh[1]})">
+				${numeric2.norm∞(ι).map((ι,i,L)=>
+					`<rect transform="translate(${i/L.‖},${1-ι})" width="${1/L.‖ - 1/wh[0]}" height="${ι}"></rect>`
+					).join('')}
+					</g> </svg> `) )
+	↩ ι=> ι.frequencies? see_freqs(ι.frequencies) : ‽ }

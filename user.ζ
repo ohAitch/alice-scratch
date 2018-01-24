@@ -4,9 +4,12 @@
 
 ⧫. sb_completions ==>{ 𐅜𐅝 ← {
 ,anon:=> [random_id.greek(4)]
-,now:=> Time() |>(t=>[ t.ymdhm,t.ymdhms,t.ymdhmss ])
+,now:=> Time() |>(ι=>[ ι.day_s,ι.ymdhm,ι.ymdhms,ι.ymdhmss ])
 ,day:=> [Time().local.ymd]
+# ,r1:=> [random(10)+'']
 } ;↩ ι=> 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ }
+
+⧫[ '…p'] ==> => postrun(hand.ι)
 
 #################################### user.ui ###################################
 ⧫. go_to ==> (…a)=>{ # synonyms? ,go_to ,open ,search
@@ -20,7 +23,7 @@
 
 	in_app && (in_app = in_app.toLowerCase())
 
-	focus || sfx`ack`
+	focus || nacksoft
 
 	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
 	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
@@ -50,7 +53,7 @@
 				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
 					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
 			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
-			shᵥ`open …${in_app && sh`-b ${in_app |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			shᵥ`open …${in_app && sh`-b ${in_app |> (@device_memo(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
 			}
 		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
 		}
@@ -83,7 +86,7 @@
 ################################### user.art ###################################
 ⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
 
-⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''
+⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''	
 	# very nice google maps urls
 	# if url ≈ google.com/maps/
 	# fetch short url:
@@ -203,7 +206,7 @@
 ⧫. keypresses ==> (=>{
 	diy_stdin ← f=>{ process.stdin.setRawMode(✓) ;process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
 	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
-	o← ;diy_stdin(ι=>{ sfx`nacksoft` ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
+	o← ;diy_stdin(ι=>{ nacksoft ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
 	}) …←({ cant_pool:✓ })
 
 ################ prelude ###############
@@ -211,7 +214,7 @@
 	set_term_title ← ι=> process.stdout.write('\x1b]0;'+ι+'\x07')
 	this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
 	↩ (=>{ E ← process.env.? |0
-		this_term_is_frontmost() ||( E===0? sfx`done` : (sfx`fail` ,osaᵥ`terminal: activate`) )
+		this_term_is_frontmost() ||( E===0? say`✓` : (say`✗` ,osaᵥ`terminal: activate`) )
 		E===0? postrun('exit') : ( process.exitCode = E )
 		}) }
 
@@ -257,14 +260,14 @@
 	out ← ι=> sb.tab.push(`/ ${b||a}\n\n${ι}`)
 	if( shᵥexit`man -- ${a} &>/tmp/𐅜𐅪𐅭𐅫𐅰` )
 		out(shᵥ`cat /tmp/𐅜𐅪𐅭𐅫𐅰 | col -bfx`+'')
-	else out( (=>{switch( a.re`^-h[012]$` ){
+	else out( (=>{switch( a.re`^-h[012]$` ?a:0 ){
 		case '-h0': ↩ [sh`~/.archive_*`]
 		case '-h1': ↩ [sh`./notes{,/.archive}`]
 		case '-h2': ↩ [sh`./notes/.archive/.sublime`]
 		default:
 		shᵥ`rm -rf /tmp/sublime ;:`
 		φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι })
-		↩ [ ,sh`code{,/scratch{/dotfiles/{.keyrc,.bashrc,.menu-keyrc},/sublime/User/.sb-keyrc}} /tmp/sublime` ,sh`notes` ] }})()
+		↩ [ ,sh`code{,/scratch/sublime/User/.sb-keyrc} /tmp/sublime` ,sh`notes` ] }})()
 		.map(ι=> shᵥ`cd ~/file ; ag --ignore '*.min.*' --ignore 'package-lock.json' --ignore 'public/lib/' -- ${b||a} …${ι} ;:`+'').join('\n') ) }
 
 ⧫. run_project ==> ((ι,isTTY)=>{t← ;catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )) ;ι||(ι = φ.cwd.φ`any`)
@@ -274,7 +277,7 @@
 	if( !process.stdout.isTTY ){ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(𐅫𐅰(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓ ;x`) ;↩ }
 
 	project ← φ(𐅫𐅰(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
-	sfx`ack`
+	nacksoft
 
 	build ← node.fs.readdirSync(project+'').find(.re`^build\.`)
 	package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
@@ -299,7 +302,7 @@
 ########################################
 ⧫. on_module_build𐅃𐅋𐅃𐅬𐅫 ==> =>{ # build .bashrc
 	inject_bash ← alt_ws`ct chrome_tabs bookmarks sb p sb[-1] moon
-		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar /`
+		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar / …p youtube-dl youtube-dl-v`
 	t ← String.raw`
 	ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;}
 
@@ -314,7 +317,6 @@
 	shopt -s no_empty_cmd_completion
 	unset HISTFILE
 	export HISTCONTROL=ignoreboth:erasedups
-	…(){ eval "$(cat)" ;}
 	alias http-server='http-server -c-1'
 	alias ζlogic='cd ~/Library/Caches/ζ.logic/'
 	alias ζdata='cd ~/Library/Caches/ζ.persist.0/'

@@ -94,7 +94,7 @@ P.unicode_category = ι=> P0('category',{
 	,ι
 	,_:λ*(in_,i){ if( i<in_.‖ && 𐅪𐅝𐅭𐅩𐅞(@.ι,ord(in_,i)) ) yield win1u(in_,i) }
 	})
-	𐅪𐅝𐅭𐅩𐅞 ← memoize_persist((cat,ι)=> memoize_persist(cat=>
+	𐅪𐅝𐅭𐅩𐅞 ← @device_memo((cat,ι)=> @device_memo(cat=>
 		_u(npm('unicode@10.0.0','/category'))
 		.filter((ι,type)=> type.re`^…${cat}$`)
 		.map…(ι=> _.keys(ι).map(ι=> ι|0) )

@@ -1,0 +1,48 @@
+see bashjson
+
+html1 ← npm`escape-html@1.0.3`
+html ← λ(ss,…ιs){ ENC ← html1 ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+Reflect_ownEntries ← ι=> Reflect.ownKeys(ι).map(k=> [k,ι[k]])
+
+style` body{ ;background:#2a2626 ;color:#e8e8e8 ;font-size:12px ;font-family:Menlo } `
+color ← c=> ι=> html`<span style="color:…${c};">…${ι}</span>`
+see_simple_object ← ι=>{
+	q ← ι⇒
+		: ι===∅? color('#615858')('∅')
+		: ι===null? color('#e8e8e8')('null')
+		: ι===✗? color('#f7a21b')('✗')
+		: ι===✓? color('#f7a21b')('✓')
+		: T.number(ι)? color('#f7a21b')(html`${ζ_inspect(ι)}`)
+		: T.Array(ι)? [ color('#747474')('[') ,…ι.map(q) ,color('#747474')(']') ].join(' ')
+		: T.string(ι)? color('rgb(85,150,80)')(0?0
+			: html1(ι) === ι && ι.re`^[!-&(-~Α-ΡΣ-ω…]+$`? ι
+			: html`${util_inspect_autodepth(ι)}` )
+		# : T.Error(ι)? 
+		# : T.function(ι)? 
+		# : T.Map(ι)? 
+		# : T.MapIterator(ι)? 
+		# : T.Promise(ι)? 
+		# : T.Set(ι)? 
+		# : T.SetIterator(ι)? 
+		: […protos(ι)][1] === Object.prototype? [
+			,color('#747474')('{')
+			,… Reflect_ownEntries(Object.getOwnPropertyDescriptors(ι)).map(([k,ι])=>{
+				t ← 'value' in ι? q(ι.value) : q(ι)
+				↩ q(k)+': '+t })
+			,color('#747474')('}')
+			].join('<br>')
+		: html`${JSON_pretty(ι)}`
+	ι = q(ι)
+	see_proc.send('('+λ(ι){
+		ι ← color('#8b8bb6')(Time().i%1e6 |0)+' '+ι
+		document.body.appendChild( eval_html(ι) )
+		}+js`)(${ι})`)
+	}
+
+global.see_chroot = [ ✓,✗,null,∅,15.1,{a:6} ,123 ]
+global.see_chroot = ⋯(10)
+global.see_chroot = ⋯(5)
+global.see_chroot = ⋯(80)
+global.see_chroot = φ`~/code/declare/parse.shell.ζ`+''
+require(φ`~/code/declare/parse.shell.ζ`+'')['try #1']()(φ`~/.bashrc`.text)
+	.then(data=> global.see_chroot = data )

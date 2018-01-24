@@ -1,0 +1,139 @@
+#################################### prelude ###################################
+# ! ι.constructor is weird
+get_ctor_of ← λ(ι){for(;;){
+  if (!ι) ↩ null; d ← Object.getOwnPropertyDescriptor(ι,'constructor'); if (d!==undefined && Tfun(d.ι) && d.ι.name!=='') ↩ d.ι; ι = Object.getPrototypeOf(ι)
+  }}
+is_prototype_object ← ι=> ι.constructor && ι.constructor.prototype===ι
+
+############################### ansi color codes ###############################
+colors ← { bold:1, grey:90, cyan:36, green:32, magenta:35, red:31, yellow:33, }
+styles ← { special:'cyan', number:'yellow', boolean:'yellow', undefined:'grey', null:'bold', string:'green', symbol:'green', date:'magenta', regexp:'red', }
+stylize ← (ctx,str,type)=> ctx.colors && styles[type]? '\x1b['+colors[styles[type]]+'m'+str+'\x1b[0m' : str
+
+################################### weird lib ##################################
+repr_str ← ι=> "'"+JSON.stringify(ι).replace(/^"|"$/g, '').replace(/'/g, "\\'").replace(/\\"/g, '"')+"'"
+nxD ← ι=> ι===null? null : ι-1
+ctor_name ← λ(ι){ t ← get_ctor_of(ι); ↩ t&&t.name }
+
+################################################################################
+inspect ← λ(ι,opts){ ctx ← {depth:0, colors:false, depth:'some', seen:[], stylize:λ(a,b){↩ stylize(@,a,b)}} …← (opts); ↩ formatValue(ctx, ι, ctx.depth) }
+
+inspect_prim ← (ctx,ι)=> stylize(ctx, (Tsym(ι)? ι.toString() : T.-0(ι)? '-0' : Tstr(ι)? repr_str(ι) : ι+''), T(ι))
+
+// keys_modifier
+// styled_base
+// prepended_ctor
+
+change_keys ← {
+  Array: (keys,ι)=> keys.filter(k=> !(/^\d+$/.test(k) && (k|0) < ι.‖)),
+  String: (keys,ι)=> keys [set -] ⋯(ι.valueOf().‖),
+  }
+
+have_base ←
+  […T.boxed.ι].map(ty=> [ty,ι=> '['+ty+': '+inspect_prim({},ι.valueOf())+']'])._.object()._.assign({
+  function: ι=> '[Function'+(ι.name? ': '+ι.name : '')+']',
+  RegExp: ι=> RegExp.prototype.toString.call(ι),
+  Date: ι=> T.NaN(+ι)? 'Invalid Date' : Date.prototype.toISOString.call(ι),
+  Error: ι=> ι.stack || '['+Error.prototype.toString.call(ι)+']',
+  })
+
+base_style ←
+  […T.boxed.ι].map(ty=> [ty,ι=> T(ι.valueOf())])._.object()._.assign({
+  function: ι=> 'special'
+  RegExp: ι=> 'regexp'
+  Date: ι=> 'date'
+  Error: ι=> ''
+  })
+
+prepend_ctor ← [
+  …have_base._.keys().map(ι=> [ι,ι=> null]),
+  // …['String','Boolean','Number','function','RegExp','Date','Error'].map(ι=> [ι,ι=> null]),
+  …['MapIterator','SetIterator'].map(ty=> [ty,ι=> ty]),
+  …[['Array','Array'],['object','Object']].map((ty,nm)=> [ty,λ(ι){ t ← ctor_name(ι); ↩ t===nm? null : t }]),
+  …['Set','Map','Promise'].map(ty=> [ty,ctor_name]),
+  ]._.object()
+
+extrakey_data ←
+  […have_base._.keys(),'Promise','MapIterator','SetIterator'].map(ty=> [ty,ι=> true])._.object()._.assign({
+  Array: .‖,
+  Set: .‖,
+  Map: .‖,
+  object: ι=> false,
+  })
+
+braces_start ← {Array:=>[…'[]']}
+
+magic_excessive_core_formatter ← {
+  Array:       formatArray,
+  Promise:     formatPromise,
+  Map:         formatMap,
+  Set:         formatSet,
+  MapIterator: formatCollectionIterator,
+  SetIterator: formatCollectionIterator,
+  object:      =>[],
+  }
+
+formatValue ← λ(ctx,ι,depth){t←
+  if (ι && Tfun(ι.inspect) && !(ι===util || is_prototype_object(ι)))
+    { r ← ι.inspect(depth, ctx); ↩ Tstr(r)? r : formatValue(ctx, r, depth) }
+
+  ty ← T(ι)
+  if (Tprim.ι.has(ty)) ↩ inspect_prim(ctx,ι)
+
+  keys ← Object.keys(ι)
+  change_keys[ty] && (keys = change_keys[ty](keys,ι))
+
+  braces ← (braces_start[ty]||=>[…'{}'])()
+  base ← (have_base[ty]||=>'')(ι)
+
+  if (!keys.‖ && base) ↩ stylize(ctx, base, base_style[ty](ι))
+
+  if (base) braces[0] += ' '+base
+  t ← prepend_ctor[ty](ι); t && (braces[0] = t+' '+braces[0])
+
+  if (!keys.‖ && !extrakey_data[ty](ι)) ↩ braces[0]+braces[1]
+
+  formatter ← magic_excessive_core_formatter[ty]||magic_excessive_core_formatter['object']
+  ctx.seen.push(ι)
+  r ← [ …formatter(ctx, ι, depth), …keys.map(k=> formatProperty(ctx, ι, depth,  k, true)) ]
+  ctx.seen.pop()
+
+  }
+
+
+formatValue ← λ(ctx,ι,depth){
+  if (depth < 0) ↩ stylize(ctx,'[Object]', 'special')
+
+  reduceToSingleString ← λ(r,braces){
+    L ← r.map(.replace(/\x1b\[\d\d?(?:;\d\d?)*m/g, '').‖+1).reduce((a,b)=> a+b, 0)
+    ↩ braces[0]+(
+      L > 60? (braces[0].‖===1? '' : '\n ')+' '+r.join(',\n  ')+' ' :
+        ' '+r.join(', ')+' '
+        )+braces[1] }
+  ↩ reduceToSingleString(r, braces) }
+formatArray ← λ(ctx,ι,depth){t←
+  maxLength ← min(max(0, ctx.maxArrayLength), ι.‖)
+  ↩ [
+    …⋯(maxLength).map(i=> Object.prototype.hasOwnProperty.call(ι, i+'')? formatProperty(ctx,ι,depth,i+'',true) : '' ),
+    …((t=ι.‖ - maxLength) > 0? ['... '+t+' more item'+(t>1?'s':'')] : []),
+    ] }
+formatSet ← (ctx,ι,depth)=> ι.forEach(v=> formatValue(ctx, v, nxD(depth)) )
+formatMap ← (ctx,ι,depth)=> ι.map((ι,k)=> formatValue(ctx, k, nxD(depth))+' => '+formatValue(ctx, ι, nxD(depth)) )
+formatCollectionIterator ← (ctx,ι,depth)=> […Debug().MakeMirror(ι,true).preview()].map(ι=> formatValue(ctx, ι, nxD(depth)) )
+formatPromise ← λ(ctx,ι,depth){↩ [ι.status===undefined? '<pending>' : (!ι.status? '<rejected> ' : '')+formatValue(ctx, ι.ι, nxD(depth))] }
+
+formatProperty ← λ(ctx,ι,depth,key,array){t←
+  desc ← Object.getOwnPropertyDescriptor(ι, key) || { value: ι[key] }
+  str←
+  if (desc.get || desc.set)
+    str = stylize(ctx,desc.get? (desc.set? '[get/set]' : '[get]') : '[set]', 'special')
+  else {
+    if ((t=ctx.seen.indexOf(desc.value))!==-1)
+      str = stylize(ctx,'[circular:'+t+']', 'special')
+    else
+      str = formatValue(ctx, desc.value, nxD(depth))
+    str = array? str.replace(/\n/g, '\n  ') : str.includes('\n')? str.replace(/(^|\n)/g, '\n   ') : str
+  }
+  ↩ array && key.match(/^\d+$/)? str :
+    stylize(ctx,es6_valid_identifier(key)? key : repr_str(key), 'name')
+      +': '+str }

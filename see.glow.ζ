@@ -1,0 +1,88 @@
+#!/usr/bin/env ζ
+electron_window_for('glow')(=>{
+
+document.body.appendChild( eval_html0`<canvas id="itscanvas" resize></canvas>` )
+style`body { ;margin:0 ;height:100% }`
+style`canvas { ;width:100% ;height:100% }`
+
+paper ← npm`paper@0.11.5`
+voronoi ← new (npm`voronoi@1.0.0`)()
+
+paper.setup('itscanvas')
+
+# var path;
+# var tool = new paper.Tool()
+# tool.onMouseDown = event=>{
+# 	if (path) path.selected = false;
+# 	path = new paper.Path({
+# 		segments: [event.point],
+# 		strokeColor: 'black',
+# 		fullySelected: true
+# 	});
+# }
+# tool.onMouseDrag = event=>{
+# 	path.add(event.point);
+# }
+# tool.onMouseUp = event=>{
+# 	var lastL = path.segments.length;
+# 	path.simplify(10);
+# 	path.fullySelected = true;
+# }
+
+pL ← => paper.view.size
+sites ← generateBeeHivePoints(pL().divide(200))
+𐅭𐅩𐅪𐅝 ← pL()
+
+tool ← new paper.Tool() …←({
+	,onMouseDown:ev=>{ sites.push(ev.point) ;render𐅮() }
+	,onMouseMove:ev=>{ ev.count===0 && sites.push(ev.point) ;sites[-1] = ev.point ;render𐅮() }
+	})
+
+render𐅮 ← =>{
+	paper.project.activeLayer.removeChildren()
+	diagram ← voronoi.compute(sites, { ,xl:0 ,xr:pL().width ,yt:0 ,yb:pL().height })
+	if (diagram) {
+		for(s← of sites){
+			cell ← diagram.cells[s.voronoiId]
+			if( cell && cell.halfedges.length > 2 ){
+				points ← []
+				for (j ← 0; j < cell.halfedges.length; j++) {
+					v = cell.halfedges[j].getEndpoint()
+					points.push(new paper.Point(v))
+				}
+				createPath(points, s)
+			}
+		}
+	}
+}
+
+λ generateBeeHivePoints(size) {
+	r ← []
+	col ← pL().divide(size)
+	for (i ← -1; i < size.width + 1; i++) {
+		for (j ← -1; j < size.height + 1; j++) {
+			ι ← new paper.Point(i, j).divide(size.divide(pL())).add(col.divide(2))
+			if (j % 2)
+				ι = ι.add(new paper.Point(col.width / 2, 0))
+			ι = ι.add(col.divide(4).multiply(paper.Point.random()).subtract(col.divide(4)))
+			r.push(ι)
+		}
+	}
+	↩ r }
+λ createPath(points, center) {
+	path ← new paper.Path() …←({ ,fullySelected:✓ ,closed:✓ })
+	for (i ← 0, l = points.length; i < l; i++) {
+		a ← points[i]
+		b ← points[ i+1===points.‖? 0 : i+1 ].subtract(a).divide(2)
+		path.add({ point:a.add(b) ,handleIn:b.multiply(-1) ,handleOut:b })
+		}
+	↩ path.scale(0.95) }
+
+paper.view.onResize = ()=>{
+	sites = sites.map(.multiply(pL()).divide(𐅭𐅩𐅪𐅝))
+	𐅭𐅩𐅪𐅝 = pL()
+	render𐅮() }
+
+paper.view.onResize()
+
+})

@@ -1,0 +1,4 @@
+#!/usr/bin/env ζ
+φ(__dirname).φ`it.js`.∃ && ‽
+φ(__dirname).φ`it.js`.text = ζ_compile(φ(__dirname).φ`it.ζ`.text)
+shᵥ`cd ${__dirname} && browserify it.js -o ${@device0`𐅬𐅯𐅮𐅬`.o} && rm it.js`

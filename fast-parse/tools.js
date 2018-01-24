@@ -6,7 +6,7 @@ rm -r .bin
 
 0x it.js
 
-require('/usr/local/bin/ζ')(global)
+require('/usr/local/bin/ζ')
 
 ##### observe parser element freqs #####
 node --stack-size=10000 /usr/local/bin/ζ parse_lang.ζ > foo.txt

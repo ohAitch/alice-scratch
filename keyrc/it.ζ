@@ -61,7 +61,7 @@ system ← parse_boards([multiline`
 	└──────────────────────────────┘ └──────────────────────────────┘
 	`])
 text_keys ← […system.map(.trigger).filter(..0!=='⇧'), ' ']
-macros['X'] = '; sfx`nack`'
+macros['X'] = "; say`⚙`"
 
 parse_key_line ← ι=>{ t ← ι.match(/^\s*(@\w+)?\s*(\S+)\s+([^]*\S)/); ↩ M(t[2],t[3],t[1]) }
 parse_keyrc ← λ(src){
@@ -75,7 +75,7 @@ parse_keyrc ← λ(src){
 show_private_xml ← λ(mappings){t←;
 	Mod ← ι⇒ {'⇧':'VK_SHIFT', '^':'ModifierFlag::CONTROL_L', '⌥':'VK_OPTION', '⌘':'VK_COMMAND', '⇧L':'ModifierFlag::SHIFT_L', '⌥L':'ModifierFlag::OPTION_L', '⌘L':'ModifierFlag::COMMAND_L', '⇧R':'ModifierFlag::SHIFT_R', '⌥R':'ModifierFlag::OPTION_R', '⌘R':'ModifierFlag::COMMAND_R', 'Fn':'ModifierFlag::FN', ' ':'ModifierFlag::NONE'}[ι]
 	shells ← {}; shell ← ι=> shells[ι] || (shells[ι] = 'KeyCode::VK_OPEN_URL_'+_(shells).size())
-	appdef ← ι=> appdefs[ι] = ι |> (memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
+	appdef ← ι=> appdefs[ι] = ι |> (@device_memo(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )); appdefs ← {}
 	compile_mapping ← λ(ι){
 		Key ← ι=> ('KeyCode::'+(/^\d$/.exec(ι)? 'KEY_'+ι : /^[a-z]$/.exec(ι)? ι.toUpperCase() : keycodes[ι]? 'RawValue::0x'+keycodes[ι] : ‽('invalid key: '+ι))).replace(/^(.+)°$/,'Consumer$1')
 		compile_keystring ← ι=>{
@@ -119,7 +119,7 @@ regen ← (opt={})=>{
 	shᵥ`${KB} reloadxml`
 	if( !opt.minimal ){
 		ι.root.item.map(.name).filter(ι=> !ι.re`^notsave\.`).map(ι=> shᵥ`${KB} enable ${ι}`)
-		# if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${'sfx`ack`'} &); ${KB} enable notsave.power_key`; node.fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
+		# if( φ`/Applications/PowerKey.app`.∃ ){ φ`~/Documents/keyrc_power_key.sh`.text = '#!/bin/bash\n'+sh`(/usr/local/bin/ζλ ${"say`⚙`"} &); ${KB} enable notsave.power_key`; node.fs.chmodSync(φ`~/Documents/keyrc_power_key.sh`+'',0o777) }		
 		} }
 
 ##################################### main #####################################

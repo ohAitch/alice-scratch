@@ -63,6 +63,8 @@
 	E.device_listen = (port=0)=>{ r ← new node.net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
 	node.net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
 	node.net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅭𐅝𐅯𐅨𐅋||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	E._0_φ_seenbydevice0 = ι=>{ t ← @device0buf('𐅦𐅯𐅭𐅪_'+ι) ;↩ t.o.∃? Π(t) : Π(yes=> npm`simple-get@2.7.0`.concat(ι,(e,r,ι)=>{ t.ι = ι ;yes(t) }) ) }
+	E._0_φ_seenbydevice0⁻¹ = => node.fs.readdirSync(device0_n1_dir).filter(.re`^𐅦𐅯𐅭𐅪_`).map(ι=> device0_n1_dir+'/'+ι)
 	↩ E }
 
 ⧫. Π ==> ι⇒
@@ -70,8 +72,8 @@
 	: T.Error(ι)? Πx(ι)
 	: Promise.resolve(ι)
 ⧫. Πx ==> ι=> Promise.reject(ι)
-⧫. Πand ==> (…ι)=> Promise.all(ι)
-⧫. Πor ==> (…ι)=> Promise.race(ι)
+⧫. Πand ==> (…ι)=> Promise.all( ι.‖===1? ι[0] : ι )
+⧫. Πor ==> (…ι)=> Promise.race( ι.‖===1? ι[0] : ι )
 
 ⧫. @deviceΠ = => ι=>{ start ← Tfun(ι)
 	φ_on_E ← ι=> Π(re=>{ 𐅪 ← ι.∃? re() : npm`chokidar@2.0.0`.watch(ι+'',{persistent:✓}).on('all',=> ι.∃ &&( 𐅪.close() ,re() )) })
@@ -85,46 +87,40 @@
 ############################### friend glue : ui ###############################
 ⧫. electron_window_for ==>{
 	# interaction with previous versions: unsolved
-	𐅰𐅃𐅬𐅦𐅜electron ← {
+	𐅩 ← {
 		,init:=> _electron__start_my().Π
 		,ι: @device0`𐅰𐅃𐅬𐅦𐅜electron`
 		# @proc alive_at: time of last message received from
 		# @proc path_to
 		,path_init:=> !𐅩.ι.ι? Πx() :( 𐅩.path_to = net1.open_send(𐅩.ι.ι[1]) !>(.then(ι=> Πor(ι.Π`close`,ι.Π`end`).then(=> 𐅩.path_to = ∅ ) ,=>∅)) )
 		,path_to:∅
-		} ;𐅩 ← 𐅰𐅃𐅬𐅦𐅜electron
+		}
 	send_to_my ← ι=>{
 		𐅯 ← => 𐅩.path_init() !>(.then(s=> stream4.send_json(s)(ι) ,=>∅))
 		𐅯().catch(=>{
 			lock('𐅂𐅂𐅪𐅯𐅩 electron init').then(
-				,un=> 𐅩.init().then(ι=>{ un() ;𐅩.ι.ι = ι ;𐅯().catch(=>∅) })
+				,un=> 𐅩.init().then(ι=>{ un() ;𐅩.ι.ι = ι ;𐅯().catch(=>∅) } ,un)
 				,=> /* retry once */ (=> 𐅯().catch(=>∅) ).in(1/*holy shit cheating*/)
 				)
 			}) }
-	↩ id=> code=> send_to_my({ ,id ,code }) }
+	↩ id=> code=> send_to_my({ ,id ,code:repr_fi(code) }) }
 ⧫. _electron__start_my ==>{
-	# ! requires modules using /usr/local/bin/node 's ABI ;currently electron matches but this will break
 	start_el_app ← (code,…a)=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
-		c2 ← `require('/usr/local/bin/ζ')(global) ;(${code})(${a.join(',')})`
-		node.child_process.spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',fs.openSync(t.out,'a+'),fs.openSync(t.err,'a+')] })
+		c2 ← `require('/usr/local/bin/ζ') ;(${code})(${a.join(',')})`
+		node.child_process.spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',node.fs.openSync(t.out,'a+'),node.fs.openSync(t.err,'a+')] })
 		|>(ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
 		}
-	↩ => @deviceΠ(re=> start_el_app(re=>{ el ← require('electron') ;el.app.Π`ready`.then(=>{
+	↩ => @deviceΠ(re=> start_el_app(re=>{ ;el ← require('electron') ;el.app.Π`ready`.then(=>{
 		el.app.on('window-all-closed',=> el.app.hide() )
-		el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png')
-		# el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
-		# el ← require('electron')
-		# eval_main ← f=> el.ipcRenderer.send('eval_main',f+'')
-		# eval_main(me=> me.Π`ready-to-show`.then(=> me.show()))
-		# eval_main(=> el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png') )
+		imgur`1uoWV5c`.then(ι=> el.app.dock.setIcon(ι.@device) )
 		on_msg ← ({,id,code})=>{ w ← 𐅮𐅭𐅰𐅂𐅮‘[id]
 			send ← ι=> w.ι.webContents.executeJavaScript(ι+';0')
 			if(! w.ι ){
 				t ← w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ }) # !>(𐅦)
 				t.loadURL('about:blank')
 				t.Π`closed`.then(=> w.∃ = ✗ )
-				send(` require('/usr/local/bin/ζ')(global) ;γ.el = require('electron') `)
+				send(` ;require('/usr/local/bin/ζ') ;γ.el = require('electron') `)
 				t.Π`ready-to-show`.then(=> t.show()) }
 			send(code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
 		net1.device_listen().then(H=>{ H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
@@ -140,14 +136,19 @@
 		):send()`
 	↩ r }) }
 
-⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/net.user/chrome:newtab/it.jpg`
-
-⧫. sfx ==> (ss,…ιs)=>{ ι ← ss[0]
-	shₐ`afplay ~/code/scratch/dotfiles/${ι}.wav`
-	if( ι==='done' && osaᵥ`get volume settings`['output muted'] ){ br ← npm`brightness@3.0.0` ;br.get().then(t=>{ br.set(0) ;(=> br.set(t)).in(0.2) }) }
-	}
+# ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/user.net/chrome:newtab/it.jpg`
+⧫. set_newtab_bg ==> ι=>{
+	d ← @device0`chrome:newtab`.o
+	d.φ`it.html`.text = js` <meta charset="utf-8"> <title>⠀</title> <style>
+		html,body {
+			;height:100% ;width:100% ;margin:0
+			;background:url(${ι}) ;background-position:50% 50% ;background-size:cover
+			} </style> `
+	d.φ`manifest.json`.json = { ,manifest_version:2 ,name:'newtab' ,version:'1' ,description:'' ,chrome_url_overrides:{ ,newtab:'it.html' } } }
 
 ⧫. style ==> ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
+⧫. eval_html0 ==> ι=> document.createElement('div') …←({ innerHTML:(ι+'').trim() }).childNodes[0]
+⧫. html_clear ==> =>{ ;document.write('') ;document.close() }
 
 ############################## friend glue : data ##############################
 ⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
@@ -165,8 +166,9 @@
 	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
 	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
 
-⧫. _slot0 ==> (get,set)=>{ t ← {} ;def(t,'ι',{get,set}) ;↩ t }
-⧫. clipboard ==> _slot0( => shᵥ`pbpaste`+'' ,ι=> shₐ`${ζ_inspect(ι)} |`` pbcopy` )
+⧫. hand ==> slot0(
+	,=> hsᵥ`json({ hs.pasteboard.getContents() })`[0]
+	,ι=> hsᵥ`hs.pasteboard.setContents(${ζ_inspect(ι)}) ;hs.alert('✍')` )
 
 ⧫. chrome_tabs ==> i=>{
 	nice_ ← (title,url)=>{ t ← new String(title+' '+url) ;t.sourcemap = { ,title:[0,title.‖] ,url:[(title+' ').‖,(title+' '+url).‖] } ;↩ nice_url(t) }
@@ -193,7 +195,9 @@
 	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
 	sb.tab.push(ι) }
 
-⧫. p ==> (ι=> node.fs.fstatSync(0).isFIFO()? shₐi`pbcopy`|>(=>∅) : ι===∅? clipboard.ι : ( clipboard.ι = ι ) ) …←({ cant_pool:✓ })
+⧫. p ==> slot0(
+	,=>{ if(!γ.𐅃𐅜𐅭𐅋){ γ.𐅃𐅜𐅭𐅋=✓ ;if( node.fs.fstatSync(0).isFIFO() ){ process.stdin.pin().then(ι=> hand.ι = ι+'') ;↩ } }; ↩ hand.ι  }
+	,ι=> hand.ι = ι ) …←({ cant_pool:✓ })
 
 ⧫. sb ==>{
 	sb ← ((…a)=> node.fs.fstatSync(0).isFIFO()? shₐi`open -a 'Sublime Text.app' -f` |>(=>∅) : a.‖===0? sb.tab.active.ι : shₐi`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${a}` |>(=>∅) )
@@ -209,6 +213,14 @@
 		↩ r }
 	↩ sb}
 ⧫[ 'sb[-1]'] ==> => sb.tab[-1].ι
+
+⧫. _imgur ==> npm`imgur@0.2.1` !>(.setClientId('5358d4a45bafa2e'))
+⧫. imgur ==> (ι=>ι+'') ≫(@device_memo(ι=> Π(_imgur.getInfo(ι)).then(.data) )) ≫(Π)≫(.then(ι=> net1._0_φ_seenbydevice0(ι.link).then(t=> ι …←({ @device:t.o+'' }) )))
+	!>(ι=> ι‘.thisdevice .get==>{ t ← φ`${'https://i.imgur.com/'}`+'' ;↩ net1._0_φ_seenbydevice0⁻¹().filter(.re`${t}`).map(ι⇒{ ,@device:ι ,id:ι.replace(re`^.*${t}|\.\w+$`.g,'') }) }) # .map(({ι,id})=> imgur(id).catch(⇒{ ,id ,@device:ι }) ) |>(Πand) })
+⧫. imgur_from ==> ι=>{ ι = φ(ι+'') ; ↩ @device_memo(h=> JSON.parse( shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι+''} 'https://api.imgur.com/3/upload'` +'') .data.id )(simple_hash(ι.buf)) |>(imgur) }
+
+⧫[ 'youtube-dl'  ] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
+⧫[ 'youtube-dl-v'] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
 
 ################################## friend glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
@@ -266,7 +278,19 @@
 	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
 	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
 
+⧫. ⧗ ==> (f,opt={})=>{ var {TH=0.4} = opt
+	# ! really should include a confidence interval or smth
+	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r ,'s')
+	t←f() ;r++
+	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
+	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;↩ R() } }
+⧫. ⧗1 ==> f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
+
+################################# see : pending ################################
 ⧫. d ==> (a='.')=>{
+	# φs ← '/' |>(λ me(ι){↩ φ(ι).is_dir? (catch_ι(=>fs.readdirSync(ι))||[]).map(t=> ι+'/'+t).map…(me) : [ι] })
+	# RangeError: Maximum call stack size exceeded
+
 	# would be neat if this was .Trash aware
 	sum ← 0
 	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
@@ -278,41 +302,14 @@
 		sum += b ;q(b,fl) })
 	q(sum,a)
 
-	progress_bar ← (L,at)=>( L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
+	progress_bar ← (L,at)=>( ,L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
 	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
-⧫. ⧗ ==> (f,opt={})=>{ var {TH=0.4} = opt
-	# ! really should include a confidence interval or smth
-	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r ,'s')
-	t←f() ;r++
-	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
-	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;↩ R() } }
-⧫. ⧗1 ==> f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
+############################## new prelude i guess #############################
+⧫. slot0 ==> (get,set)=>
+	(λ(ι){↩ arguments.length===0? get() : (set(ι),ι) })
+	!>(‘.ι .host= {get,set} )
 
-################################## see : <new> #################################
-⧫. see ==>{
-	my_identity ← simple_flesh(['see.ζ','default'])
-	see ← ι=> electron_window_for(my_identity)(`see_render(${JSON.stringify(ι)})`)
-	↩ see }
-⧫. see_render ==>{
-	{nk,norm∞} ← numeric2
-	eval_html ← ι=> document.createElement('div') …←({ innerHTML:(ι+'').trim() }).childNodes[0]
-
-	wh ← [700,100]
-	see_freqs ← ι=>
-		document.body.appendChild( eval_html(`
-			<svg style=";fill:darkred ;background:#2a2626 ;width:${wh[0]} ;height:${wh[1]}">
-				<g transform="scale(${wh[0]},${wh[1]})">
-				${norm∞(ι).map((ι,i,L)=>
-					`<rect class="bar" transform="translate(${i/L.‖},${1-ι})" width="${1/L.‖ - 1/wh[0]}" height="${ι}">
-						</rect>` ).join('')}
-					</g> </svg> `) )
-
-	style` body{ ;background:#2a2626 } `
-	# style` .bar { ;fill:darkred } `
-	
-	↩ ι=> ι.frequencies? see_freqs(ι.frequencies) : ‽ }
-
-##################################### <new> ####################################
+⧫. say ==> ι=>{ ;hsᵥ`hs.alert(${ι+''})` ;nacksoft }

@@ -1,0 +1,74 @@
+fork dc9ec4fe845c0a1b34e2a0c729441db9a549bbf6
+
+symlink <- symlink by as url
+
+def executable for
+	brew. install by [sh`/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`. ask human to verify.]
+	NoSleepCtrl. install by use human on (https://github.com/integralpro/nosleep/releases/latest "i have NoSleep-1.4.0.dmg")
+
+def app for
+	Android File Transfer.app. install by androidfiletransfer.dmg; human verify
+	Xcode.app. install by https://itunes.apple.com/us/app/xcode/id497799835; human verify
+	Spotify.app. install by spotify-0-9-15-17-multi-mac.dmg; human verify; φ`~/Library/Application Support/Spotify/Spotify_new.archive{,.sig}` [<- ''] [read-only] [locked]; human verify
+
+commit sh``` # not sure what this should be
+	defaults write -g ApplePressAndHoldEnabled -bool false
+	defaults write com.apple.finder AppleShowAllFiles YES
+	defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
+	defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool false
+	defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+	defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+	defaults write com.apple.screencapture disable-shadow -bool true
+	```
+
+bind
+	~ symlink /~
+	{ , ~/file/{.file/*,code,books,notes}
+		, ~/code/scratch/dotfiles/{.bash_profile,.bashrc,.bashrc.ζ,.keyrc,.hammerspoon%2Finit.lua}
+		} symlink ~/*
+	{ , ~/Library/Spelling/LocalDictionary
+		, ~/Library/Application Support/Sublime Text 3/Local
+		, ~/Library/Application Support/Google/Chrome/Default/Bookmarks
+		} symlink ~/notes/.auto/*
+
+for file: human name <- : absolute name. s/^${env.HOME}/~/. [search: ι symlink [/* | ~/*]] or ι
+
+# this doesn't work in current os version
+# #glob duti -s com.sublimetext.3 ι for public.plain-text .{ζ,py,md,sh,xml,c,cpp,h,hpp}
+
+################################## plain text ##################################
+sublime build 3126 license:
+—– BEGIN LICENSE —–
+Wixel
+Single User License
+EA7E-848235
+103D2969 8700C7ED 8173CF61 537000C0
+EB3C7ECB 5E750F17 6B42B67C A190090B
+7669164F C6F371A8 5A1D88D5 BDD0DA70
+C065892B 7CC1BB2B 1C8B8C7C F08E7789
+7C2A5241 35F86328 4C8F70D9 C023D7C2
+11245C36 59A730DB 72BDB9A7 D5B20304
+90E90E72 9F08CA25 73F49C20 179D938E
+5BC8BEDA 13457A69 39E6265F 233767F9
+—— END LICENSE ——
+tripmode license: alice0meta@gmail.com AD3ED2CD-BB242C28-0102781A-709B1449-49FC21F0
+totalspaces2 license: Alice Monday GAWAE-FAUEJ-AGAM2-N2SZ3-Q3D9H-GLR5G-MNPW6-XEUAC-CQ9BR-CLTB6-VFNKS-62K6N-54AFY-S7UAG-SV5Q
+
+install https://itunes.apple.com/us/app/xcode/id497799835
+
+sudo visudo # echo 'Defaults    timestamp_timeout=1440' >> /etc/sudoers
+
+os_daemon(φ`~/code/scratch/log_fs_changes.ζ`).restart()
+
+after installing the included version of spotify,
+> ~/Library/Application Support/Spotify/Spotify_new.archive
+> ~/Library/Application Support/Spotify/Spotify_new.archive.sig
+make them read-only and locked
+
+fix http-server / hammerspoon conflict with
+rm /usr/local/bin/hs
+hs.ipc.cliInstall()
+
+------- data exporting -------
+https://github.com/WhisperSystems/Signal-Android/wiki/Using-Signal
+https://www.reddit.com/r/discordapp/comments/4wz5b5/anyway_to_export_chat_logs_from_a_server/

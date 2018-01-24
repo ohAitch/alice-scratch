@@ -96,7 +96,7 @@ T ← 10 ;i←0 ;(=>{sb_editᵥ(sb.tab.active)`view.insert(edit,view.sel()[0].be
 sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0,view.size()),${ι})`
 
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
-braille_2d ← λ(ι){↩ (Buffer.isBuffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← [] ;for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]) ;↩ t.join('')}).join('\n')}
+braille_2d ← λ(ι){↩ (T.Buffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← [] ;for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]) ;↩ t.join('')}).join('\n')}
 life ← λ(ι){
 	if (!ι) {ι ← {X:115*2,Y:46*4} ;ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )) ;↩ ι} # 115,46
 	else {X ← +ι.X ;Y ← +ι.Y ;ι = ι.ι
@@ -144,10 +144,6 @@ to ← 1e5
 ⧗(=> log(
 	(to/2).map(ι=> reduced(ι, to)).filter(ι=> log2(to)*2*0.6 <= bits(ι) && bits(ι) <= log2(to)*2).maplog(ι=> [ι, best_approx(ι)] ).filter(ι=> 1 < ι[1][0] && ι[1][1] > 9)._.sortBy(ι=> score(ι[0],ι[1])).slice(-40).map(ι=> (ι[0][0]/ι[0][1])+' ≈ '+ι[1][0]+'÷'+ι[1][1]).join('\n')
 	) )
-
-############################## real clipboard api ##############################
-osaᵥ`set x to clipboard info ;the clipboard as (item 1 of item 2 of x)`
-probably hammerspoon is better
 
 ############################### neat chrome apis ###############################
 http://developer.chrome.com/extensions/accessibilityFeatures
@@ -258,7 +254,7 @@ Tarr_1 ← ι=>{ t ← __global(ι) ;↩ t && ι instanceof t.Array }
 ι=> ι instanceof Array                             faster or on par with builtin
 ι=> ι instanceof global.Array                      very slow??
 
-##################################### cruft ####################################
+#################################### scruff ####################################
 'Function.prototype.at':lazy('at',=>{priorityqueuejs ← npm`priorityqueuejs@1.0.0`
 	# https://github.com/Automattic/kue
 	# https://github.com/rschmukler/agenda
@@ -270,8 +266,6 @@ Tarr_1 ← ι=>{ t ← __global(ι) ;↩ t && ι instanceof t.Array }
 		qu.size() === 0? (P = ✗) : qu.peek().time < hrtime()? (t=qu.deq(), t.ι&&t.ι.in(), Λ()/*nxt*/) : Λ.in(0.1)/*poll*/
 		})() }
 	↩ λ(time){ t ← {time, ι:@} ;↩ time < hrtime()? (t.ι.in(), =>{}) : (qu.enq(t), ensure(), =>{t.ι = ∅}) } }),
-E._imgur = ι=> shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι} 'https://api.imgur.com/3/upload' | jq -r .data.link`+''
-E._sc_imgur = (…a)=>{ t ← φ`/tmp/sc_${random_id(9)}.png` ;_sc(…a,t) ;_alert('uploading to imgur','...',1.5) ;ι ← _imgur(t) ;go_to(ι) ;p(googl(ι)+'#imgur') ;shᵥ`rm ${t}` }
 # del(){ for v in "$@" ;do v="$(realpath "$v")" ;ζ 'osaᵥ`finder: delete POSIX file ${ι}`;' "$v" ;rm -f "$(dirname "$v")/.DS_STORE" ;done ;}
 im_pdf_to_png__bad() { for v in "$@" ;do convert -verbose -density 150 -trim "$v" -quality 100 -sharpen 0x1.0 png:"${v%.*}.png" ;done ;}
 convert -verbose -density 150 -trim 'from.pdf' -quality 100 -flatten -sharpen 0x1.0 x.jpg
@@ -362,18 +356,41 @@ im_autowhite(){ ~/code/scratch/im_autowhite "$@" ;}
 comic_rotate(){
 	mkdir '#rotated' ;for v in * ;do [[ $v = '#rotated' ]] || cp -r "$v" '#rotated' ;done
 	cd '#rotated' ;find . -type f -print0 | while IFS= read -r -d $'\0' t ;do convert -rotate 270 "$t" "$t" ;done ;}
-cache_imgurs(){ for v in "$@" ;do local o=~/file/.cache/imgur/"$v" ;[ -f "$o" ] || curl -o "$o" "http://i.imgur.com/$v" ;done ;}
-youtube-dl(){ /usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/"$2.%(ext)s" "$1" ;}
-youtube-dl-v(){ /usr/local/bin/youtube-dl -o ~/Downloads/"$2.%(ext)s" "$1" ;}
 cp_devi(){ rsync --protect-args --partial --progress --rsh=ssh 'alice@devi.xyz:/home/alice/'"$1" "$2" ;}
 ls_devi(){ ssh alice@devi.xyz 'find . -not -path "*/\\.*" -type f' | sort ;}
 nom=user@74.207.242.236
 nom(){ ssh "$nom" ;}
 
 ⧫. pb ==>{
-	_pastebin_id ← => Π(yes=>
-		process.stdin.pin((e,ι)=>{
+	_pastebin_id ← =>
+		process.stdin.pin().then(ι=>{
 			t← shᵥ`curl -s 'http://pastebin.com/api/api_post.php' -d 'api_option=paste&api_paste_private=1&'${φ`~/.auth/pastebin`.text.replace(/\n$/,'')} --data-urlencode api_paste_code=${ι}`
-			yes( (t+'').replace(/.*\//,'') ) }) )
+			↩ (t+'').replace(/.*\//,'') })
 	↩ (=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι) ;ι = 'http://alice.sh/txt#'+ι ;p(ι) ;log('copied:',ι) }) )
 		…←({ cant_pool:✓ }) }
+
+################################################################################
+el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
+el ← require('electron')
+eval_main ← f=> el.ipcRenderer.send('eval_main',f+'')
+eval_main(me=> me.Π`ready-to-show`.then(=> me.show()))
+eval_main(=> el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png') )
+
+################################################################################
+E.pixels = {
+	read: λ(ι,type='rgb',cb){npm('get-pixels@3.2.3')(φ(ι)+'',λ(e,{data:D,shape:[X,Y,depth],stride}){X|=0;Y|=0
+		// maybe just use Symbol.iterator ?
+		;(depth === 4 && stride._.isEqual([4,X*4,1])) || (λ(){throw Error()})()
+		if      (type==='rgba') ι ← D
+		else if (type==='rgb' ) {ι ← Buffer(X*Y*3); pˡ←0; pᵈ←0; for(i←0;i<X*Y;i++) {ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; ι[pˡ++]=D[pᵈ++]; pᵈ++}}
+		else if (type==='grey') {ι ← Buffer(X*Y); for(i←0;i<X*Y;i++) ι[i] = D[i*4]}
+		else throw Error()
+		cb(e,{X,Y,ι}) }) },
+	show: λ({ι,X,Y},type='rgb',to){
+		t ← new (npm('pngjs@2.2.0').PNG)({width:X, height:Y}); D ← t.data; p←0
+		if      (type==='rgba') (T.Buffer(ι)? ι : Buffer(ι)).copy(t.data)
+		else if (type==='rgb' ) for(i←0;i<ι.length;) {D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = ι[i++]; D[p++] = 0xff}
+		else if (type==='grey') for(i←0;i<ι.length;) {D[p++] =         D[p++] =         D[p++] = ι[i++]; D[p++] = 0xff}
+		else throw Error()
+		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
+	}
