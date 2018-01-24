@@ -266,13 +266,18 @@ if( require.extensions && !require.extensions['.ζ'] )(()=>{
 //################################### prelude ###################################
 γ.protos = function*(ι){ for(;!( ι===null || ι===undefined ) ;ι = Object.getPrototypeOf(ι)) yield ι }
 
-γ.simple_flesh = ι=> Tfun(ι)? T(ι)+ι : json3_show(ι,(ˣ,ι)=>{ if( Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_l.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;return r } })
+γ.simple_flesh = ι=> Tfun(ι)? T(ι)+ι : JSON.stringify(ι,(ˣ,ι)=>{ if( Tprim(ι)||Tarr(ι)) return ι ;else{ var r={} ;_l.keys(ι).sort().forEach(i=> r[i]=ι[i]) ;return r } })
+	// a shame this doesnt include json2_show s work at all ... gonna be slow on buffers
 	// try{ ... }catch(e){ e.message==='Converting circular structure to JSON' || ‽(e) ;↩ npm`circular-json@0.4.0`.stringify(ι) } }
 γ[γ["|>"]] (ι=> new Property(ι,"simple_hash")) .thunk=()=>{
 	var bigintstr_to_buf = ι=>{ ;var ι = require('/usr/local/lib/𐅪𐅩modu/big-integer@1.6.26__57/node_modules/big-integer')(ι) ;var r = Buffer.alloc(8) ;r.writeUInt32BE( +ι.shiftLeft(-32) ,0 ) ;r.writeUInt32BE( +ι.and(2**32-1) ,4 ) ;return r }
 	var buf36 = require('/usr/local/lib/𐅪𐅩modu/base-x@1.0.4__57/node_modules/base-x')([.../[0-9a-z]/].join('')).encode
 	var farmhash_stable_64 = require('/usr/local/lib/𐅪𐅩modu/farmhash@2.0.4__57/node_modules/farmhash').fingerprint64 [γ["≫"]] (bigintstr_to_buf)
 	return simple_flesh [γ["≫"]] (Buffer.from) [γ["≫"]] (farmhash_stable_64) [γ["≫"]] (buf36) [γ["≫"]] ((𐅭𐅞)=>𐅭𐅞.padStart(13,'0').slice(1)) }
+
+γ.poll1_simple = f=> Π(re=>{
+	var 𐅩𐅫𐅂𐅬 = (function*(){ yield 0 ;var ι = 0.01 ;yield ι ;yield* _midline_horizontal_ellipsis_(12).map(()=> ι *= 1.5 ) ;yield* _midline_horizontal_ellipsis_(10).map(()=> 1) ;yield* _midline_horizontal_ellipsis_(10).map(()=> 5) ;for(;;) yield 30 })() [γ["|>"]](seq)
+	var 𐅂 = ()=> (()=>{ var t = f() ;t===undefined||t===null? 𐅂() : re(t) }).in(𐅩𐅫𐅂𐅬.next_ι) ;𐅂() })
 
 γ.thisdevice_memo = f=>{
 	var d = thisdevice0('𐅦𐅃𐅂𐅂'+simple_hash(f)) ;var d_ = d.ι||{} ;var 𐅪𐅋𐅃𐅨 = (t,ι)=>( ι.ι = t ,d.ι = d_ ,d_ = d.ι ,ι.ι )
@@ -557,9 +562,7 @@ Date.prototype[γ["|>"]] (ι=> new Property(ι,"i")) .get=function(){return +thi
 	return { cmd ,job_path ,restart(){ var t = this.job_path ;shᵥ`launchctl unload ${t} &>/dev/null ;launchctl load ${t}` } } }
 os_daemon[γ["|>"]] (ι=> new Property(ι,"this")) .thunk=()=> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w)
 
-module.__proto__.if_main_do = function(f){ !this.parent && f(...process.argv.slice(2)) }
-
-γ.repr_fi = ι=> Tfun(ι)? '('+ι+')()' : ι
+module.__proto__.if_main_do = function(f,b){ !this.parent? f(...process.argv.slice(2)) : b&&b() }
 
 //##### metaprogramming → runtime macros built on top of template literals ######
 γ.is_template0 = (ss,ιs)=> ss && Tarr(ss.raw) && ss.raw["‖"]-1 === ιs["‖"]
@@ -636,11 +639,8 @@ var json2_read = ι=>{ var r = JSON.parse(ι) ;(function Λ(ι,k,o){if( ι.type=
 	if( o===undefined ) r = t ;else o[k] = t
 	} else if(! Tprim(ι) ) _u(ι).forEach(Λ)})(r) ;return r }
 var json2_show = ι=> JSON_pretty(ι,(ˣ,ι)=>{var t;
-	if( Buffer.isBuffer(ι)) return _almost_equal_to_(ι,Buffer.from(t=ι+''))? { type:'Buffer' ,utf8:t} : { type:'Buffer' ,base64:ι.toString('base64') }
+	if( T.Buffer(ι)) return _almost_equal_to_(ι,Buffer.from(t=ι+''))? { type:'Buffer' ,utf8:t} : { type:'Buffer' ,base64:ι.toString('base64') }
 	return ι})
-γ.json3_show = (ι,f)=> JSON.stringify(ι,f[γ["≫"]](ι=>{var t;
-	if( Buffer.isBuffer(ι) ) return _almost_equal_to_(ι,Buffer.from(t=ι+''))? { type:'Buffer' ,utf8:t } : { type:'Buffer' ,base64:ι.toString('base64') }
-	return ι}))
 γ[γ["|>"]] (ι=> new Property(ι,"φ")) .thunk=()=>{
 	// https://www.npmjs.com/package/glob-to-regexp
 	var fs = node.fs
@@ -911,6 +911,7 @@ process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',
 var ζ_repl_start = ()=>{
 	// i know how to make the good repl for ct. i want to, but im tired
 	var diesis_compile = ι=>{var t;
+		// of course this is lovely but it is a dead end - we want Sight
 		var lock = 0?0
 			: ['ct','chrome_tabs','ps2','d','bookmarks']["∪"]([]).has(ι)? ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`

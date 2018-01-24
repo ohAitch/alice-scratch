@@ -76,11 +76,10 @@
 ⧫. Πor ==> (…ι)=> Promise.race( ι.‖===1? ι[0] : ι )
 
 ⧫. @deviceΠ = => ι=>{ start ← Tfun(ι)
-	φ_on_E ← ι=> Π(re=>{ 𐅪 ← ι.∃? re() : npm`chokidar@2.0.0`.watch(ι+'',{persistent:✓}).on('all',=> ι.∃ &&( 𐅪.close() ,re() )) })
 	id ← !start? ι : random_id.greek(9)
 	𐅞 ← @device0('Π'+id)
 	re ← (ι=>{ 𐅞.ι = ι }) …←({ ,id ,toString:=>r+'.re' })
-	r ← { ,id ,re ,toString:=>ζjs`@deviceΠ(${id})` } !>(‘.Π .get==> φ_on_E(𐅞.o).then(=> 𐅞.ι))
+	r ← { ,id ,re ,toString:=>ζjs`@deviceΠ(${id})` } !>(‘.Π .get==> poll1_simple(=> 𐅞.ι))
 	start && ι(re)
 	↩ r }
 
@@ -103,7 +102,7 @@
 				,=> /* retry once */ (=> 𐅯().catch(=>∅) ).in(1/*holy shit cheating*/)
 				)
 			}) }
-	↩ id=> code=> send_to_my({ ,id ,code:repr_fi(code) }) }
+	↩ id=> (…a)=>{ ι ← a.pop() ;Tfun(ι) &&( ι = js`(…${ι+''})(... ${a})` ) ;send_to_my({,id,code:ι}) } }
 ⧫. _electron__start_my ==>{
 	start_el_app ← (code,…a)=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
@@ -123,7 +122,7 @@
 				send(` ;require('/usr/local/bin/ζ') ;γ.el = require('electron') `)
 				t.Π`ready-to-show`.then(=> t.show()) }
 			send(code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
-		net1.device_listen().then(H=>{ H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
+		net1.device_listen().then(H=>{ ;H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
 		})},re) ) }
 
 ⧫. notify ==> ι=>{

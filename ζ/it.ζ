@@ -275,6 +275,10 @@ if( require.extensions && !require.extensions['.ζ'] )(=>{
 	farmhash_stable_64 ← npm`farmhash@2.0.4`.fingerprint64 ≫ (bigintstr_to_buf)
 	↩ simple_flesh ≫ (Buffer.from) ≫ (farmhash_stable_64) ≫ (buf36) ≫ (.padStart(13,'0').slice(1)) }
 
+γ.poll1_simple = f=> Π(re=>{
+	𐅩𐅫𐅂𐅬 ← (λ*(){ yield 0 ;ι ← 0.01 ;yield ι ;yield* ⋯(12).map(=> ι *= 1.5 ) ;yield* ⋯(10).map(=> 1) ;yield* ⋯(10).map(=> 5) ;for(;;) yield 30 })() |>(seq)
+	𐅂 ← => (=>{ t ← f() ;t===∅||t===null? 𐅂() : re(t) }).in(𐅩𐅫𐅂𐅬.next_ι) ;𐅂() })
+
 γ.@device_memo = f=>{
 	d ← @device0('𐅦𐅃𐅂𐅂'+simple_hash(f)) ;d_ ← d.ι||{} ;𐅪𐅋𐅃𐅨 ← (t,ι)=>( ι.ι = t ,d.ι = d_ ,d_ = d.ι ,ι.ι )
 	↩ (…a)=>{t←; ι ← d_‘[simple_hash(a)] ;↩ ι.∃? ι.ι : T.Promise(t= f(…a) )? t.union.then(t=> 𐅪𐅋𐅃𐅨(t,ι)) : 𐅪𐅋𐅃𐅨(t,ι) } }
@@ -558,9 +562,7 @@ Date.prototype‘.i .get=λ(){↩ +@ / 1e3}
 	↩ { ,cmd ,job_path ,restart(){ t ← @.job_path ;shᵥ`launchctl unload ${t} &>/dev/null ;launchctl load ${t}` } } }
 os_daemon‘.this .thunk==> process.env.anon_tns7w && os_daemon(process.env.anon_tns7w)
 
-module.__proto__.if_main_do = λ(f){ !@.parent && f(…process.argv.slice(2)) }
-
-γ.repr_fi = ι=> Tfun(ι)? '('+ι+')()' : ι
+module.__proto__.if_main_do = λ(f,b){ !@.parent? f(…process.argv.slice(2)) : b&&b() }
 
 ###### metaprogramming → runtime macros built on top of template literals ######
 γ.is_template0 = (ss,ιs)=> ss && Tarr(ss.raw) && ss.raw.‖-1 === ιs.‖
@@ -909,6 +911,7 @@ process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',
 ζ_repl_start ← =>{
 	# i know how to make the good repl for ct. i want to, but im tired
 	diesis_compile ← ι=>{t←;
+		# of course this is lovely but it is a dead end - we want Sight
 		lock ← 0?0
 			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? ι+'()'
 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
