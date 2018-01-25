@@ -74,5 +74,5 @@ npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 	}).every(1.1d)
 
 ################################## cronomatron #################################
-;(=> φ`~/file/pix/→ bg laptop`.TMP_children() ) ≫(ι=> random(ι) |>(imgur_from).then(ι=> set_newtab_bg(ι.link)))
+;(=> φ`~/file/pix/→ bg laptop`.TMP_children() ) ≫(ι=> 🎲(ι) |>(imgur_from).then(ι=> set_newtab_bg(ι.link)))
 .every(0.01d)

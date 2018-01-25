@@ -76,11 +76,11 @@ cs ← lines`
 #a2005d
 `.map(color.X)
 string_to_float ← (ι,αβ)=> […ι].map((ι,i)=> αβ.indexOf(ι) / αβ.‖^(i+1) ).reduce((a,b)=> a+b)
-d ← ι=> string_to_float(ι,random_id.greek.αβ)
+d ← ι=> string_to_float(ι,🎲id.greek.αβ)
 id ← ι=> '_'+d(ι).toString(16).replace('.','_')
 c ← ι=> '#'+color.interpolate_0(cs,d(ι)).i.toString(16).padStart(8,'0').slice(0,-2)
 
-αβ ← random_id.greek.αβ
+αβ ← 🎲id.greek.αβ
 ↩ αβ.map…(a=>{ t ← αβ.map(b=> a+b).map(ι=>[ ι,`${ι}[${αβ.join('')}]*` ]) ;↩ […t,[t[0][0],a]] })
 # .map(([a,b])=> `    - { scope: '${id(a)}' ,match: '${b}' }`).line
 .map(([a,b])=> `$bg bg ${c(a)}70 ${id(a)}`).line

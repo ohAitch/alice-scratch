@@ -3,10 +3,10 @@
 ⧫. ct ==> chrome_tabs
 
 ⧫. sb_completions ==>{ 𐅜𐅝 ← {
-,anon:=> [random_id.greek(4)]
+,anon:=> [🎲id.greek(4)]
 ,now:=> Time() |>(ι=>[ ι.day_s,ι.ymdhm,ι.ymdhms,ι.ymdhmss ])
 ,day:=> [Time().local.ymd]
-# ,r1:=> [random(10)+'']
+# ,r1:=> [🎲(10)+'']
 } ;↩ ι=> 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ }
 
 ⧫[ '…p'] ==> => postrun(hand.ι)
@@ -61,7 +61,6 @@
 		# ! should gather most of this information periodically async & record it. should use FRP.
 		hint_screen ← { ,'sublime text':2 ,'path finder':3 ,'github desktop':4 }
 		isnt_standalone ← { ,ibooks:1 ,preview:1 }
-		if( app==='chrome' && (shᵥ`ps -x -o comm`+'').includes('/Chrome Apps.localized/') ){ ['⌘␣',…'chrome↩'].map(robot_key_tap) ;↩ }
 		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
 		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
 		}
@@ -212,7 +211,7 @@
 ################ prelude ###############
 ⧫. x ==>{
 	set_term_title ← ι=> process.stdout.write('\x1b]0;'+ι+'\x07')
-	this_term_is_frontmost ← =>{ t ← random_id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
+	this_term_is_frontmost ← =>{ t ← 🎲id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
 	↩ (=>{ E ← process.env.? |0
 		this_term_is_frontmost() ||( E===0? say`✓` : (say`✗` ,osaᵥ`terminal: activate`) )
 		E===0? postrun('exit') : ( process.exitCode = E )
@@ -320,7 +319,7 @@
 	alias http-server='http-server -c-1'
 	alias ζlogic='cd ~/Library/Caches/ζ.logic/'
 	alias ζdata='cd ~/Library/Caches/ζ.persist.0/'
-	` + inject_bash.map(id=>{ 𐅫 ← `/tmp/postrun_${random_id(9)}` ;↩ sh`…${id}(){
+	` + inject_bash.map(id=>{ 𐅫 ← `/tmp/postrun${🎲id.greek(9)}` ;↩ sh`…${id}(){
 		ζ ${γ[id].cant_pool && '--fresh'} ${js` [process.env.?,process.env.$,…a] = a
 			γ.postrun = ι=> φ(${𐅫}).text = ι
 			γ[${id}](…a)

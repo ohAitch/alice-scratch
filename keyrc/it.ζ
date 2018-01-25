@@ -140,8 +140,8 @@ regen ← (opt={})=>{
 ################################################################################
 module.exports.KEY_once = λ(trigger,f,…a){
 	code ← '('+f+')(…'+JSON.stringify(a)+')'
-	fi ← 'notsave.KEY_once_'+random_id(9)
-	db ← (φ`~/.keyrc.json`.json||{}); id ← random_id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
+	fi ← 'notsave.KEY_once_'+🎲id(9)
+	db ← (φ`~/.keyrc.json`.json||{}); id ← 🎲id(9); db[id] = {trigger,output:'; t ← φ`~/.keyrc.json`.json; delete t["'+id+'"]; φ`~/.keyrc.json`.json = t;'+code,if:fi}; φ`~/.keyrc.json`.json = db
 	regen({minimal:✓})
 	shᵥ`${KB} enable ${fi}`
 	}

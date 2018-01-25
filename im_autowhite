@@ -13,7 +13,7 @@ percent ← 1 // percent pixels closest to white
 quantumrange ← shᵥ`convert xc: -format '%[fx:quantumrange]' info:`+''|0
 get_channel_mean ← ι=> +(shᵥ`convert ${ι} -format '%[mean]' info: ;:`+'') / quantumrange
 get_average ← (…ι)=>{ [a,b] ← ι.map(get_channel_mean) ;↩ a===0 || b===0? 1 : a/b }
-tmp ← φ`/tmp/im_autowhite_${random_id(9)}` ;tmp.φ`foo`.ι = '' ;process.on('exit',=> shᵥ`rm -rf ${tmp} ;:`) ;τ ← tmp.φ.bind(tmp)
+tmp ← φ`/tmp/im_autowhite${🎲id.greek(9)}` ;tmp.φ`foo`.ι = '' ;process.on('exit',=> shᵥ`rm -rf ${tmp} ;:`) ;τ ← tmp.φ.bind(tmp)
 
 main ← ι=>{
 	shᵥexit`convert -quiet ${ι} +repage ${τ`A`}` ||( console.log(APP,'error: file',ι,'is not an image') ,‽ )

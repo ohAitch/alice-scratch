@@ -17,7 +17,7 @@ server ← express()
 io ← require('socket.io')(server)
 
 io.on('connection',client=>{ patch_Socket(client)
-	clients_add({ name:random_id(10), socket:client, addrs:[], connected:✓ })
+	clients_add({ name:🎲id(10), socket:client, addrs:[], connected:✓ })
 	cl ← clients_by_socket.get(client)
 	cl.socket
 		.on('disconnect',=>{ cl.connected = ✗; updated(cl); clients_delete(cl) })

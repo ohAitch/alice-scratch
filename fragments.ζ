@@ -47,7 +47,7 @@ namegen ← gen2fn(λ*(){
 	short ← 'ake bek cah cek dek din emi esi faz gaz gih gir gum hal han kad kag kam keh ket kis kiz kob koh kot lop mez mot nal nir oki omi rad rar sar tar tus zal zar zeh zek zel zep zif zok zon zus'.split(' ')
 	short = short.map…(ι=> 10..map(i=> ι+' '+i))._.shuffle()
 	to ← round((long.‖)/2) ;yield* _.shuffle([…long, …short.slice(0,to)]) ;yield* short.slice(to)
-	c ← {} ;for(;;){ t ← '#'+4..map(ι=> random([…/[0-9a-z]/])).join('') ;if (c[t]) continue ;yield (c[t]=1, t) } })
+	c ← {} ;for(;;){ t ← '#'+4..map(ι=> 🎲([…/[0-9a-z]/])).join('') ;if (c[t]) continue ;yield (c[t]=1, t) } })
 
 ###################################### ocr #####################################
 # # used up: alice0meta@gmail.com
@@ -98,7 +98,7 @@ sublime_set_buffer ← ι=> sb_editᵥ(sb.tab.active)`view.replace(edit,Region(0
 braille_table ← 0x100.map(ι=> chr(ord(' ')+ι))
 braille_2d ← λ(ι){↩ (T.Buffer(ι.ι)? ι.ι.chunk(ι.X) : ι).chunk(4).map(λ(ι){t ← [] ;for(i←0;i<ι[0].‖;i+=2) t.push(braille_table[(ι[0][i]<<0)|(ι[1][i]<<1)|(ι[2][i]<<2)|(ι[0][i+1]<<3)|(ι[1][i+1]<<4)|(ι[2][i+1]<<5)|(ι[3][i]<<6)|(ι[3][i+1]<<7)]) ;↩ t.join('')}).join('\n')}
 life ← λ(ι){
-	if (!ι) {ι ← {X:115*2,Y:46*4} ;ι.ι = Buffer.from((ι.X*ι.Y).map(=> random()<0.5 ?1:0 )) ;↩ ι} # 115,46
+	if (!ι) {ι ← {X:115*2,Y:46*4} ;ι.ι = Buffer.from((ι.X*ι.Y).map(=> 🎲()<0.5 ?1:0 )) ;↩ ι} # 115,46
 	else {X ← +ι.X ;Y ← +ι.Y ;ι = ι.ι
 		r ← Buffer.from(ι)
 		get ← (x,y)=> 0<=x&&x<X && 0<=y&&y<Y? ι[y*X+x] : 0
@@ -325,8 +325,8 @@ E.chrome_simple_osaᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: execute window …
 E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${window+1}'s tab …${tab+1} to set URL to ${'javascript:'+ζ_compile(ι)}`
 # E.chromeᵥ = ‡ not actually used ‡ wait, nope, is actually used, but mostly in one-off scripts
 	# λ(ι,tab){tab = tab!==∅? 'tab '+(tab+1) : 'active tab'
-	# 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+random_id(10) ;fst ← 1 ;while ((r=chromeᵥ("if( window.jQuery){"+ι+"} else {"+(fst? (fst=0 ,"t ← document.createElement('script') ;t.src = 'https://code.jquery.com/jquery-3.1.1.min.js' ;document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null) ;↩ r}
-	# # probably add a random_id(10) call to '#applescript_hack'
+	# 	# E.chrome_$ᵥ = λ(ι,tab){r←; $null ← '__$null_'+🎲id.greek(10) ;fst ← 1 ;while ((r=chromeᵥ("if( window.jQuery){"+ι+"} else {"+(fst? (fst=0 ,"t ← document.createElement('script') ;t.src = 'https://code.jquery.com/jquery-3.1.1.min.js' ;document.getElementsByTagName('head')[0].appendChild(t)") : "")+"; '"+$null+"'}",tab))===$null) ;↩ r}
+	# # probably add a 🎲id.greek(10) call to '#applescript_hack'
 	# 	t ← "t ← document.querySelectorAll('#applescript_hack')[0] ;t && t.parentNode.removeChild(t) ;ι ← (0,eval)("+JSON.stringify(ζ_compile(ι))+") ;t ← document.createElement('div') ;t.id = 'applescript_hack' ;t.style = 'display:none;' ;t.textContent = JSON.stringify(ι) ;t2 ← document.querySelectorAll('head')[0] ;t2.insertBefore(t,t2.firstChild) ;∅"
 	# 	chrome_simple_js_ᵥ(t,tab)
 	# 	t ← "document.querySelectorAll('#applescript_hack')[0].textContent"
@@ -368,13 +368,6 @@ nom(){ ssh "$nom" ;}
 			↩ (t+'').replace(/.*\//,'') })
 	↩ (=> _pastebin_id().then(ι=>{ go_to('http://pastebin.com/raw/'+ι) ;ι = 'http://alice.sh/txt#'+ι ;p(ι) ;log('copied:',ι) }) )
 		…←({ cant_pool:✓ }) }
-
-################################################################################
-el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
-el ← require('electron')
-eval_main ← f=> el.ipcRenderer.send('eval_main',f+'')
-eval_main(me=> me.Π`ready-to-show`.then(=> me.show()))
-eval_main(=> el.app.dock.setIcon('/~/code/scratch/dotfiles/eye.png') )
 
 ################################################################################
 E.pixels = {

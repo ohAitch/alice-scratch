@@ -19,19 +19,24 @@
 ################################ data : numeric ################################
 ⧫. numeric2 ==>{
 	nk ← npm`numeric@1.2.6`
-	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
+	# norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
 	norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
 	mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
 	norm∞_affine_sorted_E ← ι=>( nk.subeq(ι,ι[0]) ,nk.diveq(ι,ι[-1]) )
-	↩ {,nk,norm∞,norm1,mean,norm∞_affine_sorted_E} }
+	infer0 ← (ι,x)=>{ x *= ι.‖-1 ;i ← x|0 ;x ← x%1 ;ι ← [ι[i%ι.‖],ι[(i+1)%ι.‖]] ;↩ nk.add(…_u.zip(ι,[1-x,x]).map(ι=>nk.mul(…ι))) }
+	↩ {,nk/*,norm∞*/,norm1,mean,norm∞_affine_sorted_E,infer0} }
 ⧫. normal_PDF ==> x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
 ⧫. normal_CDF ==> x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
 
 ################################# data : color #################################
 ⧫. color ==>{
 	color ← npm`color@2.0.1`
-	color.interpolate_0 = (c,x)=>{ x *= c.‖ ;i ← x|0 ;r ← x-i ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,1-r) }
+	color.interpolate_0 = (c,x)=>{ x *= c.‖ ;i ← x|0 ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,x%1) }
+	color.interpolate_1 = (c,x)=>{ x *= c.‖-1 ;i ← x|0 ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,x%1) }
 	color.prototype‘.i .get= λ(){ ι ← @.rgb().color ;↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
+	IN ← ι=> color(ι).lab() |>(ι=> […ι.color,ι.valpha])
+	UN ← ι=> color.lab(…ι)
+	color.infer0 = (c,x)=> numeric2.infer0(c.map(IN),x)|>(UN)
 	↩ color }
 
 ######################### net incl context device,proc #########################
@@ -76,7 +81,7 @@
 ⧫. Πor ==> (…ι)=> Promise.race( ι.‖===1? ι[0] : ι )
 
 ⧫. @deviceΠ = => ι=>{ start ← Tfun(ι)
-	id ← !start? ι : random_id.greek(9)
+	id ← !start? ι : 🎲id.greek(9)
 	𐅞 ← @device0('Π'+id)
 	re ← (ι=>{ 𐅞.ι = ι }) …←({ ,id ,toString:=>r+'.re' })
 	r ← { ,id ,re ,toString:=>ζjs`@deviceΠ(${id})` } !>(‘.Π .get==> poll1_simple(=> 𐅞.ι))
@@ -84,7 +89,8 @@
 	↩ r }
 
 ############################### friend glue : ui ###############################
-⧫. electron_window_for ==>{
+# ⧫. electron_window_for ==> id=> (…a)=> electron_window(id,…a) # deprecated?
+⧫. electron_window ==>{
 	# interaction with previous versions: unsolved
 	𐅩 ← {
 		,init:=> _electron__start_my().Π
@@ -102,7 +108,7 @@
 				,=> /* retry once */ (=> 𐅯().catch(=>∅) ).in(1/*holy shit cheating*/)
 				)
 			}) }
-	↩ id=> (…a)=>{ ι ← a.pop() ;Tfun(ι) &&( ι = js`(…${ι+''})(... ${a})` ) ;send_to_my({,id,code:ι}) } }
+	↩ (id,…a)=>{ ι ← a.pop() ;Tfun(ι) &&( ι = js`(…${ι+''})(... ${a})` ) ;send_to_my({,id,code:ι}) } }
 ⧫. _electron__start_my ==>{
 	start_el_app ← (code,…a)=>{
 		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
@@ -111,15 +117,19 @@
 		|>(ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
 		}
 	↩ => @deviceΠ(re=> start_el_app(re=>{ ;el ← require('electron') ;el.app.Π`ready`.then(=>{
+		el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
 		el.app.on('window-all-closed',=> el.app.hide() )
 		imgur`1uoWV5c`.then(ι=> el.app.dock.setIcon(ι.@device) )
 		on_msg ← ({,id,code})=>{ w ← 𐅮𐅭𐅰𐅂𐅮‘[id]
 			send ← ι=> w.ι.webContents.executeJavaScript(ι+';0')
 			if(! w.ι ){
-				t ← w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ }) # !>(𐅦)
+				t ← w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ }) !>(𐅦)
 				t.loadURL('about:blank')
 				t.Π`closed`.then(=> w.∃ = ✗ )
-				send(` ;require('/usr/local/bin/ζ') ;γ.el = require('electron') `)
+				send(`
+					require('/usr/local/bin/ζ')
+					γ.el = require('electron')
+					γ.eval_main = f=> el.ipcRenderer.send('eval_main',f+'') `)
 				t.Π`ready-to-show`.then(=> t.show()) }
 			send(code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
 		net1.device_listen().then(H=>{ ;H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
@@ -240,7 +250,7 @@
 	R ← => JSON.parse(fs_ipc_emit(PORT,ι))[0]
 	launch_serv ← =>{
 		;(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
-		t ← φ`/tmp/evalserv_${random_id(9)}.rb`
+		t ← φ`/tmp/evalserv_${🎲id.greek(9)}.rb`
 		t.text = String.raw`#!/usr/bin/env ruby
 			require "socket" ;require "json"
 			server = TCPServer.new("localhost",${PORT})

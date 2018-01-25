@@ -89,7 +89,7 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				JSON.parse(ι).map(ι=>{
 					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = single_if ≫ (ι=> 𐅦𐅯𐅦𐅞𐅜.push(ι))
 					r ← catch_union2(=> ζ_eval(ι))
-					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
+					r ← ι.re`;\\s*$`? '' : […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
 					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r })
 				|>(JSON.stringify) """,E(ι))
 			for i in range(len(sel))[::-1]:
@@ -99,8 +99,9 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 			r = ζ(""" [ends,code] ← JSON.parse(ι)
 				ends.map(end=>{
 					𐅦𐅯𐅦𐅞𐅜 ← [] ;𐅨𐅯𐅂𐅭𐅂 ← log.ι ;log.ι = single_if ≫ (ι=> 𐅦𐅯𐅦𐅞𐅜.push(ι))
-					r ← catch_union2(=> ζ_eval( npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'') ) )
-					r ← […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
+					ι ← npm`string-slice@0.1.0`(code,0,end).replace(/^#!.*/,'')
+					r ← catch_union2(=> ζ_eval(ι))
+					r ← ι.re`;\\s*$`? '' : […𐅦𐅯𐅦𐅞𐅜,r].map(ζ_inspect.X).join('\\n') || '∅'
 					log.ι = 𐅨𐅯𐅂𐅭𐅂 ;↩ r })
 				|>(JSON.stringify) """,E([ ends ,view.substr(Region(0,ends[-1])) ]))
 			for i in range(len(sel))[::-1]:

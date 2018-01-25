@@ -1,5 +1,5 @@
 #!/usr/bin/env ζ
-electron_window_for('glow')(=>{
+electron_window('glow',=>{
 
 document.body.appendChild( eval_html0`<canvas id="itscanvas" resize></canvas>` )
 style`body { ;margin:0 ;height:100% }`

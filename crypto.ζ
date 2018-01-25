@@ -28,14 +28,17 @@
 
 ################ prelude ###############
 buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
-bits ← ι=> Tarr(ι)? ι : […buffer(ι)].map…(ι=> 8..map(i=> (ι & 1<<i) >>i))
+bits ← ι=> Tarr(ι)? ι : […buffer(ι)].map…(ι=> 8..map(i=> (ι>>i)&1 ))
 Ox ← ι=>{ι+='' ;↩ Buffer.from(ι,'hex') }
 Ob ← ι=>{ι+='' ;↩ […ι].map(ι=> ι==='0'?0:1) }
 b8 ← ι=> Buffer.from([ι])
 xor_repeat ← (a,b)=>{ ;if( b.‖ > a.‖ ) #swap a b ;r ← Buffer.alloc(a.‖) ;for( i←0;i<r.‖;i++ ) r[i] = a[i] b^ b[i % b.‖] ;↩ r }
 
 ########################################
+
 texts ← @device_memo(=> [
+	,wikipedia_source('English_language')
+	,wikipedia_source('Cat')
 	,'abc'
 	,'abcabcabcabcabcabcabc'
 	,'abcabcabcabcabcabc^abc'
@@ -44,17 +47,32 @@ texts ← @device_memo(=> [
 	,Ob`11000111011011000111110100000000`
 	,Ob`11101011101111111111110110101011111011000010110111100000110111111001111110111101010101010111100100001111`
 	,… 0x100.map(ι=> xor_repeat(b8(ι),Ox`1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736`))
-	,wikipedia_source('English_language')
-	,wikipedia_source('Cat')
 	].map(bits) )()
 
+𐅯𐅫𐅬𐅜 ← 4
 find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ ← ι=>{
-	/*assume*/ αβ ← ⋯(2^4)
+	/*assume*/ αβ ← ⋯(2^𐅯𐅫𐅬𐅜)
 	↩ mean([ norm1(αβ.map(=>1)) ,…ι.map(ι=> αβ.map(α=> α===ι?1:0) ) ]) }
-t ← texts.map(.chunk(4).map(ι=> parseInt(ι.join(''),2) )).map(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
-t.map(.map((ι,i)=> '▁▂▃▄▅▆▇█▁▂▃▄▅▆▇█'[i].×(round(173*ι)) ).join('') ).join('\n')
+
+module.exports = texts
+	.map(.chunk(𐅯𐅫𐅬𐅜).map(ι=> parseInt(ι.reverse().join(''),2) ))
+	.map(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
 
 # i want to See 4b
 # how can i code that see.ζ visualization?
 # obvs bar graph
 # ‡ this is something worth Seeing :) ‡
+
+# so theres like, a number of texts and they have frequencies over 4b
+# um
+# what about the uh char graph? offsets make it weird, um, i guess a bar graph makes more sense
+# bars above elements of 4b? lets just start with numbers for the xaxis
+# this can be a simple bar graph, right?
+# ‡‡ check to make sure
+# ‡‡ then make it
+
+# a simple 2d matrix
+# bit freqs × texts
+
+# or as a heatmap? probably yes, test it
+# ‡‡‡

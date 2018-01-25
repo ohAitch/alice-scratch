@@ -171,7 +171,7 @@ var npm_init = (id_ver,sub='')=>{ id_ver+=''
 γ.alt_ws = ι=> alt_s(seq_ws(ι))
 γ.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
 γ[γ["|>"]] (ι=> new Property(ι,"ζ_compile")) .thunk=()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
-	var word_extra = re`(?:[♈-♓🔅🔆‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
+	var word_extra = re`(?:[♈-♓🔅🔆🎵🎲‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
 	var word = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	var ζ_parse = γ.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
@@ -231,7 +231,7 @@ var npm_init = (id_ver,sub='')=>{ id_ver+=''
 		.replace(𐅭𐅦𐅫𐅩𐅝||(𐅭𐅦𐅫𐅩𐅝= re`(^|(?!${word})[^\s\)]\s*)(=>(?:\s*=>)*)`.g ),(ˣ,t,ι)=> t+'()=>'["×"](ι.match(/=>/g)["‖"]))
 		.replace(/↩ ?/g,'return ')
 		.replace(/([^]|^)\^/g,(ˣ,ι)=> ι==='b'? '^' : ι+'**' )
-		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ var t = '_'+random_id.greek(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
+		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ var t = '_'+_game_die_id.greek(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
 		.replace(/([{([]\s*),/g,'$1')
@@ -348,13 +348,13 @@ var genex = function Λ(ι){return 0?0
 
 //#######################################
 γ [γ['…←']](_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
-γ.random = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? random()*ι |0 : _l.sample(ι) }
-γ[γ["|>"]] (ι=> new Property(ι,"random_id")) .thunk=()=>{
-	var t = αβ=> (L=> L.map(()=> random(αβ)).join('')) [γ['…←']] ({αβ})
-	var random_id = t([.../[0-9a-z]/])
-	random_id.braille = t([...re`[⠁-⣿]`]) // [⠀-⣿]
-	random_id.greek = t([...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
-	return random_id }
+γ._game_die_ = function(ι){return arguments.length===0? Math.random() : Tnum(ι)? _game_die_()*ι |0 : _l.sample(ι) }
+γ[γ["|>"]] (ι=> new Property(ι,"_game_die_id")) .thunk=()=>{
+	var t = αβ=> (L=> L.map(()=> _game_die_(αβ)).join('')) [γ['…←']] ({αβ})
+	var _game_die_id = t([.../[0-9a-z]/])
+	_game_die_id.braille = t([...re`[⠁-⣿]`]) // [⠀-⣿]
+	_game_die_id.greek = t([...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
+	return _game_die_id }
 
 γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
@@ -646,7 +646,7 @@ var json2_show = ι=> JSON_pretty(ι,(ˣ,ι)=>{var t;
 	var fs = node.fs
 	var ENC = ι=> ι.re`/`? ι.replace(/[\/%]/g ,encodeURIComponent.X) : ι
 	φ["⁻¹"] = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi ,decodeURIComponent.X) : ι
-	φ.fd = {} ;φ.fd.from = ι=> fs.createReadStream(undefined,{ fd:fs.openSync(φ`/tmp/${random_id(20)}` [γ['…←']] ({ι}) +'','r') })
+	φ.fd = {} ;φ.fd.from = ι=> fs.createReadStream(undefined,{ fd:fs.openSync(φ`/tmp/fd${_game_die_id.greek(20)}` [γ['…←']] ({ι}) +'','r') })
 
 	var existsSync = ι=> !T.Error(catch_union(()=> fs.accessSync(ι)))
 	var mkdir_p = function Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') return ;var t = node.path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;Λ(t) ;fs.mkdirSync(ι) } }
@@ -729,13 +729,13 @@ var json2_show = ι=> JSON_pretty(ι,(ˣ,ι)=>{var t;
 		,get ini(){return require('/usr/local/lib/𐅪𐅩modu/ini@1.3.4__57/node_modules/ini').parse(this.text) }
 		// ,set ini(ι){}
 		// ,get csv(){↩}
-		,set csv(ι){ var t = φ`/tmp/csv_${random_id(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${this.root('/')+''}).buf = ι })`}` }
+		,set csv(ι){ var t = φ`/tmp/csv${_game_die_id.greek(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${this.root('/')+''}).buf = ι })`}` }
 		// ,get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') }
 		,set xml(ι){ this.text = require('/usr/local/lib/𐅪𐅩modu/xmlbuilder@8.2.2__57/node_modules/xmlbuilder').create(ι,{allowSurrogateChars:true}).end({pretty:true}) }
 		,get plist(){var t; var buf = this.buf ;return 0?0
 			// in case bplist-parser has bugs, this is available:
 			// : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
-			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist_${random_id(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${this.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
+			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist${_game_die_id.greek(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${this.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
 			: require('/usr/local/lib/𐅪𐅩modu/plist@2.1.0__57/node_modules/plist').parse(this.text)
 			}
 		,set plist(ι){ this.text = require('/usr/local/lib/𐅪𐅩modu/plist@2.1.0__57/node_modules/plist').build(ι) }
@@ -958,7 +958,8 @@ var ζ_repl_start = ()=>{
 //#################################### user #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
-γ[γ["|>"]] (ι=> new Property(ι,"nacksoft")) .get=()=> net1._0_φ_seenbydevice0('https://www.dropbox.com/s/kaphh65p0obaq93/nacksoft.wav?dl=1').then(ι=> shₐ`afplay ${ι.o}` )
+γ._musical_note_ = ι=> shₐ`afplay ${ι}`
+γ[γ["|>"]] (ι=> new Property(ι,"nacksoft")) .get=()=> net1._0_φ_seenbydevice0('https://www.dropbox.com/s/kaphh65p0obaq93/nacksoft.wav?dl=1').then(ι=>_musical_note_(ι.o))
 
 //################################### prelude ###################################
 require(φ`~/code/scratch/ζ/module.ζ`+'').put_γ()
@@ -971,7 +972,7 @@ var 𐅭𐅂𐅭𐅪 = (names,within,f)=>{
 		var now = Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
 		if( t ) return dir.φ(t).json2.ι }
 	var a = Time().ymdhmss ;var ι = f() ;var b = Time().ymdhmss
-	dir.φ`${a} ${random_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
+	dir.φ`${a} ${_game_die_id(10)}`.json2 = { names ,date:[a,b] ,ι } ;return ι }
 γ.GET_L = (ι,within)=> 𐅭𐅂𐅭𐅪(['GET -L' ,ι+''] ,within ,()=> shᵥ`curl -sL ${ι}`)
 // ! some requests have short responses ;will need more intelligent caching for those 'cause the filesystem can't take too much
 // ! curl error code 6 means can't resolve & is crashing things maybe
