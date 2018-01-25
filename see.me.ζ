@@ -1,0 +1,15 @@
+electron_window(simple_flesh(['ζsee','default']),=>{
+
+eval_main(.focus())
+
+require_new`/~/code/scratch/see.ζ`
+.freqs(require_new`/~/code/scratch/crypto.ζ`)
+# .freqs(@device0`𐅞𐅜𐅭𐅨`.ι)
+# @device0`𐅞𐅜𐅭𐅨`.ι = require_new`/~/code/scratch/crypto.ζ`
+
+})
+;
+
+
+# colors
+# labels?

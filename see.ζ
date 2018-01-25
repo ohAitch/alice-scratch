@@ -1,11 +1,71 @@
+𐅝𐅮 ← lines`
+#ffffd9
+#edf8b1
+#c7e9b4
+#7fcdbb
+#41b6c4
+#1d91c0
+#225ea8
+#253494
+#081d58
+`
+c ← x=> color.infer0(𐅝𐅮,x).hex()
+
+eval_main(.setBounds({ ,x:0 ,y:0 ,width:1280 ,height:800 }))
 style` body{ ;background:#2a2626 } `
 
-wh ← [700,100]
-exports.freqs = ι=>
-	document.body.appendChild( eval_html0(`
-		<svg style=";fill:darkred ;background:#2a2626 ;width:${wh[0]} ;height:${wh[1]}">
-			<g transform="scale(${wh[0]},${wh[1]})">
-			${numeric2.norm∞(ι).map((ι,i,L)=>
-				`<rect transform="translate(${i/L.‖},${1-ι})" width="${ 1/L.‖ - 1/wh[0] }" height="${ι}"></rect>`
-				).join('')}
-				</g> </svg> `) )
+exports.freqs = ιι=>{
+
+f_c_approx ← ι=>{ 𐅪 ← Math.log2 ;t ← 2^-4 ;↩ (𐅪(t+ι)-𐅪(t))/(𐅪(t+1)-𐅪(t)) }
+
+yL ← ιι.‖ ;xL ← ιι[0].‖
+# pxX ← 200*2 ;pxY ← 2000*2
+# pxX ← xL*7.32*2 ;pxY ← yL*4*2
+pxX ← 127.33 ;pxY ← 947.1
+
+# probably pxN needs to vary w the current screenpixelratio or w/e
+
+
+
+# what if we enlarged the boxes to fit to pixels or 1/2 px, whichever is smaller
+# ‡‡‡ i think this is good? check me
+
+antialias_rect_adjacent ← (x,y,w,h,pxX,pxY)=>{
+	# pxX*=2
+	# pxY*=2
+	𐅭𐅦 ← (L,f,ι)=> f(ι*L)/L
+	rX0 ← 𐅭𐅦.P(pxX,floor)
+	rX1 ← 𐅭𐅦.P(pxX,ceil)
+	rY0 ← 𐅭𐅦.P(pxY,floor)
+	rY1 ← 𐅭𐅦.P(pxY,ceil)
+	x_ ← /*max( */rX0(x) # ,x-1/2/pxX )
+	y_ ← /*max( */rY0(y) # ,y-1/2/pxY )
+	x_2 ← /*min( */rX1(x+w) # ,(x+w)+1/2/pxX )
+	y_2 ← /*min( */rY1(y+h) # ,(y+h)+1/2/pxY )
+	# log('wtf',x_,x_2,x_*pxX,x_2*pxX,rX0(x)*pxX,(x-1/2/pxX)*pxX,rX1(x+w)*pxX,((x+w)+1/2/pxX)*pxX)
+	# 110.33125 22.66875
+	# 132.4975 23.16625
+
+	# im starting to think that
+	# canvas might be an easier target for this
+	# uh, evaluate? ‡‡‡
+
+	↩ [x_,y_,x_2-x_,y_2-y_] }
+
+document.body.appendChild( eval_html0(`
+	<svg width="${pxX}" height="${pxY}" viewbox="0 0 1 1" preserveAspectRatio="none">
+		${ιι.map…((ι,y)=> ι.map((ι,x,L)=>{
+			[x_,y_,w,h] ← antialias_rect_adjacent(x/xL,y/yL,1/xL,1/yL,pxX,pxY)
+			# for adjacent edges:
+			# `<rect transform="translate(${x/xL-1/2/pxX},${y/yL-1/2/pxY})" width="${1/xL+1/pxX}" height="${1/yL+1/pxY}" fill="${c( ι / L._.max() )}"></rect>`
+			↩ `<rect ι="${ι}" transform="translate(${x_},${y_})" width="${w}" height="${h}" fill="${c(f_c_approx(ι))}"></rect>` })).join('')}
+		</svg> `) )
+
+}
+
+################################################################################
+
+# document.body.appendChild( eval_html0(`
+# 	<svg width="200" height="200" viewbox="0 0 1 1">
+# 		${⋯(10).map(x=> ⋯(10).map(y=> `<rect x="${x/10}" y="${y/10}" width="0.1" height="0.1" fill="${_.range(0,1,0.01).map(c)[y*10+x]}"/>` )) .join('')}
+# 		</svg> `) )
