@@ -155,3 +155,10 @@ code/scratch/ζ/server.ζ:24:eval_in_new_worker ← code=>{ code = js`require(${
 code/scratch/dotfiles/.bashrc.ζ:112:		a ← => build && shₐ2({fd:process.stdio})`cd ${project}; ${build}`
 code/scratch/dotfiles/.bashrc.ζ:117:			shₐ2({fd:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
 code/scratch/dotfiles/.bashrc.ζ:119:		c ← => run && shₐ2({fd:process.stdio})`cd ${project}; ${run}`
+
+
+
+
+# On Windows, setting options.detached to true makes it possible for the child process to continue running after the parent exits. The child will have its own console window. Once enabled for a child process, it cannot be disabled.
+# On non-Windows platforms, if options.detached is set to true, the child process will be made the leader of a new process group and session. Note that child processes may continue running after the parent exits regardless of whether they are detached or not. See setsid(2) for more information.
+# wtf

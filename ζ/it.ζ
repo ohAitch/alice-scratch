@@ -358,10 +358,6 @@ genex ← λ Λ(ι){↩ 0?0
 
 γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
-process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
-γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
-	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) })
 
 𐅯𐅩𐅪𐅨𐅃 ← λ*(θ){ for(;θ.i<θ.l.‖;) yield θ.l[θ.i++] }
 γ.seq = ι=>{
@@ -622,6 +618,13 @@ _shₐ ← (ss,ιs,opt={})=>{
 γ.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
 γ.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
 γ.shₐi = shₐ2({stdio:process.stdio})
+γ.shₐlone = (…ι)=> shₐ2({,detached:✓,stdio:'ignore'})(…ι) !>(.unref())
+
+process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
+γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
+	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
+	f(i,sig) })
+γ.♓_sub = ι=> ♓_on_exits(=>ι.kill()) # user ish?
 
 γ.osa = (ss,…ιs)=>{t←;
 	ι ← simple_template(ss,ιs)
@@ -958,8 +961,9 @@ process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',
 ##################################### user #####################################
 process.env.PATH = [,'./node_modules/.bin','/usr/local/bin',…(process.env.PATH||'').split(':'),'.'].∪([]).join(':')
 
-γ.🎵 = ι=> shₐ`afplay ${ι}`
-γ‘.nacksoft .get==> net1._0_φ_seenbydevice0('https://www.dropbox.com/s/kaphh65p0obaq93/nacksoft.wav?dl=1').then(ι=>🎵(ι.o))
+γ.🎵 = ι=> shₐlone`afplay ${ι}`
+γ.🎵d = ι=> net1._0_φ_seenbydevice0(`https://www.dropbox.com/s/${ι}?dl=1`).then(ι=>🎵(ι.o))
+γ‘.nacksoft .get==> 🎵d`kaphh65p0obaq93/nacksoft.wav`
 
 #################################### prelude ###################################
 require(φ`~/code/scratch/ζ/module.ζ`+'').put_γ()

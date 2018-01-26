@@ -261,9 +261,7 @@
 			  t.close
 			end`
 		shᵥ`chmod +x ${t}`
-		node.child_process.spawn(t,{shell:✓,detached:✓,stdio:'ignore'}).unref()
-		# process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ })
-		}
+		shₐlone`${t}` !>(♓_sub) }
 	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
 
 ⧫. sbᵥ ==> (ss,…ιs)=>{

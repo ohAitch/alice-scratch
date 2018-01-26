@@ -68,10 +68,7 @@ npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',
 	}).every(0.01d)
 
 ################################### yahh cron ##################################
-;(=>{
-	t ← φ`~/code/scratch/daily.sh`+''
-	node.child_process.spawn(t,{,shell:✓,detached:✓,stdio:'ignore'}).unref()
-	}).every(1.1d)
+;(=> shₐlone`~/code/scratch/daily.sh` !>(♓_sub) ).every(1.1d)
 
 ################################## cronomatron #################################
 ;(=> φ`~/file/pix/→ bg laptop`.TMP_children() ) ≫(ι=> 🎲(ι) |>(imgur_from).then(ι=> set_newtab_bg(ι.link)))

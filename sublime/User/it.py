@@ -106,9 +106,10 @@ class inline_eval_zeta(sublime_plugin.TextCommand):
 				|>(JSON.stringify) """,E([ ends ,view.substr(Region(0,ends[-1])) ]))
 			for i in range(len(sel))[::-1]:
 				ι = sel[i]
-				view.insert(edit ,*
-					[ ι.begin() ,r[i] ] if view.substr(ι).strip() == '' else
-					[ ι.end() ,r[i]+'\n' ] )
+				if r[i] != '':
+					view.insert(edit ,*
+						[ ι.begin() ,r[i] ] if view.substr(ι).strip() == '' else
+						[ ι.end() ,r[i]+'\n' ] )
 
 class inline_compile_zeta_js(sublime_plugin.TextCommand):
 	def run(self,edit):

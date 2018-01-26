@@ -109,6 +109,7 @@
 ⌥e   cmd.insert_snippet({ "contents":"♓" })
 ⌥f   cmd.insert_snippet({ "contents":"φ" })
 ⌥g   cmd.insert_snippet({ "contents":"γ" })
+⌥h   cmd.insert_snippet({ "contents":"♓" })
 ⌥i   cmd.insert_snippet({ "contents":"∞" })
 ⌥l   cmd.insert_snippet({ "contents":"λ" })
 ⌥m   cmd.insert_snippet({ "contents":"≥" })

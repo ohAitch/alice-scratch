@@ -358,10 +358,6 @@ var genex = function Λ(ι){return 0?0
 
 γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
-process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
-γ._pisces__on_exits = f=> require('/usr/local/lib/𐅪𐅩modu/signal-exit@3.0.2__57/node_modules/signal-exit')((i,sig)=>{
-	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) })
 
 var 𐅯𐅩𐅪𐅨𐅃 = function*(θ){ for(;θ.i<θ.l["‖"];) yield θ.l[θ.i++] }
 γ.seq = ι=>{
@@ -622,6 +618,13 @@ var _shₐ = (ss,ιs,opt={})=>{
 γ.shₐ = (ss,...ιs)=> _shₐ(ss,ιs)
 γ.shₐ2 = opt=>(ss,...ιs)=> _shₐ(ss,ιs,opt)
 γ.shₐi = shₐ2({stdio:process.stdio})
+γ.shₐlone = (...ι)=> shₐ2({detached:true,stdio:'ignore'})(...ι) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.unref())
+
+process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
+γ._pisces__on_exits = f=> require('/usr/local/lib/𐅪𐅩modu/signal-exit@3.0.2__57/node_modules/signal-exit')((i,sig)=>{
+	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
+	f(i,sig) })
+γ._pisces__sub = ι=> _pisces__on_exits(()=>ι.kill()) // user ish?
 
 γ.osa = (ss,...ιs)=>{var t;
 	var ι = simple_template(ss,ιs)
@@ -958,8 +961,9 @@ var ζ_repl_start = ()=>{
 //#################################### user #####################################
 process.env.PATH = ['./node_modules/.bin','/usr/local/bin',...(process.env.PATH||'').split(':'),'.']["∪"]([]).join(':')
 
-γ._musical_note_ = ι=> shₐ`afplay ${ι}`
-γ[γ["|>"]] (ι=> new Property(ι,"nacksoft")) .get=()=> net1._0_φ_seenbydevice0('https://www.dropbox.com/s/kaphh65p0obaq93/nacksoft.wav?dl=1').then(ι=>_musical_note_(ι.o))
+γ._musical_note_ = ι=> shₐlone`afplay ${ι}`
+γ._musical_note_d = ι=> net1._0_φ_seenbydevice0(`https://www.dropbox.com/s/${ι}?dl=1`).then(ι=>_musical_note_(ι.o))
+γ[γ["|>"]] (ι=> new Property(ι,"nacksoft")) .get=()=> _musical_note_d`kaphh65p0obaq93/nacksoft.wav`
 
 //################################### prelude ###################################
 require(φ`~/code/scratch/ζ/module.ζ`+'').put_γ()

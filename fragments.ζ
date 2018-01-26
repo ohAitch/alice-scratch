@@ -335,9 +335,6 @@ E.chrome_simple_js_ᵥ = (ι,{tab,window=0})=> osaᵥ`chrome: tell window …${w
 ########################################
 open_photoshop(){ open -a '/Applications/Adobe Photoshop CC 2015.5/Adobe Photoshop CC 2015.5.app' "$@"; }
 
-################################## i dont know #################################
-reboot_self ← __filename=>{ t ← shₐ2({ ,stdio:process.stdio ,detached:✓ })`${__filename}` ;t.unref() ;t.stdio.forEach(ι=> ι&&ι.unref&&ι.unref() ) ;process.exit() }
-
 ####################### misc little-used .bashrc material ######################
 im_size(){ for v in "$@" ;do [ -f "$v" ] && { identify -format "%f %wx%h" "$v" ;echo ;} ;done ;}
 im_to_png(){ for v in "$@" ;do [[ $v = *.png ]] || { convert "$v" png:"${v%.*}.png" && rm "$v" ;} ;done ;}

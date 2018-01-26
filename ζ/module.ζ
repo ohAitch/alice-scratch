@@ -1,4 +1,12 @@
 #!/usr/bin/env ζ
+
+# unfortunate: ζ is not module and module does not browserize
+# / browserify
+# inject_bash
+
+
+
+
 # pipe module data so that we can use modules effortlessly
 
 # ! this is all just an ... elaboration
