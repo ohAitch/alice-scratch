@@ -6,7 +6,7 @@ graycode ← ι=> ι b^ (ι>>1)
 graycode.⁻¹ = ι=>{
 	if (ι===0) ↩ ι
 	m ← ceil(log2(ι)) + 1
-	i ← x; for(j←1;j<m;j++) i b^= x>>j
+	i ← x ;for(j←1;j<m;j++) i b^= x>>j
 	↩ i }
 rrot ← (x,i,x_bit_width)=>{ L ← x_bit_width
 	x < 2**L || ‽
@@ -20,7 +20,7 @@ lrot ← (x,i,x_bit_width)=>{ L ← x_bit_width
 	↩ x & 2**L-1 }
 tsb ← (x,x_bit_width)=>{ L ← x_bit_width # trailing set bits
 	x < 2**L || ‽
-	for(i ← 0; (x&1)!==0 && i <= L; i++) x >>= 1
+	for(i ← 0 ;(x&1)!==0 && i <= L ;i++) x >>= 1
 	↩ i }
 setbit ← (x,w,i,b)=>{ # sets bit i in an integer x of width w to b
 	b===0 || b===1 || ‽
@@ -57,7 +57,7 @@ index_to_point ← (dimension,order,h)=>{
 	#     l     - dimension
 	#     e     - dimension
 	hwidth ← order*dimension
-	e←0; d←0
+	e←0 ;d←0
 	p ← Array(dimension).fill(0)
 	for(i←0;i<order;i++){
 		w ← bitrange(h, hwidth, i*dimension, i*dimension+dimension)
@@ -74,7 +74,7 @@ index_to_point ← (dimension,order,h)=>{
 
 point_to_index ← (dimension,order,p)=>{
 	if (dimension===2) ↩ fast_pti2(2**order,p[0],p[1])
-	h←0; e←0; d←0
+	h←0 ;e←0 ;d←0
 	for(i←0;i<order;i++){
 		l ← 0
 		for(x←0;x<dimension;x++){
@@ -102,7 +102,7 @@ fast_pti2 ← (n,x,y)=>{
 	↩ d}
 fast_itp2 ← (n,d)=>{
 	log2(n)%1===0 || ‽
-	x ← 0; y ← 0
+	x ← 0 ;y ← 0
 		for(s←1;s<n;s*=2){
 			rx ← 1 & (d/2)
 			ry ← 1 & (d b^ rx)
@@ -132,15 +132,15 @@ hilbert_curve ← { index_to_point, point_to_index, }
 AC ← new AudioContext()
 $ ← npm`jquery@3.3.1`
 
-get_mouse_pos ← e=>{ t ← $(e.target).offset(); ↩ { x:e.pageX-t.left, y:e.pageY-t.top, time_nonstandard:e.timeStamp/1e3 } }
+get_mouse_pos ← e=>{ t ← $(e.target).offset() ;↩ { x:e.pageX-t.left, y:e.pageY-t.top, time_nonstandard:e.timeStamp/1e3 } }
 
-make_audio_buffer ← url=> Π((yes,no)=>{ req ← new XMLHttpRequest(); req.open('GET',url); req.responseType = 'arraybuffer'; req.onload = => AC.decodeAudioData(req.response,yes,no); req.onerror = no; req.send() })
+make_audio_buffer ← url=> Π((yes,no)=>{ req ← new XMLHttpRequest() ;req.open('GET',url) ;req.responseType = 'arraybuffer' ;req.onload = => AC.decodeAudioData(req.response,yes,no) ;req.onerror = no ;req.send() })
 loop_gapless_e_play_e_volume ← url=>
 	# maybe not 🎵d`pkj954uobnp3lib/pink_noise.mp3`
 	make_audio_buffer(url).then(buffer=>{
-		a ← AC.createBufferSource(); a.buffer = buffer; a.loop = true; a.loopStart = 0.1; a.loopEnd = buffer.duration-0.1
+		a ← AC.createBufferSource() ;a.buffer = buffer ;a.loop = true ;a.loopStart = 0.1 ;a.loopEnd = buffer.duration-0.1
 		b ← AC.createGain()
-		a.connect(b); b.connect(AC.destination)
+		a.connect(b) ;b.connect(AC.destination)
 		a.start()
 		r ← def({},'volume',{ get(){↩ b.gain.value }, set(ι){ b.gain.value = ι } })
 		r.volume = 0
@@ -175,7 +175,7 @@ interpolate_mouse_places ← (ι,L)⇒
 	: nk.spline( norm∞_affine_sorted_E(ι.map(.time_nonstandard)), ι.map(ι=> [ι.x,ι.y]) )
 		.at(nk.linspace(0,1,L))
 
-shake_luminosity ← ι=>{ bright ← ( 🎲()*(0.1 - (-0.1)) - 0.1 ) + 1; ↩ color.rgb(ι.rgb().color.map(ι=> ( bright <= 1? ι * bright : 255 - (255 - ι) * (1/bright) )|0)) } # ι + (255 - ι) * (bright - 1)
+shake_luminosity ← ι=>{ bright ← ( 🎲()*(0.1 - (-0.1)) - 0.1 ) + 1 ;↩ color.rgb(ι.rgb().color.map(ι=> ( bright <= 1? ι * bright : 255 - (255 - ι) * (1/bright) )|0)) } # ι + (255 - ι) * (bright - 1)
 
 convert ← { rgb:{}, xyz:{}, lab:{}, luv:{}, }
 convert.rgb.xyz = rgb=>{
@@ -187,14 +187,14 @@ convert.rgb.xyz = rgb=>{
 		r*0.0193 + g*0.1192 + b*0.9505,
 		].map(ι=> ι*100) }
 convert.xyz.lab = xyz=>{ [x,y,z] ← xyz
-	x /= 95.047; y /= 100; z /= 108.883
+	x /= 95.047 ;y /= 100 ;z /= 108.883
 	[x,y,z] ← [x,y,z].map(ι=> ι > 0.008856? ι**(1/3) : 7.787*ι + 16/116 )
 	↩ [ (116 * y) - 16, 500 * (x - y), 200 * (y - z) ] }
 convert.lab.xyz = lab=>{ [l,a,b] ← lab
 	# sRGB: L ∈ [0,100] a ∈ [-85,97] b ∈ [-106,94]
-	y ← (l + 16) / 116; x ← a / 500 + y; z ← y - b / 200
-	[x,y,z] ← [x,y,z].map(ι=>{ ι2 ← ι**3; ↩ ι2 > 0.008856 ? ι2 : (ι - 16/116) / 7.787 })
-	x *= 95.047; y *= 100; z *= 108.883
+	y ← (l + 16) / 116 ;x ← a / 500 + y ;z ← y - b / 200
+	[x,y,z] ← [x,y,z].map(ι=>{ ι2 ← ι**3 ;↩ ι2 > 0.008856 ? ι2 : (ι - 16/116) / 7.787 })
+	x *= 95.047 ;y *= 100 ;z *= 108.883
 	↩ [x,y,z] }
 convert.xyz.rgb = xyz=>{
 	[x,y,z] ← xyz.map(ι=> ι/100)
@@ -209,20 +209,20 @@ convert.xyz.rgb = xyz=>{
 $(document).ready(=>{
 
 style`
-	* { image-rendering:pixelated; }
-	canvas { width:100%; height:100%; display:block; }
-	body { margin:0; font-family:"Avenir Next"; }
+	* { ;image-rendering:pixelated }
+	canvas { ;width:100% ;height:100% ;display:block }
+	body { ;margin:0 ;font-family:"Avenir Next" }
 	
-	.center_childs { text-align:center; }
-	.full_frame { position:absolute; width:100%; height:100%; }
+	.center_childs { ;text-align:center }
+	.full_frame { ;position:absolute ;width:100% ;height:100% }
 
-	.sandbox { background:linear-gradient(to bottom,#e8e8e8,#c6c6c6); }
-	.chooser { top:14px; right:14px; position:absolute; width:58px; height:58px; display:flex; justify-content:center; align-items:center; }
-	.chooser_elem { border-radius:100%; box-shadow: 0 1px 0 rgba(0,0,0,0.1); position:absolute; }
-	.colorset { background-color:rgba(0,0,0,0.2); }
+	.sandbox { ;background:linear-gradient(to bottom,#e8e8e8,#c6c6c6) }
+	.chooser { ;top:14px ;right:14px ;position:absolute ;width:58px ;height:58px ;display:flex ;justify-content:center ;align-items:center }
+	.chooser_elem { ;border-radius:100% ;box-shadow: 0 1px 0 rgba(0,0,0,0.1) ;position:absolute }
+	.colorset { ;background-color:rgba(0,0,0,0.2) }
 
-	.fps { font-size:15px; margin:1em; position:fixed; pointer-events:none; }
-	.clone_note { font-size:10px; margin:5px auto; transform:translate(-50%); position:absolute; }
+	.fps { ;font-size:15px ;margin:1em ;position:fixed ;pointer-events:none }
+	.clone_note { ;font-size:10px ;margin:5px auto ;transform:translate(-50%) ;position:absolute }
 	`
 document.body.appendChild( eval_html0(`<div>
 	<div class="sandbox full_frame">
@@ -244,23 +244,23 @@ TOOL_LENGTH ← 5# 30 # seconds
 
 frame_pool ← Set()
 
-picked_colors←; set_picked_colors(['#800','#666','#fff'])
-tool_time ← 0; tool_length ← => TOOL_LENGTH * 60/*fps*/ * SAND_PER_TICK * picked_colors.‖
+picked_colors← ;set_picked_colors(['#800','#666','#fff'])
+tool_time ← 0 ;tool_length ← => TOOL_LENGTH * 60/*fps*/ * SAND_PER_TICK * picked_colors.‖
 gen_color ← => shake_luminosity(color.interpolate_0(picked_colors, (tool_time++) / tool_length() % 1))
 
 sound ← (=>{
-	a←; loop_gapless_e_play_e_volume('pink_noise.mp3').then(ι=> a = ι)
+	a← ;loop_gapless_e_play_e_volume('pink_noise.mp3').then(ι=> a = ι)
 	↩ {
-	fade_out: => frame_pool.add(λ self(){ if (!a) ↩; a.volume *= 0.9; if (a.volume < 0.01){ a.volume = 0; frame_pool.delete(self) } }),
+	fade_out: => frame_pool.add(λ self(){ if (!a) ↩ ;a.volume *= 0.9 ;if (a.volume < 0.01){ a.volume = 0 ;frame_pool.delete(self) } }),
 	adjust_volume: ι=> a &&( a.volume = min(max(0, a.volume + (ι - a.volume)*0.175 ),1) ),
 	} })()
 
 ########################################
 λ set_color_picker_icon(){
 	d ← $('.chooser').css('width').match(/^\d+/)[0]|0
-	$('.chooser').html( picked_colors.map((col,i,l)=>{ L ← l.‖; d2 ← round(d * (L-i)/L /2)*2; ↩ $('<div class="chooser_elem">').css({width:d2+'px',height:d2+'px','background-color':col.string()}) }) )
+	$('.chooser').html( picked_colors.map((col,i,l)=>{ L ← l.‖ ;d2 ← round(d * (L-i)/L /2)*2 ;↩ $('<div class="chooser_elem">').css({width:d2+'px',height:d2+'px','background-color':col.string()}) }) )
 	}
-λ set_picked_colors(ι){ picked_colors = ι.map(color.X); set_color_picker_icon() }
+λ set_picked_colors(ι){ picked_colors = ι.map(color.X) ;set_color_picker_icon() }
 
 $('.chooser').click(=>{ colorset.show() })
 $('.colorset > canvas').click(e=>{
@@ -274,14 +274,14 @@ sand_world ← (=>{
 
 	mouse_places ← []
 	on_because←;
-	go_on ← e=>{ mouse_places.push(get_mouse_pos(e)); $(canvas).on('mousemove',e=>{ mouse_places.push(get_mouse_pos(e)) }) }
-	go_off ← =>{ mouse_places = []; $(canvas).off('mousemove') }
+	go_on ← e=>{ mouse_places.push(get_mouse_pos(e)) ;$(canvas).on('mousemove',e=>{ mouse_places.push(get_mouse_pos(e)) }) }
+	go_off ← =>{ mouse_places = [] ;$(canvas).off('mousemove') }
 	$(canvas)
-		.mousedown(e=>{ on_because = 'mousedown'; go_on(e) })
+		.mousedown(e=>{ on_because = 'mousedown' ;go_on(e) })
 		.mouseup(go_off)
 		.mouseenter(e=>{ ((e.buttons&0x1) || on_because==='dblclick') && go_on(e) })
 		.mouseleave(go_off)
-		.dblclick(e=>{ on_because = 'dblclick'; go_on(e) })
+		.dblclick(e=>{ on_because = 'dblclick' ;go_on(e) })
 
 	# time_at_last ← perf_now()
 	state_init ← =>{
@@ -301,10 +301,10 @@ sand_world ← (=>{
 
 	state ← state_init()
 
-	find_noncolliding_y ← (xi,y)=>{ yi ← round(y); {shape,voxel_states} ← state
+	find_noncolliding_y ← (xi,y)=>{ yi ← round(y) ;{shape,voxel_states} ← state
 		if (!(0 <= yi) || yi===0) yi = y = 0
 		if (!(yi < shape.Y)) ↩ shape.Y - 1
-		for(;;){ t ← voxel_states.get(xi,yi); if (t==='empty' || t==='in_air') ↩ y; if (!(yi < shape.Y)) ↩ shape.Y - 1; y += 1; yi += 1 }
+		for(;;){ t ← voxel_states.get(xi,yi) ;if (t==='empty' || t==='in_air') ↩ y ;if (!(yi < shape.Y)) ↩ shape.Y - 1 ;y += 1 ;yi += 1 }
 		}
 
 	mk_particle ← (pos,color)=>{ {shape,particles} ← state
@@ -320,9 +320,9 @@ sand_world ← (=>{
 		particles.push(p)
 		place_particle(p)
 		}
-	take_particle ← p=>{ {voxel_states} ← state; ↩ voxel_states.get(round(p.x),round(p.y))==='static' || voxel_states.set(round(p.x),round(p.y),'empty') }
-	place_particle ← p=>{ low__0←; {voxel_states} ← state
-		x ← round(p.x); y ← round(p.y)
+	take_particle ← p=>{ {voxel_states} ← state ;↩ voxel_states.get(round(p.x),round(p.y))==='static' || voxel_states.set(round(p.x),round(p.y),'empty') }
+	place_particle ← p=>{ low__0← ;{voxel_states} ← state
+		x ← round(p.x) ;y ← round(p.y)
 		if (p.vy > 0)
 			p.status = 'in_air'
 		else if((low__0=voxel_states.get(x+0,y-1))==='empty' || low__0==='in_air')
@@ -330,17 +330,17 @@ sand_world ← (=>{
 		else if(low__0==='static' && voxel_states.get(x-1,y-1)==='static' && voxel_states.get(x+1,y-1)==='static')
 			p.status = 'static'
 		else
-			{ p.vy = 0; p.status = 'stacking' }
+			{ p.vy = 0 ;p.status = 'stacking' }
 		voxel_states.set(x,y,p.status)
 		}
 
-	run_physics_tick ← =>{t←; {shape,particles,voxel_states} ← state
+	run_physics_tick ← =>{t← ;{shape,particles,voxel_states} ← state
 		count_ground_hits ← 0
 		for(p← of particles){
 			if(p.status==='in_air') {
 				take_particle(p)
-				p.x += p.vx; p.y += p.vy
-				if (!(0 <= p.x && p.x < shape.X)){ b ← p.x < 0? 0 : shape.X-1; p.x = b - (p.x - b); p.vx *= -1 }
+				p.x += p.vx ;p.y += p.vy
+				if (!(0 <= p.x && p.x < shape.X)){ b ← p.x < 0? 0 : shape.X-1 ;p.x = b - (p.x - b) ;p.vx *= -1 }
 				p.y = find_noncolliding_y(round(p.x),p.y)
 				p.vy -= 0.8 # gravity
 				p.vx *= 0.999 # friction
@@ -369,7 +369,7 @@ sand_world ← (=>{
 							}
 						if(found.l && found.r) break
 						}
-					if(ty===-1) for(c← of ['l','r']) if(!found[c]) { found[c] = true; ty_[c] = -1 }
+					if(ty===-1) for(c← of ['l','r']) if(!found[c]) { found[c] = true ;ty_[c] = -1 }
 					if(found.l && found.r) {
 						↩ ty_.l < ty_.r || ty_.l===ty_.r && p.vx < 0?
 							{ x:p.x-1, y:ty_.l+1 }
@@ -379,7 +379,7 @@ sand_world ← (=>{
 					}
 				take_particle(p)
 				if(t=find_drop_point(p)) {
-					p.x = t.x; p.y = t.y
+					p.x = t.x ;p.y = t.y
 					if (!(0 <= p.x && p.x < shape.X)) p.x = min(max( 0,p.x),shape.X )
 					}
 				place_particle(p)
@@ -390,11 +390,11 @@ sand_world ← (=>{
 
 	↩ {
 	mk_particle,
-	run_physics_to(now){t←; {shape,particles} ← state
+	run_physics_to(now){t← ;{shape,particles} ← state
 		# tick_length ← 1/50
 		# ticks ← floor((now - time_at_last) / tick_length)
 		# time_at_last += ticks * tick_length
-		# if (ticks > 7){ console.log('too many ticks:',ticks); ticks = 7 }
+		# if (ticks > 7){ console.log('too many ticks:',ticks) ;ticks = 7 }
 		# for(ⁱ←0;ⁱ<ticks;ⁱ++){ ... }
 
 		for(pos← of interpolate_mouse_places( (t = mouse_places, mouse_places = t.slice(-1), t), SAND_PER_TICK ))
@@ -409,7 +409,7 @@ sand_world ← (=>{
 
 		if (≉(shape,{ X:canvas.clientWidth, Y:canvas.clientHeight })){
 			old ← state
-			state = state_init(); {shape,buffer,particles,voxel_states} ← state
+			state = state_init() ;{shape,buffer,particles,voxel_states} ← state
 			particles = state.particles = old.particles.filter(ι=> 0<=round(ι.x) && round(ι.x)<shape.X && 0<=round(ι.y) && round(ι.y)<shape.Y)
 			for(y←0;y<min(shape.Y,old.shape.Y);y++)
 			for(x←0;x<min(shape.X,old.shape.X);x++)
@@ -418,7 +418,7 @@ sand_world ← (=>{
 
 		@.run_physics_to(now)
 
-		if (!buffer) buffer = mk_img(shape.X,shape.Y); else buffer.clear()
+		if (!buffer) buffer = mk_img(shape.X,shape.Y) ;else buffer.clear()
 		for(p← of particles) buffer.set( round(p.x),shape.Y-1-round(p.y), p.color )
 		ctx ← canvas.getContext('2d')
 		ctx.putImageData(buffer.ImageData,0,0)
@@ -448,7 +448,7 @@ sand_world ← (=>{
 # 		x = x / r.$canvas.width() * r.cX |0
 # 		y = y / r.$canvas.height() * r.cY |0
 # 		t ← r.buffer.get(x,y)
-# 		if (Tnum(t)){ r_ ← color(t>>>8); r_.valpha = (t&0xff)/0xff; ↩ r_ }else ↩ color(t) }
+# 		if (Tnum(t)){ r_ ← color(t>>>8) ;r_.valpha = (t&0xff)/0xff ;↩ r_ }else ↩ color(t) }
 # 	↩ r })
 colorset ← _.once(=>{
 	r ← {}
@@ -464,15 +464,15 @@ colorset ← _.once(=>{
 		column_pair ←
 		_u.range(color_i,color_i+squish).map(color_i=>{
 			[a,b] ← hilbert_curve.index_to_point(2,7,color_i).map(ι=>ι/127)
-			a = a*(94+106)-85-((94+106)-(97+85))/2; b = b*(94+106)-106
-			↩ _u.range(100+1).map(L=>{ t ← convert.xyz.rgb(convert.lab.xyz([L,a,b])); ↩ !t.every(ι=> 0<=ι&&ι<=0xff)? ∅ : t.map(ι=>ι|0) }) })
+			a = a*(94+106)-85-((94+106)-(97+85))/2 ;b = b*(94+106)-106
+			↩ _u.range(100+1).map(L=>{ t ← convert.xyz.rgb(convert.lab.xyz([L,a,b])) ;↩ !t.every(ι=> 0<=ι&&ι<=0xff)? ∅ : t.map(ι=>ι|0) }) })
 		↩ _.zip(…column_pair)._.flatten(true) })
 	oi ← 0
 	columns.filter(.some(ι=>ι)).forEach(c=>{
 		x ← oi % r.cX |0
 		y_ ← (oi / r.cX |0) * c.‖
 		for (L←0;L<c.‖;L++)
-			{ y ← y_ + c.‖-1-L; if (y < r.cY && c[L]) r.buffer.set( x,y, c[L] ) }
+			{ y ← y_ + c.‖-1-L ;if (y < r.cY && c[L]) r.buffer.set( x,y, c[L] ) }
 		oi++
 		})
 
@@ -482,15 +482,15 @@ colorset ← _.once(=>{
 		x = x / r.$canvas.width() * r.cX |0
 		y = y / r.$canvas.height() * r.cY |0
 		t ← r.buffer.get(x,y)
-		if (Tnum(t)){ r_ ← color(t>>>8); r_.valpha = (t&0xff)/0xff; ↩ r_ }else ↩ color(t) }
+		if( Tnum(t) ){ r_ ← color(t>>>8) ;r_.valpha = (t&0xff)/0xff ;↩ r_ }else ↩ color(t) }
 	↩ r })
-colorset.show = =>{ $('.colorset').css({display:'unset'}); colorset() }
+colorset.show = =>{ $('.colorset').css({display:'unset'}) ;colorset() }
 colorset.hide = =>{ $('.colorset').css({display:'none'}) }
 
 requestAnimationFrame(λ self(now){ now = perf_now(now)
 	frame_pool.forEach(f=> f())
 	sand_world.render(now)
-	frame_done(); requestAnimationFrame(self) })
+	frame_done() ;requestAnimationFrame(self) })
 
 ########################################
 })

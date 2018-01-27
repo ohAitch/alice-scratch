@@ -35,7 +35,6 @@ b8 ← ι=> Buffer.from([ι])
 xor_repeat ← (a,b)=>{ ;if( b.‖ > a.‖ ) #swap a b ;r ← Buffer.alloc(a.‖) ;for( i←0;i<r.‖;i++ ) r[i] = a[i] b^ b[i % b.‖] ;↩ r }
 
 ########################################
-
 texts ← @device_memo(=> [
 	,wikipedia_source('English_language')
 	,wikipedia_source('Cat')
