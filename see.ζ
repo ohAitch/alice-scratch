@@ -9,63 +9,30 @@
 #253494
 #081d58
 `
-c ← x=> color.infer0(𐅝𐅮,x).hex()
+𐅜𐅫c ← x=> color.infer0(𐅝𐅮,x).hex()
 
 eval_main(.setBounds({ ,x:0 ,y:0 ,width:1280 ,height:800 }))
-style` body{ ;background:#2a2626 } `
+my_style()
 
-exports.freqs = ιι=>{
+canvas_0n_0n_01 ← ιι=>{
+	ι‖ ← [ιι[0].‖,ιι.‖]
+	c‖ ← ι‖.map(ι=>ι*9).map(ι=>ι*2)
+	canvas ← make_canvas(c‖)
+	draw ← canvas.getContext('2d') ;𐅞𐅮 ← ‖(canvas).ι
+	ιι.map((ι,y)=> ι.map((ι,x,L)=>{
+		w ← [x,y] ;[x0,y0,x1,y1] ← [w,w.map(ι=>ι+1)].map…(w=> _.zip(w,ι‖,𐅞𐅮).map(([w,ι,c])=> round(w/ι*c)))
+		draw.fillStyle = 𐅜𐅫c(ι) ;draw.fillRect(x0,y0,x1-x0,y1-y0)
+		}))
+	# rbuffer ← make_image(𐅞𐅮) ;draw.putImageData(rbuffer.ImageData,0,0)
+	↩ canvas }
 
-f_c_approx ← ι=>{ 𐅪 ← Math.log2 ;t ← 2^-4 ;↩ (𐅪(t+ι)-𐅪(t))/(𐅪(t+1)-𐅪(t)) }
+exports._0n_0n_01_labeled = ι=>{
+	canvas ← make_canvas([500,ι.‖*9*2])
+	draw ← canvas.getContext('2d') ;𐅞𐅮 ← ‖(canvas).ι
+	draw …←({ ,textBaseline:'middle' ,font:'18px '+my_font_family ,fillStyle:my_font_color }) ;ι.map(..0).map((ι,i)=> draw.fillText(ι,0,(i+1/2)*9*2))
+	commit_doc(canvas)
+	𐅞𐅬𐅪𐅞 ← canvas_0n_0n_01(ι.map(..1))
+	commit_doc(𐅞𐅬𐅪𐅞)
+	}
 
-yL ← ιι.‖ ;xL ← ιι[0].‖
-# pxX ← 200*2 ;pxY ← 2000*2
-# pxX ← xL*7.32*2 ;pxY ← yL*4*2
-pxX ← 127.33 ;pxY ← 947.1
-
-# probably pxN needs to vary w the current screenpixelratio or w/e
-
-
-
-# what if we enlarged the boxes to fit to pixels or 1/2 px, whichever is smaller
-# ‡‡‡ i think this is good? check me
-
-antialias_rect_adjacent ← (x,y,w,h,pxX,pxY)=>{
-	# pxX*=2
-	# pxY*=2
-	𐅭𐅦 ← (L,f,ι)=> f(ι*L)/L
-	rX0 ← 𐅭𐅦.P(pxX,floor)
-	rX1 ← 𐅭𐅦.P(pxX,ceil)
-	rY0 ← 𐅭𐅦.P(pxY,floor)
-	rY1 ← 𐅭𐅦.P(pxY,ceil)
-	x_ ← /*max( */rX0(x) # ,x-1/2/pxX )
-	y_ ← /*max( */rY0(y) # ,y-1/2/pxY )
-	x_2 ← /*min( */rX1(x+w) # ,(x+w)+1/2/pxX )
-	y_2 ← /*min( */rY1(y+h) # ,(y+h)+1/2/pxY )
-	# log('wtf',x_,x_2,x_*pxX,x_2*pxX,rX0(x)*pxX,(x-1/2/pxX)*pxX,rX1(x+w)*pxX,((x+w)+1/2/pxX)*pxX)
-	# 110.33125 22.66875
-	# 132.4975 23.16625
-
-	# im starting to think that
-	# canvas might be an easier target for this
-	# uh, evaluate? ‡‡‡
-
-	↩ [x_,y_,x_2-x_,y_2-y_] }
-
-document.body.appendChild( eval_html0(`
-	<svg width="${pxX}" height="${pxY}" viewbox="0 0 1 1" preserveAspectRatio="none">
-		${ιι.map…((ι,y)=> ι.map((ι,x,L)=>{
-			[x_,y_,w,h] ← antialias_rect_adjacent(x/xL,y/yL,1/xL,1/yL,pxX,pxY)
-			# for adjacent edges:
-			# `<rect transform="translate(${x/xL-1/2/pxX},${y/yL-1/2/pxY})" width="${1/xL+1/pxX}" height="${1/yL+1/pxY}" fill="${c( ι / L._.max() )}"></rect>`
-			↩ `<rect ι="${ι}" transform="translate(${x_},${y_})" width="${w}" height="${h}" fill="${c(f_c_approx(ι))}"></rect>` })).join('')}
-		</svg> `) )
-
-}
-
-################################################################################
-
-# document.body.appendChild( eval_html0(`
-# 	<svg width="200" height="200" viewbox="0 0 1 1">
-# 		${⋯(10).map(x=> ⋯(10).map(y=> `<rect x="${x/10}" y="${y/10}" width="0.1" height="0.1" fill="${_.range(0,1,0.01).map(c)[y*10+x]}"/>` )) .join('')}
-# 		</svg> `) )
+exports._0n_0n_01 = ι=> commit_doc( canvas_0n_0n_01(ι) )

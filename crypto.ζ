@@ -1,17 +1,3 @@
-# .consider buffer .consider vectorlang
-# pal::a.b = `https://cryptopals.com/sets/${a}/challenges/${b}`
-# @pal::1.1 @<pre> ι0 as base64 = ι1
-# @pal::1.2 @<pre> ι0 xor ι1 = ι2
-
-# @pal::1.3
-# [@<pre>] = msg xor byte
-# msg: guess by ×-avg [ι * [wikipedia::cat text freq normalize]] (?laplacian prior?) (?update syntax?)
-# msg: guess by [wikipedia::cat text freq]
-
-# @pal::1.4
-# @md`[this file](↩)`
-# find [= msg xor byte]
-
 # @pal::1.5
 # @<pre> ι0 xor [repeat "ICE"] as hex = ι1
 
@@ -22,56 +8,69 @@
 # ciph = msg xor [repeat key]
 # assume key.‖ ⊂ 2..40
 
-###################################### 1.3 #####################################
-{nk,norm1,mean} ← numeric2
-# ⁘ write a vec_distance thing i guess http://www.numericjs.com/
+# pal::a.b = `https://cryptopals.com/sets/${a}/challenges/${b}`
+pal ← (a,b)=> pal.root+`/sets/${a}/challenges/${b}`
+pal.root = 'https://cryptopals.com'
+
+################################### @pal::1.1 ##################################
+# @<pre> ι0 as base64 = ι1
+[a,b] ← (GET_L(pal(1,1),∞)+'').match(re`<pre>.*?</pre>`.g).map(.re`<pre>(.*?)</pre>`[1])
+Buffer.from(a,'hex').toString('base64') === b || ‽
+
+################################### @pal::1.2 ##################################
+# @<pre> ι0 xor ι1 = ι2
+[a,b,r] ← (GET_L(pal(1,2),∞)+'').match(re`<pre>.*?</pre>`.g).map(.re`<pre>(.*?)</pre>`[1])
+	.map(ι=> Buffer.from(ι,'hex'))
+npm`buffer-xor@2.0.2`(a,b)
+≈( npm`buffer-xor@2.0.2`(a,b) ,r ) || ‽
+
+################################### @pal::1.3 ##################################
+# [@<pre>] = msg xor byte
+# msg: guess by ×-avg [ι * [wikipedia::cat text freq normalize]] (?laplacian prior?) (?update syntax?)
+# msg: guess by [wikipedia::cat text freq]
 
 ################ prelude ###############
-buffer ← ι=> Tstr(ι)? Buffer.from(ι,'utf8') : ι
-bits ← ι=> Tarr(ι)? ι : […buffer(ι)].map…(ι=> 8..map(i=> (ι>>i)&1 ))
+bits ← ι=> […ι].map…(ι=> 8..map(i=> (ι>>i)&1 ))
 Ox ← ι=>{ι+='' ;↩ Buffer.from(ι,'hex') }
 Ob ← ι=>{ι+='' ;↩ […ι].map(ι=> ι==='0'?0:1) }
 b8 ← ι=> Buffer.from([ι])
 xor_repeat ← (a,b)=>{ ;if( b.‖ > a.‖ ) #swap a b ;r ← Buffer.alloc(a.‖) ;for( i←0;i<r.‖;i++ ) r[i] = a[i] b^ b[i % b.‖] ;↩ r }
 
 ########################################
-texts ← @device_memo(=> [
-	,wikipedia_source('English_language')
-	,wikipedia_source('Cat')
-	,'abc'
-	,'abcabcabcabcabcabcabc'
-	,'abcabcabcabcabcabc^abc'
-	,Ob`11101000101011000010001001000000001100011001010010110000101001100100011010000100011010101110100100000000`
-	,Ob`00010111110100111100011000111010111110111010101111110000011011111001010111110111110011001100101000001100`
-	,Ob`11000111011011000111110100000000`
-	,Ob`11101011101111111111110110101011111011000010110111100000110111111001111110111101010101010111100100001111`
-	,… 0x100.map(ι=> xor_repeat(b8(ι),Ox`1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736`))
-	].map(bits) )()
-
-𐅯𐅫𐅬𐅜 ← 4
+𐅯𐅫𐅬𐅜 ← 1
 find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ ← ι=>{
 	/*assume*/ αβ ← ⋯(2^𐅯𐅫𐅬𐅜)
-	↩ mean([ norm1(αβ.map(=>1)) ,…ι.map(ι=> αβ.map(α=> α===ι?1:0) ) ]) }
+	↩ numeric2.mean([ numeric2.norm1(αβ.map(=>1)) ,…ι.map(ι=> αβ.map(α=> α===ι?1:0) ) ]) }
 
-module.exports = texts
-	.map(.chunk(𐅯𐅫𐅬𐅜).map(ι=> parseInt(ι.reverse().join(''),2) ))
-	.map(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
+# looks_english ← ι=> 
 
-# i want to See 4b
-# how can i code that see.ζ visualization?
-# obvs bar graph
-# ‡ this is something worth Seeing :) ‡
+if(0){
+ι ← [
+	,['eng0',bits(Buffer.from(wikipedia_source('English_language')))]
+	,… 0x100.map(ι=> xor_repeat(b8(ι),Ox`1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736`)|>(x=>[ ,'⊕'+ι.toString(16).padStart(2,'0')+':'+see_buffer(x) ,bits(x) ]) )
+	]
+	.map(([name,ι])=>[ ,name
+	,ι.chunk(𐅯𐅫𐅬𐅜).map(ι=> parseInt(ι.reverse().join(''),2) )
+		|>(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
+	])
 
-# so theres like, a number of texts and they have frequencies over 4b
-# um
-# what about the uh char graph? offsets make it weird, um, i guess a bar graph makes more sense
-# bars above elements of 4b? lets just start with numbers for the xaxis
-# this can be a simple bar graph, right?
-# ‡‡ check to make sure
-# ‡‡ then make it
+electron_window('ζsee',ι,ι=>{ eval_main(.focus())
 
-# a simple 2d matrix
-# bit freqs × texts
+# ι=ι .map(.map(ι=>{ 𐅪 ← Math.log2 ;t ← 2^-7 ;↩ (𐅪(t+ι)-𐅪(t))/(𐅪(t+1)-𐅪(t)) }))
+t ← ι.map(..1)
+t ← new (npm`ml-pca@2.1.0`)(t,{center:✓}).predict(t)
+t = numeric2.norm01(t.…).chunk(t[0].‖)
+ι = _.zip(ι.map(..0),t)
 
-# or as a heatmap? probably yes, test it
-# ‡‡‡
+t ← ι.find(..0==='eng0')[1] ;ι=ι ._.sortBy(ι=> numeric2.L2(t,ι[1]))
+
+require_new`/~/code/scratch/see.ζ`._0n_0n_01_labeled(ι)
+
+});
+}
+
+################################### @pal::1.4 ##################################
+# @md`[this file](↩)`
+# find [= msg xor byte]
+t ← pal.root+(GET_L(pal(1,4),∞)+'').re`<a href='(.*?)'>this file</a>`[1]
+;(GET_L(t,∞)+'').split('\n').map(ι=> Buffer.from(ι,'hex'))

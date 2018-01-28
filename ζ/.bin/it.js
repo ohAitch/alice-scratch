@@ -171,7 +171,7 @@ var npm_init = (id_ver,sub='')=>{ id_ver+=''
 γ.alt_ws = ι=> alt_s(seq_ws(ι))
 γ.lines = ι=>{ var t = ( ι.raw? ι.raw[0] : ι ).split('\n') ;return t.slice( t[0].trim()?0:1 ,t["‖"] - (t[-1].trim()?0:1) ) }
 γ[γ["|>"]] (ι=> new Property(ι,"ζ_compile")) .thunk=()=>{ var 𐅭𐅋𐅦𐅝𐅜;var 𐅨𐅋𐅦𐅜𐅦;var 𐅩𐅜𐅃𐅩𐅪;var 𐅂𐅂𐅃𐅝𐅦;var 𐅨𐅂𐅫𐅯𐅃;var 𐅋𐅝𐅞𐅬𐅰;var 𐅝𐅩𐅭𐅪𐅃;var 𐅮𐅰𐅰𐅝𐅭;var 𐅭𐅦𐅫𐅩𐅝;var 𐅦𐅞𐅃𐅝𐅪;var 𐅃𐅪𐅜𐅫𐅮;var 𐅪𐅯𐅯𐅯𐅦;
-	var word_extra = re`(?:[♈-♓🔅🔆🎵🎲‡⧫◊§▣⋯‽‘≈≉⧗]|𐅃op<|𐅃𐅭op<)`
+	var word_extra = re`(?:[♈-♓🔅🔆🎵🎲‡⧫◊§▣⋯‽‘≈≉⧗‖]|𐅃op<|𐅃𐅭op<)`
 	var word = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
 	var ζ_parse = γ.ζ_parse = (()=>{
 		var P = require('./parsimmon2.js')
@@ -234,6 +234,8 @@ var npm_init = (id_ver,sub='')=>{ id_ver+=''
 		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ var t = '_'+_game_die_id.greek(9) ;return ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) // why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
 		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
+		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
+		.replace(/_double_vertical_line_(?=['"])/g,'‖')
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
 		.replace(/(^|(?:^|(?:^|(?:^|(?!new ).).).)(?![.\w]|𐅯).)Set(?=\()/gm,(ˣ,a)=> a+'𐅯Set')
@@ -352,7 +354,7 @@ var genex = function Λ(ι){return 0?0
 γ[γ["|>"]] (ι=> new Property(ι,"_game_die_id")) .thunk=()=>{
 	var t = αβ=> (L=> L.map(()=> _game_die_(αβ)).join('')) [γ['…←']] ({αβ})
 	var _game_die_id = t([.../[0-9a-z]/])
-	_game_die_id.braille = t([...re`[⠁-⣿]`]) // [⠀-⣿]
+	_game_die_id.braille = t([...re`[⠁-⣿]`])
 	_game_die_id.greek = t([...'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
 	return _game_die_id }
 
@@ -390,6 +392,7 @@ seq.cartesian = (...ι)=> 𐅮𐅋𐅮𐅯(ι) ;var 𐅮𐅋𐅮𐅯 = function*
 
 _section_sign_1([{"tag":":","ι":[{"tag":".","ι":[{"tag":".","ι":[{"tag":"{}","ι":[null,"Array","Set","Map"]},{"tag":"string","ι":"prototype"}]},{"tag":"string","ι":"_"}]},null]}])._={ get(){return _u(this)} }
 
+// link: it.ζ
 _section_sign_1([{"tag":":","ι":[{"tag":".","ι":[{"tag":".","ι":[{"tag":"{}","ι":[null,"Array","Buffer","String","Function"]},{"tag":"string","ι":"prototype"}]},{"tag":"string","ι":"‖"}]},null]}])._={ get(){return this.length } }
 _section_sign_1([{"tag":":","ι":[{"tag":".","ι":[{"tag":".","ι":[{"tag":"{}","ι":[null,"Set","Map"]},{"tag":"string","ι":"prototype"}]},{"tag":"string","ι":"‖"}]},null]}])._={ get(){return this.size } }
 

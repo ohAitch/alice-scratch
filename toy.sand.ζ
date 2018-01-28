@@ -147,15 +147,6 @@ loop_gapless_e_play_e_volume ← url=>
 		↩ r })
 
 perf_now ← ι=> ( performance.timing.navigationStart + (ι===∅? performance.now() : ι) )/1e3
-mk_img ← (X,Y)=>{
-	ui8c ← new Uint8ClampedArray(X*Y*4)
-	dv ← new DataView(ui8c.buffer)
-	↩ {
-	X, Y, ImageData:new ImageData(ui8c,X,Y),
-	get(x,y){↩ dv.getUint32( (y*X + x)*4 ) },
-	set(x,y,ι){ dv.setUint32( (y*X + x)*4, Tnum(ι)? ι : color(ι).i ) },
-	clear(){ ui8c.fill(0) }
-	} }
 
 timing ← []
 do_timing ← ι=>{
@@ -418,7 +409,7 @@ sand_world ← (=>{
 
 		@.run_physics_to(now)
 
-		if (!buffer) buffer = mk_img(shape.X,shape.Y) ;else buffer.clear()
+		if (!buffer) buffer = make_image([shape.X,shape.Y]) ;else buffer.clear()
 		for(p← of particles) buffer.set( round(p.x),shape.Y-1-round(p.y), p.color )
 		ctx ← canvas.getContext('2d')
 		ctx.putImageData(buffer.ImageData,0,0)
@@ -430,13 +421,13 @@ sand_world ← (=>{
 # 	r.$ = $('.colorset')
 # 	r.$canvas = r.$.children('canvas')
 # 	r.canvas = r.$canvas[0]
-# 	;[r.cX,r.cY] = [r.canvas.width,r.canvas.height] = [r.$canvas.width()>>3,r.$canvas.height()>>2]
-# 	r.buffer = mk_img(r.cX,r.cY)
+# 	r.‖ = [r.canvas.width,r.canvas.height] = [r.$canvas.width()>>3,r.$canvas.height()>>2]
+# 	r.buffer = make_image([r.‖[0],r.‖[1]])
 
-# 	for (y←0;y<r.cY;y++)
-# 	for (x←0;x<r.cX;x++){
-# 		L ← 100 * (1-y/r.cY)
-# 		h_i ← x/r.cX
+# 	for (y←0;y<r.‖[1];y++)
+# 	for (x←0;x<r.‖[0];x++){
+# 		L ← 100 * (1-y/r.‖[1])
+# 		h_i ← x/r.‖[0]
 # 		a ← 128 * cos(h_i*τ) * 0.5
 # 		b ← 128 * sin(h_i*τ) * 0.5
 # 		c ← convert.xyz.rgb(convert.lab.xyz([L,a,b])).map(ι=> ι<0? 0 : ι>0xff? 0xff : ι|0)
@@ -445,8 +436,8 @@ sand_world ← (=>{
 # 	ctx2d ← r.canvas.getContext('2d')
 # 	ctx2d.putImageData(r.buffer.ImageData,0,0)
 # 	r.get = ({x,y})=>{
-# 		x = x / r.$canvas.width() * r.cX |0
-# 		y = y / r.$canvas.height() * r.cY |0
+# 		x = x / r.$canvas.width() * r.‖[0] |0
+# 		y = y / r.$canvas.height() * r.‖[1] |0
 # 		t ← r.buffer.get(x,y)
 # 		if (Tnum(t)){ r_ ← color(t>>>8) ;r_.valpha = (t&0xff)/0xff ;↩ r_ }else ↩ color(t) }
 # 	↩ r })
@@ -455,9 +446,9 @@ colorset ← _.once(=>{
 	r.$ = $('.colorset')
 	r.$canvas = r.$.children('canvas')
 	r.canvas = r.$canvas[0]
-	# ;[r.cX,r.cY] = [r.canvas.width,r.canvas.height] = [r.$canvas.width()<<1,r.$canvas.height()<<1]
-	;[r.cX,r.cY] = [r.canvas.width,r.canvas.height] = [r.$canvas.width()<<1,r.$canvas.height()*2/3|0]
-	r.buffer = mk_img(r.cX,r.cY)
+	r.‖ = [r.canvas.width,r.canvas.height] = [r.$canvas.width()<<1,r.$canvas.height()*2/3|0]
+	# use make_canvas ?
+	r.buffer = make_image(r.‖)
 	squish ← 1
 	columns ←
 	_u.range(0,128*128,squish).map(color_i=>{
@@ -469,18 +460,18 @@ colorset ← _.once(=>{
 		↩ _.zip(…column_pair)._.flatten(true) })
 	oi ← 0
 	columns.filter(.some(ι=>ι)).forEach(c=>{
-		x ← oi % r.cX |0
-		y_ ← (oi / r.cX |0) * c.‖
+		x ← oi % r.‖[0] |0
+		y_ ← (oi / r.‖[0] |0) * c.‖
 		for (L←0;L<c.‖;L++)
-			{ y ← y_ + c.‖-1-L ;if (y < r.cY && c[L]) r.buffer.set( x,y, c[L] ) }
+			{ y ← y_ + c.‖-1-L ;if (y < r.‖[1] && c[L]) r.buffer.set( x,y, c[L] ) }
 		oi++
 		})
 
 	ctx2d ← r.canvas.getContext('2d')
 	ctx2d.putImageData(r.buffer.ImageData,0,0)
 	r.get = ({x,y})=>{
-		x = x / r.$canvas.width() * r.cX |0
-		y = y / r.$canvas.height() * r.cY |0
+		x = x / r.$canvas.width() * r.‖[0] |0
+		y = y / r.$canvas.height() * r.‖[1] |0
 		t ← r.buffer.get(x,y)
 		if( Tnum(t) ){ r_ ← color(t>>>8) ;r_.valpha = (t&0xff)/0xff ;↩ r_ }else ↩ color(t) }
 	↩ r })

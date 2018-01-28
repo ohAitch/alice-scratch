@@ -19,12 +19,14 @@
 ################################ data : numeric ################################
 ⧫. numeric2 ==>{
 	nk ← npm`numeric@1.2.6`
-	# norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
+	norm01 ← ι=> norm∞(nk.sub( ι ,ι.fold(nk.min.XX) ))
+	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
 	norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
+	L2 ← (a,b)=> _.zip(a,b).map(([a,b])=> (a-b)^2 ).fold(nk.add.XX) ^(1/2)
 	mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
 	norm∞_affine_sorted_E ← ι=>( nk.subeq(ι,ι[0]) ,nk.diveq(ι,ι[-1]) )
 	infer0 ← (ι,x)=>{ x *= ι.‖-1 ;i ← x|0 ;x ← x%1 ;ι ← [ι[i%ι.‖],ι[(i+1)%ι.‖]] ;↩ nk.add(…_u.zip(ι,[1-x,x]).map(ι=>nk.mul(…ι))) }
-	↩ {,nk/*,norm∞*/,norm1,mean,norm∞_affine_sorted_E,infer0} }
+	↩ {,nk,norm01,norm∞,norm1,mean,norm∞_affine_sorted_E,infer0,L2} }
 ⧫. normal_PDF ==> x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
 ⧫. normal_CDF ==> x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
 
@@ -155,9 +157,19 @@
 			} </style> `
 	d.φ`manifest.json`.json = { ,manifest_version:2 ,name:'newtab' ,version:'1' ,description:'' ,chrome_url_overrides:{ ,newtab:'it.html' } } }
 
+############################ friend glue : ui : html ###########################
 ⧫. style ==> ι=> document.head.appendChild( document.createElement('style') …←({ innerHTML:ι+'' }) )
 ⧫. eval_html0 ==> ι=> document.createElement('div') …←({ innerHTML:(ι+'').trim() }).childNodes[0]
 ⧫. html_clear ==> =>{ ;document.write('') ;document.close() }
+
+⧫. make_image ==> ([X,Y])=>{ 𐅰𐅦 ← new Uint8ClampedArray(X*Y*4) ;𐅂𐅭 ← new DataView(𐅰𐅦.buffer) ;↩ {
+	,X ,Y ,ImageData:new ImageData(𐅰𐅦,X,Y)
+	,get(x,y){↩ 𐅂𐅭.getUint32( (y*X + x)*4 ) }
+	,set(x,y,ι){ 𐅂𐅭.setUint32( (y*X + x)*4, Tnum(ι)? ι : color(ι).i ) }
+	,clear(){ 𐅰𐅦.fill(0) }
+	} }
+⧫. make_canvas ==> ‖_=>{ r ← eval_html0(`<canvas id="${🎲id.greek(6)}"></canvas>`) ;‖(r).ι = ‖_ ;↩ r }
+⧫. commit_doc ==> ι=> document.body.appendChild(ι)
 
 ############################## friend glue : data ##############################
 ⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
@@ -230,6 +242,8 @@
 
 ⧫[ 'youtube-dl'  ] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
 ⧫[ 'youtube-dl-v'] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
+
+⧫[ 'bandcamp-dl'] ==> ι=>{ shₐi`cd ~/file ;/usr/local/bin/bandcamp-dl --no-art --no-slugify --template='%{artist} - %{album} - %{track} %{title}' ${ι}` }
 
 ################################## friend glue #################################
 ⧫. hsᵥ ==> (ss,…ιs)=>{
@@ -314,9 +328,19 @@
 	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
 	}
 
+###################################### new #####################################
+⧫. see_buffer ==>{ 𐅜𐅰 ← […/[⠀-⣿]/] ;↩ ι=> '['+ι.toString('binary').replace(/(?!(?![\]])[ -~])[^]/g,ι=>𐅜𐅰[ord(ι)])+']' }
+
 ############################## new prelude i guess #############################
 ⧫. slot0 ==> (get,set)=>
 	(λ(ι){↩ arguments.length===0? get() : (set(ι),ι) })
 	!>(‘.ι .host= {get,set} )
 
 ⧫. say ==> ι=>{ ;hsᵥ`hs.alert(${ι+''})` ;nacksoft }
+
+⧫. ‖ ==> ι⇒
+	: '‖' in ι? ι‘.‖
+	: ι instanceof Element && ι.nodeName==='canvas'.toUpperCase()? slot0(
+		,=> [ι.width,ι.height]
+		,‖_=>{ ;[ι.width,ι.height] = ‖_.map(ceil.X) ;[ι.style.width,ι.style.height] = ‖_.map(ι=> ceil(ι/2)+'px') } )
+	: ‽(ι)

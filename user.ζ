@@ -82,6 +82,14 @@
 		}
 	else ‽ }
 
+⧫. my_font_color ==> '#e8e8e8' # wow, so modules
+⧫. my_font_family ==> 'Avenir,sans-serif'
+⧫. my_style ==> => style(`
+	body{ ;background-color:#2a2626 ;color:${my_font_color} ;font-family:${my_font_family} }
+	a:visited {color: #bb7f00;}
+	a:hover, a:active, a:focus {color: #eeeeee;}
+	a {color: #ffb200; text-decoration: none;}`)
+
 ################################### user.art ###################################
 ⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
 
@@ -301,7 +309,7 @@
 ########################################
 ⧫. on_module_build𐅃𐅋𐅃𐅬𐅫 ==> =>{ # build .bashrc
 	inject_bash ← alt_ws`ct chrome_tabs bookmarks sb p sb[-1] moon
-		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar / …p youtube-dl youtube-dl-v`
+		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar / …p youtube-dl youtube-dl-v bandcamp-dl`
 	t ← String.raw`
 	ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;}
 

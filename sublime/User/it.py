@@ -26,6 +26,7 @@ if not '/usr/local/bin' in t: os.environ['PATH'] = ':'.join(t+['/usr/local/bin']
 
 def ζfresh_async(*a): return subprocess.Popen(['ζ','--fresh']+list(a))
 def ζfresh(*a): return subprocess.check_output(['ζ','--fresh']+list(a)).decode('utf-8')
+def ζa(*a): return subprocess.Popen(['ζλ']+list(a))
 def ζ(*a): t = subprocess.check_output(['ζλ']+list(a)).decode('utf-8') ;return None if t == '' else json.loads(t)
 def E(ι): return json.dumps(ι)
 def serialize(ι):
@@ -228,6 +229,23 @@ class get_syntax(sublime_plugin.TextCommand):
 	def run(self,edit):
 		view = self.view
 		print('[fyi]','syntax:',view.settings().get('syntax'))
+
+def _4(ι):
+	ι = [ι for ι in ι if not( ι.is_dirty() or ι.file_name() is None )]
+	if len(ι) == 0: ζa('say`✗`')
+	else:
+		r = [ι.file_name() for ι in ι]
+		[ι.close() for ι in ι[::-1]]
+		ζa('p('+E( r[0] if len(r) == 1 else r )+')')
+class cut_(sublime_plugin.WindowCommand):
+	def run(self):
+		window = self.window
+		ι = window.active_sheet().view()
+		if ι is not None: _4([ ι ])
+class cuts(sublime_plugin.WindowCommand):
+	def run(self):
+		window = self.window
+		_4([ ι.view() for ι in window.sheets_in_group(window.active_group()) ])
 
 ################################## scrollpair ##################################
 # def cache_xy(view):
