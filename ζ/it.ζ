@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 # hey, if you're gonna break this, keep a previous stable version ready this time. ive spent entirely too much time rescuing our state
 
-# odd synonym: k, name(, id)(, i?), 𐑯𐑱𐑥
 # ι = it
 # ‖ = size/length/shape
+# odd synonym: k, name(, id)(, i?), 𐑯𐑱𐑥
 
 #################################### prelude ###################################
 'use strict' ;require('module').wrapper[0] += `'use strict';` # enable strict mode everywhere
@@ -66,9 +66,9 @@ T.boxed.ι = Set(,'Boolean','String','Number')
 ################ postfix ###############
 # def(Function.prototype,'‘@',{ ,get(){↩ @.call.bind(@) } })
 # def(Function.prototype,'flip_',{ ,get(){↩ (a,b)=> @(b,a) } })
-Iterator ← ι⇒ { @@iterator: (i=>( i.ι = ι ,i ))( ι.@@iterator.bind(ι) ) }
-𐅞𐅞 ← Iterator([])
-γ.postfix = new Proxy(𐅞𐅞,{set(ˣ,id,ι,self){t←; id+='' ;𐅞𐅞.@@iterator.ι.push(id)
+
+Iterator_from ← ι⇒ { ,ι ,@@iterator:ι.@@iterator.bind(ι) }
+γ.postfix = new Proxy(Iterator_from(Set()),{set(@0,id,ι,@_){t←; id+='' ;@0.ι.add(id)
 	;(γ[id] = ι).@@toPrimitive = (ι=>=>ι)(Symbol(id))
 	wrap ← f⇒ { ,enumerable:✗ ,get:(ι=>=>ι)( λ(){↩ f.call(∅,@,…arguments) } ) ,set(f){ def(@,ι,wrap(f)) } }
 	def(Object.prototype,ι,wrap(ι))
@@ -170,9 +170,11 @@ npm_init ← (id_ver,sub='')=>{ id_ver+=''
 γ.alt_s = ι=> Set(… _u(ι).sortBy(ι=> -ι.‖) )
 γ.alt_ws = ι=> alt_s(seq_ws(ι))
 γ.lines = ι=>{ t ← ( ι.raw? ι.raw[0] : ι ).split('\n') ;↩ t.slice( t[0].trim()?0:1 ,t.‖ - (t[-1].trim()?0:1) ) }
-γ‘.ζ_compile .thunk==>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;
-	word_extra ← re`(?:[♈-♓🔅🔆🎵🎲‡⧫◊§▣⋯‽‘≈≉⧗‖]|𐅃op<|𐅃𐅭op<)`
-	word ← re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra})`
+γ.ζword =∅
+γ‘.ζ_compile .thunk==>{ 𐅭𐅋𐅦𐅝𐅜←;𐅨𐅋𐅦𐅜𐅦←;𐅩𐅜𐅃𐅩𐅪←;𐅂𐅂𐅃𐅝𐅦←;𐅨𐅂𐅫𐅯𐅃←;𐅋𐅝𐅞𐅬𐅰←;𐅝𐅩𐅭𐅪𐅃←;𐅮𐅰𐅰𐅝𐅭←;𐅭𐅦𐅫𐅩𐅝←;𐅦𐅞𐅃𐅝𐅪←;𐅃𐅪𐅜𐅫𐅮←;𐅪𐅯𐅯𐅯𐅦←;𐅫𐅃𐅞𐅦←;
+	word_extra0 ← re`(?:ifΔ!|object≫0)`
+	word_extra1 ← re`(?:[♈-♓🔅🔆🎵🎲‡⧫◊§▣⋯‽‘≈≉⧗‖]|𐅃op<|𐅃𐅭op<)`
+	word ← γ.ζword = re`(?:[A-Za-z0-9_$ʰ-ʸˡ-ˣΑ-ΡΣ-ωᴬ-ᵛᵢ-ᵥᶜᶠᶻ⁰ⁱⁿₐ-ₓₕ-ₜℂℕℚℝℤⱼⱽ⚓𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰𐑐-𐑿∞ᛟ]|${word_extra0}|${word_extra1})`
 	ζ_parse ← γ.ζ_parse = (=>{
 		P ← require('./parsimmon2.js')
 		ident ← P(re`(?![0-9])${word}+|@`)
@@ -180,6 +182,7 @@ npm_init ← (id_ver,sub='')=>{ id_ver+=''
 		simple_js ← P(=> P.alt(
 			,P(comment).T`comment`
 			,P.seq( P('{') ,simple_js ,P('}') )
+			,P(re`(?:https://|file:)(?:[^\s"“”'<>]*[^\s"“”'<>)},.:;])`).map(ι=> js`${ι}`).T`js`
 			,P.seq( P.alt(
 				,P(/(['"])(((?!\1)[^\\]|\\.)*?\1)/).T`string`
 				,ident
@@ -199,7 +202,8 @@ npm_init ← (id_ver,sub='')=>{ id_ver+=''
 	id_c ← alt_ws`filter! map… map! has… get… set… join? join2? ⁻¹uniq _0_φ_seenbydevice0⁻¹ then⚓ ⁻¹ ∪! ∩! -! ?? *? +? ∪ ∩ ⊕ ‖ ⚓ -= += ? * + & | ∃ × ! -0 -1 -2 -3 -4 - 🔒 …`
 	id_num ← alt_ws`0 1 2 3 4`
 	ζ_compile_nonliteral ← ι=> ι
-		.replace(/ifΔ!/g,'ifΔbang')
+		# .replace(/\b(?:https:\/\/|file:)(?:[^\s"“”'<>]*[^\s"“”'<>)},.:;])/g ,ι=> js`url(${ι})`)
+		.replace(𐅫𐅃𐅞𐅦||(𐅫𐅃𐅞𐅦= re`${word_extra0}+`.g ) ,unicode_names.X)
 		.replace(/\b([0-9]+(?:\.[0-9]+)?)d/g,(ˣ,ι)=> `(${ι}*86400)` )
 		.replace(𐅂𐅂𐅃𐅝𐅦||(𐅂𐅂𐅃𐅝𐅦= re`\.?@@(${word}+)`.g ),'[Symbol.$1]')
 		.replace(/@/g,'this')
@@ -233,8 +237,7 @@ npm_init ← (id_ver,sub='')=>{ id_ver+=''
 		.replace(/([^]|^)\^/g,(ˣ,ι)=> ι==='b'? '^' : ι+'**' )
 		.replace(𐅨𐅂𐅫𐅯𐅃||(𐅨𐅂𐅫𐅯𐅃= re`#swap ((?:${word}|[.])+) ((?:${word}|[.])+)`.g ),(ˣ,a,b)=>{ t ← '_'+🎲id.greek(9) ;↩ ζ_compile_nonliteral(`for(;;){ ${t} ← ${a} ;${a} = ${b} ;${b} = ${t} ;break}`) }) # why not just [a,b] = [b,a]?
 		.replace(/\[#persist_here (.*?)\]/g,(ˣ,ι)=> '('+json2_read+js`)(${json2_show(φ(ι).buf)})`)
-		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
-		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra}+`.g ) ,unicode_names.X)
+		.replace(𐅭𐅋𐅦𐅝𐅜||(𐅭𐅋𐅦𐅝𐅜= re`${word_extra1}+`.g ) ,unicode_names.X)
 		.replace(/_double_vertical_line_(?=['"])/g,'‖')
 		.replace(/([{([]\s*),/g,'$1')
 		.replace(𐅮𐅰𐅰𐅝𐅭||(𐅮𐅰𐅰𐅝𐅭= re`return\s+var\s+(${word}+)`.g ),(ˣ,ι)=> `var ${ι} ;return ${ι}`)
@@ -357,6 +360,7 @@ genex ← λ Λ(ι){↩ 0?0
 	🎲id.braille = t([…re`[⠁-⣿]`])
 	🎲id.greek = t([…'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
 	↩ 🎲id }
+γ‘.anon .get==> 🎲id.greek(4)
 
 γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
 γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
@@ -388,7 +392,6 @@ seq.cartesian = (…ι)=> 𐅮𐅋𐅮𐅯(ι) ;𐅮𐅋𐅮𐅯 ← λ*(ι,i=0)
 γ.≈ = (a,b)=> _l.isEqualWith(a,b,(a,b)=> T.Buffer(a) && T.Buffer(b)? a.equals(b) : ∅ )
 γ.≉ = (a,b)=> ! ≈(a,b)
 γ.zip_min = (a,b)=> _l.zip( a.‖>b.‖? a.slice(0,b.‖) : a , a.‖<b.‖? b.slice(0,a.‖) : b )
-γ.Δset = (a,b)=> new Map([ ,… a.-(b).map(ι=>[ι,-1]) ,… b.-(a).map(ι=>[ι,1]) ]) # assume uniq
 
 §`{Array Set Map}.prototype._ :`{ get(){↩ _u(@)} }
 
@@ -471,6 +474,10 @@ Map.prototype.set… = λ(…as){t←;ι←@ ;as.‖>=2||‽ ;v ← as.pop() ;_1
 Set.prototype.pop = λ(){ t ← @[0] ;@.delete(t) ;↩ t }
 Set.prototype‘[0] .host= {get(){↩ seq(@).next_ι }}
 §`{Array Set}.prototype.'-eq' :`λ(…a){ t ← _u([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _l.values(t).… }
+
+γ.Δset = (a,b)=> new Map([ ,… a.-(b).map(ι=>[ι,-1]) ,… b.-(a).map(ι=>[ι,1]) ]) # assume uniq
+γ.object≫0 = (o,i_s,f)=> Object.create(o) …←(i_s.map(i=>[ i ,(…a)=> f(o[i](…a),i,o) ])._.object())
+Set.prototype.Δ = λ(f){↩ object≫0(@,alt_ws`add clear delete`,ι=>{ f(@) ;↩ ι }) }
 
 Map.prototype‘['⁻¹uniq'] .host= {get(){↩ new Map([…@.entries()].map(([a,b])=>[b,a])) }}
 Map.prototype‘['⁻¹'] .host= {get(){↩ […@.keys()].group(ι=> @.get(ι)) }}
@@ -610,18 +617,16 @@ if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` →
 	if_sh_err('shᵥ',code,ι)
 	↩ ι.stdout …← ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a) ;↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
 γ.shᵥexit = (ss,...ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.status===0 : ✓ }
-_shₐ ← (ss,ιs,opt={})=>{
-	if( ss.‖===2 && ss[0]==='' && ss[1].re`^ *\|$`){ opt.stdio && ‽ ;opt.stdio = [φ.fd.from(ιs[0]),'pipe','pipe',] ;↩ shₐ2(opt) }
-	else{ code ← sh(ss,…ιs)
-		# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
-		# ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
-		ι ← node.child_process.spawn(code,{shell:✓} …← (_u(opt).pick('stdio','detached')))
-			.on('exit',status=>{ if_sh_err('shₐ',code,{status} …← (ι)) })
-		↩ ι } }
-γ.shₐ = (ss,…ιs)=> _shₐ(ss,ιs)
-γ.shₐ2 = opt=>(ss,…ιs)=> _shₐ(ss,ιs,opt)
-γ.shₐi = shₐ2({stdio:process.stdio})
-γ.shₐlone = (…ι)=> shₐ2({,detached:✓,stdio:'ignore'})(…ι) !>(.unref())
+_shₐ ← opt=> (…ι)=>{ code ← sh(…ι)
+	# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
+	# ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
+	ι ← node.child_process.spawn(code,{shell:✓} …← (_u(opt).pick('stdio','detached')))
+		.on('exit',status=>{ if_sh_err('shₐ',code,{status} …← (ι)) })
+	↩ ι }
+γ.shₐ = _shₐ({})
+γ.shₐin = ι=> _shₐ({stdio:[φ.fd.from(ι),'pipe','pipe',]})
+γ.shₐi = _shₐ({stdio:process.stdio})
+γ.shₐlone = (…ι)=> _shₐ({,detached:✓,stdio:'ignore'})(…ι) !>(.unref())
 
 process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
 γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
@@ -636,7 +641,7 @@ process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
 	if( !Tstr(ι[0]) && Tstr(ι[0].raw) && ι[0].raw.re`^[\w ]+$` && Tstr(ι[1]) && (t=ι[1].re`^ *:`)){ ι[1] = ι[1].slice(t[0].‖) ;ι = [osa`tell app ${ι.shift().raw};` ,…ι ,' ;end tell'] }
 	↩ ι.map(ι=> !Tstr(ι)? applescript.print(ι.raw) : ι.replace(/;/g,'\n') ).join('') }
 γ.osaᵥ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;↩ applescript.parse(shᵥ`osascript -ss -e ${ι}`+'') }
-γ.osaₐ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;shₐ`osascript -ss -e ${ι}` }
+γ.osaₐ = (ss,…ιs)=>{ ι ← osa(ss,…ιs) ;shₐlone`osascript -ss -e ${ι}` }
 
 # such hack
 # YET ANOTHER Tag
@@ -655,30 +660,13 @@ json2_show ← ι=> JSON_pretty(ι,(ˣ,ι)=>{t←;
 	φ.fd = {} ;φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(φ`/tmp/fd${🎲id.greek(20)}` …← ({ι}) +'','r') })
 
 	existsSync ← ι=> !T.Error(catch_union(=> fs.accessSync(ι)))
-	mkdir_p ← λ Λ(ι){ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') ↩ ;t ← node.path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;Λ(t) ;fs.mkdirSync(ι) } }
-	# walk ← λ*(root,files){root += '/'
-	# 	walk_ ← λ*(ι){try {l ← fs.readdirSync(root+ι) ;for (i←0;i<l.‖;i++){t ← ι+l[i] ;try{ fs.statSync(root+t).isDirectory()? (yield root+t ,yield* walk_(t+'/')) : (files && (yield root+t)) }catch(e){} }} catch(e){} }
-	# 	yield* walk_('') }
-	read_file ← λ(ι){ try{↩ fs.readFileSync(ι) }catch(e){ if( !(e.code==='ENOENT')) throw e } }
-	ensure_exists ← λ(ι,ifdne){ existsSync(ι) || ( mkdir_p(node.path.resolve(node.path.dirname(ι))) ,fs.writeFileSync(ι,ifdne) ) }
-	write_file ← λ(ι,data){ try{ fs.writeFileSync(ι,data) }catch(e){ if( !(e.code==='ENOENT')) throw e ;ensure_exists(ι,data) } }
-	open ← λ(ι,ifdne,f){
-		ensure_exists(ι,ifdne) ;Lc ← new Φ(ι).‖
-		fd ← fs.openSync(ι,'r+') ;f({
-			,get L(){↩ Lc}
-			,read(i,L){t ← Buffer.allocUnsafe(L) ;fs.readSync(fd,t,0,L,i) === L || ‽ ;↩ t}
-			,write(ι,i){L ← fs.writeSync(fd,ι,i) ;Lc = max(Lc ,L+i)}
-			,truncate(L){fs.ftruncateSync(fd,L) ;Lc = min(Lc,L)}
-			,indexOf_skipping(from,to,step,find,skip){fl←@
-				if( from<0) from += fl.L ;if( to<0) to += fl.L ;from = min(max(0 ,from ),fl.L-1) ;to = min(max(-1 ,to ),fl.L)
-				if( !(step===-1 && from>to)) ‽('TODO')
-				d ← fl.read(to+1,from-to)
-				for(i←from;i>to;i+=step) {if( d[i-(to+1)]===find) ↩ i ;else if( chr(d[i-(to+1)]).match(skip)) ;else ↩ ∅}
-				}
-			}) ;fs.closeSync(fd)}
+	mkdir_p ← ι=>{ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') ↩ ;t ← node.path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;mkdir_p(t) ;fs.mkdirSync(ι) } }
+	read_file ← ι=>{ try{↩ fs.readFileSync(ι) }catch(e){ if( !(e.code==='ENOENT')) throw e } }
+	ensure_exists ← (ι,ifdne)=>{ existsSync(ι) || ( mkdir_p(node.path.resolve(node.path.dirname(ι))) ,fs.writeFileSync(ι,ifdne) ) }
+	write_file ← (ι,data)=>{ try{ fs.writeFileSync(ι,data) }catch(e){ if( !(e.code==='ENOENT')) throw e ;ensure_exists(ι,data) } }
 	globmatch ← (glob,ι)=> ι.re`^…${[…glob].map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`
 	φ‘.cwd .host= { ,get:=> new Φ(process.cwd()) ,set:ι=> φ(ι+'')._ι !>(mkdir_p) !>(process.chdir) }
-	normHs ← λ(ι){ if( ≈( ι,['~'] ) ) ↩ [process.env.HOME] ;Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;↩ ι }
+	normHs ← ι=>{ if( ≈( ι,['~'] ) ) ↩ [process.env.HOME] ;Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;↩ ι }
 	λ Φ(ι){@._ι = ι} ;Φ.prototype = {
 		,φ
 		,toString(){↩ @._ι }
@@ -690,7 +678,7 @@ json2_show ← ι=> JSON_pretty(ι,(ˣ,ι)=>{t←;
 		,get url(){↩ encodeURI('file:'+@.root('/')) } # ! should this be part of root
 		,get is_dir(){↩ !!catch_ι(=> fs.statSync(@._ι).isDirectory()) }
 		,get name(){↩ node.path.basename(@._ι) }
-		,TMP_children(){↩ @._ι |> (λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) }
+		,TMP_children(){↩ @._ι |>(λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) }
 		,TMP_parents(){ r ← [@.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;↩ r.slice(1) }
 		,root(x){switch(arguments.length){default: 
 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
@@ -735,32 +723,16 @@ json2_show ← ι=> JSON_pretty(ι,(ˣ,ι)=>{t←;
 		,get ini(){↩ npm`ini@1.3.4`.parse(@.text) }
 		# ,set ini(ι){}
 		# ,get csv(){↩}
-		,set csv(ι){ t ← φ`/tmp/csv${🎲id.greek(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,λ(e,ι){ φ(${@.root('/')+''}).buf = ι })`}` }
+		,set csv(ι){ t ← φ`/tmp/csv${🎲id.greek(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,(e,ι)=>{ φ(${@.root('/')+''}).buf = ι })`}` }
 		# ,get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') }
 		,set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:✓}).end({pretty:✓}) }
 		,get plist(){t←; buf ← @.buf ;↩ 0?0
 			# in case bplist-parser has bugs, this is available:
 			# : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
-			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist${🎲id.greek(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},λ(e,ι){ φ(${t+''}).plist = ι })`}`, t.plist )
+			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist${🎲id.greek(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},(e,ι)=>{ φ(${t+''}).plist = ι })`}`, t.plist )
 			: npm`plist@2.1.0`.parse(@.text)
 			}
 		,set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) }
-		,get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
-			if( ιs.‖ ) ‽('TODO')
-			d ← JSON.parse((read_file(_ι)||'[]')+'')
-			↩ {
-			,push(…a){a.map(λ(ι){
-				d.push(ι)
-				open(_ι,'[]',λ(fl){
-					i ← fl.indexOf_skipping(-1,-1e4,-1,ord(']'),/[ \n\t]/) || ‽('bad file')
-					is_0 ← fl.indexOf_skipping(i-1,-1e4,-1,ord('['),/[ \n\t]/)!==∅
-					fl.write((is_0?'':',')+JSON.stringify(ι,∅,'  ')+']',i)
-					})
-				})}
-			,filter(f){↩ d.filter(f)}
-			,get length(){↩ d.‖}
-			,get ['‖'](){↩ d.‖}
-			} }}
 		,get size(){↩ fs.statSync(@._ι).size }
 		,get ['‖'](){↩ fs.statSync(@._ι).size }
 		}
@@ -816,11 +788,8 @@ mem_sc ← memoize_tick(ι=> new node.vm.Script(ι) )
 ;(…←)(node.util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
 ;[process,module].map(.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
 ;['γ','Object'].map(ι=>{
-γ[ι].inspect = λ(d,opt){↩ opt.stylize(ι,'quote') }
+γ[ι].inspect = (d,opt)=> opt.stylize(ι,'quote')
 })
-# Number_toFixed ← λ(θ,ι){ θ = round(θ / 10**-ι) * 10**-ι ;↩ ι>0? θ.toFixed(ι) : θ+'' }
-# γ.pretty_time_num = ι=> new Number(ι) …← ({inspect:λ(ˣ,opt){ P ← 20 ;ι←@ ;[ι,u] ← (ι >= P/1e3? [ι,'s'] : [ι*1e6,'μs']) ;↩ opt.stylize(Number_toFixed(ι,-max(-3,floor(log10(ι/P))))+u,'number') }})
-# γ.pretty_time_num = ι=> Unit(ι,'s')
 
 𐅋𐅃 ← λ(a,b){ t ← @.__local? npm`moment@2.18.1`(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString() ;t = t.slice(a,b) ;if( !@.__local && b > 10) t += 'Z' ;↩ t }
 Date.prototype‘.local .get=λ(){↩ new Date(@) …← ({__local:✓})}

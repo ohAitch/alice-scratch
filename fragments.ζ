@@ -302,16 +302,6 @@ the formats are complicated to interact with, because
 ############################ which ports are in use ############################
 sudo lsof -PiTCP -sTCP:LISTEN
 
-##################################### with #####################################
-with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
-;(=>{ bar ← 5 ;↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
-
-with_ ← (o,f)=>{
-	𐅋𐅫←'{'+_.keys(o).join(',')+'}'
-	𐅪𐅪←_.keys(o).map(i=>`𐅩𐅰.${i} = ${i}`).join(';')
-	↩ f.eval_in_lexical_env(`(𐅩𐅰)=>{ var ${𐅋𐅫} = 𐅩𐅰 ;var 𐅦𐅪 = (${f})() ;${𐅪𐅪} ;return 𐅦𐅪 }`)(o) }
-;(=>{ bar← 2 ; t← { stone:0 } ;↩ [with_(t,‘lexical_env=>{ stone = 7 ;↩ stone+bar }),t,bar] })()
-
 ########################### todo - this is an odd log ##########################
 ι ← 'N3wyOHwxOTR8MHwwfDM4fDE5LjkxNjQ2NTgyNjE4OTQ3M3wwfDB8MnwwfDExMDl8MTQwfDB8M3wwfDF8OHwxfDB8MXwxfDF8MjI4fHRydWV8ZmFsc2V8dHJ1ZXwxNTEwOTcyMTc1NDkyfDB8MHx0cnVlfHRydWV8dHJ1ZXwxLDAsMCwwLDAsMCwwLDAsNSwxMCwxMCwyMCwyMCwxMSwxNiwyMCwxLDAsMCwwLDAsMSwwLDMsNiw1LDUsNSw1LDUsNSwxMHwtMSwtMSwtMSwtMSwtMSwtMSwtMSwtMQ==|YzI4NzJmYTg4MTZlY2IzNzhhNDU0MzI1ZmJjMjExMzc='
 ι.split('|')[0] |>(ι=> Buffer.from(ι,'base64')+'')
@@ -384,3 +374,69 @@ E.pixels = {
 		else throw Error()
 		t.pack().pipe(fs.createWriteStream(φ(to)+'')) },
 	}
+
+################################################################################
+ι ← [
+	,['eng0',bits(Buffer.from(wikipedia_source('English_language')))]
+	,… 0x100.map(ι=> xor_repeat(b8(ι),Ox`1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736`)|>(x=>[ ,'⊕'+ι.toString(16).padStart(2,'0')+':'+see_buffer(x) ,bits(x) ]) )
+	]
+	.map(([name,ι])=>[ ,name
+	,ι.chunk(𐅯𐅫𐅬𐅜).map(ι=> parseInt(ι.reverse().join(''),2) )
+		|>(find_mostlikely_frequencies_assuming_ι_has_fixed_frequencies_over_αβ)
+	])
+
+electron_window('ζsee',ι,ι=>{ eval_main(.focus())
+
+# ι=ι .map(.map(ι=>{ 𐅪 ← Math.log2 ;t ← 2^-7 ;↩ (𐅪(t+ι)-𐅪(t))/(𐅪(t+1)-𐅪(t)) }))
+t ← ι.map(..1)
+t ← new (npm`ml-pca@2.1.0`)(t,{center:✓}).predict(t)
+t = numeric2.norm01(t.…).chunk(t[0].‖)
+ι = _.zip(ι.map(..0),t)
+
+t ← ι.find(..0==='eng0')[1] ;ι=ι ._.sortBy(ι=> numeric2.L2(t,ι[1]))
+
+require_new`/~/code/scratch/see.ζ`._0n_0n_01_labeled(ι)
+
+});
+
+################################################################################
+open ← λ(ι,ifdne,f){
+	ensure_exists(ι,ifdne) ;Lc ← new Φ(ι).‖
+	fd ← fs.openSync(ι,'r+') ;f({
+		,get L(){↩ Lc}
+		,read(i,L){t ← Buffer.allocUnsafe(L) ;fs.readSync(fd,t,0,L,i) === L || ‽ ;↩ t}
+		,write(ι,i){L ← fs.writeSync(fd,ι,i) ;Lc = max(Lc ,L+i)}
+		,truncate(L){fs.ftruncateSync(fd,L) ;Lc = min(Lc,L)}
+		,indexOf_skipping(from,to,step,find,skip){fl←@
+			if( from<0) from += fl.L ;if( to<0) to += fl.L ;from = min(max(0 ,from ),fl.L-1) ;to = min(max(-1 ,to ),fl.L)
+			if( !(step===-1 && from>to)) ‽('TODO')
+			d ← fl.read(to+1,from-to)
+			for(i←from;i>to;i+=step) {if( d[i-(to+1)]===find) ↩ i ;else if( chr(d[i-(to+1)]).match(skip)) ;else ↩ ∅}
+			}
+		}) ;fs.closeSync(fd)}
+,get json_array__synchronized(){↩ λ(…ιs){_ι←@._ι
+	if( ιs.‖ ) ‽('TODO')
+	d ← JSON.parse((read_file(_ι)||'[]')+'')
+	↩ {
+	,push(…a){a.map(λ(ι){
+		d.push(ι)
+		open(_ι,'[]',λ(fl){
+			i ← fl.indexOf_skipping(-1,-1e4,-1,ord(']'),/[ \n\t]/) || ‽('bad file')
+			is_0 ← fl.indexOf_skipping(i-1,-1e4,-1,ord('['),/[ \n\t]/)!==∅
+			fl.write((is_0?'':',')+JSON.stringify(ι,∅,'  ')+']',i)
+			})
+		})}
+	,filter(f){↩ d.filter(f)}
+	,get length(){↩ d.‖}
+	,get ['‖'](){↩ d.‖}
+	} }}
+
+##################################### with #####################################
+with_ ← (o,f)=> f.eval_in_lexical_env( `({${_.keys(o).join(',')}})`+(f+'').replace(/^\(\)/,'') )(o)
+;(=>{ bar ← 5 ;↩ with_({ baz:3 },‘lexical_env=> baz+bar) })()
+
+with_ ← (o,f)=>{
+	𐅋𐅫←'{'+_.keys(o).join(',')+'}'
+	𐅪𐅪←_.keys(o).map(i=>`𐅩𐅰.${i} = ${i}`).join(';')
+	↩ f.eval_in_lexical_env(`(𐅩𐅰)=>{ var ${𐅋𐅫} = 𐅩𐅰 ;var 𐅦𐅪 = (${f})() ;${𐅪𐅪} ;return 𐅦𐅪 }`)(o) }
+;(=>{ bar← 2 ; t← { stone:0 } ;↩ [with_(t,‘lexical_env=>{ stone = 7 ;↩ stone+bar }),t,bar] })()

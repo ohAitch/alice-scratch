@@ -40,9 +40,9 @@ src ← @device0`⧫_local_module_src`
 # when publish on save,:
 proc_keep_alive()
 
+⧫require ← ι=> catch_union(=>{ t ← {} ;𐅜𐅜 ← γ.⧫ ;γ.⧫ = new Proxy({},{set(ˣ,id,ι){ t[id] = ι ;↩ ✓ }}) ;require_new(ι) ;γ.⧫ = 𐅜𐅜 ;↩ t })
 watch_local_module_source ← from=> φwatch2(from,=>{
-	ι ← catch_union(=>{ t ← {} ;old ← γ.⧫ ;γ.⧫ = new Proxy({},{set(ˣ,id,ι){ t[id] = ι ;↩ ✓ }}) ;require_new(from) ;γ.⧫ = old ;↩ t })
-	if( T.Error(ι) ){ log('unconsider and tell user about it',from,ι) ;↩ }
+	ι ← ⧫require(from) ;if( T.Error(ι) ){ log('unconsider and tell user about it',from,ι) ;↩ }
 	ι ← _u(ι).map((ι,id)⇒ { ,id ,ι:ι+'' ,from } )
 	t ← (ιlock.ι||[])._.filter(.from!==from)
 	ι ← […ι,…t]
@@ -65,11 +65,10 @@ watch_local_module_source ← from=> φwatch2(from,=>{
 ################################################################################
 exports.put_γ = =>{
 	γ.⧫ = new Proxy({},{set(ˣ,id,ι){ γ‘[id] .thunk= ι ;↩ ✓ }}) # proc local module
-	φwatch1(ιlock.o,=>{ ι ← ιlock.ι ;ι&&(
+	ι ← ιlock.ι ;ι&&(
 		,ι.forEach(ι=> γ‘[ι.id] .thunk= ι.ι = (0,eval)('('+ι.ι+')') )
 		# ,γ.modules0 = ι # not actually used
-		,module.if_main_do(on_module_build𐅃𐅋𐅃𐅬𐅫) # hack
-		) } ) }
+		) }
 
 #################################### theory ####################################
 # a module
@@ -89,3 +88,19 @@ exports.put_γ = =>{
 # like Math.random() really
 
 # ⁘ modules: ✓ ✗ null ∅ ‖
+
+# modules??
+# source
+# 	host (js,node,electron)
+# 	file
+# 	inside a file
+# 	url
+# 		npm
+# 	🔒 (when 🔒, bind = commit)
+# destination
+# 	commit device
+# 	commit process ≈ bind device
+# 	commit code    ≈ bind process
+
+# recursive sets are cool
+# is that a nice way to formalize modules?

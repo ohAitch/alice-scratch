@@ -4,19 +4,15 @@
 # / (shᵥexit|child_process_as_promise) -> sh⚓exit
 # perf test ipc arrays?
 
-_anchor_ify ← ι=>ι …← ({ ⚓:(…a)=>{ opt ← a[-1]; opt …← ({ ⚓:✓ }); ↩ f(…a) } })
-E.process_spawn = _anchor_ify((…a)=>{ opt ← a.pop(); a.‖ &&( opt.command = a.shift() ); a.‖ &&( opt.args = a ); opt = { ,command:∅ ,args:[] ,'.':φ.cwd ,env:process.env ,fd:[] ,ipc:✗ ,child:✓ ,timeout:∅ } …← (opt)
-	command ← opt.command; args ← opt.args; _dot_ ← opt['.']; env ← opt.env; fd ← opt.fd; ipc ← opt.ipc; child ← opt.child; timeout ← opt.timeout; S ← opt.⚓
-	if( S ) ( ipc || !child )&& ‽
-	else timeout && ‽
+E.process_spawn = (…a)=>{ opt ← a.pop() ;a.‖ &&( opt.command = a.shift() ) ;a.‖ &&( opt.args = a ) ;opt = { ,command:∅ ,args:[] ,'.':φ.cwd ,env:process.env ,fd:[] ,ipc:✗ ,child:✓ } …← (opt)
+	command ← opt.command ;args ← opt.args ;_dot_ ← opt['.'] ;env ← opt.env ;fd ← opt.fd ;ipc ← opt.ipc ;child ← opt.child
 	t ← { ,env ,cwd:_dot_+'' ,detached:!child ,stdio:['pipe'].×(3)…←(fd).map(ι=> ι===∅||ι===null? 'ignore' : ι) ,maxBuffer:∞ }
-	Tnum(timeout) &&( t.timeout = timeout*1e3 )
 	ipc &&( fd[t.stdio.‖] = t.stdio[t.stdio.‖] = 'ipc' )
-	t ← node.child_process[S?'spawnSync':'spawn'](Command(command)+'',args,t)
+	t ← node.child_process.spawn(Command(command)+'',args,t)
 	t ← Proc.recognize(t)
 	!child &&( ,t.unref() ,t.pipe.forEach(ι=> ι&&ι.unref()) ,t.msg.unref() )
-	[#Q t.opt #Q].def({ ,get(){↩ opt} ,enumerable:✓ })
-	↩ t })
+	t …←({opt})
+	↩ t }
 E.Proc = { ,recognize:memoize(♓=>{p←;
 	if(p= ♓.channel ){
 		p.Node_Ipc = {
@@ -24,8 +20,8 @@ E.Proc = { ,recognize:memoize(♓=>{p←;
 			,each(f){ ♓.on('message',f.X) }
 			,next(f){ ♓.once('message',f.X) }
 			,Pipe:p
-			}; mixin_ref(p,p.Node_Ipc)
-		♓.on('disconnect',=>delete p.Node_Ipc); ♓===process && p.unref() }
+			} ;mixin_ref(p,p.Node_Ipc)
+		♓.on('disconnect',=>delete p.Node_Ipc) ;♓===process && p.unref() }
 	r ← 0?0
 		: ♓===process? { ,stdio:[ ♓.stdin,♓.stdout,♓.stderr ] ,parent:p&&{ ,get msg(){↩ p.Node_Ipc } } }
 		: ♓ instanceof node.child_process.ChildProcess? mixin_ref(♓,{
@@ -48,7 +44,6 @@ mixin_ref ← (from,to)=>{
 
 process.stdio = Proc.recognize(process).stdio
 
-patcher ← o=>{ seen ← new WeakSet(); ↩ ι=>{ p ← Object.getPrototypeOf(ι); if( seen.has(p) ) ↩; seen.add(p); p …← (o) } }
 
 
 
@@ -75,10 +70,10 @@ patcher ← o=>{ seen ← new WeakSet(); ↩ ι=>{ p ← Object.getPrototypeOf(�
 
 
 
-sh`` exists
-it discards args and ipc in favor of /bin/sh
-traditionally we address it like
-shₐ`${code} |`` "\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`
+# sh`` exists
+# it discards args and ipc in favor of /bin/sh
+# traditionally we address it like
+# shₐ`${code} |`` "\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`
 we have
 	code (shell program)
 	cwd
@@ -109,17 +104,17 @@ shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${l
 shᵥ`/usr/local/bin/hs -c ${ι}`
 sh`/usr/local/bin/hs -c ${ι}`()
 sh`/usr/local/bin/hs -c ${ι}`.⚓()
-shᵥ`cd ${__dirname}; browserify .bin/main.js -o .bin/bundle.js`
+shᵥ`cd ${__dirname} ;browserify .bin/main.js -o .bin/bundle.js`
 shᵥ`cd ${cache} && npm --cache-min=Infinity i ${abs_name()}`
-shᵥ`cd ${path}; cp *.{icns,keylayout} ~/'Library/Keyboard Layouts'`
-shᵥ`cd ~; npm cache add ${abs_name()}`
+shᵥ`cd ${path} ;cp *.{icns,keylayout} ~/'Library/Keyboard Layouts'`
+shᵥ`cd ~ ;npm cache add ${abs_name()}`
 shᵥ`chmod +x ${ι}`
 shᵥ`CLICOLOR_FORCE=1 ls -AGC`
 shᵥ`convert -list configure ;:`
-shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null; echo $?`
+shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null ;echo $?`
 shᵥ`ln -sf index.js ${__dirname}/.bin/ζλ`
 shᵥ`ln -sf ipc_shell ${__dirname}/.bin/ζλ`
-shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages; :`
+shᵥ`ln -sfhF ~/code/scratch/sublime/{JavaScript,Text,User} ~/Library/'Application Support/Sublime Text 3'/Packages ;:`
 shᵥ`mkdir -p ${__dirname}/.bin`
 shᵥ`open …${in_app && sh`-b ${memoize_persist(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) )(in_app)}`} ${!focus && '-g'} ${ι}`
 shᵥ`which …${sh(…a)}`
@@ -128,33 +123,38 @@ shᵥexit`convert -quiet ${ι} +repage ${τ`A`}`
 shₐ`${sb.encode(ι)} |`` open -a 'Sublime Text.app' -f`
 shₐ`${code} |`` "\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`
 shₐ`&>/dev/null qlmanage -p ${file} &`
-shₐ2({stdio:'inherit'})`cd ${project}; ${build}`
-shₐ2({stdio:'inherit'})`cd ${project}; npm --cache-min=Infinity -g i .`
-shₐ2({stdio:'inherit'})`cd ${project}; ${run}`
+shₐ2({stdio:'inherit'})`cd ${project} ;${build}`
+shₐ2({stdio:'inherit'})`cd ${project} ;npm --cache-min=Infinity -g i .`
+shₐ2({stdio:'inherit'})`cd ${project} ;${run}`
 
 shᵥ`convert ${ι} png:${ι minus extension}.png && rm ${ι}`
-shᵥ`launchctl unload ${t} &>/dev/null; launchctl load ${t}`
-shᵥ`rm -rf /tmp/mbq3p; mkdir /tmp/mbq3p; unzip ${zip} -d /tmp/mbq3p/Default`
-terminal_do_script( sh`cd ${ι}; …${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`}; …${focus && 'activate'}` ); ↩ }
+shᵥ`launchctl unload ${t} &>/dev/null ;launchctl load ${t}`
+shᵥ`rm -rf /tmp/mbq3p ;mkdir /tmp/mbq3p ;unzip ${zip} -d /tmp/mbq3p/Default`
+terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}`, osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
 
 
 
 
 
 
+code/scratch/it.ζ:118:		node.child_process.spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',node.fs.openSync(t.out,'a+'),node.fs.openSync(t.err,'a+')] })
+code/scratch/ζ/it.ζ:609:	ι ← node.child_process.spawnSync(code,{shell:✓})
+code/scratch/ζ/it.ζ:618:		ι ← node.child_process.spawn(code,{shell:✓} …← (_u(opt).pick('stdio','detached')))
+code/scratch/ζ/server.ζ:22:eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code ;↩ node.child_process.spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !>(♓_sub) /*memory leak*/ }
 
 
-code/scratch/ζ/index.ζ:543:E.process_spawn = _anchor_ify((…a)=>{ opt ← a.pop(); a.‖ &&( opt.command = a.shift() ); a.‖ &&( opt.args = a ); opt = _({ ,command:∅ ,args:[] ,'.':φ.cwd ,env:process.env ,fd:[] ,ipc:✗ ,child:✓ ,timeout:∅ }) …← (opt)
+
+code/scratch/ζ/index.ζ:543:E.process_spawn = _anchor_ify((…a)=>{ opt ← a.pop() ;a.‖ &&( opt.command = a.shift() ) ;a.‖ &&( opt.args = a ) ;opt = _({ ,command:∅ ,args:[] ,'.':φ.cwd ,env:process.env ,fd:[] ,ipc:✗ ,child:✓ ,timeout:∅ }) …← (opt)
 code/scratch/ζ/index.ζ:865:	ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 code/scratch/ζ/index.ζ:872:		ι ← process_spawn('/bin/sh',_({ ,args:['-c',code] }) …← (opt))
-code/scratch/ζ/index.ζ:924:		shᵥ`chmod +x ${t}`; process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ }) }
-code/scratch/ζ/server.ζ:23:# eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code; t ← as_module(code); ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
-code/scratch/ζ/server.ζ:24:eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code; ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,'-e',code] ,ipc:✓ }) }
+code/scratch/ζ/index.ζ:924:		shᵥ`chmod +x ${t}` ;process_spawn('/bin/sh',{ ,args:['-c',t+''] ,child:✗ }) }
+code/scratch/ζ/server.ζ:23:# eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code ;t ← as_module(code) ;↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
+code/scratch/ζ/server.ζ:24:eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code ;↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,'-e',code] ,ipc:✓ }) }
 
 
-code/scratch/dotfiles/.bashrc.ζ:112:		a ← => build && shₐ2({fd:process.stdio})`cd ${project}; ${build}`
-code/scratch/dotfiles/.bashrc.ζ:117:			shₐ2({fd:process.stdio})`cd ${project}; npm --cache-min=Infinity -g i .`
-code/scratch/dotfiles/.bashrc.ζ:119:		c ← => run && shₐ2({fd:process.stdio})`cd ${project}; ${run}`
+code/scratch/dotfiles/.bashrc.ζ:112:		a ← => build && shₐ2({fd:process.stdio})`cd ${project} ;${build}`
+code/scratch/dotfiles/.bashrc.ζ:117:			shₐ2({fd:process.stdio})`cd ${project} ;npm --cache-min=Infinity -g i .`
+code/scratch/dotfiles/.bashrc.ζ:119:		c ← => run && shₐ2({fd:process.stdio})`cd ${project} ;${run}`
 
 
 

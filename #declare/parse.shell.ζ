@@ -15,7 +15,7 @@ k_is ← (ι,…a)=>( _(_(ι).omit(…a)).keys().‖ && ‽(a,_.keys(ι)), ✓ )
 parse_bash ← code=>{
 	rm_com ← ι=> ι.ι && ι.ι.every(ι=> k_is(ι,'Text') && Tstr(ι.Text) ) && ι.delete()
 	which`"\${GOPATH:-$HOME/go}"/bin/shfmt` || ‽
-	↩ shₐ`${code} |`` "\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`.stdio[1].pin().then(ι=>{
+	↩ shₐin(code)`"\${GOPATH:-$HOME/go}"/bin/shfmt -exp.tojson`.stdio[1].pin().then(ι=>{
 		ι ← JSON.parse(ι+'')
 		k_is(ι,'StmtList')
 		ι ← ι.StmtList

@@ -12,7 +12,7 @@
 𐅜𐅫c ← x=> color.infer0(𐅝𐅮,x).hex()
 
 eval_main(.setBounds({ ,x:0 ,y:0 ,width:1280 ,height:800 }))
-my_style()
+style_a.css()
 
 canvas_0n_0n_01 ← ιι=>{
 	ι‖ ← [ιι[0].‖,ιι.‖]
@@ -29,10 +29,14 @@ canvas_0n_0n_01 ← ιι=>{
 exports._0n_0n_01_labeled = ι=>{
 	canvas ← make_canvas([500,ι.‖*9*2])
 	draw ← canvas.getContext('2d') ;𐅞𐅮 ← ‖(canvas).ι
-	draw …←({ ,textBaseline:'middle' ,font:'18px '+my_font_family ,fillStyle:my_font_color }) ;ι.map(..0).map((ι,i)=> draw.fillText(ι,0,(i+1/2)*9*2))
+	draw …←({ ,textBaseline:'middle' ,font:'18px '+style_a.font ,fillStyle:style_a.fg }) ;ι.map(..0).map((ι,i)=> draw.fillText(ι,0,(i+1/2)*9*2))
 	commit_doc(canvas)
 	𐅞𐅬𐅪𐅞 ← canvas_0n_0n_01(ι.map(..1))
 	commit_doc(𐅞𐅬𐅪𐅞)
 	}
 
 exports._0n_0n_01 = ι=> commit_doc( canvas_0n_0n_01(ι) )
+
+
+
+‡‡ how to integrate this with module.ζ?

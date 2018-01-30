@@ -1,6 +1,6 @@
 {
   "name": "zeta-lang",
-  "version": "0.13.161",
+  "version": "0.13.184",
   "description": "unnamed set of tools",
   "author": "Comely Naiad <comely.naiad@gmail.com>",
   "scripts": {"preinstall": "ln -sf it.js .bin/ζλ", "postinstall": "./postinstall.sh"},

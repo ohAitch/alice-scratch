@@ -2,13 +2,6 @@
 ⧫. ps ==> Object.getOwnPropertyDescriptors
 ⧫. ct ==> chrome_tabs
 
-⧫. sb_completions ==>{ 𐅜𐅝 ← {
-,anon:=> [🎲id.greek(4)]
-,now:=> Time() |>(ι=>[ ι.day_s,ι.ymdhm,ι.ymdhms,ι.ymdhmss ])
-,day:=> [Time().local.ymd]
-# ,r1:=> [🎲(10)+'']
-} ;↩ ι=> 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ }
-
 ⧫[ '…p'] ==> => postrun(hand.ι)
 
 #################################### user.ui ###################################
@@ -82,13 +75,16 @@
 		}
 	else ‽ }
 
-⧫. my_font_color ==> '#e8e8e8' # wow, so modules
-⧫. my_font_family ==> 'Avenir,sans-serif'
-⧫. my_style ==> => style(`
-	body{ ;background-color:#2a2626 ;color:${my_font_color} ;font-family:${my_font_family} }
-	a:visited {color: #bb7f00;}
-	a:hover, a:active, a:focus {color: #eeeeee;}
-	a {color: #ffb200; text-decoration: none;}`)
+⧫. style_a ==> frame(‘lexical_env =>{
+	fg← '#e8e8e8'
+	bg← '#2a2626'
+	font← 'Avenir,sans-serif'
+	css← => style(`
+		body{ ;background-color:${bg} ;color:${fg} ;font-family:${font} }
+		a:visited {color: #bb7f00;}
+		a:hover, a:active, a:focus {color: #eeeeee;}
+		a {color: #ffb200; text-decoration: none;}`)
+	})()
 
 ################################### user.art ###################################
 ⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
@@ -107,8 +103,6 @@
 	# wait-check: if not $`${ι}:checked` ;ι.click() ;wait for $`${ι}:checked`
 	# wait-click: wait for ι.‖ ;ι.click()
 	# decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
-
-	if (t=ι.re`^"(.*)"$`) ↩ '“'+t[1]+'”' # ! bad hack
 
 	apply_regexes ← ι2=> lines(ι2).forEach(t=>{ [a,b] ← t.trim().split(/  +/g) ;ι = ι.replace(RegExp(a),b) })
 	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
@@ -306,50 +300,48 @@
 	;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
 	}) …←({ cant_pool:✓ })
 
-########################################
-⧫. on_module_build𐅃𐅋𐅃𐅬𐅫 ==> =>{ # build .bashrc
-	inject_bash ← alt_ws`ct chrome_tabs bookmarks sb p sb[-1] moon
-		d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x 𐅩𐅝𐅜𐅂𐅞 · l f ar / …p youtube-dl youtube-dl-v bandcamp-dl`
-	t ← String.raw`
-	ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;}
+######### target codegen + code ########
+set_bashrc ← ι=>{
+	φ`~/.bashrc_𐅮𐅬𐅦𐅫𐅦`.text = ι
+	φ`~/.bash_profile`.text.includes(𐅩𐅃='[[ -r ~/.bashrc_𐅮𐅬𐅦𐅫𐅦 ]] && . ~/.bashrc_𐅮𐅬𐅦𐅫𐅦')
+		||( φ`~/.bash_profile`.text += '\n'+𐅩𐅃+'\n' ) ;𐅩𐅃←; }
 
-	alias Z=ζ ;alias Zlogic=ζlogic ;alias Zdata=ζdata # ! temporary while terminal unicode is broken
+bash_γf ← id=>{ 𐅫 ← `/tmp/postrun${🎲id.greek(9)}` ;↩ sh`…${id}(){
+	ζ ${γ[id].cant_pool && '--fresh'} ${js` [process.env.?,process.env.$,…a] = a
+		γ.postrun = ι=> φ(${𐅫}).text = ι
+		γ[${id}](…a)
+		`} $? $$ "$@" ;local r=$?
+	[ -e ${𐅫} ] && { local t="$(cat ${𐅫})" ;rm ${𐅫} ;eval -- "$t" ;r=$? ;}
+	return $r ;}` }
 
-	################ prelude ###############
+set_bashrc( String.raw`
+	############### general ##############
 	[[ $PATH =~ (^|:)/usr/local/bin(:|$) ]] || PATH="/usr/local/bin:$PATH"
 	[[ $PATH =~ (^|:)\./node_modules/\.bin(:|$) ]] || PATH="./node_modules/.bin:$PATH:."
-
-	##### prelude ### interactive mode #####
 	export PROMPT_COMMAND='𐅩𐅝𐅜𐅂𐅞 $? "$(history 1)" || PROMPT_COMMAND=pwd' ;export PS1=$'\[\e[90m\]>\[\e[0m\] '
 	shopt -s no_empty_cmd_completion
 	unset HISTFILE
 	export HISTCONTROL=ignoreboth:erasedups
+	` + alt_ws`ct chrome_tabs bookmarks sb p sb[-1] moon 𐅩𐅝𐅜𐅂𐅞`.map(bash_γf).join('\n')
+	+ String.raw`
+	############## specific ##############
+	ζ(){ if [[ $# = 0 || $1 =~ ^\.?/ || $1 = --fresh ]] ;then /usr/local/bin/ζ "$@" ;else ζλ "$@" ;fi ;}
+	alias Z=ζ ;alias Zlogic=ζlogic ;alias Zdata=ζdata # ! temporary while terminal unicode is broken
+
 	alias http-server='http-server -c-1'
 	alias ζlogic='cd ~/Library/Caches/ζ.logic/'
 	alias ζdata='cd ~/Library/Caches/ζ.persist.0/'
-	` + inject_bash.map(id=>{ 𐅫 ← `/tmp/postrun${🎲id.greek(9)}` ;↩ sh`…${id}(){
-		ζ ${γ[id].cant_pool && '--fresh'} ${js` [process.env.?,process.env.$,…a] = a
-			γ.postrun = ι=> φ(${𐅫}).text = ι
-			γ[${id}](…a)
-			`} $? $$ "$@" ;local r=$?
-		[ -e ${𐅫} ] && { local t="$(cat ${𐅫})" ;rm ${𐅫} ;eval -- "$t" ;r=$? ;}
-		return $r ;}` }).join('\n')
-	φ`~/.bashrc_𐅮𐅬𐅦𐅫𐅦`.text = t }
-################ prelude ###############
+	` + alt_ws`d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x · l f ar / …p youtube-dl youtube-dl-v bandcamp-dl`.map(bash_γf).join('\n') )
 ⧫. 𐅩𐅝𐅜𐅂𐅞 ==> (E,history_1)=>{t← ;E ← E |0
+	############### general ##############
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]
 	cmd && node.fs.appendFileSync(φ`~/.archive_bash`+'' ,JSON.stringify([Time(),shᵥ`hostname`+'',φ.cwd+'',cmd])+'\n' )
 	postrun('hash -r')
-	𐅮𐅬𐅜𐅞𐅪pre_prompt(E) }
-
-################# user #################
-⧫. 𐅮𐅬𐅜𐅞𐅪pre_prompt ==> E=>{
+	############## specific ##############
 	_home_link ← ι=> (ι+'').replace(re`^${process.env.HOME}(?=/|$)`,'~') # should instead be a function that compresses all of the standard symlinks
 	red ← ι=> '\x1b[31m'+ι+'\x1b[0m' ;green ← ι=> '\x1b[32m'+ι+'\x1b[0m' ;goX ← ι=> '\x1b['+ι+'G'
 	process.stdout.write( (E===0? moon() : red(('   '+E).slice(-3))) + goX(5) + green(_home_link(φ.cwd)+'/') + goX(79) + moon() + '\n')
-	# ideal:
-	# [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
-	# t ← bind( D(sh`$$`) ,[#Q φ.cwd #Q] ,{ 'ℍ.‖':2 }).ℍ ;t[0]!==t[1] && process.stdout.write(shᵥ`CLICOLOR_FORCE=1 ls -AGC`)
+	# ideal: [bind @$$ φ.cwd] ℍ [-2:] ≠ -> do sh`ls -AGC`
 	last_cwd ← @device0('last_cwd_'+process.env.$) ;if( last_cwd.ι && last_cwd.ι!==φ.cwd+'' ) process.stdout.write(shᵥ`CLICOLOR_FORCE=1 ls -AGC`) ;last_cwd.ι===φ.cwd+'' ||( last_cwd.ι = φ.cwd+'' )
 	}
 

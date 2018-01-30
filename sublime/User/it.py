@@ -162,7 +162,10 @@ class zeta(sublime_plugin.WindowCommand):
 
 class _2(sublime_plugin.EventListener):
 	def on_query_completions(self,view,prefix,locations):
-		t = ζ('sb_completions(ι)',prefix)
+		t = ζ(""" 𐅜𐅝 ← {
+			,anon:=> [anon]
+			,now:=> Time() |>(ι=>[ ,ι.day_s ,ι.local.ymd ,ι.ymdhm ,ι.ymdhms ,ι.ymdhmss ])
+			}; 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ """,prefix)
 		if t is not None: return (t,sublime.INHIBIT_WORD_COMPLETIONS)
 
 class make_divider(sublime_plugin.TextCommand):
