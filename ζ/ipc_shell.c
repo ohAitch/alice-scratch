@@ -137,7 +137,6 @@ int main(int argc, char *argv[], char *env[]){
 	struct timeval readtimeout;
 
 	// jump through a series of connection hoops
-
 	hostinfo = gethostbyname("localhost");
 	if (hostinfo == NULL){ fprintf(stderr, "[ipc_shell] gethostbyname failed\n"); cleanup_and_exit(CONNECT_FAILED); }
 	if ((the_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[ipc_shell] socket"); cleanup_and_exit(SOCKET_FAILED); }
