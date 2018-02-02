@@ -5,8 +5,6 @@
 # inject_bash
 
 
-
-
 # pipe module data so that we can use modules effortlessly
 
 # ! this is all just an ... elaboration
@@ -86,8 +84,6 @@ exports.put_γ = =>{
 # that is,
 # require() is a loose handwaving function, so cache its output for repeatability
 # like Math.random() really
-
-# ⁘ modules: ✓ ✗ null ∅ ‖
 
 # modules??
 # source

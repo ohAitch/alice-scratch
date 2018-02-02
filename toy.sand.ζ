@@ -142,9 +142,9 @@ loop_gapless_e_play_e_volume ← url=>
 		b ← AC.createGain()
 		a.connect(b) ;b.connect(AC.destination)
 		a.start()
-		r ← def({},'volume',{ get(){↩ b.gain.value }, set(ι){ b.gain.value = ι } })
-		r.volume = 0
-		↩ r })
+		gain ← slot0(=> b.gain.value ,ι=> b.gain.value = ι )
+		gain.ι = 0
+		↩ gain })
 
 perf_now ← ι=> ( performance.timing.navigationStart + (ι===∅? performance.now() : ι) )/1e3
 
@@ -240,10 +240,10 @@ tool_time ← 0 ;tool_length ← => TOOL_LENGTH * 60/*fps*/ * SAND_PER_TICK * pi
 gen_color ← => shake_luminosity(color.interpolate_0(picked_colors, (tool_time++) / tool_length() % 1))
 
 sound ← (=>{
-	a← ;loop_gapless_e_play_e_volume('pink_noise.mp3').then(ι=> a = ι)
+	gain← ;loop_gapless_e_play_e_volume('pink_noise.mp3').then(ι=> gain = ι)
 	↩ {
-	fade_out: => frame_pool.add(λ self(){ if (!a) ↩ ;a.volume *= 0.9 ;if (a.volume < 0.01){ a.volume = 0 ;frame_pool.delete(self) } }),
-	adjust_volume: ι=> a &&( a.volume = min(max(0, a.volume + (ι - a.volume)*0.175 ),1) ),
+	fade_out: => frame_pool.add(λ self(){ if (!gain) ↩ ;gain.ι *= 0.9 ;if (gain.ι < 0.01){ gain.ι = 0 ;frame_pool.delete(self) } }),
+	adjust_volume: ι=> gain &&( gain.ι = min(max(0, gain.ι + (ι - gain.ι)*0.175 ),1) ),
 	} })()
 
 ########################################

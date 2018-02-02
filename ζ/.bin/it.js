@@ -608,15 +608,20 @@ RegExp.prototype[γ["|>"]] (ι=> new Property(ι,"y")) .get=function(){return Re
 γ.ζjs = (ss,...ιs)=>{ var ENC = JSON.stringify ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ζ_compile(ι) ).join('') }
 γ.ζ = (ss,...ιs)=>{ var ENC = ι=> ι===undefined? '∅' : JSON.stringify(ι) ;return simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
-γ.sh = (ss,...ιs)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
+γ._pisces__on_exits = f=> require('/usr/local/lib/𐅪𐅩modu/signal-exit@3.0.2__57/node_modules/signal-exit')((i,sig)=>{
+	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
+	f(i,sig) })
+γ._pisces__sub = ι=> _pisces__on_exits(()=>ι.kill()) // user ish?
+
+γ.sh = (...ι)=>{ var ENC = ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;return simple_template(ι[0],ι.slice(1),[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 var if_sh_err = (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+(ι.stderr+'').slice(0,100)) [γ['…←']] (_u(ι).pick('status','stdout','stderr')) [γ["!>"]](ι=> ι.stderr+='' ) }
-γ.shᵥ = (ss,...ιs)=>{ var code = sh(ss,...ιs)
+γ.shᵥ = (...ι)=>{ var code = !is_template(ι)? ι[0] : sh(...ι)
 	// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	var ι = node.child_process.spawnSync(code,{shell:true})
 	if_sh_err('shᵥ',code,ι)
 	return ι.stdout [γ['…←']] ({ toString(...a){ var ι = Buffer.prototype.toString.call(this,...a) ;return a["‖"]? ι : ι.replace(/\n$/,'') } }) }
-γ.shᵥexit = (ss,...ιs)=>{ var r = catch_union(()=>shᵥ(ss,...ιs)); return T.Error(r)? r.status===0 : true }
 var _shₐ = opt=> (...ι)=>{ var code = sh(...ι)
 	// ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
 	// ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
@@ -627,12 +632,7 @@ var _shₐ = opt=> (...ι)=>{ var code = sh(...ι)
 γ.shₐin = ι=> _shₐ({stdio:[φ.fd.from(ι),'pipe','pipe',]})
 γ.shₐi = _shₐ({stdio:process.stdio})
 γ.shₐlone = (...ι)=> _shₐ({detached:true,stdio:'ignore'})(...ι) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.unref())
-
-process[γ["|>"]] (ι=> new Property(ι,"stdio")) .get=function(){return [ this.stdin,this.stdout,this.stderr ] }
-γ._pisces__on_exits = f=> require('/usr/local/lib/𐅪𐅩modu/signal-exit@3.0.2__57/node_modules/signal-exit')((i,sig)=>{
-	if( i===null ) i = 128+{ SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) })
-γ._pisces__sub = ι=> _pisces__on_exits(()=>ι.kill()) // user ish?
+γ.shᵥexit = (ss,...ιs)=>{ var r = catch_union(()=>shᵥ(ss,...ιs)); return T.Error(r)? r.status===0 : true }
 
 γ.osa = (ss,...ιs)=>{var t;
 	var ι = simple_template(ss,ιs)
@@ -804,7 +804,8 @@ Date.prototype[γ["|>"]] (ι=> new Property(ι,"ymdhmss")) .get=function(){retur
 Date.prototype[γ["|>"]] (ι=> new Property(ι,"mdhm"))    .get=function(){return 𐅋𐅃.call(this,'YYYY'["‖"],'YYYY-MM-DDTHH:mm'["‖"])}
 Date.prototype[γ["|>"]] (ι=> new Property(ι,"hms"))     .get=function(){return 𐅋𐅃.call(this,'YYYY-MM-DDT'["‖"],'YYYY-MM-DDTHH:mm:ss'["‖"])}
 Date.prototype[γ["|>"]] (ι=> new Property(ι,"day")) .get=function(){return this.i/86400 }
-Date.prototype[γ["|>"]] (ι=> new Property(ι,"day_s")) .get=function(){return (this.day+'').replace(/^(.*\..{4}).*/,'$1') }
+Date.prototype[γ["|>"]] (ι=> new Property(ι,"day_s5")) .get=function(){return (this.day+'').replace(/^(.*\..{5}).*/,'$1') }
+Date.prototype[γ["|>"]] (ι=> new Property(ι,"day_s"))  .get=function(){return (this.day+'').replace(/^(.*\..{4}).*/,'$1') }
 Date.prototype[γ["|>"]] (ι=> new Property(ι,"day_s3")) .get=function(){return (this.day+'').replace(/^(.*\..{3}).*/,'$1') }
 
 γ.Unit = (ι,u)=>0?0: {ι,u}
@@ -812,7 +813,7 @@ Date.prototype[γ["|>"]] (ι=> new Property(ι,"day_s3")) .get=function(){return
 	[γ["!>"]]((𐅭𐅞)=>𐅭𐅞[γ["|>"]] (ι=> new Property(ι,"inspect")) [γ["!>"]]((𐅭𐅞)=>𐅭𐅞.enumerable= false) .ι=function(ˣ,opt){return node.util.inspect(this.ι,opt)+' '+opt.stylize(this.u,'number') } )
 Number.prototype.inspect = function(d,opt){'use strict' ;var ι = this ;if(! Tprim(ι) ) return ι ;return ζ_inspect(ι,opt) }
 Boolean.prototype.inspect = function(d,opt){'use strict' ;var ι = this ;if(! Tprim(ι) ) return ι ;return ζ_inspect(ι,opt) }
-Date.prototype.inspect = function(d,opt){return opt.stylize(isNaN(+this)? 'Invalid Date' : this.getUTCSeconds()!==0? this.ymdhms : this.getUTCMinutes()!==0? this.ymdhm : this.getUTCHours()!==0? this.ymdh : this.ymd, 'date')}
+Date.prototype.inspect = function(d,opt){return opt.stylize(isNaN(+this)? 'Invalid Date' : this.day_s, 'date')}
 // ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
 // ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
 // ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(node.util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }

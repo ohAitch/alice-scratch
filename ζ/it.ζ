@@ -608,15 +608,20 @@ RegExp.prototype‘.y .get=λ(){↩ RegExp(@.source,@.flags.replace(/y/,'')+'y')
 γ.ζjs = (ss,…ιs)=>{ ENC ← JSON.stringify ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ζ_compile(ι) ).join('') }
 γ.ζ = (ss,…ιs)=>{ ENC ← ι=> ι===∅? '∅' : JSON.stringify(ι) ;↩ simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
-γ.sh = (ss,…ιs)=>{ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;↩ simple_template(ss,ιs,[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
+process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
+γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
+	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
+	f(i,sig) })
+γ.♓_sub = ι=> ♓_on_exits(=>ι.kill()) # user ish?
+
+γ.sh = (…ι)=>{ ENC ← ι=> "'"+(ι+'').replace(/'/g,"'\\''")+"'" ;↩ simple_template(ι[0],ι.slice(1),[sh,' ']).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('') }
 
 if_sh_err ← (name,code,ι)=>{ if( ι.status ) throw Error(name+'`'+code+'` → status:'+ι.status+' ,stderr:'+(ι.stderr+'').slice(0,100)) …← (_u(ι).pick('status','stdout','stderr')) !>(ι=> ι.stderr+='' ) }
-γ.shᵥ = (ss,…ιs)=>{ code ← sh(ss,…ιs)
+γ.shᵥ = (…ι)=>{ code ← !is_template(ι)? ι[0] : sh(…ι)
 	# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] ,⚓:1 })
 	ι ← node.child_process.spawnSync(code,{shell:✓})
 	if_sh_err('shᵥ',code,ι)
 	↩ ι.stdout …← ({ toString(…a){ ι ← Buffer.prototype.toString.call(@,…a) ;↩ a.‖? ι : ι.replace(/\n$/,'') } }) }
-γ.shᵥexit = (ss,...ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.status===0 : ✓ }
 _shₐ ← opt=> (…ι)=>{ code ← sh(…ι)
 	# ι ← process_spawn('/bin/sh',{ ,args:['-c',code] } …← (opt))
 	# ι.exit.then(exit=>{ if_sh_err('shₐ',code,ι …← ({exit})) })
@@ -627,12 +632,7 @@ _shₐ ← opt=> (…ι)=>{ code ← sh(…ι)
 γ.shₐin = ι=> _shₐ({stdio:[φ.fd.from(ι),'pipe','pipe',]})
 γ.shₐi = _shₐ({stdio:process.stdio})
 γ.shₐlone = (…ι)=> _shₐ({,detached:✓,stdio:'ignore'})(…ι) !>(.unref())
-
-process‘.stdio .get=λ(){↩ [ @.stdin,@.stdout,@.stderr ] }
-γ.♓_on_exits = f=> npm`signal-exit@3.0.2`((i,sig)=>{
-	if( i===null ) i = 128+{ ,SIGHUP:1,SIGINT:2,SIGQUIT:3,SIGTRAP:5,SIGABRT:6,SIGIOT:6,SIGSYS:12,SIGALRM:14,SIGTERM:15,SIGXCPU:24,SIGXFSZ:25,SIGVTALRM:26,SIGUSR2:31 }[sig]
-	f(i,sig) })
-γ.♓_sub = ι=> ♓_on_exits(=>ι.kill()) # user ish?
+γ.shᵥexit = (ss,...ιs)=>{ r ← catch_union(=>shᵥ(ss,…ιs)); ↩ T.Error(r)? r.status===0 : ✓ }
 
 γ.osa = (ss,…ιs)=>{t←;
 	ι ← simple_template(ss,ιs)
@@ -804,7 +804,8 @@ Date.prototype‘.ymdhmss .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH:mm:ss.S
 Date.prototype‘.mdhm    .get=λ(){↩ 𐅋𐅃.call(@,'YYYY'.‖,'YYYY-MM-DDTHH:mm'.‖)}
 Date.prototype‘.hms     .get=λ(){↩ 𐅋𐅃.call(@,'YYYY-MM-DDT'.‖,'YYYY-MM-DDTHH:mm:ss'.‖)}
 Date.prototype‘.day .get=λ(){↩ @.i/86400 }
-Date.prototype‘.day_s .get=λ(){↩ (@.day+'').replace(/^(.*\..{4}).*/,'$1') }
+Date.prototype‘.day_s5 .get=λ(){↩ (@.day+'').replace(/^(.*\..{5}).*/,'$1') }
+Date.prototype‘.day_s  .get=λ(){↩ (@.day+'').replace(/^(.*\..{4}).*/,'$1') }
 Date.prototype‘.day_s3 .get=λ(){↩ (@.day+'').replace(/^(.*\..{3}).*/,'$1') }
 
 γ.Unit = (ι,u)⇒ {ι,u}
@@ -812,7 +813,7 @@ Date.prototype‘.day_s3 .get=λ(){↩ (@.day+'').replace(/^(.*\..{3}).*/,'$1') 
 	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ node.util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
 Number.prototype.inspect = λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
 Boolean.prototype.inspect = λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
-Date.prototype.inspect = λ(d,opt){↩ opt.stylize(isNaN(+@)? 'Invalid Date' : @.getUTCSeconds()!==0? @.ymdhms : @.getUTCMinutes()!==0? @.ymdhm : @.getUTCHours()!==0? @.ymdh : @.ymd, 'date')}
+Date.prototype.inspect = λ(d,opt){↩ opt.stylize(isNaN(+@)? 'Invalid Date' : @.day_s, 'date')}
 # ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
 # ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
 # ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(node.util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }

@@ -4,24 +4,15 @@ device_listen ← (port=0)=>{ r ← new node.net.Server().listen(port,'localhost
 
 #################################### prelude ###################################
 on_off ← =>{ ι ← [] ;↩ { ,on(…a){ [ee,m,f]←a ;ee.on(m,f) ;ι.push(a) } ,off(){ ι.map(([ee,m,f])=> ee.removeListener(m,f)) ;ι = [] } } }
-Set.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← node.util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Set /,`[Set: ${@.name}]`) ) ;delete @.inspect ;↩ r }
-Map.prototype.inspect = λ(d,opt){ @‘.inspect !>(.enumerable= ✗) ;r ← node.util.inspect(@,{}…←(opt)) ;@.name &&( r = r.replace(/^Map /,`[Map: ${@.name}]`) ) ;delete @.inspect ;↩ r }
-# vs ,you know
-# : Set { 'Type', 'Value' }
-# : Set( 'Type', 'Value' )
-
 node.child_process.ChildProcess.prototype.inspect = λ(d,opt){↩ `ChildProcess{ pid:${@.pid} …}` }
 
 ###################################### lib #####################################
-Δ_Sets ← (…a)=>{ f ← a.pop()
-	# wtf
-	start ← a.map(ι=> T.Set(ι)? new Set(ι) : ‽)
-	f()
-	↩ _l.zip(start,a).map(a=> Δset(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
+# wtf
+Δ_Sets ← (…a)=>{ f ← a.pop() ;start ← a.map(ι=> new Set(ι)) ;f() ;↩ _l.zip(start,a).map(a=> Δset(…a)).filter(.‖).map(ι⇒ { Δ:ι }) }
 # eval_in_new_worker ← code=>{ ... ↩ process_spawn(process.execPath,{ ,args:[…process.execArgv,t] ,ipc:✓ }) }
 eval_in_new_worker ← code=>{ code = js`require(${__dirname});`+code ;↩ node.child_process.spawn(process.execPath,[…process.execArgv,simple_as_file(code)],{ stdio:[…['pipe'].×(3),'ipc'] }) !>(♓_sub) /*memory leak*/ }
 eval_in_worker ← (=>{
-	🏷busy ← Set() ;🏷free ← Set()
+	busy ← Set() ;free ← Set()
 	make ← => eval_in_new_worker('('+(=>{ ♓ ← process
 		♓_once_eval ← f=> ♓.once('message',ι=>{ ι.map(ι=>{ ι[0]==='eval' || ‽ ;f(ι[1]) }) })
 		wait ← => ♓_once_eval(ι=>{ try{ ζ_eval(ι) }catch(e){ φ`~/file/what.txt`.text = `${Time()} shit, got ${e.stack} in ${ι}` ;‽(e) } }) # ! todo: make this logging less stupid

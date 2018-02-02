@@ -164,7 +164,7 @@ class _2(sublime_plugin.EventListener):
 	def on_query_completions(self,view,prefix,locations):
 		t = ζ(""" 𐅜𐅝 ← {
 			,anon:=> [anon]
-			,now:=> Time() |>(ι=>[ ,ι.day_s ,ι.local.ymd ,ι.ymdhm ,ι.ymdhms ,ι.ymdhmss ])
+			,now:=> Time() |>(ι=>[ ,ι.day_s3 ,ι.local.ymd ,ι.ymdhm ,ι.ymdhms ,ι.ymdhmss ])
 			}; 𐅜𐅝[ι]? 𐅜𐅝[ι]().map(r=>[ι,r]) : ∅ """,prefix)
 		if t is not None: return (t,sublime.INHIBIT_WORD_COMPLETIONS)
 

@@ -75,7 +75,7 @@
 		}
 	else ‽ }
 
-⧫. style_a ==> frame(‘lexical_env =>{
+⧫. style_a ==> frame0(‘lexical_env =>{
 	fg← '#e8e8e8'
 	bg← '#2a2626'
 	font← 'Avenir,sans-serif'
@@ -199,7 +199,7 @@
 	a.filter(.re`\.jpg$`).map(ι=>{
 		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
 		if (!t) ↩
-		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().ymdhms.replace(/Z$/,'') # ! so wrong ,but slightly better semantic?
+		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().day_s5 # ! so wrong ,but slightly better semantic?
 		# also see https://www.npmjs.com/package/exif-parser
 		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '' ,φ(ι).φ`../PANO/tmp`.ι = ∅) ,'PANO/') : '')+t+'.jpg')
 		}) }
@@ -223,7 +223,7 @@
 	if( φ(base).is_dir ){
 		a ← Set(…node.fs.readdirSync(base)) # ! should walk all subfiles
 		b ← Set(…node.fs.readdirSync(edit))
-		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥ`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null ;echo $?`+''==='0' )
+		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥexit`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null` )
 		↩ [ ['\x1b[30;47m=\x1b[0m',same] ,['\x1b[30;42m+\x1b[0m',b.-(a)] ,['\x1b[30;41m-\x1b[0m',a.-(b)] ,['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
 	}else{
 		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
@@ -256,7 +256,8 @@
 
 ⧫. l ==> (…a)=>{ shₐi`CLICOLOR_FORCE=1 ls -AGC ${a}` }
 ⧫. f ==> (ι='.')=>{ go_to('path',ι) }
-⧫. ar ==> (…a)=>{ shₐi`tar -c ${a} | xz -v > "$(basename ${a[0]}).tar.xz"` }
+⧫. ar  ==> (…a)=>{ shₐi`tar -c ${a} | xz -v > "$(basename ${a[0]}).tar.xz"` }
+⧫. ar9 ==> (…a)=>{ shₐi`tar -c ${a} | xz -9 -v > "$(basename ${a[0]}).tar.xz"` }
 ⧫[ '/'] ==> (a,b)=>{
 	out ← ι=> sb.tab.push(`/ ${b||a}\n\n${ι}`)
 	if( shᵥexit`man -- ${a} &>/tmp/𐅜𐅪𐅭𐅫𐅰` )
@@ -331,7 +332,7 @@ set_bashrc( String.raw`
 	alias http-server='http-server -c-1'
 	alias ζlogic='cd ~/Library/Caches/ζ.logic/'
 	alias ζdata='cd ~/Library/Caches/ζ.persist.0/'
-	` + alt_ws`d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x · l f ar / …p youtube-dl youtube-dl-v bandcamp-dl`.map(bash_γf).join('\n') )
+	` + alt_ws`d keypresses im_resize im_dateify ps2 diff rm_empty_dirs run_project x · l f ar ar9 / …p youtube-dl youtube-dl-v bandcamp-dl`.map(bash_γf).join('\n') )
 ⧫. 𐅩𐅝𐅜𐅂𐅞 ==> (E,history_1)=>{t← ;E ← E |0
 	############### general ##############
 	cmd ← history_1.re`(?:^ *\d+  ([^]*))?`[1]

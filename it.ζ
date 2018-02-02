@@ -90,9 +90,6 @@
 	start && ι(re)
 	↩ r }
 
-####################### friend glue : data flow (simple) #######################
-# ?
-
 ############################### friend glue : ui ###############################
 # ⧫. electron_window_for ==> id=> (…a)=> electron_window(id,…a) # deprecated?
 ⧫. electron_window ==>{
@@ -349,4 +346,4 @@
 	: ‽(ι)
 
 ################################ dsl fragments? ################################
-⧫. frame ==> ι=> ι.eval_in_lexical_env('('+(ι+'').replace(/(\})$/,js`return {…${(ι+'').match(re`var ${ζword}+=`.g).map(.replace(re`var (${ζword}+)=`,'$1')).join(',')}}`+'$1')+')')
+⧫. frame0 ==> ι=> ι.eval_in_lexical_env('('+(ι+'').replace(/(\})$/,js`return {…${(ι+'').match(re`var ${ζword}+=`.g).map(.replace(re`var (${ζword}+)=`,'$1')).join(',')}}`+'$1')+')')

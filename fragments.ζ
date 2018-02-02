@@ -440,3 +440,18 @@ with_ ← (o,f)=>{
 	𐅪𐅪←_.keys(o).map(i=>`𐅩𐅰.${i} = ${i}`).join(';')
 	↩ f.eval_in_lexical_env(`(𐅩𐅰)=>{ var ${𐅋𐅫} = 𐅩𐅰 ;var 𐅦𐅪 = (${f})() ;${𐅪𐅪} ;return 𐅦𐅪 }`)(o) }
 ;(=>{ bar← 2 ; t← { stone:0 } ;↩ [with_(t,‘lexical_env=>{ stone = 7 ;↩ stone+bar }),t,bar] })()
+
+################################ watch for doi s ###############################
+E.has_doi = φι=>{
+	is_doi ← re`(doi:|doi\.org/) *…${npm`doi-regex@0.1.4`().source}`.i
+	↩ Π((yes,no)=> !φι.match(/\.pdf$/i)? yes(✗) : npm`textract@2.1.1`.fromFileWithPath(φι,(e,ι)=> e? no(e) : yes(is_doi.test(ι)) ) ) }
+npm`chokidar@2.0.0`.watch(φ`~/Downloads`+'',{depth:0,alwaysStat:✓}).on('all',λ(ev,ι){
+	if (φ(ι).φ`..`+''===φ`~/Downloads`+'') {
+		has_doi(ι).then(t=>{ if (t) {
+			hsᵥ`hs.alert(${'moving paper '+φ(ι).name+' to mendeley'})`
+			node.fs.rename(ι,φ`~/Documents/Mendeley Desktop/${φ(ι).name}`+'')
+			} })
+		} })
+
+################################################################################
+find . -type d -empty -delete
