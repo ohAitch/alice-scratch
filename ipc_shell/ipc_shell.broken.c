@@ -51,29 +51,14 @@ void cleanup_and_exit(int status){ close(the_socket); exit(status); }
 void handle_socket_close(){ cleanup_and_exit(CONNECTION_BROKEN); }
 
 // Writes everything in the specified buffer to the specified socket handle.
-int send_all(SOCKET s, char *buf, int L){
+void send_all(SOCKET s, char *buf, int L){
 	int sent_n = 0; int todo_n = L; int n = 0;
 	while(sent_n < L){
 		n = send(s, buf+sent_n, todo_n, SEND_FLAGS);
 		if (n == -1) break;
 		sent_n += n; todo_n -= n; }
-	return n==-1? 0 : sent_n; }
-// Sends a chunk noting the specified payload size and chunk type.
-void send_chunk(char chunk_type, char* buf, unsigned int L){
-	char header[5];
-	header[0] = (L >> 24) & 0xff;
-	header[1] = (L >> 16) & 0xff;
-	header[2] = (L >>  8) & 0xff;
-	header[3] =  L        & 0xff;
-	header[4] = chunk_type;
-
-	int sent_n = send_all(the_socket, header, 5);
-	if (sent_n != 0 && L > 0)
-		sent_n = send_all(the_socket, buf, L);
-	else if (sent_n == 0 && (chunk_type != 'H' || !(errno == EPIPE || errno == ECONNRESET))){ perror("[ipc_shell] send"); handle_socket_close(); }
+	if (n==-1 && !(errno == EPIPE || errno == ECONNRESET)){ perror("[ipc_shell] send"); handle_socket_close(); }
 	}
-// Sends len bytes from buf to the server in a stdin chunk.
-void sendStdin(char *buf, unsigned int L){ ready_to_send = 0; send_chunk('0', buf, L); }
 
 // Receives len bytes from the socket and copies them to the specified file descriptor. Used to route data to stdout or stderr on the client.
 void recv_to_fd(HANDLE destFD, char *buf, unsigned long L){
@@ -99,10 +84,25 @@ void process_exit(char *buf, unsigned long L){
 	int got_n = recv_to_buffer((buf_SIZE - 1 < L) ? buf_SIZE - 1 : L); if (got_n < 0) handle_socket_close(); buf[got_n] = 0;
 	cleanup_and_exit(atoi(buf)); }
 
+char* make_chunk(char chunk_type, char* buf, unsigned int L){
+	char* r = malloc(5+L);
+	r[0] = (L >> 24) & 0xff;
+	r[1] = (L >> 16) & 0xff;
+	r[2] = (L >>  8) & 0xff;
+	r[3] =  L        & 0xff;
+	r[4] = chunk_type;
+	memcpy(r+5,buf,L);
+	return r; }
+void send_chunk(char chunk_type, char* buf, unsigned int L){
+	char* t = make_chunk(chunk_type,buf,L);
+	send_all(the_socket,t,5+L);
+	free(t);
+	}
+
 // Reads from stdin and transmits it to the server in a stdin chunk. Sends a stdin-eof chunk if necessary.
 int process_stdin(){
 	int got_n = read(STDIN_FILENO, buf, buf_SIZE);
-	if (got_n > 0) sendStdin(buf, got_n); else if (got_n == 0) send_chunk('.',bufzero,0);
+	if (got_n > 0){ ready_to_send = 0; send_chunk('0',buf,got_n); } else if (got_n == 0) send_chunk('.',bufzero,0);
 	return got_n; }
 
 void process_the_stream(){unsigned long L; char ct;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[], char *env[]){
 	if (hostinfo == NULL){ fprintf(stderr, "[ipc_shell] gethostbyname failed\n"); cleanup_and_exit(CONNECT_FAILED); }
 	if ((the_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[ipc_shell] socket"); cleanup_and_exit(SOCKET_FAILED); }
 	server_addr_in.sin_family = AF_INET;
-	server_addr_in.sin_port = htons(2114);
+	server_addr_in.sin_port = htons(2113);
 	server_addr_in.sin_addr = *(struct in_addr *) hostinfo->h_addr;
 	memset(&(server_addr_in.sin_zero), '\0', 8);
 	server_addr = (struct sockaddr *)&server_addr_in;
@@ -154,7 +154,7 @@ int main(int argc, char *argv[], char *env[]){
 	for(i = 0; env[i]; i++){ char* t = env[i]; send_chunk('E',t,strlen(t)); }
 	// now send the working directory
 	cwd = getcwd(NULL, 0); send_chunk('D',cwd,strlen(cwd)); free(cwd);
-
+	
 	// this marks the point at which streams are linked between client and server.
 	send_chunk('R',bufzero,0);
 
