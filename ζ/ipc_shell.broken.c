@@ -6,10 +6,6 @@
 // server -> client: 1 stdout, 2 stderr, X exit, S send stdin
 // client -> server: A argv, E env, D cwd, R ready, H heartbeat, 0 stdin, . stdin eof
 
-// its a shame that my refactoring broke things
-// mb i just need to learn C
-// i could ask conifer
-
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -147,7 +143,7 @@ int main(int argc, char *argv[], char *env[]){
 	server_addr = (struct sockaddr *)&server_addr_in;
 	server_addr_len = sizeof(server_addr_in);
 	if (connect(the_socket, server_addr, server_addr_len) == -1){ perror("[ipc_shell] connect"); cleanup_and_exit(CONNECT_FAILED); }
-	
+
 	// ok, now we're connected.
 
 	// send all of the command line arguments for the server
