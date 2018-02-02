@@ -137,7 +137,7 @@ int main(int argc, char *argv[], char *env[]){
 	if (hostinfo == NULL){ fprintf(stderr, "[ipc_shell] gethostbyname failed\n"); cleanup_and_exit(CONNECT_FAILED); }
 	if ((the_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){ perror("[ipc_shell] socket"); cleanup_and_exit(SOCKET_FAILED); }
 	server_addr_in.sin_family = AF_INET;
-	server_addr_in.sin_port = htons(2113);
+	server_addr_in.sin_port = htons(2114);
 	server_addr_in.sin_addr = *(struct in_addr *) hostinfo->h_addr;
 	memset(&(server_addr_in.sin_zero), '\0', 8);
 	server_addr = (struct sockaddr *)&server_addr_in;
