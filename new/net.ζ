@@ -1,0 +1,60 @@
+##################################### glue #####################################
+# # deprecated
+# γ.GET_L = (ι,within)=> 𐅭𐅂𐅭𐅪(['GET -L' ,ι+''] ,within ,=> shᵥ`curl -sL ${ι}`)
+# 	𐅭𐅂𐅭𐅪 ← (names,within,f)=>{
+# 		dir ← φ`~/file/.cache/memo_frp/${names}`
+# 		if( within ){
+# 			try{ t ← node.fs.readdirSync(dir+'') }catch(e){ e.code==='ENOENT' || ‽(e) ;t ← [] }
+# 			now ← Time().i ;t = t.sort().filter(ι=> Time(ι.re`^\S+`[0]).i >= now - within )[-1]
+# 			if( t ) ↩ dir.φ(t).json2.ι }
+# 		a ← Time().ymdhmss ;ι ← f() ;b ← Time().ymdhmss
+# 		dir.φ`${a} ${🎲id(10)}`.json2 = { ,names ,date:[a,b] ,ι } ;↩ ι }
+
+################################################################################
+⧫. lock ==>{
+	fs ← node.fs ;util ← node.util
+	;fs_close ← util.promisify(fs.close) ;fs_unlink ← util.promisify(fs.unlink) ;fs_open ← util.promisify(fs.open)
+	locks ← {}
+	𐅨𐅯 ← id=> φ`/tmp/lock_${id}`+''
+	♓_on_exits(=> _u.keys(locks).map(id=>{ try{ fs.unlinkSync(𐅨𐅯(id)) }catch(e){} }) )
+	lock ← (id,opt)=> fs_open(𐅨𐅯(id),'wx').then(
+		,fd=>( locks[id] = ✓ ,fs_close(fd).then(=> =>lock.un(id) ) )
+		,e=>{ T.Error(e) || ‽ ;opt||(opt={}) ;'wait' in opt ||(opt.wait = 0)
+			if(!( e.code==='EEXIST' && opt.wait > 0 )) ↩ Π(e)
+			else{ w ← min(opt.wait,0.1) ;opt.wait -= w ;↩ (=> lock(id,opt)).in_Π(w) }
+			} )
+	lock.un = id=>( delete locks[id] ,fs_unlink(𐅨𐅯(id)) )
+	lock.∃ = id=> fs_open(𐅨𐅯(id),'r').then(
+		,fd=>( fs.close(fd) ,✓ )
+		,e=> e.code==='ENOENT'? ✗ : Π(e) )
+	↩ lock }
+
+⧫. stream4 ==>{ E ← {}
+	E.send_json = memoize_weak(s=>{ ;t ← npm`through2@2.0.3`.obj((ι,ˣ,cb)=>cb(∅,JSON.stringify(ι)+'\n')) ;t.pipe(s) ;↩ t‘.write .f })
+	E.as_json = memoize_weak(s=>{ ;t ← npm`split2@2.2.0`(ι=>{ try{↩ JSON.parse(ι) }catch(e){ @.emit('error',e) } }) ;s.pipe(t) ;↩ t.P`data` })
+	↩ E }
+
+⧫. net1 ==>{ E ← {}
+	E.open_send = at=> Π((yes,no)=>{ if(! at )↩ no() ;r ← new node.net.Socket() ;r.unref().on('error',no).connect(at).on('connect',=>yes(r)) })
+	E.device_listen = (port=0)=>{ r ← new node.net.Server().listen(port,'localhost') ;↩ r.Π`listening`.then(=> r) }
+	node.net.Server.prototype.just_first_json = λ(){↩ @.Π`connection`.then(s=> stream4.as_json(s).Π.then(ι=>{ ;s.end() ;@.close() ;↩ ι })) }
+	node.net.Server.prototype‘.at .get= λ(){t← ;↩ @.𐅭𐅝𐅯𐅨𐅋||(@.𐅭𐅝𐅯𐅨𐅋= [(t=@.address()).address,t.port]) }
+	E._0_φ_seenbydevice0 = ι=>{ t ← @device0buf('𐅦𐅯𐅭𐅪_'+ι) ;↩ t.o.∃? Π(t) : Π(yes=> npm`simple-get@2.7.0`.concat(ι,(e,r,ι)=>{ t.ι = ι ;yes(t) }) ) }
+	E._0_φ_seenbydevice0⁻¹ = => node.fs.readdirSync(device0_n1_dir).filter(.re`^𐅦𐅯𐅭𐅪_`).map(ι=> device0_n1_dir+'/'+ι)
+	↩ E }
+
+⧫. Π ==> ι⇒
+	: Tfun(ι) && /^(re|yes|\(yes,no\))=>/.test(ι+'')? new Promise(ι)
+	: T.Error(ι)? Πx(ι)
+	: Promise.resolve(ι)
+⧫. Πx ==> ι=> Promise.reject(ι)
+⧫. Πand ==> (…ι)=> Promise.all( ι.‖===1? ι[0] : ι )
+⧫. Πor ==> (…ι)=> Promise.race( ι.‖===1? ι[0] : ι )
+
+⧫. @deviceΠ ==> ι=>{ start ← Tfun(ι)
+	id ← !start? ι : 🎲id.greek(9)
+	𐅞 ← @device0('Π'+id)
+	re ← (ι=>{ 𐅞.ι = ι }) …←({ ,id ,toString:=>r+'.re' })
+	r ← { ,id ,re ,toString:=>ζjs`@deviceΠ(${id})` } !>(‘.Π .get==> poll1_simple(=> 𐅞.ι))
+	start && ι(re)
+	↩ r }

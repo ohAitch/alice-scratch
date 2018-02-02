@@ -1,0 +1,188 @@
+##################################### data #####################################
+# ;(…←)(node.util.inspect.styles,{ ,null:'grey' ,quote:'bold' })
+# ;[process,module].map(.inspect = λ(){↩ '{'+Object.getOwnPropertyNames(@).map(ι=> ι+':').join(', ')+'}' }) # ‡ hack, like the [1] * 5 thing in ζ_repl_start. clean up by: can we override builtin inspects without problems? then: defining solid inspect functions for more things. otherwise: figure out something else.
+# ;['γ','Object'].map(ι=>{
+# γ[ι].inspect = (d,opt)=> opt.stylize(ι,'quote')
+# })
+
+# 𐅋𐅃 ← λ(a,b){ t ← @.__local? npm`moment@2.18.1`(@).format('YYYY-MM-DD[T]HH:mm:ss.SSS') : @.toISOString() ;t = t.slice(a,b) ;if( !@.__local && b > 10) t += 'Z' ;↩ t }
+# Date.prototype‘.local .get=λ(){↩ new Date(@) …← ({__local:✓})}
+# Date.prototype‘.y       .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY'.‖)}
+# Date.prototype‘.ym      .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM'.‖)}
+# Date.prototype‘.ymd     .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DD'.‖)}
+# Date.prototype‘.ymdh    .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH'.‖)}
+# Date.prototype‘.ymdhm   .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH:mm'.‖)}
+# Date.prototype‘.ymdhm   .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH:mm'.‖)}
+# Date.prototype‘.ymdhms  .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH:mm:ss'.‖)}
+# Date.prototype‘.ymdhmss .get=λ(){↩ 𐅋𐅃.call(@,0,'YYYY-MM-DDTHH:mm:ss.SSS'.‖)}
+# Date.prototype‘.mdhm    .get=λ(){↩ 𐅋𐅃.call(@,'YYYY'.‖,'YYYY-MM-DDTHH:mm'.‖)}
+# Date.prototype‘.hms     .get=λ(){↩ 𐅋𐅃.call(@,'YYYY-MM-DDT'.‖,'YYYY-MM-DDTHH:mm:ss'.‖)}
+# Date.prototype‘.day .get=λ(){↩ @.i/86400 }
+# Date.prototype‘.day_s5 .get=λ(){↩ (@.day+'').replace(/^(.*\..{5}).*/,'$1') }
+# Date.prototype‘.day_s  .get=λ(){↩ (@.day+'').replace(/^(.*\..{4}).*/,'$1') }
+# Date.prototype‘.day_s3 .get=λ(){↩ (@.day+'').replace(/^(.*\..{3}).*/,'$1') }
+
+# γ.Unit = (ι,u)⇒ {ι,u}
+# 	!>( ‘.valueOf !>(.enumerable= ✗) .ι=λ(){↩ @.ι } )
+# 	!>( ‘.inspect !>(.enumerable= ✗) .ι=λ(ˣ,opt){↩ node.util.inspect(@.ι,opt)+' '+opt.stylize(@.u,'number') } )
+# Number.prototype.inspect = λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
+# Boolean.prototype.inspect = λ(d,opt){'use strict' ;ι ← @ ;if(! Tprim(ι) ) ↩ ι ;↩ ζ_inspect(ι,opt) }
+# Date.prototype.inspect = λ(d,opt){↩ opt.stylize(isNaN(+@)? 'Invalid Date' : @.day_s, 'date')}
+# # ,'Function.prototype.inspect':λ(rec,ctx){t ← ζ_compile.⁻¹(@+'').replace(/^λ \(/,'λ(').match(/^.*?\)/) ;↩ ctx.stylize('['+(t?t[0]:'λ ?(?)')+']', 'special')}
+# # ,'Buffer.prototype.inspect':λ Λ(){↩ Λ.super.call(@).replace(/(^<\w+)/,'$1['+@.‖+']')}
+# # ,inspect(ˣ,opt){↩ opt.stylize('φ','special')+opt.stylize(node.util.inspect(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
+# Array.prototype‘.line .get=λ(){ @.toString = @.inspect = λ(){↩ @.join('\n') } ;↩ @ }
+# γ.util_inspect_autodepth = (ι,opt={})=>{ opt.L || (opt.L = 1e7) ;last←; for(i←1;;i++){ r ← node.util.inspect(ι,{ ,maxArrayLength:opt.L/3 |0 ,depth:i } …← (opt)) ;if( r===last || r.‖ > opt.L) ↩ last===∅? '<too large>' : last ;last = r } }
+# 𐅯𐅦 ← (ι,opt={})=> util_inspect_autodepth(ι,_u(opt).pick('colors','L'))
+# promise_watch ← ι=>{ if(! ι.id ){
+# 	ι.id = (𐅩𐅞𐅋𐅦𐅩++).toString(36)
+# 	hr ← hrtime() ;ι.then(x=>{ x ← ζ_inspect(x) ;hrtime(hr) < 5 && x.‖ && hsᵥ`hs.alert(${`Promise #${ι.id} = ${x.slice(0,200)}`},12)` }) } ;↩ ι.id } ;𐅩𐅞𐅋𐅦𐅩←0
+# stylize ← ({colors})=>{ node.util.inspect({inspect(d,opt){ r = opt.stylize }},{colors}) ;r← ;↩ r }
+# γ.ζ_inspect = (ι,opt={})⇒
+# 	: ι===∅? ''
+# 	: T.✓✗(ι)? stylize(opt)(ι?'✓':'✗' ,'boolean')
+# 	: Tstr(ι)? ι
+# 	: Tnum(ι)? stylize(opt)(0?0
+# 		: Object.is(ι,-0)? '-0' : ι===∞? '∞' : ι===-∞? '-∞'
+# 		: Number.isSafeInteger(ι)? ''+ι
+# 		: ι.toExponential().replace('+','').replace(/(\.\d\d)\d+/,'$1').replace('e0','')
+# 		,'number')
+# 	: T.Promise(ι)? 0?0
+# 		: ι.status? 'Π '+𐅯𐅦(ι.ι,opt)
+# 		: ι.status===∅? `Π #${promise_watch(ι)} #pending`
+# 		: 𐅯𐅦(ι,opt)
+# 	: Tarr(ι) && ι.‖ > 1 && ι.every(t=> t===ι[0]) && ⋯(ι.‖).every(t=> t in ι)
+# 		? 𐅯𐅦([ι[0]],opt)+' × '+𐅯𐅦(ι.‖,opt)
+# 	: 𐅯𐅦(ι,opt)
+# # node.EventEmitter.prototype.inspect
+# sh_inspect ← ι=>{t←;
+# 	Π ← ι=> Promise.resolve(ι) # COPY
+# 	↩ Π( 0?0
+# 	: T.Promise(ι)? ι.then(sh_inspect)
+# 	: ι===∅? {}
+# 	: Tstr(ι)? {out:ι}
+# 	: T.✓✗(ι)? {code:ι?0:1}
+# 	: ( t= catch_union(=> JSON.stringify(ι)) ,!T.Error(t) )? {out:t}
+# 	: {out:ι+''} )}
+
+# is_browser ← ( γ.process&&process.type==='renderer' ) || !( γ.process&&process.versions&&process.versions.node )
+# γ.single_if = ι=> ι.‖===1? ι[0] : ι
+# γ.log = (…ι)=>( log.ι(ι) ,ι[-1] )
+# log.ι = is_browser? ι=> console.log(…ι)
+# 	: single_if ≫ (ι=> process.stdout.write(ζ_inspect(ι,{ colors:process.stdout.isTTY })+'\n'))
+# γ.log2 = (…ι)=> log( ,Time().day_s |>(t⇒{inspect:=>t}) ,…ι ) # log2rue
+
+# γ.JSON_pretty = (ι,replacer)=>{
+# 	seen ← []
+# 	tab ← '  '
+# 	wrap_width ← 140
+# 	indent_show ← ι=> show(ι).replace(/\n/g,'\n'+tab)
+# 	show ← ι=>{t←;
+# 		if( ι===∅||ι===null ) ↩ 'null'
+# 		replacer && (ι = replacer(∅,ι))
+# 		while( ι.toJSON ) ι = ι.toJSON()
+# 		switch( typeof(ι)==='object'? Object.prototype.toString.call(ι) : typeof(ι) ){
+# 			case 'string': case '[object String]': ↩ JSON.stringify(ι)
+# 			case 'boolean': case '[object Boolean]': case 'number': case '[object Number]': ↩ ι+''
+# 			case 'function': ↩ 'null'
+# 			default:
+# 				!seen.includes(ι) || ‽(TypeError('Converting circular structure to JSON'))
+# 				seen.push(ι)
+# 				if( Tarr(ι)) { [a,b] ← '[]' ;ι = ι.map(indent_show) ;for (i←0;i<ι.‖;i++) ι[i]===∅ && (ι[i] = 'null') }
+# 				else { [a,b] ← '{}' ;ι = _l.toPairs(ι).filter(ι=> !(ι[1]===∅ || Tfun(ι[1]))).map(ι=> show(ι[0])+': '+indent_show(ι[1])) }
+# 				seen.pop()
+# 				↩ (t=a+ι.join(', ')+b).‖ <= wrap_width? t : a+'\n'+tab+ι.join(',\n'+tab)+'\n'+b
+# 				} }
+# 	↩ show(ι) }
+
+# process.on('unhandledRejection',(e,p)=> log(Time(),'process.unhandledRejection',p) )
+
+##################################### bash #####################################
+⧫. diff ==> (base,edit)=>{
+	if( φ(base).is_dir ){
+		a ← Set(…node.fs.readdirSync(base)) # ! should walk all subfiles
+		b ← Set(…node.fs.readdirSync(edit))
+		[same,changed] ← […a.∩(b)]._.partition(ι=> shᵥexit`diff -q ${base}/${ι} ${edit}/${ι} &>/dev/null` )
+		↩ [ ['\x1b[30;47m=\x1b[0m',same] ,['\x1b[30;42m+\x1b[0m',b.-(a)] ,['\x1b[30;41m-\x1b[0m',a.-(b)] ,['\x1b[30;46mx\x1b[0m',changed] ].map…(([n,l])=> l.map(ι=> n+' '+ι)).join('\n')+'\n'
+	}else{
+		t ← shᵥ`wdiff -n -w ${'\x1b[30;41m'} -x ${'\x1b[0m'} -y ${'\x1b[30;42m'} -z ${'\x1b[0m'} ${base} ${edit} ;:`+''
+		t = t.split('\n')
+		iL ← […t.map((ι,i)=> [ι,i]).filter(([ι,i])=> ι.re`\x1b\[30;4[12]m`).map…(([ι,i])=> _u.range(max(0,i-3),min(i+3+1,t.‖))).∪([])]._.sortBy()
+		iG ← [] ;iL.forEach(i=> iG[-1] && iG[-1][-1]===i-1? iG[-1].push(i) : iG.push([i]) )
+		t = iG.map(.map(i=> [t[i],i]))
+		t.forEach(ι=>{ while (ι[-1][0]==='') ι.pop() ;while (ι[0][0]==='') ι.shift() })
+		process.exitCode = t.‖ ?1:0
+		↩ t.map(.map(([ι,i])=> '\x1b[90m'+(i+1)+'\x1b[0m '+ι)
+			.join('\n')+'\n')
+			.join('\x1b[90m'+'-'.×(30)+'\x1b[0m'+'\n')
+	} }
+
+⧫. ps2 ==> =>{t←;
+	startup_procs ← =>{ ιs ← (shᵥ`ps -A -o pid,lstart`+'').split('\n').slice(1).map(ι=>{ [ˣ,pid,d] ← ι.trim().re`^(\d+) (.*)` ;↩ [pid|0 ,Time(d).i] }) ;t ← ιs.map(..1)._.min() ;t += t < Time().i - 2*3600? 30*60 : 20 ;↩ ιs.filter(..1 < t)._.map(0) }
+	bad ← startup_procs().∪([])
+	[h,…r] ← (shᵥ`ps -x -o pid,etime,%cpu,command`+'').split('\n')
+	# i ← [0,…['PID','ELAPSED','%CPU'].map(ι=> h.search(ι)+ι.‖+1 )]
+	# r.map(ι=> […i,ι.‖].windows(2).map(i=> ι.slice(…i)) )
+	CMD ← .slice( h.search('COMMAND') )
+	ETIME ← .slice( h.search(t='PID')+t.‖+1 ,h.search(t='ELAPSED')+t.‖ )
+	r ← h+'\n'+r
+		.filter(ι=> !bad.has(ι.re`^ *(\d*)`[1]|0))
+		.filter(ι=> !ι.includes('3vf2pkkz1i2dfgvi') && !CMD(ι).re`^(login |ps |/System/Library/(PrivateFrameworks|Frameworks|CoreServices)/)|/(Adobe Crash Reporter|Adobe Desktop Service|AdobeCRDaemon|AdobeIPCBroker|Android File Transfer Agent|Arq|Arq Agent|Audacity|BetterTouchTool|CCXProcess|CIJScannerRegister|Core Sync|Creative Cloud|GitHub Desktop|Google Chrome|iBooks|Image Capture Extension|Karabiner|Keybase|LastPass|LaunchControl|NoSleep|Path Finder|Preview|RescueTime|SlimBatteryMonitor|Spotify|Steam|TotalSpaces2|TotalSpacesCrashWatcher|iTerm|Signal|Signal Helper|Sublime Text|Activity Monitor).app/`)
+		._.sortBy(ETIME).reverse()
+		.join('\n')+'\n'
+	log(r) }
+
+⧫[ '/'] ==> (a,b)=>{
+	out ← ι=> sb.tab.push(`/ ${b||a}\n\n${ι}`)
+	if( shᵥexit`man -- ${a} &>/tmp/𐅜𐅪𐅭𐅫𐅰` )
+		out(shᵥ`cat /tmp/𐅜𐅪𐅭𐅫𐅰 | col -bfx`+'')
+	else out( (=>{switch( a.re`^-h[012]$` ?a:0 ){
+		case '-h0': ↩ [sh`~/.archive_*`]
+		case '-h1': ↩ [sh`./notes{,/.archive}`]
+		case '-h2': ↩ [sh`./notes/.archive/.sublime`]
+		default:
+		shᵥ`rm -rf /tmp/sublime ;:`
+		φ`~/Library/Application Support/Sublime Text 3/Local/Auto Save Session.sublime_session`.json.windows.map…(.buffers.map(ι⇒ { name:ι.settings.name, ι:ι.contents })).filter(ι=> ι.name && ι.ι).map(({name,ι})=>{ φ`/tmp/sublime/${name}`.text = ι })
+		↩ [ ,sh`code{,/scratch/sublime/User/.sb-keyrc} /tmp/sublime` ,sh`notes` ] }})()
+		.map(ι=> shᵥ`cd ~/file ; ag --ignore '*.min.*' --ignore 'package-lock.json' --ignore 'public/lib/' -- ${b||a} …${ι} ;:`+'').join('\n') ) }
+
+################################################################################
+⧫. Tag ==>{
+	𐅝𐅯𐅩𐅝𐅞 ← {}
+	𐅝𐅯𐅩𐅝𐅞.inspect = λ(d,opt){
+		ks ← (…a)=> ≈( new Set(_u.keys(@)).-(['inspect','_']) ,new Set(a) )
+		r ← [ opt.stylize(@.tag,'regexp') ]
+		!ks('tag') && r.push( node.util.inspect( ks('tag','ι')? @.ι : Object.defineProperties({},_u(Object.getOwnPropertyDescriptors(@)).omit('tag','inspect','_')) ,opt) )
+		↩ r.join(' ') }
+	𐅝𐅯𐅩𐅝𐅞.≈ = λ(ι){ ι = Tstr(ι)? ι : ι[0] ;↩ @.tag === ι }
+	↩ (tag,ι)=>{ r ← new_(𐅝𐅯𐅩𐅝𐅞) ;tag!==∅ &&( r.tag = tag ) ;ι!==∅ &&( r.ι = ι ) ;↩ r } }
+
+⧫. ⧗ ==> (f,opt={})=>{ var {TH=0.4} = opt
+	# ! really should include a confidence interval or smth
+	r←0 ;I←1 ;hr←hrtime() ;R ← => Unit(hrtime(hr) / r ,'s')
+	t←f() ;r++
+	if( T.Promise(t) ) ↩ Π(yes=>{ t.then(λ Λ(){ if( hrtime(hr) < TH ){ r++ ;f().then(Λ) }else yes(R()) }) })
+	else{ for(;hrtime(hr) < TH;){ for(i←0;i<I;i++) f() ;r += I ;I = ceil(I*1.5) } ;↩ R() } }
+⧫. ⧗1 ==> f=>{ hr ← hrtime() ;f() ;↩ Unit(hrtime(hr),'s') }
+
+⧫. d ==> (a='.')=>{
+	# φs ← '/' |>(λ me(ι){↩ φ(ι).is_dir? (catch_ι(=>fs.readdirSync(ι))||[]).map(t=> ι+'/'+t).map…(me) : [ι] })
+	# RangeError: Maximum call stack size exceeded
+
+	# would be neat if this was .Trash aware
+	sum ← 0
+	q ← (ι,fl)=> log( (' '.×(17)+(ι+'').split('').reverse().join('').replace(/(...(?!$))/g,'$1,').split('').reverse().join('')).slice(-17)+'  '+fl )
+	node.fs.readdirSync(a).map(fl=>{
+		if( φ(fl).is_dir ){
+			o ← process.stderr.write ;process.stderr.write = =>{} ;try{ t ← shᵥ`du -sk ${a}/${fl}` }catch(e){ t ← e.stdout } ;process.stderr.write = o
+			b ← +((t+'').re`^\d+`||[0])[0] * 1024 }
+		else b ← φ(fl).‖
+		sum += b ;q(b,fl) })
+	q(sum,a)
+
+	progress_bar ← (L,at)=>( ,L -= 2 ,at = floor(at*L) ,'['+('='.×(L)+'>').slice(-at)+' '.×(L-at)+']' )
+	[used,free] ← (shᵥ`df -P /`+'').split('\n')[1].split(/ +/g).slice(2).map(ι=> (ι|0)*512 )
+	q(-free,'/ '+progress_bar(80-21,used/(used+free)))
+	}
+
+⧫. see_buffer ==>{ 𐅜𐅰 ← […/[⠀-⣿]/] ;↩ ι=> '['+ι.toString('binary').replace(/(?!(?![\]])[ -~])[^]/g,ι=>𐅜𐅰[ord(ι)])+']' }

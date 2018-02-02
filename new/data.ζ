@@ -1,0 +1,182 @@
+⧫. moon ==> ι=>{ ι||(ι=Time()) ;m ← […'🌑🌒🌓🌔🌕🌖🌗🌘'] ;ph ← npm`suncalc@1.7.0`.getMoonIllumination(ι).phase ;↩ m[round(ph*m.‖)%m.‖] }
+
+##################################### parse ####################################
+⧫. regex_set ==> ι=>{
+	# ! low quality ,scrap
+	ι = (ι+'').replace(/\n$/,'')
+	t←[] ;[…[…ι].∪([])]._.sortBy().map(ι=>{ ι = ord(ι) ;t[-1]&&t[-1][1] === ι-1? (t[-1][1] = ι) : t.push([ι,ι]) })
+	x ← ι=>{ ι = chr(ι) ;↩ {'-':1,']':1,'\\':1}[ι]? '\\'+ι : ι==="'"? ι : node.util.inspect(ι).slice(1,-1).replace(/\\u00/g,'\\x') }
+	ι = t.map(ι=> ι[0] === ι[1]? x(ι[0]) : ι[0] === ι[1]-1? x(ι[0])+x(ι[1]) : x(ι[0])+'-'+x(ι[1]) ).join('')
+	↩ ι }
+
+⧫. schema ==>{
+	sc_merge ← (a,b)=>{ ak ← _u.keys(a) ;bk ← _u.keys(b) ;bk.-(ak).forEach(k=> a[k] = b[k]) ;ak.∩(bk).forEach(k=> a[k] = !Tprim(a[k])? sc_merge(a[k],b[k]) : !Tprim(b[k])? 'error' : a[k]) ;↩ a }
+	↩ ι=> T.boolean(ι)? ✓ : Tstr(ι)? '' : Tnum(ι)? 0 : Tarr(ι)? !ι.‖? [] : [ι.map(schema).fold(sc_merge)] : _u.pairs(ι).map(ι=> [ι[0],schema(ι[1])])._.object()
+	}
+
+#################################### numeric ###################################
+⧫. numeric2 ==>{
+	nk ← npm`numeric@1.2.6`
+	norm01 ← ι=> norm∞(nk.sub( ι ,ι.fold(nk.min.XX) ))
+	norm∞ ← ι=> nk.div( ι ,ι.fold(nk.max.XX) )
+	norm1 ← ι=> nk.div( ι ,ι.fold(nk.add.XX) )
+	L2 ← (a,b)=> _.zip(a,b).map(([a,b])=> (a-b)^2 ).fold(nk.add.XX) ^(1/2)
+	mean ← ι=> nk.diveq( ι.fold(nk.add.XX) ,ι.‖ )
+	norm∞_affine_sorted_E ← ι=>( nk.subeq(ι,ι[0]) ,nk.diveq(ι,ι[-1]) )
+	infer0 ← (ι,x)=>{ x *= ι.‖-1 ;i ← x|0 ;x ← x%1 ;ι ← [ι[i%ι.‖],ι[(i+1)%ι.‖]] ;↩ nk.add(…_u.zip(ι,[1-x,x]).map(ι=>nk.mul(…ι))) }
+	↩ {,nk,norm01,norm∞,norm1,mean,norm∞_affine_sorted_E,infer0,L2} }
+⧫. normal_PDF ==> x=>{ μ ← 0 ;σ ← 1 ;v ← σ**2 ;↩ 1/sqrt(v*τ)*exp(-((x-μ)**2)/(2*v)) }
+⧫. normal_CDF ==> x=>{ μ ← 0 ;σ ← 1 ;↩ (1 + npm`math-erf@1.0.0`( (x-μ) / (σ*sqrt(2)) ))/2 }
+
+##################################### color ####################################
+⧫. color ==>{
+	color ← npm`color@2.0.1`
+	color.interpolate_0 = (c,x)=>{ x *= c.‖ ;i ← x|0 ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,x%1) }
+	color.interpolate_1 = (c,x)=>{ x *= c.‖-1 ;i ← x|0 ;↩ c[i%c.‖].mix(c[(i+1)%c.‖] ,x%1) }
+	color.prototype‘.i .get= λ(){ ι ← @.rgb().color ;↩ ( ι[0]<<24 | ι[1]<<16 | ι[2]<<8 | 0xff )>>>0 }
+	IN ← ι=> color(ι).lab() |>(ι=> […ι.color,ι.valpha])
+	UN ← ι=> color.lab(…ι)
+	color.infer0 = (c,x)=> numeric2.infer0(c.map(IN),x)|>(UN)
+	↩ color }
+
+# ###################################### seq #####################################
+# 𐅯𐅩𐅪𐅨𐅃 ← λ*(θ){ for(;θ.i<θ.l.‖;) yield θ.l[θ.i++] }
+# γ.seq = ι=>{
+# 	r ← new_(seq)
+# 	if( Tarr(ι) ){ ;r.ι = 𐅯𐅩𐅪𐅨𐅃(r) ;r.i = 0 ;r.l = ι }
+# 	else if( !ι.next ) r.ι = ι.@@iterator()
+# 	else r.ι = ι
+# 	↩ r }
+# seq.prototype = {
+# 	,ι:∅ ,i:∅ ,l:∅
+# 	,map:λ*(f){ for(t← of @.ι) yield f(t) }
+# 	# ,'map…':λ(){} ,fold(){} ,×(){} ,filter(){} ,pin(){} ,find_(){} ,slice(){} ,'‖':λ(){} ,some(){} ,every(){}
+# 	,get next_ι(){↩ @.ι.next().value }
+# 	,get next_ιι(){ t ← @.ι.next() ;if( t.done )↩ ;t = t.value ;t===∅ && ‽ ;↩ t }
+# 	,get clone(){ t← seq(@.l) ;t.i= @.i ;↩ t }
+# 	}
+# seq.cartesian = (…ι)=> 𐅮𐅋𐅮𐅯(ι) ;𐅮𐅋𐅮𐅯 ← λ*(ι,i=0){ if( ι.length-i===0 ) yield [] ;else for(b← of ι[i]) for(c← of 𐅮𐅋𐅮𐅯(ι,i+1)) yield [b,…c] }
+# γ.cartesian = (…ι)=> […seq.cartesian(…ι)]
+# # (λ*(){ yield 5 })().next()
+# # Object.getOwnPropertyDescriptors([…protos(λ*(){}())][2])
+# # […protos(Set())].map(Object.getOwnPropertyDescriptors)
+# # […protos(Set().@@iterator())].map(Object.getOwnPropertyDescriptors)
+# # ok,,,, the cloneability property desired here is fundamentally impossible .yay
+
+# γ.⋯ = ι=> _l.range(ι)
+# γ.≈ = (a,b)=> _l.isEqualWith(a,b,(a,b)=> T.Buffer(a) && T.Buffer(b)? a.equals(b) : ∅ )
+# γ.≉ = (a,b)=> ! ≈(a,b)
+# γ.zip_min = (a,b)=> _l.zip( a.‖>b.‖? a.slice(0,b.‖) : a , a.‖<b.‖? b.slice(0,a.‖) : b )
+
+# §`{Array Set Map}.prototype._ :`{ get(){↩ _u(@)} }
+
+# # link: it.ζ
+# §`{Array Buffer String Function}.prototype.‖ :`{ get(){↩ @.length } }
+# §`{Set Map}.prototype.‖ :`{ get(){↩ @.size } }
+
+# # goal: replace `map` with `≫` everywhere .implementation slowed in hope for clarity wrt lists in the future of See
+# # 'Array.prototype.map'
+# # ,'Buffer.prototype.map':λ(f){ r ← Buffer.alloc(@.‖) ;for(i←0;i<@.‖;i++) r.push(f(@[i])) ;↩ r } does not even work
+# Set.prototype.map = λ(f){↩ […@].map(f) }
+# Map.prototype.map = λ(f){↩ […@.entries()].map(([i,ι])=> f(ι,i,@)) }
+# Number.prototype.map = λ(f){'use strict' ;ι←+@ ;r ← Array(ι) ;for(i←0;i<ι;i++) r[i] = f(i,i,ι) ;↩ r }
+
+# Array.prototype.map_ = Array.prototype.map
+# Set.prototype.map_ = λ(f){↩ new Set([…@].map(f)) }
+# Map.prototype.map_ = λ(f){↩ new Map([…@.entries()].map(f)) }
+
+# §`{Set Map}.prototype.some :`λ(f){↩ […@].some(f) }
+# §`{Set Map}.prototype.every :`λ(f){↩ […@].every(f) }
+
+# Array.prototype.map… = λ(f){ r ← [] ;for(i←0;i<@.‖;i++) r.push(…f(@[i],i,@)) ;↩ r }
+# §`{Set Map Number}.prototype.map… :`λ(f){↩ @.map(f).… }
+
+# Set.prototype.filter = λ(f){↩ Set(…[…@].filter(f)) }
+
+# Array.prototype.edge_comple = λ(f){ 𐅃𐅝←{}; r ← [] ;for(ι← of @){ t ← f(ι) ;t===𐅃𐅝 ||( 𐅃𐅝= t ,r.push([]) ) ;r[-1].push(ι) } ;↩ r }
+# Set.prototype.partition = λ(f){↩ _u([…@]).partition(f).map(ι=> Set(…ι)) }
+
+# Array.prototype‘['…'] .host= { get(){↩ @.map…(ι=>ι) } }
+
+# Array.prototype.fold = Array.prototype.reduce
+# Array.prototype.foldr = Array.prototype.reduceRight
+
+# Array.prototype.repeat = λ(x){↩ x<=0? [] : x.map…(=> @) }
+# Buffer.prototype.repeat = λ(x){↩ Buffer.concat(x<=0? [] : x.map(=> @)) }
+
+# # ,'String.prototype.trim':λ(ι=/\s+/)){↩ @.replace(re`^${ι}|${ι}$`.g,'') }
+# Array.prototype.trim = λ(ι){ a ← @[0]===ι ;b ← @[-1]===ι ;↩ !(a||b)? @ : @.slice( a?1:0 ,b?-1:@.‖ )}
+
+# String.prototype.× = String.prototype.repeat
+# Array.prototype.× = λ(x){↩ 0?0
+# 	: Tnum(x)? x<=0? [] : x.map…(=> @)
+# 	: Tarr(x)? @.map…(a=> x.map(b=> [a,b] ))
+# 	: ‽ }
+# Buffer.prototype.× = λ(x){↩ Buffer.concat(x<=0? [] : x.map(=> @)) }
+
+# Set.prototype.join = λ(ι){↩ […@].join(ι) }
+
+# §`{Array Buffer String Set}.prototype.count :`λ(){ r ← new Map() ;for (t← of @) r.set(t ,(r.has(t)? r.get(t) : 0)+1 ) ;↩ r }
+# §`{Array Buffer String Set}.prototype.group :`λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t← of @){ ;t2 ← f(t) ;t3 ← r.get(t2) ||( r.set(t2,t3=Set()) ,t3 ) ;t3.add(t) } ;↩ r }
+# §`{Array Buffer String Set}.prototype.group_uniq :`λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (ι← of @){ t ← f(ι) ;r.has(t) && ‽ ;r.set(t,ι) } ;↩ r }
+# §`{Array Buffer String Set}.prototype.group_uniq_reduce :`λ(f){ f||(f = ι=>ι) ;r ← new Map() ;for (t← of @) r.set(f(t),t) ;↩ r }
+
+# Map.prototype.zip = λ(…a){ a.unshift(@) ;r ← new Map() ;a.forEach((ι,i)=> ι.forEach((ι,k)=>{ t ← r.get(k) || [∅].×(a.‖) ;t[i] = ι ;r.set(k,t) })) ;↩ r }
+# # ! what is this? what does it do?
+
+# §`{Array Buffer String}.prototype.chunk :`λ(L){↩ _l.range(0,@.‖,L).map(i=> @.slice(i,i+L)) }
+# §`{Array Buffer String}.prototype.windows :`λ(L){↩ (@.‖-L+1).map(i=> @.slice(i,i+L)) }
+# §`{Array Buffer String}.prototype.'-1' :`{get(){↩ @.‖<1? ∅ : @[@.‖-1] },set(ι){ @.‖<1 || (@[@.‖-1] = ι) }}
+# §`{Array Buffer String}.prototype.'-2' :`{get(){↩ @.‖<2? ∅ : @[@.‖-2] },set(ι){ @.‖<2 || (@[@.‖-2] = ι) }}
+# §`{Array Buffer String}.prototype.'-3' :`{get(){↩ @.‖<3? ∅ : @[@.‖-3] },set(ι){ @.‖<3 || (@[@.‖-3] = ι) }}
+# §`{Array Buffer String}.prototype.'-4' :`{get(){↩ @.‖<4? ∅ : @[@.‖-4] },set(ι){ @.‖<4 || (@[@.‖-4] = ι) }}
+
+# §`{Array Set}.prototype.'∪' :`λ(…a){↩ new Set([@,…a].…) }
+# §`{Array Set}.prototype.'∩' :`λ(…a){ r ← new Set(@) ;for(x← of a){ x = T.Set(x)? x : new Set(x) ;for(ι← of r) x.has(ι) || r.delete(ι) } ;↩ r }
+# §`{Array Set}.prototype.'-' :`λ(…a){↩ new Set(@).-!(…a) }
+# §`{Array Set}.prototype.'⊕' :`λ(b){a←@ ;↩ a.-(b).∪(b.-(a)) }
+# §`{Array Set}.prototype.'∪!' :`λ(…a){ for(b← of a) for(ι← of b) @.add(ι) ;↩ @ }
+# # §`{Array Set}.prototype.'∩!' :`λ(…a){
+# §`{Array Set}.prototype.'-!' :`λ(…a){ for(t← of a) for(ι← of t) @.delete(ι) ;↩ @ }
+# # §`{Array Set}.prototype.'⊕!' :`λ(…a){
+
+# Map.prototype.has… = λ(…as){ι←@ ;as.‖>=1||‽ ;_1 ← as.pop() ;for(a← of as){ if(!ι.has(a))↩ ;ι = ι.get(a) } ;↩ ι.has(_1) }
+# Map.prototype.get… = λ(…as){ι←@ ;for(a← of as){ if(!ι.has(a))↩ ;ι = ι.get(a) } ;↩ ι }
+# Map.prototype.set… = λ(…as){t←;ι←@ ;as.‖>=2||‽ ;v ← as.pop() ;_1 ← as.pop() ;for(a← of as) ι = ι.has(a)? ι.get(a) : (ι.set(a,t=new Map()),t) ;ι.set(_1,v) ;↩ v }
+# # Map.prototype.| = λ(f){↩ ((…ι)=> @.has…(…ι)? @.get…(…ι) : f(…ι)) …←([@,f]) …←({set…:(…ι)=>@.set…(…ι)}) }
+
+# §`{Set Map}.prototype.filter! :`λ(f){ @.forEach((ι,i)=> f(ι,i,@) || @.delete(i)) }
+# Set.prototype.pop = λ(){ t ← @[0] ;@.delete(t) ;↩ t }
+# Set.prototype‘[0] .host= {get(){↩ seq(@).next_ι }}
+# §`{Array Set}.prototype.'-eq' :`λ(…a){ t ← _u([…@]).groupBy(simple_flesh) ;a.forEach(.forEach(ι=> delete t[simple_flesh(ι)])) ;↩ _l.values(t).… }
+
+# γ.Δset = (a,b)=> new Map([ ,… a.-(b).map(ι=>[ι,-1]) ,… b.-(a).map(ι=>[ι,1]) ]) # assume uniq
+# γ.object≫0 = (o,i_s,f)=> Object.create(o) …←(i_s.map(i=>[ i ,(…a)=> f(o[i](…a),i,o) ])._.object())
+# Set.prototype.Δ = λ(f){↩ object≫0(@,alt_ws`add clear delete`,ι=>{ f(@) ;↩ ι }) }
+
+# Map.prototype‘['⁻¹uniq'] .host= {get(){↩ new Map([…@.entries()].map(([a,b])=>[b,a])) }}
+# Map.prototype‘['⁻¹'] .host= {get(){↩ […@.keys()].group(ι=> @.get(ι)) }}
+
+# Array.prototype.find_ = λ(f){ r←; if( @.some(λ(ι,i,o){t←; if( (t= f(ι,i,o))!==∅ ){ r = [i,ι,t] ;↩ ✓ } })) ↩ r }
+# Array.prototype.find_index_deep = λ(f){
+# 	for(i←0;i<@.‖;i++){ ι ← @[i]
+# 		if( Tarr(ι)){ t ← ι.find_index_deep(f) ;if( t) ↩ [i,…t] }
+# 		else{ if( f(ι) )↩ [i] }
+# 		} }
+# Array.prototype.find_last_index = λ(f){ for(i←@.‖-1;i>=0;i--) if( f(@[i],i,@) ) ↩ i }
+# Array.prototype.join_ = λ(…s){ r← [] ;_0← ✓ ;for(t← of @) _0?( _0= ✗ ,r.push(t) ): r.push(…s,t) ;↩ r }
+
+# ################################################################################
+# γ …←(_u(Math).pick('abs','ceil','exp','floor','log10','log2','max','min','round','sqrt','cos','sin','tan'),{ ,ln:Math.log ,π:Math.PI ,τ:Math.PI*2 ,e:Math.E ,'⍟':Math.log })
+# γ.🎲 = λ(ι){↩ arguments.length===0? Math.random() : Tnum(ι)? 🎲()*ι |0 : _l.sample(ι) }
+# γ‘.🎲id .thunk==>{
+# 	t ← αβ=> (L=> L.map(=> 🎲(αβ)).join('')) …← ({αβ})
+# 	🎲id ← t([…/[0-9a-z]/])
+# 	🎲id.braille = t([…re`[⠁-⣿]`])
+# 	🎲id.greek = t([…'𐅂𐅃𐅋𐅜𐅝𐅞𐅦𐅨𐅩𐅪𐅫𐅬𐅭𐅮𐅯𐅰'])
+# 	↩ 🎲id }
+# γ‘.anon .get==> 🎲id.greek(4)
+
+# γ.ord = (ι,i)=> Tnum(ι)? ι : ι.codePointAt(i)
+# γ.chr = ι=> Tstr(ι)? ι : String.fromCodePoint(ι)
+

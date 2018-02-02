@@ -1,0 +1,308 @@
+###################################### get #####################################
+⧫. wikipedia_source ==> page=> JSON.parse(GET_L(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(page)}&prop=revisions&rvprop=content&format=json`,1e6)+'').query.pages |> (ι=> _u.values(ι)[0].revisions[0]['*'] )
+
+⧫. github_url ==> ι=>{
+	[file,h] ← sbᵥ`view = deserialize(${ι}) ;s = view.sel() ;[ view.file_name() ,[view.rowcol(ι) for ι in [s[0].begin() ,s[-1].end()]] ]`
+	fm ← ι=> 'L'+(ι+1)
+	↩ github_remote_origin(file||'')+( ≈(h[0],h[1])? '' : '#'+(h[0][0]===h[1][0]? fm(h[0][0]) : fm(h[0][0])+'-'+fm(h[1][0])) ) }
+⧫. github_remote_origin ==> file=>{
+	ι ← φ(file).root('/')
+	root ← ι ;while( root+''!=='/' && !root.φ`.git`.∃ ) root=root .φ`..`
+	if( root+''==='/' ) throw Error() …← ({ human:'did not find github remote origin for '+(file||'<anon>') })
+	ι = (ι+'').slice((root+'/').‖)
+	name ← root.φ`.git/config`.ini['remote "origin"'].url.match(/github\.com[:/](.+)\/(.+)\.git/).slice(1).join('/')
+	commit ← /*jet[*/ catch_ι(=> root.φ`.git/HEAD`.text.trim()==='ref: refs/heads/master' && root.φ`.git/refs/heads/master`.text.trim() ) /*]*/ || shᵥ`cd ${root} ;git rev-parse HEAD`+''
+	↩ encodeURI('http://github.com/'+name+'/blob/'+commit+'/'+ι) }
+
+⧫. chrome_tabs ==> i=>{
+	nice_ ← (title,url)=>{ t ← new String(title+' '+url) ;t.sourcemap = { ,title:[0,title.‖] ,url:[(title+' ').‖,(title+' '+url).‖] } ;↩ nice_url(t) }
+	[title,url] ← osaᵥ`chrome: {title,URL} of tabs of windows`
+	if( i ){ i = i|0 ;t ← nice_(title[0][i],url[0][i]) ;p(t) ;↩ t+'\n<copied>\n' }
+	else{ t ← _.zip(title,url).map(ι=> _.zip(…ι)).map(.map(ι=> nice_(…ι)).join('\n')).join('\n\n') ;sb.tab.push(t) }
+	}
+
+⧫. bookmarks ==> ι=>{
+	# ! should use nice_url
+	use_chrome ← ✓
+	safari_bookmarks ← ι=>{
+		𐅜𐅫 ← ι⇒
+			: Tarr(ι)? ι.map…(𐅜𐅫)
+			: ι.WebBookmarkType==='WebBookmarkTypeProxy'? []
+			: ι.WebBookmarkType==='WebBookmarkTypeLeaf'? [{ ,name:ι.URIDictionary.title ,ι:ι.URLString }]
+			: ι.WebBookmarkType==='WebBookmarkTypeList'? !ι.Children? [] : [{ ,name:ι.Title ,ιs:ι.Children.map…(𐅜𐅫) }]
+			: { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ 𐅜𐅫(φ(ι||φ`~/Library/Safari/Bookmarks.plist`).plist)[0].ιs }
+	chrome_bookmarks ← ι=>{
+		𐅜𐅫 ← ι=> ι.children? { ,name:ι.name ,ιs:ι.children.map(𐅜𐅫) } : ι.url? { ,name:ι.name ,ι:ι.url } : { ,name:'' ,ι:JSON.stringify(ι) }
+		↩ φ(ι||'~/Library/Application Support/Google/Chrome/Default/Bookmarks').json.roots.bookmark_bar.children.map(𐅜𐅫) }
+	ι = ( use_chrome? chrome_bookmarks : safari_bookmarks )(ι)
+	ι = walk_fold(ι,ι=> Tarr(ι)? ι.join('\n') : ι.ιs? (ι.name+'\n'+ι.ιs).replace(/\n/g,'\n  ') : ( !ι.name || !ι.ι || ι.ι === ι.name? ι.name||ι.ι : ι.name+' '+ι.ι ))
+	sb.tab.push(ι) }
+
+⧫[ 'youtube-dl'  ] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl --extract-audio --audio-format mp3 -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
+⧫[ 'youtube-dl-v'] ==> (a,b)=>{ shₐi`/usr/local/bin/youtube-dl -o ~/Downloads/${b}'.%(ext)s' ytsearch:${a}` }
+⧫[ 'bandcamp-dl'] ==> ι=>{ shₐi`cd ~/file ;/usr/local/bin/bandcamp-dl --no-art --no-slugify --template='%{artist} - %{album} - %{track} %{title}' ${ι}` }
+
+################################################################################
+⧫. hand ==> slot0(
+	,=> hsᵥ`json({ hs.pasteboard.getContents() })`[0]
+	,ι=> hsᵥ`hs.pasteboard.setContents(${ζ_inspect(ι)}) ;hs.alert('✍')` )
+
+⧫. p ==> slot0(
+	,=>{ if(!γ.𐅃𐅜𐅭𐅋){ γ.𐅃𐅜𐅭𐅋=✓ ;if( node.fs.fstatSync(0).isFIFO() ){ process.stdin.pin().then(ι=> hand.ι = ι+'') ;↩ } }; ↩ hand.ι  }
+	,ι=> hand.ι = ι ) …←({ cant_pool:✓ })
+
+⧫. sb ==>{
+	sb ← ((…a)=> node.fs.fstatSync(0).isFIFO()? shₐi`open -a 'Sublime Text.app' -f` |>(=>∅) : a.‖===0? sb.tab.active.ι : shₐi`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${a}` |>(=>∅) )
+		…←({ cant_pool:✓ })
+	sb‘.tab .get= =>{
+		r ← sbᵥ`[serialize(ι) for ι in [ι.view() for ι in sublime.windows() for ι in ι.sheets()] if ι]`
+		r.active = sbᵥ`serialize(sublime.active_window().active_sheet().view())`
+		;[…r,r.active].filter(ι=>ι).map(‘.ι .host={ enumerable:✗,
+			get(){↩ sbᵥ` view = deserialize(${@}) ;view.substr(Region(0,view.size())) ` },
+			set(ι){ sb_editᵥ(@)` view.replace(edit,Region(0,view.size()),${ι}) ` },
+			} )
+		r‘.push !>( .enumerable= ✗ ) .ι = λ(ι){ shₐin(ζ_inspect(ι))`open -a 'Sublime Text.app' -f` ;@.length = 0 ;(=> @ …← (sb.tab) ).in(0.02) } # ! wtf async/sync mix
+		↩ r }
+	↩ sb}
+⧫[ 'sb[-1]'] ==> => sb.tab[-1].ι
+
+⧫. _imgur ==> npm`imgur@0.2.1` !>(.setClientId('5358d4a45bafa2e'))
+⧫. imgur ==> (ι=>ι+'') ≫(@device_memo(ι=> Π(_imgur.getInfo(ι)).then(.data) )) ≫(Π)≫(.then(ι=> net1._0_φ_seenbydevice0(ι.link).then(t=> ι …←({ @device:t.o+'' }) )))
+	!>(ι=> ι‘.thisdevice .get==>{ t ← φ`${'https://i.imgur.com/'}`+'' ;↩ net1._0_φ_seenbydevice0⁻¹().filter(.re`${t}`).map(ι⇒{ ,@device:ι ,id:ι.replace(re`^.*${t}|\.\w+$`.g,'') }) }) # .map(({ι,id})=> imgur(id).catch(⇒{ ,id ,@device:ι }) ) |>(Πand) })
+⧫. imgur_from ==> ι=>{ ι = φ(ι+'') ; ↩ @device_memo(h=> JSON.parse( shᵥ`curl -sH 'Authorization: Client-ID 3e7a4deb7ac67da' -F image=@${ι+''} 'https://api.imgur.com/3/upload'` +'') .data.id )(simple_hash(ι.buf)) |>(imgur) }
+
+⧫. nice_url ==> ι=>{t←; Uri ← npm`urijs@1.18.12` ;{sourcemap} ← ι ;ι=ι+''	
+	# very nice google maps urls
+	# if url ≈ google.com/maps/
+	# fetch short url:
+	# 	# @2016-08-18 wait-click $('#searchbox-hamburger')
+	# 	wait-click $('[guidedhelpid="searchbox_hamburger"]')
+	# 	wait-click $('[jsaction="settings.share"]')
+	# 	wait-check $('#share-short-url')
+	# 	t ← $('.widget-share-link-url').val() wait ι=> ι.re`^https?://goo.gl/maps/`
+	# 	return t
+	# 	$('.modal-container').click()
+	# wait-check: if not $`${ι}:checked` ;ι.click() ;wait for $`${ι}:checked`
+	# wait-click: wait for ι.‖ ;ι.click()
+	# decode: parse curl https://goo.gl/maps/7s6wKcW8zUC2
+
+	apply_regexes ← ι2=> lines(ι2).forEach(t=>{ [a,b] ← t.trim().split(/  +/g) ;ι = ι.replace(RegExp(a),b) })
+	URL ← /\b(?:(?:https?|chrome):\/\/|(?:file|mailto):)(?:[^\s“”"<>]*\([^\s“”"<>]*\))?(?:[^\s“”"<>]*[^\s“”"<>)\]}⟩?!,.:;])?/g
+	parse_alicetext ← ι=> _.zip(ι.split(URL).map(ι⇒ {,type:'text',ι}) ,(ι.match(URL)||[]).map(ι⇒ {,type:'url',ι}))._.flatten(✓).filter(ι=> !(ι === ∅ || (ι.type === 'text' && ι.ι === '')))
+
+	# ι = parse_alicetext(ι).map(ι=>{t←; ι.type==='url' && (t=Uri(ι.ι)).domain()+t.path()==='google.com/webhp' && t.path('/search') && (ι.ι = t+'') ;↩ ι})._.map('ι').join('')
+
+	if (sourcemap && sourcemap.title && sourcemap.url && (t=Uri(ι.slice(…sourcemap.url)),
+		t.domain() in {'github.com':0} ||
+		t.domain()+t.path()==='google.com/search'
+		)) ι = ι.slice(…sourcemap.url)
+	
+	ι = ι.replace(/%CE%B6/g,'ζ')
+	apply_regexes`
+	\bhttp://         https://
+	\b(https://)www\.   $1
+	\b(https://)(?:mail\.)?(google\.com/mail/)u/0/[?&]?#(?:(?:label|search)/[\w%+]+|\w+)/(\w+)        $1$2#all/$3
+	 - Gmail( https://google\.com/mail/)                $1
+	 - [\w.]+@gmail\.com( https://google\.com/mail/)    $1
+	Fwd: (.* https://google\.com/mail/)                 $1
+	\b(https://)en\.(?:m\.)?(wikipedia\.org/)           $1$2
+	\b(https://)youtube\.com/watch[?&]v=([\w-_]+)       $1youtu.be/$2
+	\b(https://youtu\.be/[\w-_]+)[?&]feature=youtu\.be  $1
+	\b(https://youtu\.be/[\w-_]+)&(\S*)$                $1?$2
+	 - YouTube( https://youtu\.be/)                     $1
+	 \([oO]fficial [vV]ideo\)( https://youtu\.be/)      $1
+	\b(https://)smile\.(amazon\.com/)                   $1$2
+	\b(https://docs\.google\.com/document/d/[\w_-]+)/edit(?:[?&]ts=\w+)?$  $1
+	\b(https://docs\.google\.com/spreadsheets/d/[\w_-]+)/edit(?:#gid=0)?$  $1
+	 - Google Docs( https://docs\.google\.com/)         $1
+	\b(https://dropbox\.com/\S*)[?&]dl=0$               $1
+	\b(https://)facebook(\.com/)                        $1fb$2
+	\b(https://fb\.com/)profile\.php\?id=               $1
+	\(\d+\) (.* https://fb\.com/)                       $1
+	 - Wikipedia, the free encyclopedia( https://wikipedia\.org/)  $1
+	 - Album on Imgur( https://imgur\.com/)             $1
+	 - Google Maps( https://google\.com/maps/)          $1
+	`
+
+	ι = parse_alicetext(ι).map(ι=>{t←;
+		if (ι.type === 'url') {
+			u ← Uri(ι.ι)
+			switch (u.domain()) { default: ↩ ι
+				break ;case 'amazon.com':
+					u.removeSearch(['sa-no-redirect','keywords','qid','ie','s','sr','tag','linkCode','camp','creative','creativeASIN'])
+					u.filename().re`^ref=[\w_]+$` && u.filename('')
+					if (t=u.resource().re`^/(?:[\w-]+/)?(?:dp|gp)/(?:product/)?(\w+)/?$`) {ι.ι = 'https://amzn.com/'+t[1] ;↩ ι}
+				break ;case 'fb.com': u.removeSearch(['fref','hc_location','_rdr','pnref'])
+				break ;case 'google.com': if(_.isEqual( u.segment(),['search'] )){ u.removeSearch(['gws_rd','aqs','sourceid','es_sm','ie']) ;u.hasSearch('q') && u.removeSearch('oq') }
+				} ;ι.ι = u+'' }
+		↩ ι}).map(.ι).join('')
+
+	apply_regexes`
+	: \d{5,}: Amazon(?:Smile)?: Books( https://amzn.com/)        $1
+	`
+
+	ι = parse_alicetext(ι).map(ι=>{t←;
+		if (ι.type === 'url') {
+			u ← Uri(ι.ι)
+			if( ι.ι.re`\)$` && u.hash()==='' ) ι.ι += '#'
+			}
+		↩ ι}).map(.ι).join('')
+
+	#################################### todo ####################################
+	# http://smile.amazon.com/gp/product/0300078153
+	# Seeing like a State https://amzn.com/0300078153
+
+	# https://docs.google.com/spreadsheets/d/1wfFMPo8n_mpcoBCFdsIUUIt7oSm7d__Duex51yejbBQ/edit#gid=0
+	# https://goo.gl/0nrUfP
+
+	# generalize the “fix & to ?” to many different things
+
+	# http://www.ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# A Big Little Idea Called Legibility https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility/
+	# https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility
+	# https://ribbonfarm.com/2010/07/26/a-big-little-idea-called-legibility (3K words)
+
+	# decodeURI('https://www.google.com/search?q=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&oq=%28cos%28x%29-x%2F%2810*%CF%80%29%29%5E2%2C+cos%28x%29%5E2%2C+2*%28-x%2F%2810*%CF%80%29%29*cos%28x%29%2C+%28-x%2F%2810*%CF%80%29%29%5E2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0')
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&gs_l=psy-ab.3...106740.118625.0.119014.18.18.0.0.0.0.163.1395.16j1.17.0....0...1.1.64.psy-ab..2.0.0.9dJSX0MrIe0
+	# https://www.google.com/search?q=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2&oq=(cos(x)-x%2F(10*π))^2%2C+cos(x)^2%2C+2*(-x%2F(10*π))*cos(x)%2C+(-x%2F(10*π))^2
+	# https://www.google.com/search?q=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2&oq=(cos(x)-x/(10*π))^2,+cos(x)^2,+2*(-x/(10*π))*cos(x),+(-x/(10*π))^2
+
+	↩ ι }
+
+⧫. im_resize ==> (…a)=>{ for(t← of a.slice(1)) shᵥ`convert -scale ${a[0]} ${t} ${t}` } # ! wth are you using scale
+⧫. im_dateify ==> (…a)=>{ dry ← a[0]==='-d' ;dry && a.shift()
+	mv ← (a,b)=>{ a===b? 0 : dry? log(js`mv(${a},${b})`) : φ(b).∃? ‽ : node.fs.renameSync(a,b) }
+	a.filter(.re`\.jpg$`).map(ι=>{
+		t ← (shᵥ`identify -format '%[exif:*]' ${ι}`+'').re`exif:DateTimeOriginal=(.*)`
+		if (!t) ↩
+		t = npm`moment@2.18.1`.utc(t[1].replace(/:/g,'')).toDate().day_s5 # ! so wrong ,but slightly better semantic?
+		# also see https://www.npmjs.com/package/exif-parser
+		mv(ι,(ι.re`PANO_`? (!dry && (φ(ι).φ`../PANO/tmp`.ι = '' ,φ(ι).φ`../PANO/tmp`.ι = ∅) ,'PANO/') : '')+t+'.jpg')
+		}) }
+
+# # such hack
+# # YET ANOTHER Tag
+# json2_read ← ι=>{ r ← JSON.parse(ι) ;(λ Λ(ι,k,o){if( ι.type==='Buffer' ){
+# 	t ← 'data' in ι || 'utf8' in ι? Buffer.from(ι.data||ι.utf8) : 'base64' in ι? Buffer.from(ι.base64,'base64') : ‽
+# 	if( o===∅ ) r = t ;else o[k] = t
+# 	} else if(! Tprim(ι) ) _u(ι).forEach(Λ)})(r) ;↩ r }
+# json2_show ← ι=> JSON_pretty(ι,(ˣ,ι)=>{t←;
+# 	if( T.Buffer(ι)) ↩ ≈(ι,Buffer.from(t=ι+''))? { ,type:'Buffer' ,utf8:t} : { ,type:'Buffer' ,base64:ι.toString('base64') }
+# 	↩ ι})
+# γ‘.φ .thunk==>{
+# 	# https://www.npmjs.com/package/glob-to-regexp
+# 	fs ← node.fs
+# 	ENC ← ι=> ι.re`/`? ι.replace(/[\/%]/g ,encodeURIComponent.X) : ι
+# 	φ.⁻¹ = ι=> /%2F/i.test(ι)? ι.replace(/%2[F5]/gi ,decodeURIComponent.X) : ι
+# 	φ.fd = {} ;φ.fd.from = ι=> fs.createReadStream(∅,{ fd:fs.openSync(φ`/tmp/fd${🎲id.greek(20)}` …← ({ι}) +'','r') })
+
+# 	existsSync ← ι=> !T.Error(catch_union(=> fs.accessSync(ι)))
+# 	mkdir_p ← ι=>{ try{ fs.mkdirSync(ι) }catch(e){ if( e.code==='EEXIST'||e.code==='EISDIR') ↩ ;t ← node.path.dirname(ι) ;if( e.code!=='ENOENT' || ι===t) throw e ;mkdir_p(t) ;fs.mkdirSync(ι) } }
+# 	read_file ← ι=>{ try{↩ fs.readFileSync(ι) }catch(e){ if( !(e.code==='ENOENT')) throw e } }
+# 	ensure_exists ← (ι,ifdne)=>{ existsSync(ι) || ( mkdir_p(node.path.resolve(node.path.dirname(ι))) ,fs.writeFileSync(ι,ifdne) ) }
+# 	write_file ← (ι,data)=>{ try{ fs.writeFileSync(ι,data) }catch(e){ if( !(e.code==='ENOENT')) throw e ;ensure_exists(ι,data) } }
+# 	globmatch ← (glob,ι)=> ι.re`^…${[…glob].map(ι=> ι==='*'? '.*' : re`${ι}`.source).join('')}$`
+# 	φ‘.cwd .host= { ,get:=> new Φ(process.cwd()) ,set:ι=> φ(ι+'')._ι !>(mkdir_p) !>(process.chdir) }
+# 	normHs ← ι=>{ if( ≈( ι,['~'] ) ) ↩ [process.env.HOME] ;Tstr(ι[0]) && (ι[0] = ι[0].replace(/^~(?=\/)/,process.env.HOME)) ;↩ ι }
+# 	λ Φ(ι){@._ι = ι} ;Φ.prototype = {
+# 		,φ
+# 		,toString(){↩ @._ι }
+# 		,toJSON(){↩ {type:'φ' ,ι:@._ι} }
+# 		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+opts.stylize(util_inspect_autodepth(@._ι.replace(re`^${process.env.HOME}(?=/|$)`,'~')).replace(/^'|'$/g,'`'),'string') }
+# 		,get nlink(){↩ fs.statSync(@._ι).nlink }
+# 		,get mtime(){↩ fs.statSync(@._ι).mtime }
+# 		,get birthtime(){↩ fs.statSync(@._ι).birthtime }
+# 		,get url(){↩ encodeURI('file:'+@.root('/')) } # ! should this be part of root
+# 		,get is_dir(){↩ !!catch_ι(=> fs.statSync(@._ι).isDirectory()) }
+# 		,get name(){↩ node.path.basename(@._ι) }
+# 		,TMP_children(){↩ @._ι |>(λ Λ(ι){↩ φ(ι).is_dir? fs.readdirSync(ι).map(t=> ι+'/'+t).map…(Λ) : [ι] }) }
+# 		,TMP_parents(){ r ← [@.root('/')] ;while(r[-1].φ`..`+'' !== r[-1]+'') r.push(r[-1].φ`..`) ;↩ r.slice(1) }
+# 		,root(x){switch(arguments.length){default: 
+# 			case 0: ↩ @._ι[0]==='/'? '/' : '.'
+# 			case 1: ↩ new Φ( x==='/'? node.path.resolve(@._ι) : x==='.'? node.path.relative(x,@._ι) : ‽('not yet implemented: nonstandard roots') )
+# 			}}
+# 		,ensure_dir(){ @.φ`..`.∃ || mkdir_p(@.φ`..`+'') ;↩ @ }
+# 		,get dir_ensure(){ @.∃ || mkdir_p(@+'') ;↩ @ }
+
+# 		# ,get ι(){↩}
+# 		,set ι(ι){
+# 			if( @.is_dir) ‽('TODO')
+# 			if( ι===∅||ι===null){ catch_union(=> fs.unlinkSync(@._ι) ) ;↩ }
+# 			e ← node.path.extname(@._ι)
+# 			if( e==='.csv'){ @.csv = ι ;↩ }
+# 			if( e==='.xml'){ @.xml = ι ;↩ }
+# 			if( e==='.plist'){ @.plist = ι ;↩ }
+# 			ι = e==='.json'? JSON_pretty(ι) :
+# 				Tstr(ι)? ι :
+# 				ι instanceof Buffer? ι :
+# 				JSON_pretty(ι)
+# 			write_file(@._ι,ι) }
+# 		,get buf(){↩ read_file(@._ι) || Buffer.alloc(0) }
+# 		,set buf(ι){ write_file(@._ι,ι) }
+# 		,get base64(){↩ Buffer.from(@.text,'base64') }
+# 		# ,set base64(ι){}
+# 		,get text(){↩ (read_file(@._ι) || '')+'' }
+# 		,set text(ι){ write_file(@._ι,ι) }
+# 		,get lines(){↩ λ(…ιs){
+# 			d ← ((read_file(@._ι)||'\n')+'').replace(/\n$/,'').split('\n')
+# 			if( ιs.‖ > 1) ↩ ιs.map(ι=> Tnum(ι)? d[ι] : d.slice(ι.re`^(\d+):$`[1]|0).join('\n')+'\n')
+# 			else if( ιs.‖ === 0){
+# 				↩ {
+# 					map(…a){↩ d.map(…a)},
+# 					} }
+# 			else ‽('TODO')
+# 			}}
+# 		,set lines(ι){ write_file(@._ι, ι.join('\n')+'\n') }
+# 		,get json(){↩ JSON.parse(read_file(@._ι) || 'null') }
+# 		,set json(ι){ write_file(@._ι, JSON_pretty(ι)) }
+# 		,get json2(){↩ json2_read(@.text) }
+# 		,set json2(ι){ @.text = json2_show(ι) }
+# 		,get ini(){↩ npm`ini@1.3.4`.parse(@.text) }
+# 		# ,set ini(ι){}
+# 		# ,get csv(){↩}
+# 		,set csv(ι){ t ← φ`/tmp/csv${🎲id.greek(25)}` ;t.json = ι ;shᵥ`ζ ${'npm`csv@0.4.6`.stringify('+js`φ(${t+''}).json,(e,ι)=>{ φ(${@.root('/')+''}).buf = ι })`}` }
+# 		# ,get xml(){↩ JSON.parse(shᵥ`ζ ${js`npm`xml2js@0.4.17`.parseString(φ(${@+''}).text,λ(e,ι){ process.stdout.write(JSON.stringify(ι)) })`}`+'') }
+# 		,set xml(ι){ @.text = npm`xmlbuilder@8.2.2`.create(ι,{allowSurrogateChars:✓}).end({pretty:✓}) }
+# 		,get plist(){t←; buf ← @.buf ;↩ 0?0
+# 			# in case bplist-parser has bugs, this is available:
+# 			# : which('plutil')? npm`plist@2.1.0`.parse(shᵥ`plutil -convert xml1 -o - ${@.root('/')+''}`+'')
+# 			: buf.slice(0,6)+''==='bplist'? ( t= φ`/tmp/plist${🎲id.greek(25)}`, shᵥ`ζ ${'npm`bplist-parser@0.1.1`.parseFile('+js`${@.root('/')+''},(e,ι)=>{ φ(${t+''}).plist = ι })`}`, t.plist )
+# 			: npm`plist@2.1.0`.parse(@.text)
+# 			}
+# 		,set plist(ι){ @.text = npm`plist@2.1.0`.build(ι) }
+# 		,get size(){↩ fs.statSync(@._ι).size }
+# 		,get ['‖'](){↩ fs.statSync(@._ι).size }
+# 		}
+# 	Φ.prototype‘['∃'] …←({ ,get(){↩ existsSync(@._ι) } ,set(ι){ ι===@.∃ ||( @.ι = ι?'':∅ ) } })
+# 	λ Φs(ι){@._ι = ι} ;Φs.prototype = {
+# 		,inspect(ˣ,opts){↩ opts.stylize('φ','special')+node.util.inspect(@._ι,opts)}
+# 		,get name_TMP(){↩ @._ι.map(ι=> new Φ(ι).name)} # fs.readdirSync
+# 		,get φs(){↩ @._ι.map(ι=> new Φ(ι))} # [φ]
+# 		}
+# 	λ φ(ss,…ιs){
+# 		head ← @ instanceof Φ && @._ι
+# 		if( @ instanceof Φs ) ‽('not yet implemented')
+# 		tmpl ← is_template0(ss,ιs)
+# 		if( tmpl){ι ← simple_template(ss,ιs,[φ,'/']) ;if( ι.filter(Tstr).join('').re`\*|\{[^}]*?,` ) {
+# 			ι.‖ <= 1 || ‽('not yet implemented * ** ${}',ι)
+# 			ι = normHs(ι)
+# 			ι = ι[0]
+# 			ι.includes('**') && ‽('not yet implemented ** ${}',ι)
+# 			r ← ['.']
+# 			if( ι[0]==='/' ) r = ['/']
+# 			ι.split('/').forEach(ι=>{
+# 				if( ι==='' )↩;
+# 				r = r.map…(r=>{
+# 					if( ι === '.' ) ↩ [r]
+# 					if( ι === '..' ) ↩ [r==='.'? '..' : r.split('/').every(ι=>ι==='..')? r+'/..' : node.path.dirname(r)]
+# 					↩ fs.readdirSync(r).filter(b=> globmatch(ι,b)).map(b=> r+'/'+b)
+# 					})
+# 				})
+# 			↩ new Φs(r) } }
+# 		else {ι ← ss ;if( ιs.‖ || Tarr(ι)) ‽('not yet implemented') ;if( ι instanceof Φs ) ‽('not yet implemented')}
+# 		if( tmpl ){ι = normHs(ι).map(ι=> !Tstr(ι)? ENC(ι.raw+'') : ι).join('')}
+# 		else if( ι instanceof Φ ){↩ head && ι._ι[0]!=='/'? new Φ(head+'/'+ι._ι) : ι}
+# 		else {ι = (ι+'').replace(/^~(?=\/|$)/,process.env.HOME)}
+# 		↩ new Φ(node.path.normalize(head? head+'/'+ι : ι).replace(/(?!^)\/$/,'')) }
+# 	↩ φ }

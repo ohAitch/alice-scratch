@@ -1,0 +1,196 @@
+⧫. go_to ==> (…a)=>{ # synonyms? ,go_to ,open ,search
+	opt ← !Tprim(a[-1])? a.pop() : {}
+	type ← a.‖===1? ∅ : a.shift()
+	ι ← a[0]
+	{new:new_,focus,in_app,sb_view_file_name} ← { ,new:✗ ,focus:✓ ,in_app:∅ ,sb_view_file_name:∅ } …← (opt)
+
+	is_url ← .re`^((https?|chrome-extension)://|file:|mailto:)`
+	searchify ← ι=> 'https://www.google.com/search?q='+encodeURIComponent(ι)
+
+	in_app && (in_app = in_app.toLowerCase())
+
+	focus || nacksoft
+
+	# windows_in_current_space_in_app ← app=> hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter(${app},{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))`
+	# apps_with_windows_in_current_space ← => hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('default',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:application():name() end))`
+
+	############################ go to specific chrome ###########################
+	# this contained some "is_chromeapp_active" code which we don't need because Signal transitioned to electron
+	# 	# System Events got an error: osascript is not allowed assistive access
+	# 	# compile_mapping(M('c',' ;'+js`terminal_do_script(${sh`ζ --fresh ${js`(…${osa_activate_thingᵥ+''})('chrome')`} ;exit`})`)).ι,
+	#  
+	# 	t ← [2,1] ;chrome_simple_js_ᵥ(`alert('foo')`,{window:t[0],tab:t[1]})
+
+	if( !type){ !new_ || ‽
+		if( !is_url(ι)) ι = searchify(ι)
+		if( !in_app && ι.re`^file:`){
+			file ← decodeURI(ι).replace(re`^file:(//)?`,'')
+			if( file[0]!=='/') file = node.path.normalize(node.path.join( φ(sb_view_file_name||‽).φ`..`+'' ,file ))
+			if( φ(file).is_dir) in_app = 'path finder'
+			else if( ['.pdf','.m4a','.epub','.mobi'].includes(node.path.extname(file)));
+			else if( ['.png','.jpg'].includes(node.path.extname(file))) in_app = '#ql'
+			else in_app = 'sublime text'
+			[ˣ,p,r] ← decodeURI(ι).re`^(.*?:)([^]*)` ;ι ← p+r.replace(/[^\/]+/g,encodeURIComponent.X)
+			}
+		if( in_app==='#ql') shₐ`( &>/dev/null qlmanage -p ${file} &)`
+		else{
+			in_app ||( in_app = 'chrome' )
+			if( in_app==='chrome'){
+				t ← osaᵥ`chrome: URL of tabs of windows`.find_index_deep(t=> t===ι) ;if( t)
+					{ [window_,tab] ← t ;osaₐ`chrome: set active tab index of window ${window_+1} to ${tab+1}` ;osaₐ`chrome: activate` ;↩ } }
+			if( ι.re`^chrome-extension://`) shᵥ`duti -s com.google.Chrome chrome-extension` # bug workaround
+			shᵥ`open …${in_app && sh`-b ${in_app |> (@device_memo(ι=> catch_ι(=> osaᵥ`id of app ${ι}`) ))}`} ${!focus && '-g'} ${ι}`
+			}
+		if( focus && in_app==='path finder') osaₐ`${in_app}: activate`
+		}
+	else if( type==='app'){ ( !new_ && focus && !in_app )||‽ ;app ← ι
+		# ! should gather most of this information periodically async & record it. should use FRP.
+		hint_screen ← { ,'sublime text':2 ,'path finder':3 ,'github desktop':4 }
+		isnt_standalone ← { ,ibooks:1 ,preview:1 }
+		hint_screen[app] && robot_key_tap('^'+hint_screen[app])
+		isnt_standalone[app]? osaᵥ`${app}: if it is running then ;activate ;end if` : osaᵥ`${app}: activate`
+		}
+	else if( type==='screen'){ ( !new_ && focus && !in_app && /^[1-9]$/.test(ι+'') )||‽ ;robot_key_tap('^'+ι) }
+	else if( type==='path'){ ( !new_ && focus )||‽
+		# ! i think this might be a pretty badly designed type
+		new_ = ✓
+		if( ι.re`^(?:code|consume|documents|history|notes|pix)/.{1,80}:\d+:`){ !in_app || ‽ # ! duplication with sublime/User/it.py:FIND_RESULT
+			# in_app = 'sublime text'
+			[ˣ,ι,line] ← ι.re`^(.+):(\d+):$`
+			ι = φ('~/file/'+ι)
+			shᵥ`'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl' ${ι}:${line}` ;↩ }
+		if( in_app==='terminal'){
+			here ← hsᵥ`json(hs.fnutils.imap( hs.window.filter.new(false):setAppFilter('Terminal',{visible=true,currentSpace=true}):getWindows() ,function(x) return x:id() end))` # ... the behavior changed. fuck
+			unbusy ← => osaᵥ`terminal: id of windows where busy = false`
+			available ← Set(here).∩(unbusy())[0]
+			terminal_do_script( sh`cd ${ι} ;…${!available && sh.clear}` ,osa`…${!!available && osa`in (window 1 whose id = ${available})`} ;…${focus && 'activate'}` ) ;↩ }
+		else go_to(encodeURI('file:'+φ(ι).root('/')),{in_app,focus,sb_view_file_name})
+		}
+	else ‽ }
+
+⧫. notify ==> ι=>{
+	Tstr(ι) &&( ι = ι.re`\n`? ι.re`^(.*?)\n([^]*)`.slice(1) : ι.re` `? ι.re`^(.*?) ([^]*)`.slice(1) : [ι] )
+	↩ net1.device_listen().then(H=>{
+	r ← H.just_first_json()
+	hsᵥ`hs.notify.new(
+		function(x) ;x:withdraw() ;simple_send(${H.at},{ at=x:actualDeliveryDate() }) end
+		,{ title=${ι[0]} ,informativeText=${or∅(ι[1],'')} ,otherButtonTitle='\u{2063}' ,actionButtonTitle='\u{2063}' }
+		):send()`
+	↩ r }) }
+
+# ⧫. set_newtab_bg ==> ι=> shᵥ`ln -sf ${ι} ~/code/scratch/user.net/chrome:newtab/it.jpg`
+⧫. set_newtab_bg ==> ι=>{
+	d ← @device0`chrome:newtab`.o
+	d.φ`it.html`.text = js` <meta charset="utf-8"> <title>⠀</title> <style>
+		html,body {
+			;height:100% ;width:100% ;margin:0
+			;background:url(${ι}) ;background-position:50% 50% ;background-size:cover
+			} </style> `
+	d.φ`manifest.json`.json = { ,manifest_version:2 ,name:'newtab' ,version:'1' ,description:'' ,chrome_url_overrides:{ ,newtab:'it.html' } } }
+
+# γ.🎵 = ι=> shₐlone`afplay ${ι}`
+# γ.🎵d = ι=> net1._0_φ_seenbydevice0(`https://www.dropbox.com/s/${ι}?dl=1`).then(ι=>🎵(ι.o))
+# γ‘.nacksoft .get==> 🎵d`kaphh65p0obaq93/nacksoft.wav`
+
+##################################### bash #####################################
+⧫. x ==>{
+	set_term_title ← ι=> process.stdout.write('\x1b]0;'+ι+'\x07')
+	this_term_is_frontmost ← =>{ t ← 🎲id(25) ;set_term_title(t) ;r ← osaᵥ`terminal: frontmost of (windows whose custom title = ${t})`[0] ;set_term_title('') ;↩ r }
+	↩ (=>{ E ← process.env.? |0
+		this_term_is_frontmost() ||( E===0? say`✓` : (say`✗` ,osaᵥ`terminal: activate`) )
+		E===0? postrun('exit') : ( process.exitCode = E )
+		}) }
+
+################################### electron ###################################
+# ⧫. electron_window_for ==> id=> (…a)=> electron_window(id,…a) # deprecated?
+⧫. electron_window ==>{
+	# interaction with previous versions: unsolved
+	𐅩 ← {
+		,init:=> _electron__start_my().Π
+		,ι: @device0`𐅰𐅃𐅬𐅦𐅜electron`
+		# @proc alive_at: time of last message received from
+		# @proc path_to
+		,path_init:=> !𐅩.ι.ι? Πx() :( 𐅩.path_to = net1.open_send(𐅩.ι.ι[1]) !>(.then(ι=> Πor(ι.Π`close`,ι.Π`end`).then(=> 𐅩.path_to = ∅ ) ,=>∅)) )
+		,path_to:∅
+		}
+	send_to_my ← ι=>{
+		𐅯 ← => 𐅩.path_init() !>(.then(s=> stream4.send_json(s)(ι) ,=>∅))
+		𐅯().catch(=>{
+			lock('𐅂𐅂𐅪𐅯𐅩 electron init').then(
+				,un=> 𐅩.init().then(ι=>{ un() ;𐅩.ι.ι = ι ;𐅯().catch(=>∅) } ,un)
+				,=> /* retry once */ (=> 𐅯().catch(=>∅) ).in(1/*holy shit cheating*/)
+				)
+			}) }
+	↩ (id,…a)=>{ ι ← a.pop() ;Tfun(ι) &&( ι = js`(…${ι+''})(... ${a})` ) ;send_to_my({,id,code:ι}) } }
+⧫. _electron__start_my ==>{
+	start_el_app ← (code,…a)=>{
+		cmd ← npm`electron@1.8.2-beta.2` ;t ← cmd_log_loc(cmd)
+		c2 ← `require('/usr/local/bin/ζ') ;(${code})(${a.join(',')})`
+		node.child_process.spawn(sh`${cmd} ${simple_as_file(c2)}`,{ ,shell:✓ ,detached:✓ ,stdio:['ignore',node.fs.openSync(t.out,'a+'),node.fs.openSync(t.err,'a+')] })
+		|>(ι=> [ι,…ι.stdio,ι.channel].map(ι=>ι&&ι.unref()) )
+		}
+	↩ => @deviceΠ(re=> start_el_app(re=>{ ;el ← require('electron') ;el.app.Π`ready`.then(=>{
+		el.ipcMain.on('eval_main',(ev,ι)=> eval(ι)(𐅦d.get(ev.sender))) ;𐅦 ← ι=> 𐅦d.set(ι.webContents,ι) ;𐅦d ← new WeakMap()
+		el.app.on('window-all-closed',=> el.app.hide() )
+		imgur`1uoWV5c`.then(ι=> el.app.dock.setIcon(ι.@device) )
+		on_msg ← ({,id,code})=>{ w ← 𐅮𐅭𐅰𐅂𐅮‘[id]
+			send ← ι=> w.ι.webContents.executeJavaScript(ι+';0')
+			if(! w.ι ){
+				t ← w.ι = new el.BrowserWindow({ ,show:✗ ,frame:✗ }) !>(𐅦)
+				t.loadURL('about:blank')
+				t.Π`closed`.then(=> w.∃ = ✗ )
+				send(`
+					require('/usr/local/bin/ζ')
+					γ.el = require('electron')
+					γ.eval_main = f=> el.ipcRenderer.send('eval_main',f+'') `)
+				t.Π`ready-to-show`.then(=> t.show()) }
+			send(code) } ;𐅮𐅭𐅰𐅂𐅮 ← {}
+		net1.device_listen().then(H=>{ ;H.on('connection',s=> stream4.as_json(s).on(on_msg) ) ;re(H.at) })
+		})},re) ) }
+
+################################################################################
+⧫. say ==> ι=>{ ;hsᵥ`hs.alert(${ι+''})` ;nacksoft }
+
+# ζ_repl_start ← =>{
+# 	# i know how to make the good repl for ct. i want to, but im tired
+# 	diesis_compile ← ι=>{t←;
+# 		# of course this is lovely but it is a dead end - we want Sight
+# 		lock ← 0?0
+# 			: ['ct','chrome_tabs','ps2','d','bookmarks'].∪([]).has(ι)? ι+'()'
+# 			: (t= ι.re`^f(?: (.+))?$` )? js`go_to('path',${t[1]||'.'})`
+# 			: ι
+# 		lock===ι || log('⛓  '+lock)
+# 		↩ lock }
+# 	# @2018-01-04 current priority is to work on seeing first; merging w ζ_repl_start
+# 	# '\x1b[30m\x1b[42mζ\x1b[0m '
+# 	↩ (f=> f.call( node.repl.start({ ,useGlobal:✓ ,prompt:'\x1b[30m\x1b[100m‡\x1b[0m ' }) ))(λ(){
+# 	@.In = [] ;@.Out = []
+# 	super_ ← @.completer ;@.completer = λ(line,cb){ line.trim()===''? cb(∅,[]) : super_.call(@,line,cb) }
+# 	@.removeAllListeners('line').on('line',λ(line){
+# 		@.context.rl = @
+# 		@.context.E = @.context # ! what?
+# 		if( @.bufferedCommand ){ ι ← @.history ;ι.reverse() ;t ← ι.pop() ;ι[-1] += '\n'+t ;ι.reverse() }
+# 		code ← @.bufferedCommand+line
+# 		code = diesis_compile(code)
+# 		if( ζ_verify_syntax(code) ){ @.bufferedCommand = code+'\n' ;@.outputStream.write('    ') ;↩ }
+# 		try{ ι ← (0,eval)(ζ_compile(code)) }catch(e){ error ← e }
+# 		@.bufferedCommand = ''
+# 		if( code ){
+# 			φ`~/.archive_ζ`.text = φ`~/.archive_ζ`.text + JSON.stringify({ ,time:Time() ,code }) + '\n'
+# 			@.In.push(code) ;@.Out.push(error || ι)
+# 			}
+# 		if( error ) @._domain.emit('error' ,error.err || error)
+# 		else{
+# 			if( T.Promise(ι) ) @.context‘.__ .f1ι= ι
+# 			else if( ι!==∅ ) @.context.__ = ι
+# 			try{ t ← ζ_inspect(ι,{ colors:@.outputStream.isTTY }) }catch(e){ t ← '<repl inspect failed>:\n'+(e&&e.stack) }
+# 			@.outputStream.write(t && t+'\n') }
+# 		@.displayPrompt()
+# 		})
+# 	@.removeAllListeners('SIGINT').on('SIGINT',λ(){
+# 		is_line ← @.bufferedCommand+@.line
+# 		@.clearLine()
+# 		if( is_line ){ @.bufferedCommand = '' ;@.displayPrompt() } else @.close()
+# 		})
+# 	delete @.context._ ;@.context._ = _u
+# 	↩ @ }) }

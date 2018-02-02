@@ -25,18 +25,18 @@
 # os_daemon(φ`~/code/scratch/ζ/module.ζ`+'').restart()
 
 ################################## app prelude #################################
-proc_keep_alive ← _.once(=> setInterval(=>∅,1e9) )
+# proc_keep_alive ← _.once(=> setInterval(=>∅,1e9) )
 
-φwatch1 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✗,ignoreInitial:✓}).on('all',cb) !>(cb)
+# φwatch1 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✗,ignoreInitial:✓}).on('all',cb) !>(cb)
 φwatch2 ← (ι,cb)=> npm`chokidar@2.0.0`.watch(ι+'',{,persistent:✓,ignoreInitial:✓}).on('all',cb) !>(cb)
-src ← @device0`⧫_local_module_src`
+# src ← @device0`⧫_local_module_src`
 ιlock ← @device0`⧫_local_module_codelock0`
 # 𐅋𐅝hash ← ι=> simple_hash(ι.ι)
 
 /*#########################*/ module.if_main_do(=>{ ############################
 # watching local module data
 # when publish on save,:
-proc_keep_alive()
+# proc_keep_alive()
 
 ⧫require ← ι=> catch_union(=>{ t ← {} ;𐅜𐅜 ← γ.⧫ ;γ.⧫ = new Proxy({},{set(ˣ,id,ι){ t[id] = ι ;↩ ✓ }}) ;require_new(ι) ;γ.⧫ = 𐅜𐅜 ;↩ t })
 watch_local_module_source ← from=> φwatch2(from,=>{
@@ -48,13 +48,16 @@ watch_local_module_source ← from=> φwatch2(from,=>{
 	ιlock.ι = ι
 	})
 
-𐅯𐅦𐅮𐅰𐅬 ← [] ;𐅦𐅮𐅮𐅞𐅬 ← {}
-φwatch2(src.o,=>{ ι ← src.ι||[]
-	Δset(𐅯𐅦𐅮𐅰𐅬,ι) !>(=> 𐅯𐅦𐅮𐅰𐅬 = ι )
-	.map((δ,φι)⇒
-		: δ>0?( 𐅦𐅮𐅮𐅞𐅬[φι] = watch_local_module_source(φι) )
-		: 𐅦𐅮𐅮𐅞𐅬‘[φι] |>(ι=>{ ι.ι.close() ;ι.∃ = ✗ })
-		) })
+seq_ws`_ data.glue data glue html.glue js.glue net see ui.glue user`.map(ι=>
+	watch_local_module_source(φ`~/code/scratch/new/${ι}.ζ`+'')
+	)
+# 𐅯𐅦𐅮𐅰𐅬 ← [] ;𐅦𐅮𐅮𐅞𐅬 ← {}
+# φwatch2(src.o,=>{ ι ← src.ι||[]
+# 	Δset(𐅯𐅦𐅮𐅰𐅬,ι) !>(=> 𐅯𐅦𐅮𐅰𐅬 = ι )
+# 	.map((δ,φι)⇒
+# 		: δ>0?( 𐅦𐅮𐅮𐅞𐅬[φι] = watch_local_module_source(φι) )
+# 		: 𐅦𐅮𐅮𐅞𐅬‘[φι] |>(ι=>{ ι.ι.close() ;ι.∃ = ✗ })
+# 		) })
 
 # sourcing from npm data
 # ‡ next. integrate w ζ.npm. see sb.tab.npm.

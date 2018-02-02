@@ -1,0 +1,56 @@
+##################################### alias ####################################
+⧫. ps ==> Object.getOwnPropertyDescriptors
+⧫. ct ==> chrome_tabs
+⧫[ '…p'] ==> => postrun(hand.ι)
+⧫. l ==> (…a)=>{ shₐi`CLICOLOR_FORCE=1 ls -AGC ${a}` }
+⧫. f ==> (ι='.')=>{ go_to('path',ι) }
+⧫. ar  ==> (…a)=>{ shₐi`tar -c ${a} | xz -v > "$(basename ${a[0]}).tar.xz"` }
+⧫. ar9 ==> (…a)=>{ shₐi`tar -c ${a} | xz -9 -v > "$(basename ${a[0]}).tar.xz"` }
+
+################################################################################
+⧫. keypresses ==> (=>{
+	diy_stdin ← f=>{ process.stdin.setRawMode(✓) ;process.stdin.resume().setEncoding('utf8').on('data',key=>{ f(key) === -1 && process.stdin.pause() }) }
+	disp ← ['',…';;;;#;;;;█;;;;#;;;;█'].join('-'.×(9))
+	o← ;diy_stdin(ι=>{ nacksoft ;if (!o) o = hrtime() ;else process.stdout.write(disp.slice(0,floor((-o+(o=hrtime()))*100))+'\n')})
+	}) …←({ cant_pool:✓ })
+
+⧫. run_project ==> ((ι,isTTY)=>{t← ;catch_union(=> Tstr(ι) &&( ι = JSON.parse(ι) )) ;ι||(ι = φ.cwd.φ`any`)
+	𐅫𐅰 ← ι=> ι.type==='sublime.View'? sbᵥ`View_from(${ι.id}).file_name()` : ι+''
+	is_project ← ι=> !ι.is_dir? ✗ : node.fs.readdirSync(ι+'').some(ι=> ['.git','package.json'].includes(ι) || ['build','run'].includes(node.path.parse(ι).name) )
+
+	if( !process.stdout.isTTY ){ isTTY && ‽ ;terminal_do_script(sh`…${sh.clear} ;cd ${φ(𐅫𐅰(ι)).φ`..`} ;run_project ${JSON.stringify(ι)} ✓ ;x`) ;↩ }
+
+	project ← φ(𐅫𐅰(ι) || ‽).TMP_parents().filter(is_project)[0] || ‽
+	nacksoft
+
+	build ← node.fs.readdirSync(project+'').find(.re`^build\.`)
+	package_ ← !!( t=project.φ`package.json`.json ,t && t.version )
+	run ← node.fs.readdirSync(project+'').find(.re`^run\.`)
+	;(build || package_ || run) || ‽
+
+	a ← => build && shₐi`cd ${project} ;${build}`
+	b ← =>{if( package_ ){
+		p ← project.φ`package.json`.json
+		t ← φ`/usr/local/lib/node_modules/${p.name}/package.json`.json
+		p.version === (t&&t.version) &&( p.version = npm`semver@5.3.0`.inc(p.version,'patch') ,project.φ`package.json`.json = p )
+		shₐi`cd ${project} ;npm --cache-min=Infinity -g i .`
+		}}
+	c ← => run && shₐi`cd ${project} ;${run}`
+
+	# sh⚓exit
+	# child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.exit.then(({code})=> code===0? yes() : no()))
+	child_process_as_promise ← ι=> ι && Π((yes,no)=> ι.on('exit',(code)=> code===0? yes() : no()))
+	;(child_process_as_promise(a())||Promise.resolve()).then(=> (b()||Promise.resolve()).then(=> (c()||Promise.resolve()) ) )
+	}) …←({ cant_pool:✓ })
+
+⧫. style_a ==> frame0(‘lexical_env =>{
+	fg← '#e8e8e8'
+	bg← '#2a2626'
+	font← 'Avenir,sans-serif'
+	css← => style(`
+		body{ ;background-color:${bg} ;color:${fg} ;font-family:${font} }
+		a:visited {color: #bb7f00;}
+		a:hover, a:active, a:focus {color: #eeeeee;}
+		a {color: #ffb200; text-decoration: none;}`)
+	})()
+

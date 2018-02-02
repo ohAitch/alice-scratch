@@ -1,0 +1,56 @@
+⧫. hsᵥ ==> (ss,…ιs)=>{
+	ENC ← ι⇒
+		: Tstr(ι)||Tnum(ι)? JSON.stringify(ι)
+		: Tarr(ι)? '{'+ι.map(ENC).join(',')+'}'
+		: '{'+_u(ι).map((ι,i)=>'['+ENC(i)+']='+ENC(ι)).join(',')+'}'
+	ι ← simple_template(ss,ιs,ENC).join('')
+	# t ← shᵥ`hs -c ${ι}`
+	t ← shᵥ`/usr/local/bin/hs -c ${ι}`
+	# t ← child_ process.spawnSync(which('hs'),['-c',ι]).stdout
+	t ← (t+'').split('\n')[-1] ;↩ or∅( catch_ι(=> JSON.parse(t)),t ) }
+
+⧫. tsᵥ ==> (ss,…ιs)=>{
+	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	ι = 'require "totalspaces2" ;TS = TotalSpaces2 ;'+ι
+	PORT = 34290
+	R ← => JSON.parse(fs_ipc_emit(PORT,ι))[0]
+	launch_serv ← =>{
+		;(shᵥ`gem list`+'').re`(^|\n)totalspaces2 ` || ‽
+		t ← φ`/tmp/evalserv_${🎲id.greek(9)}.rb`
+		t.text = String.raw`#!/usr/bin/env ruby
+			require "socket" ;require "json"
+			server = TCPServer.new("localhost",${PORT})
+			loop do
+			  t = server.accept
+			  r = JSON.generate([eval(File.read("/tmp/fs_ipc_#{${PORT}}"))])
+			  t.print "HTTP/1.1 200 OK\r\n"+"Content-Type: text/plain\r\n"+"Content-Length: #{r.bytesize}\r\n"+"Connection: close\r\n"+"\r\n"+r
+			  t.close
+			end`
+		shᵥ`chmod +x ${t}`
+		shₐlone`${t}` !>(♓_sub) }
+	try{↩ R() }catch(e){ e.status===7 && launch_serv() ;shᵥ`sleep 0.1` ;↩ R() } }
+
+⧫. sbᵥ ==> (ss,…ιs)=>{
+	ENC ← JSON.stringify ;ι ← simple_template(ss,ιs).map(ι=> !Tstr(ι)? ENC(ι.raw) : ι).join('')
+	φ`/tmp/sb𐅰𐅯𐅜𐅂𐅝`.ι = ι ;↩ JSON.parse(shᵥ`curl -s -X PUT localhost:34289`+'') |>(ι=> ι===null? ∅ : ι) }
+⧫. sb_editᵥ ==> view=>(ss,…ιs)=>{ sbᵥ`edit(${view},${py(ss,…ιs)})` }
+
+⧫. terminal_do_script ==>{
+	sh.clear = String.raw`/usr/bin/clear && printf %s $'\e[3J'`
+	↩ (a,b)=>{ φ`/tmp/__·`.ι = a ;osaᵥ`terminal: do script "·" …${b}` } }
+⧫[ '·'] ==> =>{ t ← φ`/tmp/__·` ;postrun(t.text) ;t.ι = ∅ }
+
+#################################### module ####################################
+# γ.node = {} ;𐅩𐅋 ← (a,b)=> node‘[a] .thunk==> require(b) ;npm`builtin-modules@2.0.0`.map(ι=>𐅩𐅋(ι,ι)) ;𐅩𐅋('EventEmitter','events') ;𐅩𐅋('Module','module')
+# γ._u = npm`underscore@1.8.3` # lodash is better than underscore except for _()
+# γ._l = npm`lodash@4.17.4`
+# γ._ = _u
+# γ.require_new = ι=> (𐅃𐅜𐅞𐅰𐅯||(𐅃𐅜𐅞𐅰𐅯= npm`require-uncached@1.0.3` ))( (ι+'').replace(/^\.(?=\/)/,φ.cwd) ) ;𐅃𐅜𐅞𐅰𐅯←;
+
+# γ.npm = (…a)=>{ ι←a[0]+'' ;↩ ι.includes('@')? require(npm_init(…a)) : 'npm`'+ι+'@'+shᵥ`npm show ${ι} version`+'`' }
+# npm_init ← (id_ver,sub='')=>{ id_ver+=''
+# 	𐅫 ← φ`/usr/local/lib/𐅪𐅩modu/${id_ver+'__'+process.versions.modules}/node_modules`
+# 	# to match ABI, https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
+# 	if(! 𐅫.∃ ) shᵥ`cd ${𐅫.dir_ensure.φ`..`} && npm --cache-min=Infinity install ${id_ver}`
+# 	↩ 𐅫.φ`${id_ver.split('@')[0]}`+sub }
+# # in theory, log whenever somebody uses an outdated lib
