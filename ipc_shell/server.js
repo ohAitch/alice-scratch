@@ -26,6 +26,7 @@ var eval_in_worker = (()=>{
 		.on('message',function(ι){ ι.map(ι=> this.emit(...ι) ) })
 		.on('unbusy',function(){ busy.delete(this) ;free.add(this) })
 	return code=>{
+//     console.log('eval', free,busy)
 		free.length || free.add(make())
 		var pr = [...free][0]
 		free.delete(pr)
@@ -40,30 +41,33 @@ var procify = (a,code)=> 'var a = '+JSON.stringify(a)+' ;var on_off = '+on_off+'
 
 //###############################################################################
 
-var H = new require('net').Server().listen(2114,'localhost')
+try {fs.unlinkSync('/tmp/node-runner') } catch (e){}
+var H = new require('net').Server().listen('/tmp/node-runner')
 H.on('listening',()=>H.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{var t;
 	var worker ;var ended;
-	var c_send = (type,ι)=>{ if (ended) return ;var a = Buffer(4) ;var b = Buffer(type) ;var c = Buffer(ι||'') ;a.writeInt32BE(c.length,0) ;𐑕𐑩𐑒𐑧𐑑.write(Buffer.concat([a,b,c])) }
+	var c_send = (type,ι)=>{
+//       console.log('send',type,ι)
+      if (ended) return ;
+      ι = Buffer(ι||'') ;
+      ι_len = Buffer(4); ι_len.writeInt32BE(ι.length,0) ;
+      𐑕𐑩𐑒𐑧𐑑.write(Buffer.concat([
+        Buffer([0x82,0x61]), Buffer(type),
+        Buffer([0x7a]), ι_len, ι
+      ])) }
+
 	𐑕𐑩𐑒𐑧𐑑.on('end',t=()=>{ !ended && worker && worker.kill('SIGKILL') ;ended = true }).on('error',t)
-	𐑕𐑩𐑒𐑧𐑑.on('data',catch_(ι=>{
-		if (buf){ ι = Buffer.concat([buf,ι]) ;buf = undefined }
-		var i=0 ;var get = n=> i+n <= ι.length ||( buf = ι.slice(i) ,return_() )
-		while(i<ι.length){ get(5) ;var L = ι.readInt32BE(i) ;var type = chr(ι[i+4]) ;get(5+L) ;on_msg({type ,ι:ι.slice(i+=5,i+=L)})}
-		})) ;var buf;
-	var a = { argv:[] ,cwd:'' ,env:{} ,isTTY:[,,,] }
-	var on_msg = ι=>{switch(ι.type){default: _interrobang_()
-		break ;case 'A': a.argv.push(ι.ι+'')
-		break ;case 'E': var [ˣ,k,v] = (ι.ι+'').match(/^([^=]*)=(.*)/) ;k.match(/^NAILGUN_TTY_\d$/)?( a.isTTY[k[-1]] = v!=='0' ):( a.env[k] = v )
-		break ;case 'D': a.cwd = ι.ι+''
-		break ;case 'R':
-			if( a.argv[1]==='TEST' ){ c_send('X',5+'') ;ended = true ;return }
-			worker = eval_in_worker(procify(a,` (0,eval)(a.argv[1]) `))
-			var {on,off} = on_off()
-			;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
-			on(worker,'exit_',i=>{ c_send('X',i+'') ;ended = true ;off() })
-			// c_send('S')
-		break ;case 'H': // not sure what this is for
-		break ;case '0': // c_send('S') ;worker.stdio[0].write(ι.ι)
-		break ;case '.': // worker.stdio[0].end()
-		}}
-	}))
+  𐑕𐑩𐑒𐑧𐑑.pipe((new (require('cbor').Decoder)()).on('data',(a)=>{
+    if( a.argv[1]==='TEST' ){ c_send('X',5+'') ;ended = true ;return }
+    var env = a.env
+    a.env = {}; env.map((ι)=>{ var [ˣ,k,v] = (ι+'').match(/^([^=]*)=(.*)/); a.env[k] = v })
+    a.isTTY = [,,,]
+
+    //console.log(procify(a,` (0,eval)(a.argv[1]) `))
+    //FIXME workers produce no output
+    worker = eval_in_worker(procify(a,` (0,eval)(a.argv[1]) `))
+    var {on,off} = on_off()
+    ;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
+    on(worker,'exit_',i=>{ c_send('X',i+'') ;ended = true ;off() })
+    // c_send('S')
+  }))
+}))
