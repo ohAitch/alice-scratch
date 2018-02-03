@@ -1,0 +1,7 @@
+{
+  "main": "arg.js",
+  "dependencies": {
+    "cbor": "^3.0.3",
+    "node-ipc": "^9.1.1"
+  }
+}
