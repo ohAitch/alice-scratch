@@ -45,19 +45,10 @@ try {fs.unlinkSync('/tmp/node-runner') } catch (e){}
 var H = new require('net').Server().listen('/tmp/node-runner')
 H.on('listening',()=>H.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{var t;
 	var worker ;var ended;
-	var c_send = (type,ι)=>{
-//       console.log('send',type,ι)
-      if (ended) return ;
-      ι = Buffer(ι||'') ;
-      ι_len = Buffer(4); ι_len.writeInt32BE(ι.length,0) ;
-      𐑕𐑩𐑒𐑧𐑑.write(Buffer.concat([
-        Buffer([0x82,0x61]), Buffer(type),
-        Buffer([0x7a]), ι_len, ι
-      ])) }
 
-	𐑕𐑩𐑒𐑧𐑑.on('end',t=()=>{ !ended && worker && worker.kill('SIGKILL') ;ended = true }).on('error',t)
+	𐑕𐑩𐑒𐑧𐑑.on('end',t=()=>{ !ended && worker && worker.kill('SIGKILL') }).on('error',t)
   𐑕𐑩𐑒𐑧𐑑.pipe((new (require('cbor').Decoder)()).on('data',(a)=>{
-    if( a.argv[1]==='TEST' ){ c_send('X',5+'') ;ended = true ;return }
+    if( a.argv[1]==='TEST' ){𐑕𐑩𐑒𐑧𐑑.end('tested!');return }
     var env = a.env
     a.env = {}; env.map((ι)=>{ var [ˣ,k,v] = (ι+'').match(/^([^=]*)=(.*)/); a.env[k] = v })
     a.isTTY = [,,,]
@@ -66,8 +57,7 @@ H.on('listening',()=>H.on('connection',(𐑕𐑩𐑒𐑧𐑑)=>{var t;
     //FIXME workers produce no output
     worker = eval_in_worker(procify(a,` (0,eval)(a.argv[1]) `))
     var {on,off} = on_off()
-    ;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> c_send(fd+'',ι)) )
-    on(worker,'exit_',i=>{ c_send('X',i+'') ;ended = true ;off() })
-    // c_send('S')
+    ;[1,2].map(fd=> on(worker.stdio[fd],'data',ι=> !ended && 𐑕𐑩𐑒𐑧𐑑.write(ι)) ) //TODO pipe?
+    on(worker,'exit_',i=>{ 𐑕𐑩𐑒𐑧𐑑.end() ;off() })
   }))
 }))
